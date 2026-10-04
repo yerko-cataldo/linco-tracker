@@ -179,6 +179,9 @@ dialog .fields{display:grid;gap:10px;margin:14px 0 18px}
 @media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}.beats i{transition:none}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .ai-only[hidden]{display:none}
+details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+.build td,.build th{padding:5px 6px}
+.chips .chip.sel{border-color:var(--food);color:var(--food)}
 .calc{font-size:.92rem;background:var(--sunken);padding:12px 14px;line-height:1.6}
 </style>
 </head>
@@ -251,37 +254,61 @@ dialog .fields{display:grid;gap:10px;margin:14px 0 18px}
       </div>
       <div class="panel stack">
         <h3>Agregar comida</h3>
+        <div class="row">
+          <div class="field w5">Hora<input id="mTime" type="time"></div>
+          <div class="field grow">Descripción (opcional)<input id="mDesc" type="text" placeholder="Se arma sola con los ingredientes"></div>
+        </div>
         <div class="ai-only stack" hidden>
-          <div class="field">Describe la comida o sube una foto para estimarla
+          <div class="field">Cuéntale a la IA qué comiste, o sube una foto: la desglosa en ingredientes
             <textarea id="mealAiText" rows="2" placeholder="Ej: 2 huevos revueltos, 1 hallulla con palta, yogur proteico con plátano y avena"></textarea>
           </div>
           <div class="row">
             <label class="btn small" id="mealPhotoLbl" hidden>Foto<input type="file" id="mealPhoto" accept="image/*" class="sr"></label>
             <span class="small muted" id="mealPhotoName"></span>
-            <button class="btn" data-action="meal-estimate">Estimar con IA</button>
+            <button class="btn" data-action="meal-estimate">Desglosar con IA</button>
             <span class="small muted" id="mealAiStatus"></span>
           </div>
         </div>
+        <div class="chips" id="comboChips"></div>
         <div class="row">
-          <div class="field w5">Hora<input id="mTime" type="time"></div>
-          <div class="field grow">Descripción<input id="mDesc" type="text"></div>
+          <div class="field grow">Alimento<input id="fdFood" list="foodList" placeholder="Busca en tus alimentos" autocomplete="off"></div>
+          <div class="field w5">Cantidad<input id="fdQty" inputmode="decimal"></div>
+          <div class="field w7">Unidad<select id="fdUnit"><option value="g">gramos</option></select></div>
+          <button class="btn" data-action="build-add">Añadir</button>
         </div>
-        <div class="row">
-          <div class="field w5">kcal<input id="mKcal" inputmode="decimal"></div>
-          <div class="field w5">Prot. g<input id="mP" inputmode="decimal"></div>
-          <div class="field w5">Carb. g<input id="mC" inputmode="decimal"></div>
-          <div class="field w5">Grasa g<input id="mF" inputmode="decimal"></div>
-          <div class="field w5">Fibra g<input id="mFib" inputmode="decimal"></div>
-        </div>
-        <div class="row">
-          <div class="field grow">Vegetales, frutas, granos, legumbres y frutos secos (separados por coma)<input id="mPlants" type="text" placeholder="tomate, palta, avena"></div>
-          <button class="btn primary" data-action="meal-add">Agregar</button>
-        </div>
+        <datalist id="foodList"></datalist>
+        <div id="buildBox"></div>
+        <details class="manual">
+          <summary>Ingresar totales a mano (sin ingredientes)</summary>
+          <div class="stack" style="margin-top:10px">
+            <div class="row">
+              <div class="field w5">kcal<input id="mKcal" inputmode="decimal"></div>
+              <div class="field w5">Prot. g<input id="mP" inputmode="decimal"></div>
+              <div class="field w5">Carb. g<input id="mC" inputmode="decimal"></div>
+              <div class="field w5">Grasa g<input id="mF" inputmode="decimal"></div>
+              <div class="field w5">Fibra g<input id="mFib" inputmode="decimal"></div>
+            </div>
+            <div class="row">
+              <div class="field grow">Plantas (separadas por coma)<input id="mPlants" type="text" placeholder="tomate, palta, avena"></div>
+              <button class="btn" data-action="meal-add">Agregar con estos totales</button>
+            </div>
+          </div>
+        </details>
         <p class="small muted" id="mealAiNote"></p>
       </div>
     </div>
     <div class="panel mt" id="nutDash" hidden></div>
     <div class="panel mt"><h3>Comidas del día</h3><div class="scroll" id="mealsTable"></div></div>
+    <div class="panel mt">
+      <div class="item-head"><h3>Mis alimentos</h3><span class="act">
+        <label class="btn small ai-only" hidden>Leer etiqueta (foto)<input type="file" id="labelPhoto" accept="image/*" class="sr"></label>
+        <button class="btn small" data-action="food-new">Agregar alimento</button></span></div>
+      <p class="small muted" style="margin:0 0 10px">Valores por 100 g (o 100 ml) del alimento tal como lo comes: cocido si lo comes cocido. Los que dicen "revisar" dependen de la marca o la receta: corrígelos con la etiqueta. <span id="labelStatus"></span></p>
+      <div class="row" style="margin-bottom:8px"><div class="field grow"><span class="sr">Filtrar alimentos</span><input id="foodFilter" placeholder="Filtrar alimentos"></div></div>
+      <div class="scroll" id="foodTable"></div>
+      <h3 class="mt">Comidas frecuentes</h3>
+      <div id="comboList"></div>
+    </div>
     <div class="grid g2 mt">
       <div class="panel"><h3>Calorías de la semana</h3><div id="kcalChart"></div></div>
       <div class="panel"><h3>Indicadores de la semana</h3><div id="nutWeek"></div></div>
@@ -554,12 +581,45 @@ const DEFAULT_PROFILE = {
 };
 const SONG_STATES = ["por aprender","aprendiendo","tocándola","dominada"];
 const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body"};
+// Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
+// los marcados "revisar" dependen de la marca o del corte y conviene corregirlos con la etiqueta.
+const FOOD_SEED = [
+  ["pollo", "Pechuga de pollo cocida", ["pollo", "pechuga", "filetitos de pollo"], 165, 31, 0, 3.6, 0, null, null, false, "USDA aprox."],
+  ["cerdo", "Chuleta de cerdo cocida", ["chuleta", "cerdo"], 230, 25, 0, 14, 0, null, null, false, "USDA aprox., revisar"],
+  ["lomo", "Lomo liso cocido", ["bistec", "lomo"], 200, 29, 0, 9, 0, null, null, false, "USDA aprox., revisar"],
+  ["posta", "Posta rosada cocida", ["posta"], 180, 30, 0, 6, 0, null, null, false, "USDA aprox., revisar"],
+  ["asiento", "Asiento cocido", ["asiento"], 190, 28, 0, 8, 0, null, null, false, "USDA aprox., revisar"],
+  ["huevo", "Huevo entero", ["huevos", "huevo duro", "huevos revueltos"], 143, 12.6, 0.7, 9.5, 0, "huevo", 50, false, "USDA aprox."],
+  ["arroz", "Arroz blanco cocido", ["arroz"], 130, 2.7, 28, 0.3, 0.4, "taza", 160, false, "USDA aprox."],
+  ["fideos", "Fideos cocidos", ["fideos", "pasta", "tallarines"], 158, 5.8, 31, 0.9, 1.8, "taza", 140, false, "USDA aprox."],
+  ["papa", "Papa cocida", ["papa", "papas"], 87, 1.9, 20, 0.1, 1.8, "papa", 150, true, "USDA aprox."],
+  ["hallulla", "Hallulla", ["pan", "hallulla"], 300, 8.5, 55, 5, 2.5, "hallulla", 90, false, "aprox., revisar"],
+  ["marraqueta", "Marraqueta", ["pan batido", "pan francés"], 270, 8.5, 56, 1, 2.5, "marraqueta", 100, false, "aprox., revisar"],
+  ["avena", "Avena integral instantánea (seca)", ["avena"], 389, 16.9, 66.3, 6.9, 10.6, "porción", 40, true, "USDA aprox."],
+  ["tomate", "Tomate", ["tomates"], 18, 0.9, 3.9, 0.2, 1.2, "tomate", 120, true, "USDA aprox."],
+  ["palta", "Palta hass", ["palta", "aguacate"], 160, 2, 8.5, 14.7, 6.7, "palta", 140, true, "USDA aprox."],
+  ["brocoli", "Brócoli cocido", ["brócoli", "brocoli"], 35, 2.4, 7.2, 0.4, 3.3, null, null, true, "USDA aprox."],
+  ["platano", "Plátano", ["platano", "banana"], 89, 1.1, 22.8, 0.3, 2.6, "plátano", 120, true, "USDA aprox."],
+  ["manzana", "Manzana", ["manzanas"], 52, 0.3, 13.8, 0.2, 2.4, "manzana", 180, true, "USDA aprox."],
+  ["lentejas", "Lentejas cocidas", ["lentejas"], 116, 9, 20, 0.4, 7.9, "taza", 200, true, "USDA aprox."],
+  ["garbanzos", "Garbanzos cocidos", ["garbanzos"], 164, 8.9, 27.4, 2.6, 7.6, "taza", 160, true, "USDA aprox."],
+  ["almendras", "Almendras", ["almendra"], 579, 21.2, 21.6, 49.9, 12.5, "puñado", 30, true, "USDA aprox."],
+  ["nueces", "Nueces", ["nuez"], 654, 15.2, 13.7, 65.2, 6.7, "puñado", 30, true, "USDA aprox."],
+  ["yogur", "Yogur con proteína", ["yogur proteico", "yogurt protein"], 70, 10, 5, 1, 0, "pote", 150, false, "revisar etiqueta"],
+  ["leche", "Leche sin lactosa semidescremada", ["leche"], 46, 3.2, 4.8, 1.5, 0, "vaso", 250, false, "revisar etiqueta"],
+  ["jamon", "Jamón de pavo", ["jamón", "jamon"], 110, 18, 3, 3, 0, "lámina", 20, false, "revisar etiqueta"],
+  ["aceite", "Aceite de oliva", ["aceite"], 884, 0, 0, 100, 0, "cucharada", 13, false, "USDA aprox."],
+  ["mantequilla", "Mantequilla", ["manteca"], 717, 0.9, 0.1, 81, 0, "cucharadita", 5, false, "USDA aprox."]
+].map(([id, name, aliases, kcal, p, c, f, fib, unit, unitG, plant, source]) => ({id: "f-" + id, name, aliases, kcal, p, c, f, fib, unit, unitG, plant, source}));
+const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+const r1 = x => Math.round((Number(x) || 0) * 10) / 10;
 const S = {
   date: today(), tab: "hoy", days: {},
-  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: []},
+  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: []},
+  build: [],
   mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null
 };
-const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews"};
+const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list"};
 
 function emptyDay(date){ return {date, meals:[], weight:null, water:0, act:{gym:"", gymMin:0, walkMin:0, tennisMin:0, bikeMin:0, bikeKm:0}, bass:{minutes:0, logs:[], songs:[]}, study:[]}; }
 function normDay(d, date){
@@ -828,7 +888,7 @@ function renderNutrition(){
     meter("Fibra", st.fib, g.fiber, "g", "var(--ok)") + meter("Agua", d.water || 0, g.water, "vasos", "var(--study)"));
   const meals = [...d.meals].sort((a,b) => (a.time||"").localeCompare(b.time||""));
   setHTML($("#mealsTable"), meals.length ? `<table><thead><tr><th>Hora</th><th>Comida</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
-    ${meals.map(m => `<tr><td>${esc(m.time||"")}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td>
+    ${meals.map(m => `<tr><td>${esc(m.time||"")}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.items||[]).length ? `<div class="small muted">${esc(m.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))}</div>` : (m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td>
       <td class="n"><button class="btn small ghost" data-action="meal-edit" data-id="${m.id}">Editar</button><button class="btn small ghost danger" data-action="meal-del" data-id="${m.id}">Borrar</button></td></tr>`).join("")}
     </tbody><tfoot><tr><td></td><td>Total</td><td class="n">${fmt(st.kcal)}</td><td class="n">${fmt(st.p)}</td><td class="n">${fmt(st.c)}</td><td class="n">${fmt(st.f)}</td><td class="n">${fmt(st.fib)}</td><td></td></tr></tfoot></table>`
     : `<p class="empty">Sin comidas registradas este día. Agrega la primera arriba o usa el registro rápido del resumen.</p>`);
@@ -853,7 +913,7 @@ function renderNutrition(){
     <dt>Tendencia de peso (28 días)</dt><dd>${wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "faltan datos"}</dd>
     <dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>
   </dl></div><p class="small muted" style="margin-top:10px">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara esa pendiente con el ritmo de tu fase (7.700 kcal ≈ 1 kg), con tope de ±250 kcal. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
-  renderNutDash();
+  renderNutDash(); renderBuild(); renderFoods();
 }
 function renderNutDash(){
   const box = $("#nutDash"), r = S.nutDash;
@@ -976,6 +1036,86 @@ function renderCalc(){
     <span class="muted">Es un punto de partida: después de 2 a 3 semanas, el ajuste sugerido en Nutrición lo calibra con tu tendencia de peso real.</span>`;
 }
 
+/* ---------- base de alimentos y armado de comidas ---------- */
+const foods = () => S.lib.foods || [];
+function findFood(q){
+  const n = norm(q); if (!n) return null;
+  const all = foods();
+  return all.find(f => norm(f.name) === n) || all.find(f => (f.aliases || []).some(a => norm(a) === n))
+    || all.find(f => norm(f.name).startsWith(n)) || all.find(f => norm(f.name).includes(n)) || null;
+}
+const plantKey = name => norm(name).split(/[\s(,]/)[0];
+function itemFromFood(fd, g){
+  const k = g / 100;
+  return {id: uid(), foodId: fd.id, name: fd.name, g: r1(g), kcal: r1(fd.kcal * k), p: r1(fd.p * k), c: r1(fd.c * k), f: r1(fd.f * k), fib: r1((fd.fib || 0) * k), plant: !!fd.plant, ai: false};
+}
+function itemsFromAI(list){
+  return (Array.isArray(list) ? list : []).map(it => {
+    const g = num(it && it.g), fd = it && it.foodId ? foods().find(f => f.id === it.foodId) : null;
+    if (fd && g) return itemFromFood(fd, g);
+    if (!it || (!g && !num(it.kcal))) return null;
+    return {id: uid(), foodId: null, name: String(it.name || "Ingrediente"), g: r1(g), kcal: r1(num(it.kcal)), p: r1(num(it.p)), c: r1(num(it.c)), f: r1(num(it.f)), fib: r1(num(it.fib)), plant: !!it.plant, ai: true};
+  }).filter(Boolean);
+}
+function mealFromItems(items, desc, time){
+  const t = k => r1(sum(items, i => i[k]));
+  return {id: uid(), time: time || nowHM(), desc: desc || items.map(i => i.name).join(", "), kcal: t("kcal"), p: t("p"), c: t("c"), f: t("f"), fib: t("fib"),
+    plants: [...new Set(items.filter(i => i.plant).map(i => plantKey(i.name)))], items: clone(items), ai: items.some(i => i.ai)};
+}
+function foodsForPrompt(){ return foods().map(f => ({id: f.id, nombre: f.name, alias: f.aliases, porcion: f.unit ? `1 ${f.unit} = ${f.unitG} g` : undefined})); }
+const ITEMS_SCHEMA = `[{"foodId": string o null, "name": string, "g": number, "kcal": number o null, "p": number o null, "c": number o null, "f": number o null, "fib": number o null, "plant": boolean}]`;
+const ITEMS_RULES = `Descompón cada comida en ingredientes sin omitir ninguno (incluye aceites, aderezos, salsas y bebidas si se mencionan). Para cada ingrediente estima los gramos tal como se come (si está cocido, gramos del alimento cocido). Si el ingrediente corresponde a uno de mis alimentos, pon su foodId y deja kcal, p, c, f y fib en null: esos valores los calcula la app. Si no corresponde a ninguno, pon foodId null y estima kcal, p, c, f y fib para esos gramos, usando valores de alimento cocido cuando corresponda. "plant" es true para vegetales, frutas, legumbres, cereales integrales, frutos secos y semillas.`;
+
+function renderBuild(){
+  const items = S.build;
+  setHTML($("#comboChips"), (S.lib.combos || []).length ? `<span class="small muted" style="align-self:center">Frecuentes:</span>` + S.lib.combos.map(c => `<button class="chip" data-action="combo-load" data-id="${c.id}">${esc(c.name)}</button>`).join("") : "");
+  if (!items.length){ setHTML($("#buildBox"), `<p class="small muted" style="margin:0">Busca un alimento y su cantidad, elige una comida frecuente o desglosa con IA.</p>`); return; }
+  const t = mealFromItems(items);
+  setHTML($("#buildBox"), `<div class="scroll"><table class="build"><thead><tr><th>Ingrediente</th><th class="n">g</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
+    ${items.map(i => `<tr><td>${esc(i.name)} ${i.ai ? '<span class="tag">estimado IA</span>' : ""}</td><td class="n">${fmt(i.g)}</td><td class="n">${fmt(i.kcal)}</td><td class="n">${fmt(i.p)}</td><td class="n">${fmt(i.c)}</td><td class="n">${fmt(i.f)}</td><td class="n">${fmt(i.fib)}</td>
+      <td class="n"><button class="btn small ghost" data-action="build-edit" data-id="${i.id}">Gramos</button><button class="btn small ghost danger" data-action="build-del" data-id="${i.id}" aria-label="Quitar">×</button></td></tr>`).join("")}
+    </tbody><tfoot><tr><td>Total</td><td></td><td class="n">${fmt(t.kcal)}</td><td class="n">${fmt(t.p)}</td><td class="n">${fmt(t.c)}</td><td class="n">${fmt(t.f)}</td><td class="n">${fmt(t.fib)}</td><td></td></tr></tfoot></table></div>
+    <div class="row" style="margin-top:8px"><button class="btn primary" data-action="build-save">Registrar comida</button><button class="btn" data-action="combo-save">Guardar como frecuente</button><button class="btn ghost small" data-action="build-clear">Vaciar</button></div>`);
+}
+function renderFoods(){
+  const q = norm($("#foodFilter").value), list = foods().filter(f => !q || norm(f.name).includes(q) || (f.aliases || []).some(a => norm(a).includes(q))).sort((a, b) => a.name.localeCompare(b.name, "es"));
+  $("#foodList").innerHTML = foods().map(f => `<option value="${esc(f.name)}">`).join("");
+  setHTML($("#foodTable"), list.length ? `<table><thead><tr><th>Alimento (por 100 g)</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th>Porción</th><th>Fuente</th><th></th></tr></thead><tbody>
+    ${list.map(f => `<tr><td>${esc(f.name)}</td><td class="n">${fmt(f.kcal)}</td><td class="n">${fmt(f.p, 1)}</td><td class="n">${fmt(f.c, 1)}</td><td class="n">${fmt(f.f, 1)}</td><td class="n">${fmt(f.fib, 1)}</td>
+      <td class="small">${f.unit ? `1 ${esc(f.unit)} = ${fmt(f.unitG)} g` : "—"}</td><td><span class="tag" style="${/revisar/.test(f.source || "") ? "border-color:var(--food);color:var(--food)" : ""}">${esc(f.source || "")}</span></td>
+      <td class="n"><button class="btn small ghost" data-action="food-edit" data-id="${f.id}">Editar</button><button class="btn small ghost danger" data-action="food-del" data-id="${f.id}">Borrar</button></td></tr>`).join("")}</tbody></table>`
+    : `<p class="empty">No hay alimentos que coincidan. Agrega uno o lee una etiqueta.</p>`);
+  setHTML($("#comboList"), (S.lib.combos || []).length ? `<ul class="list">${S.lib.combos.map(c => { const m = mealFromItems(comboItems(c)); return `<li class="item-head"><strong>${esc(c.name)}</strong><span class="small muted">${fmt(m.kcal)} kcal, ${fmt(m.p)} g proteína, ${c.items.length} ingredientes</span><span class="act"><button class="btn small" data-action="combo-load" data-id="${c.id}">Usar</button><button class="btn small ghost danger" data-action="combo-del" data-id="${c.id}">Borrar</button></span></li>`; }).join("")}</ul>`
+    : `<p class="empty">Arma una comida con ingredientes y presiona "Guardar como frecuente" para reutilizarla con un clic.</p>`);
+}
+function comboItems(c){ return (c.items || []).map(it => { const fd = it.foodId && foods().find(f => f.id === it.foodId); return fd ? itemFromFood(fd, it.g) : {...it, id: uid()}; }); }
+function updateUnits(){
+  const fd = findFood($("#fdFood").value), sel = $("#fdUnit");
+  sel.innerHTML = `<option value="g">gramos</option>` + (fd && fd.unit ? `<option value="u">${esc(fd.unit)} (${fmt(fd.unitG)} g)</option>` : "");
+  if (fd && fd.unit) sel.value = "u";
+}
+const FOOD_FIELDS = f => [
+  {name: "name", label: "Nombre", value: f.name, required: true},
+  {name: "aliases", label: "Otros nombres (separados por coma)", value: (f.aliases || []).join(", ")},
+  {name: "kcal", label: "kcal por 100 g", value: f.kcal, num: true, required: true},
+  {name: "p", label: "Proteína g por 100 g", value: f.p, num: true}, {name: "c", label: "Carbohidratos g por 100 g", value: f.c, num: true},
+  {name: "f", label: "Grasa g por 100 g", value: f.f, num: true}, {name: "fib", label: "Fibra g por 100 g", value: f.fib, num: true},
+  {name: "unit", label: "Nombre de la porción (opcional, ej. pote, lámina, unidad)", value: f.unit}, {name: "unitG", label: "Gramos de esa porción", value: f.unitG, num: true},
+  {name: "plant", label: "¿Cuenta como planta para la microbiota?", type: "select", options: ["no", "sí"], value: f.plant ? "sí" : "no"},
+  {name: "source", label: "Fuente", value: f.source || "etiqueta", list: ["etiqueta", "USDA aprox.", "pesado por mí", "aprox., revisar"]}];
+const foodFromForm = v => ({name: v.name, aliases: splitList(v.aliases), kcal: v.kcal || 0, p: v.p || 0, c: v.c || 0, f: v.f || 0, fib: v.fib || 0, unit: v.unit || null, unitG: v.unit ? (v.unitG || null) : null, plant: v.plant === "sí", source: v.source || ""});
+async function readLabel(file){
+  if (!file) return;
+  const st = $("#labelStatus"); st.innerHTML = `<span class="spin"></span> Leyendo la etiqueta…`;
+  try {
+    const r = await S.sample.json(`Lee la tabla nutricional de esta etiqueta de un alimento (formato chileno: columnas "100 g" o "100 ml" y "1 porción"). Devuelve los valores POR 100 g o 100 ml. Si solo hay valores por porción, conviértelos a 100 g usando el tamaño de la porción.
+Responde solo con este JSON: {"name": string (nombre del producto y marca si se ve), "kcal": number, "p": number, "c": number (carbohidratos disponibles), "f": number (grasa total), "fib": number o null, "unit": string o null (nombre de la porción, ej. "porción", "pote", "lámina"), "unitG": number o null (gramos de la porción)}`, {modelTier: "default", images: file});
+    st.textContent = "";
+    openDialog("Nuevo alimento desde etiqueta (revisa los valores)", FOOD_FIELDS({...r, plant: false, source: "etiqueta"}), v => saveLib("foods", l => { l.push({id: "f-" + uid(), ...foodFromForm(v)}); }));
+  } catch (e) { st.textContent = aiErr(e); }
+  $("#labelPhoto").value = "";
+}
+
 /* ---------- markdown mínimo ---------- */
 function md(src){
   const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>").replace(/`([^`]+)`/g, "<code>$1</code>");
@@ -1051,6 +1191,45 @@ const actions = {
     openDialog("Editar comida", MEAL_FIELDS(m), v => saveDay(S.date, d => { const x = d.meals.find(y => y.id === m.id); Object.assign(x, v, {kcal: v.kcal ?? 0, p: v.p ?? 0, c: v.c ?? 0, f: v.f ?? 0, fib: v.fib ?? 0, plants: splitList(v.plants)}); }));
   },
   "meal-estimate": () => estimateMeal(),
+  "build-add": () => {
+    const fd = findFood($("#fdFood").value), q = num($("#fdQty").value);
+    if (!fd){ toast("Ese alimento no está en tu base: agrégalo en Mis alimentos o usa la IA."); return; }
+    if (!q){ toast("Indica la cantidad."); return; }
+    const g = $("#fdUnit").value === "u" && fd.unitG ? q * fd.unitG : q;
+    S.build.push(itemFromFood(fd, g)); $("#fdFood").value = ""; $("#fdQty").value = ""; updateUnits(); renderBuild(); $("#fdFood").focus();
+  },
+  "build-del": el => { S.build = S.build.filter(i => i.id !== el.dataset.id); renderBuild(); },
+  "build-clear": () => { S.build = []; $("#mDesc").value = ""; $("#mealAiNote").textContent = ""; renderBuild(); },
+  "build-edit": el => {
+    const it = S.build.find(i => i.id === el.dataset.id); if (!it) return;
+    openDialog(`Gramos de ${it.name}`, [{name: "g", label: "Gramos", value: it.g, num: true, required: true}], v => {
+      if (!v.g) return; const fd = it.foodId && foods().find(f => f.id === it.foodId);
+      const k = v.g / (it.g || v.g); const nu = fd ? itemFromFood(fd, v.g) : {...it, g: r1(v.g), kcal: r1(it.kcal * k), p: r1(it.p * k), c: r1(it.c * k), f: r1(it.f * k), fib: r1(it.fib * k)};
+      nu.id = it.id; S.build = S.build.map(i => i.id === it.id ? nu : i); renderBuild();
+    });
+  },
+  "build-save": () => {
+    if (!S.build.length) return;
+    const m = mealFromItems(S.build, $("#mDesc").value.trim(), $("#mTime").value);
+    saveDay(S.date, d => d.meals.push(m));
+    S.build = []; ["#mDesc","#mTime","#mealAiText"].forEach(x => $(x).value = ""); $("#mealAiNote").textContent = ""; $("#mealPhoto").value = ""; $("#mealPhotoName").textContent = "";
+    renderBuild(); toast("Comida registrada.");
+  },
+  "combo-save": () => {
+    if (!S.build.length) return;
+    openDialog("Guardar como comida frecuente", [{name: "name", label: "Nombre", value: $("#mDesc").value.trim(), required: true}],
+      v => v.name && saveLib("combos", l => { l.push({id: uid(), name: v.name, items: S.build.map(i => i.foodId ? {foodId: i.foodId, name: i.name, g: i.g} : {foodId: null, name: i.name, g: i.g, kcal: i.kcal, p: i.p, c: i.c, f: i.f, fib: i.fib, plant: i.plant, ai: i.ai})}); }));
+  },
+  "combo-load": el => {
+    const c = (S.lib.combos || []).find(x => x.id === el.dataset.id); if (!c) return;
+    S.build = comboItems(c); $("#mDesc").value = c.name; renderBuild();
+    if (S.tab !== "nutricion") document.querySelector('nav.tabs button[data-tab=nutricion]').click();
+    $("#buildBox").scrollIntoView({behavior: "smooth", block: "center"});
+  },
+  "combo-del": el => confirmClick(el, () => saveLib("combos", l => l.filter(c => c.id !== el.dataset.id))),
+  "food-new": () => openDialog("Agregar alimento", FOOD_FIELDS({}), v => saveLib("foods", l => { l.push({id: "f-" + uid(), ...foodFromForm(v)}); })),
+  "food-edit": el => { const f = foods().find(x => x.id === el.dataset.id); if (!f) return; openDialog("Editar alimento", FOOD_FIELDS(f), v => saveLib("foods", l => { Object.assign(l.find(x => x.id === f.id), foodFromForm(v)); })); },
+  "food-del": el => confirmClick(el, () => saveLib("foods", l => l.filter(x => x.id !== el.dataset.id))),
   "nut-analyze": () => analyzeDay(),
   "nut-dash-close": () => { S.nutDash = null; renderNutDash(); },
   "nut-use-opt": el => {
@@ -1232,9 +1411,9 @@ function makeAI(){
 /* ---------- IA ---------- */
 function aiErr(e){
   const c = e && e.code;
-  if (c === "rate_limited") return "Llegaste al tope diario de consultas al coach. Se reinicia mañana.";
+  if (c === "rate_limited") return "Llegaste al tope diario de consultas al coach (o a la cuota gratis de Cloudflare). Se reinicia mañana.";
   if (c === "session_expired") return "Tu sesión expiró. Recarga la página.";
-  if (c === "no_api_key") return "Falta configurar la API key en el Worker.";
+  if (c === "no_api_key") return "Esta tarea está configurada para Anthropic y falta la API key en el Worker.";
   if (c === "network") return "Sin conexión con el servidor.";
   if (c === "invalid_json") return "La respuesta no vino en el formato esperado. Intenta de nuevo.";
   return "No se pudo consultar al coach. Intenta de nuevo.";
@@ -1251,16 +1430,20 @@ const MEAL_SCHEMA = `{"desc": string breve, "kcal": number, "p": number (g prote
 async function estimateMeal(){
   const text = $("#mealAiText").value.trim(), file = $("#mealPhoto").files[0];
   if (!text && !file){ toast("Describe la comida o sube una foto."); return; }
-  const st = $("#mealAiStatus"); st.innerHTML = `<span class="spin"></span> Estimando…`;
+  const st = $("#mealAiStatus"); st.innerHTML = `<span class="spin"></span> Desglosando…`;
   try {
-    const r = await S.sample.json(`Eres un nutricionista que estima macronutrientes de comidas chilenas y caseras. Estima calorías, macros y fibra de esta comida${file ? " (ver foto)" : ""}. Si no se indican porciones, asume porciones típicas para esta persona.
+    const r = await S.sample.json(`Eres un nutricionista. Desglosa esta comida${file ? " (ver foto)" : ""} en ingredientes con sus gramos. Si no se indican porciones, asume porciones típicas para esta persona.
 ${profileText()}
+Mis alimentos (valores ya medidos por 100 g tal como se comen): ${JSON.stringify(foodsForPrompt())}
+${ITEMS_RULES}
 Descripción: ${text || "(solo foto)"}
-Responde solo con un JSON: ${MEAL_SCHEMA}`, {modelTier: "default", ...(file ? {images: file} : {})});
-    $("#mDesc").value = r.desc || text; $("#mKcal").value = Math.round(r.kcal || 0); $("#mP").value = Math.round(r.p || 0); $("#mC").value = Math.round(r.c || 0); $("#mF").value = Math.round(r.f || 0); $("#mFib").value = Math.round(r.fib || 0);
-    $("#mPlants").value = (r.plants || []).join(", ");
-    $("#mDesc").dataset.ai = "1"; $("#mealAiNote").textContent = r.assumptions ? `Supuestos: ${r.assumptions}. Revisa y ajusta antes de agregar.` : "Revisa y ajusta antes de agregar.";
-    st.textContent = "";
+Responde solo con este JSON: {"desc": string breve, "items": ${ITEMS_SCHEMA}, "assumptions": string (porciones supuestas, una frase)}`, {modelTier: "default", ...(file ? {images: file} : {})});
+    const items = itemsFromAI(r.items);
+    if (!items.length){ st.textContent = "No pude identificar ingredientes. Describe la comida con más detalle."; return; }
+    S.build.push(...items); if (!$("#mDesc").value) $("#mDesc").value = r.desc || text;
+    const ai = items.filter(i => i.ai).length;
+    $("#mealAiNote").textContent = `${r.assumptions ? "Supuestos: " + r.assumptions + ". " : ""}${ai ? `${ai} ingrediente(s) no están en tu base y quedaron estimados por la IA. ` : ""}Revisa los gramos antes de registrar.`;
+    st.textContent = ""; renderBuild();
   } catch (e) { st.textContent = aiErr(e); }
 }
 async function analyzeDay(){
@@ -1275,6 +1458,7 @@ Metas diarias: ${JSON.stringify({kcal: g.kcal, proteina_g: g.protein, carbohidra
 Comido hasta ahora: ${JSON.stringify(st.d.meals.map(m => ({hora: m.time, comida: m.desc, kcal: m.kcal, p: m.p, c: m.c, g: m.f, fibra: m.fib})))}
 Lo que falta (calculado, no lo recalcules): ${JSON.stringify(falta)}
 Actividad del día: ${JSON.stringify({gimnasio: a.gym || "no", paseo_min: a.walkMin, tenis_min: a.tennisMin, bici_min: a.bikeMin})}
+Alimentos que tengo registrados: ${foods().map(f => f.name).join(", ")}
 Plantas distintas comidas esta semana (${ws.plants} de meta ${g.plantsWeek}): ${ws.plantList.join(", ") || "ninguna registrada"}
 Instrucciones: evalúa micronutrientes clave según lo comido (por ejemplo magnesio, potasio, calcio, vitamina D, omega-3, hierro, zinc, vitamina C, folato); elige los 5 o 6 más relevantes para hoy. Propón exactamente 2 opciones para la siguiente comida que cuadren con lo que falta y con la hora, priorizando sus alimentos preferidos y sumando a lo más un alimento nuevo si cubre un déficit. No des consejos médicos.
 Responde solo con este JSON:
@@ -1282,7 +1466,7 @@ Responde solo con este JSON:
  "microbiota": string (una o dos frases),
  "hidratacion": string (una frase según la hora y la actividad),
  "opciones":[{"nombre":string,"momento":string,"alimentos":[string con porción],"plantas":[string],"kcal":number,"p":number,"c":number,"f":number,"fib":number,"por_que":string corta}],
- "siguiente_paso": string (una frase accionable)}`, {modelTier: "default", cache: false});
+ "siguiente_paso": string (una frase accionable)}`, {modelTier: "complex", cache: false});
     r._at = `Análisis a las ${new Date().toLocaleTimeString("es-CL", {timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit"})}`;
     S.nutDash = r; st_.textContent = ""; renderNutDash(); $("#nutDash").scrollIntoView({behavior: "smooth", block: "start"});
   } catch (e) { st_.textContent = aiErr(e); }
@@ -1296,10 +1480,12 @@ async function quickParse(){
     const r = await S.sample.json(`Convierte el relato de un día en registros para una bitácora personal (nutrición, entrenamiento, bajo eléctrico, estudio). Fecha del registro: ${S.date}.
 ${profileText()}
 Catálogo existente (usa estos id cuando el texto se refiera a ellos, aunque el nombre no sea exacto): ${JSON.stringify(cat)}
-Reglas: estima kcal, macros y fibra (g) de cada comida con porciones típicas para esta persona si no se indican, y lista sus plantas distintas (vegetales, frutas, cereales integrales, legumbres, frutos secos, semillas) en minúsculas y singular. "Paseo" o "caminata con el perro/galgo" va en walkMin. Si una técnica no existe en el catálogo, deja techId null y pon su nombre en techName. Si un libro no existe, deja itemId null y pon su título en title. No inventes lo que el texto no menciona: usa null o listas vacías.
+Mis alimentos (valores ya medidos por 100 g tal como se comen): ${JSON.stringify(foodsForPrompt())}
+Reglas para comidas: ${ITEMS_RULES} Si no se indican porciones, asume porciones típicas para esta persona.
+Otras reglas: "Paseo" o "caminata con el perro/galgo" va en walkMin. Si una técnica no existe en el catálogo, deja techId null y pon su nombre en techName. Si un libro no existe, deja itemId null y pon su título en title. No inventes lo que el texto no menciona: usa null o listas vacías.
 Texto: """${text}"""
 Responde solo con este JSON:
-{"meals":[{"time":"HH:MM" o null,"desc":string,"kcal":number,"p":number,"c":number,"f":number,"fib":number,"plants":[string]}],
+{"meals":[{"time":"HH:MM" o null,"desc":string,"items":${ITEMS_SCHEMA}}],
  "act":{"gym":"push"|"pull"|"legs"|"full"|null,"gymMin":number o null,"walkMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
  "bassMinutes": number o null,
  "bassLogs":[{"techId":string o null,"techName":string o null,"bpm":number,"clean":boolean}],
@@ -1314,7 +1500,8 @@ function renderQuickPreview(){
   const tN = l => l.techId ? (S.lib.techniques.find(t => t.id === l.techId) || {}).name : `${l.techName} (nueva)`;
   const bN = s => s.itemId ? (S.lib.books.find(b => b.id === s.itemId) || {}).title : null;
   const li = [], a = r.act || {};
-  (r.meals || []).forEach(m => li.push(`Comida: ${esc(m.desc)}, ${fmt(m.kcal)} kcal, ${fmt(m.p)} g proteína, ${fmt(m.fib)} g fibra`));
+  (r.meals || []).forEach(m => { const mm = mealFromItems(itemsFromAI(m.items), m.desc); const ai = mm.items.filter(i => i.ai).length;
+    li.push(`Comida: ${esc(mm.desc)}, ${fmt(mm.kcal)} kcal, ${fmt(mm.p)} g proteína (${esc(mm.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))})${ai ? `, ${ai} estimado(s) por IA` : ""}`); });
   if (a.gym) li.push(`Gimnasio: ${GYM_LABEL[a.gym] || esc(a.gym)} ${a.gymMin ? fmt(a.gymMin) + " min" : ""}`);
   if (a.walkMin) li.push(`Paseo con el galgo: ${fmt(a.walkMin)} min`);
   if (a.tennisMin) li.push(`Tenis: ${fmt(a.tennisMin)} min`);
@@ -1341,7 +1528,7 @@ function quickApply(){
   const studies = (r.study || []).filter(s => s.itemId && S.lib.books.some(b => b.id === s.itemId));
   const a = r.act || {};
   saveDay(S.date, d => {
-    (r.meals || []).forEach(m => d.meals.push({id: uid(), time: m.time || nowHM(), desc: m.desc || "Comida", kcal: m.kcal || 0, p: m.p || 0, c: m.c || 0, f: m.f || 0, fib: m.fib || 0, plants: (m.plants || []).map(x => String(x).toLowerCase()), ai: true}));
+    (r.meals || []).forEach(m => { const items = itemsFromAI(m.items); if (items.length) d.meals.push(mealFromItems(items, m.desc, m.time)); });
     if (a.gym && GYM_LABEL[a.gym]){ d.act.gym = a.gym; d.act.gymMin = a.gymMin || 40; }
     ["walkMin","tennisMin","bikeMin","bikeKm"].forEach(k => { if (a[k]) d.act[k] = (d.act[k] || 0) + a[k]; });
     if (r.bassMinutes) d.bass.minutes = (d.bass.minutes || 0) + r.bassMinutes;
@@ -1391,7 +1578,7 @@ async function coachReview(){
 Datos (JSON): ${JSON.stringify(contextData())}
 
 Haz la revisión semanal en markdown con estas secciones: "Lo que funcionó", "Lo que se estancó", "Plan para los próximos 7 días" (exactamente 4 acciones concretas y medibles: una de nutrición, una de entreno con la distribución de Push/Pull/Legs por día, una de bajo y una de estudio) y "Una pregunta para ti". Máximo 300 palabras.`,
-      {modelTier: "default", cache: false, onText: ({text}) => { out.innerHTML = md(text); }});
+      {modelTier: "complex", cache: false, onText: ({text}) => { out.innerHTML = md(text); }});
     out.innerHTML = md(r.text); st.textContent = "";
     saveLib("coach", l => { l.push({date: today(), text: r.text}); return l.slice(-12); });
   } catch (e) { st.textContent = aiErr(e); if (e && e.text) out.innerHTML = md(e.text); }
@@ -1475,6 +1662,10 @@ function wireUI(){
   $("#sItem").addEventListener("change", () => renderStudy());
   ["#cPal","#cPhase","#pAge","#pHeight","#pWeight","#pSex"].forEach(s => $(s).addEventListener("input", renderCalc));
   $("#importFile").addEventListener("change", e => importJson(e.target.files[0]));
+  $("#fdFood").addEventListener("input", updateUnits);
+  $("#fdQty").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); actions["build-add"](); } });
+  $("#foodFilter").addEventListener("input", renderFoods);
+  $("#labelPhoto").addEventListener("change", e => readLabel(e.target.files[0]));
   $("#mealPhoto").addEventListener("change", e => { $("#mealPhotoName").textContent = e.target.files[0] ? e.target.files[0].name : ""; });
   $("#chatIn").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); chatSend(); } });
   document.addEventListener("keydown", e => {
