@@ -580,7 +580,11 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <!-- ESTUDIO -->
   <section class="tab" id="tab-estudio">
     <div class="page-head c-study"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-study"/></svg></span><div><h2>Lectura y estudio</h2><p class="lede" id="studyLede"></p></div></div>
-    <div class="grid g2">
+    <div class="panel">
+      <div class="item-head"><h3>Libros y cursos</h3><span class="act"><button class="btn small" data-action="book-new">Agregar libro o curso</button></span></div>
+      <ul class="list" id="bookList"></ul>
+    </div>
+    <div class="grid g2 mt">
       <div class="panel stack">
         <h3>Registrar avance</h3>
         <div class="row"><div class="field grow">Libro o curso<select id="sItem"></select></div></div>
@@ -611,10 +615,6 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
         <div class="small muted" id="pomoDone"></div>
       </div>
-    </div>
-    <div class="panel mt">
-      <div class="item-head"><h3>Libros y cursos</h3><span class="act"><button class="btn small" data-action="book-new">Agregar libro o curso</button></span></div>
-      <ul class="list" id="bookList"></ul>
     </div>
   </section>
 
