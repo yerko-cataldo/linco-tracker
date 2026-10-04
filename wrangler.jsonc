@@ -1,0 +1,39 @@
+{
+  // Configuración del Worker de Lincoyán
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lincoyan",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+
+  // El Worker corre antes que los archivos estáticos para validar el login en TODO el sitio
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+
+  // Sin URL *.workers.dev ni previews públicas: solo se entra por tu dominio, detrás de Cloudflare Access
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "xn--lincoyn-mwa.cl", "custom_domain": true }
+    // , { "pattern": "lincoyan.cl", "custom_domain": true }   // descomenta si compras también el dominio sin tilde
+  ],
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lincoyan",
+      "database_id": "REEMPLAZAR_CON_EL_ID_DE_D1",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "https://REEMPLAZAR.cloudflareaccess.com",
+    "ACCESS_AUD": "REEMPLAZAR_CON_EL_AUD_DE_LA_APP_DE_ACCESS",
+    "ALLOWED_EMAIL": "REEMPLAZAR@tu-correo.com",
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com",
+    "MODEL_DEFAULT": "claude-haiku-4-5-20251001",
+    "MODEL_COACH": "claude-haiku-4-5-20251001",
+    "AI_DAILY_LIMIT": "150"
+  }
+  // Secreto (no va en el repo): npx wrangler secret put ANTHROPIC_API_KEY
+}

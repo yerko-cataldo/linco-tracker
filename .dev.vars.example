@@ -1,0 +1,3 @@
+# Copia este archivo como .dev.vars para desarrollo local (no se sube a git)
+DEV_BYPASS_AUTH=1
+ANTHROPIC_API_KEY=sk-ant-...

@@ -1,0 +1,8 @@
+node_modules/
+.wrangler/
+.dev.vars
+*.log
+# Nunca subas tus exportaciones: contienen tus datos personales
+exports/
+lincoyan-*.json
+lincoyan-*.csv

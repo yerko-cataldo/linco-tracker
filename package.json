@@ -1,0 +1,17 @@
+{
+  "name": "lincoyan",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "db:migrate:local": "wrangler d1 migrations apply lincoyan --local",
+    "db:migrate": "wrangler d1 migrations apply lincoyan --remote",
+    "deploy": "wrangler d1 migrations apply lincoyan --remote && wrangler deploy"
+  },
+  "dependencies": {
+    "jose": "^6.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
