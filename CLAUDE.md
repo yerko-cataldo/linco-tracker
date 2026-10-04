@@ -87,7 +87,7 @@ El body de `/api/ai` es `{messages, images, tier, json, stream}`.
 - **IA en el front:** `S.sample` es un cliente de `/api/ai` con la misma interfaz que el runtime de artifacts de claude.ai. `sample(input, {onText, images, modelTier})` hace streaming; `sample.json(...)` devuelve JSON parseado.
 - **Diseño:**
   - Tokens CSS en `:root`, con variante oscura por `prefers-color-scheme` o `data-theme`.
-  - Paleta cálida tipo papel y tinta (`--bg`, `--surface`, `--sunken`, `--line`, `--line-strong`). Colores por área: `--food` terracota, `--bass` frambuesa, `--study` azul petróleo, `--act` añil.
+  - Modo claro en papel y tinta cálidos; modo oscuro en azul pizarra (fondo `#22272E`, tarjetas `#2D333B`, como GitHub Dark Dimmed), nunca negro ni café. Tokens: `--bg`, `--surface`, `--sunken`, `--line`, `--line-strong`, `--hl` (resalte). Colores por área: `--food` terracota, `--bass` frambuesa, `--study` azul petróleo, `--act` añil.
   - Tipografías: Pirata One solo para el logo, Archivo semiexpandida (`--display`) para títulos y números, Hanken Grotesk para el texto y los botones.
   - Paneles con borde fino y esquinas redondeadas (`--r`), sin degradados ni sombras marcadas. Barras y chips redondeados.
   - Íconos de línea como `<symbol id="i-…">` en el sprite del inicio del `<body>` (hoy, food, act, bass, study, coach, perfil, trophy). Cada sección abre con `.page-head` (ícono en `.tile` con el color del área).
