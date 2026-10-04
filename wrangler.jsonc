@@ -27,13 +27,16 @@
   ],
 
   "vars": {
-    "ACCESS_TEAM_DOMAIN": "https://REEMPLAZAR.cloudflareaccess.com",
-    "ACCESS_AUD": "REEMPLAZAR_CON_EL_AUD_DE_LA_APP_DE_ACCESS",
-    "ALLOWED_EMAIL": "REEMPLAZAR@tu-correo.com",
-    "ANTHROPIC_BASE_URL": "https://api.anthropic.com",
-    "MODEL_DEFAULT": "claude-haiku-4-5-20251001",
-    "MODEL_COACH": "claude-haiku-4-5-20251001",
-    "AI_DAILY_LIMIT": "150"
+    "ACCESS_TEAM_DOMAIN": "https://autumn-bar-84fe.cloudflareaccess.com",
+    "ACCESS_AUD": "458be877431de7f5aa728172d0beedc70a7c1c2b971075011adeec19ef17d587",
+    "ALLOWED_EMAIL": "yfigueroa.figueroa@gmail.com",
+    "AI_DAILY_LIMIT": "150",
+    "PROVIDER_DEFAULT": "workers-ai",
+    "MODEL_DEFAULT": "@cf/meta/llama-4-scout-17b-16e-instruct",
+    "PROVIDER_COACH": "workers-ai",
+    "MODEL_COACH": "@cf/meta/llama-4-scout-17b-16e-instruct",
+    "PROVIDER_VISION": "workers-ai",
+    "MODEL_VISION": "@cf/meta/llama-4-scout-17b-16e-instruct",
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
   }
-  // Secreto (no va en el repo): npx wrangler secret put ANTHROPIC_API_KEY
 }
