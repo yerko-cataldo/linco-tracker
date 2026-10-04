@@ -217,10 +217,13 @@ nav.tabs button[data-tab=estudio][aria-selected=true] .ico{color:var(--study)}
 .kpi-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .ring{display:block;flex:none}
 .ring text{font-family:var(--display);font-weight:700}
-.nut-hero{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;padding-bottom:18px;margin-bottom:16px;border-bottom:1px solid var(--line)}
-.kcal-ring{text-align:center}
-.kcal-ring .lbl{font-size:.86rem;color:var(--muted);margin-top:6px}
-.kcal-ring .lbl strong{color:var(--ink)}
+.nut-hero{display:grid;gap:22px;padding-bottom:18px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.kcal-head>*+*{margin-top:6px}
+.kcal-head .lab-row{display:flex;justify-content:space-between;font-size:.86rem;font-weight:600;color:var(--muted)}
+.kcal-big .big{font-family:var(--display);font-stretch:112%;font-weight:750;font-size:2.6rem;line-height:1;letter-spacing:-.02em}
+.kcal-big small{font-size:1rem;color:var(--muted);font-weight:500}
+.bar.thick{height:12px;margin-top:10px}
+strong.ink{color:var(--ink)}
 .macro-rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;text-align:center}
 .macro-rings .lbl{font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.3}
 .macro-rings .lbl strong{display:block;color:var(--ink);font-size:.9rem}
@@ -1117,8 +1120,12 @@ function renderNutrition(){
     <div class="split">${kT ? `<i style="width:${kP / kT * 100}%;background:${MC[0]}"></i><i style="width:${kC / kT * 100}%;background:${MC[1]}"></i><i style="width:${kF / kT * 100}%;background:${MC[2]}"></i>` : ""}</div>
     <div class="split-legend"><span style="--c:${MC[0]}">Proteína ${pc(kP)}%</span><span style="--c:${MC[1]}">Carbohidratos ${pc(kC)}%</span><span style="--c:${MC[2]}">Grasa ${pc(kF)}%</span></div></div>`);
   const left = g.kcal - st.kcal;
-  setHTML($("#nutRings"), `<div class="nut-hero"><div class="kcal-ring">${ring(st.kcal / g.kcal, left < 0 && -left > g.kcal * g.tol / 100 ? "var(--danger)" : "var(--food)", 136, 12, fmt(st.kcal), `de ${fmt(g.kcal)} kcal`)}
-      <div class="lbl">${left >= 0 ? `faltan <strong>${fmt(left)}</strong> kcal` : `<strong>${fmt(-left)}</strong> kcal sobre la meta`}</div></div>
+  const over = left < 0 && -left > g.kcal * g.tol / 100;
+  setHTML($("#nutRings"), `<div class="nut-hero"><div class="kcal-head">
+      <div class="lab-row"><span>Calorías</span><span>${fmt(st.kcal / g.kcal * 100)}%</span></div>
+      <div class="kcal-big"><span class="big">${fmt(st.kcal)}</span> <small>/ ${fmt(g.kcal)} kcal</small></div>
+      <div class="bar thick"><i style="width:${clamp(st.kcal / g.kcal * 100, 0, 100)}%;background:${over ? "var(--danger)" : "var(--food)"}"></i></div>
+      <div class="small muted">${left >= 0 ? `faltan <strong class="ink">${fmt(left)}</strong> kcal` : `<strong class="ink">${fmt(-left)}</strong> kcal sobre la meta`}</div></div>
     <div class="macro-rings">${[["Proteína", st.p, g.protein], ["Carbohidratos", st.c, g.carbs], ["Grasa", st.f, g.fat]].map(([n, v, goal], i) =>
       `<div>${ring(v / goal, MC[i], 64, 7, fmt(v / goal * 100) + "%")}<div class="lbl"><strong>${n}</strong>${fmt(v)} / ${fmt(goal)} g</div></div>`).join("")}</div></div>`);
   setHTML($("#nutMeters"), meter("Fibra", st.fib, g.fiber, "g", "var(--ok)") + meter("Agua", d.water || 0, g.water, "vasos", "var(--study)"));
