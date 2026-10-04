@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=Hanken+Grotesk:wght@400..700&family=Pirata+One&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F5F1EA; --surface:#FFFDF9; --sunken:#EEE8DE; --ink:#1D1B18; --muted:#6B645A; --line:#E4DDD1; --line-strong:#CFC6B7;
+  --bg:#F5F1EA; --surface:#FFFDF9; --sunken:#EEE8DE; --ink:#1D1B18; --muted:#6B645A; --line:#E4DDD1; --line-strong:#CFC6B7; --hl:#EEE8DE;
   --food:#B44D08; --bass:#B4235A; --study:#1F6F8B; --act:#4A55C9; --danger:#B3261E; --ok:#2F7D4F;
   --r:14px; --r-sm:10px;
   --shadow:0 1px 2px rgba(40,30,15,.04),0 2px 10px rgba(40,30,15,.04);
@@ -21,15 +21,15 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#15130F; --surface:#1E1B17; --sunken:#100E0B; --ink:#F2EDE4; --muted:#A79F92; --line:#2E2A24; --line-strong:#433D35;
+    --bg:#272421; --surface:#312D29; --sunken:#201E1B; --ink:#ECE6DC; --muted:#B0A898; --line:#3D3833; --line-strong:#514B44; --hl:#3C3833;
     --food:#F0904F; --bass:#F2689C; --study:#5DB9D7; --act:#9098F4; --danger:#FF8A80; --ok:#6CCB8F;
-    --shadow:none; color-scheme:dark;
+    --shadow:0 1px 2px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14); color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#15130F; --surface:#1E1B17; --sunken:#100E0B; --ink:#F2EDE4; --muted:#A79F92; --line:#2E2A24; --line-strong:#433D35;
+  --bg:#272421; --surface:#312D29; --sunken:#201E1B; --ink:#ECE6DC; --muted:#B0A898; --line:#3D3833; --line-strong:#514B44; --hl:#3C3833;
   --food:#F0904F; --bass:#F2689C; --study:#5DB9D7; --act:#9098F4; --danger:#FF8A80; --ok:#6CCB8F;
-  --shadow:none; color-scheme:dark;
+  --shadow:0 1px 2px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14); color-scheme:dark;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
@@ -130,7 +130,7 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 @media (max-width:860px){.hero{grid-template-columns:1fr}}
 .tabstaff svg{width:100%;height:auto;display:block;margin-top:4px}
 .tabstaff g.col{cursor:pointer}
-.tabstaff g.col:hover rect.hit{fill:var(--sunken)}
+.tabstaff g.col:hover rect.hit{fill:var(--hl)}
 .rank{display:flex;flex-direction:column;justify-content:center}
 .rank .tier{font-weight:750;font-size:2.1rem;line-height:1;margin:4px 0 4px;letter-spacing:-.02em}
 .rank .pts{font-family:var(--display);color:var(--muted);font-weight:600}
@@ -1021,13 +1021,13 @@ function renderStaff(){
   s += `<line x1="${L-30}" x2="${L-30}" y1="${ys[0]}" y2="${ys[3]}" stroke="var(--ink)" stroke-width="2"/><line x1="${W-4}" x2="${W-4}" y1="${ys[0]}" y2="${ys[3]}" stroke="var(--ink)" stroke-width="2"/>`;
   dates.forEach((dt, j) => {
     const cx = L + colW * j + colW / 2, st = dayStats(dt), future = dt > t, sel = dt === S.date;
-    s += `<g class="col" data-action="pick-date" data-date="${dt}" opacity="${future ? .35 : 1}"><rect class="hit" x="${cx - colW/2 + 2}" y="4" width="${colW - 4}" height="${H - 8}" rx="8" fill="${sel ? "var(--sunken)" : "transparent"}"/>`;
+    s += `<g class="col" data-action="pick-date" data-date="${dt}" opacity="${future ? .35 : 1}"><rect class="hit" x="${cx - colW/2 + 2}" y="4" width="${colW - 4}" height="${H - 8}" rx="8" fill="${sel ? "var(--hl)" : "transparent"}"/>`;
     s += `<text x="${cx}" y="22" text-anchor="middle" font-size="${fs-2}" fill="var(--muted)">${DOW[j]}</text><text x="${cx}" y="${22+fs+2}" text-anchor="middle" font-size="${fs}" font-weight="${dt === t ? 700 : 500}" fill="var(--ink)">${parseYmd(dt).getDate()}</text>`;
     strings.forEach((r, i) => {
       const p = st.pct[r[2]]; if (p === null) return;
       const fret = Math.round(12 * Math.min(1, p)), full = fret === 12;
       const w = String(fret).length * (fs * .62) + 8;
-      s += `<rect x="${cx - w/2}" y="${ys[i] - fs/2 - 2}" width="${w}" height="${fs + 4}" rx="4" fill="${sel ? "var(--sunken)" : "var(--surface)"}"/>`;
+      s += `<rect x="${cx - w/2}" y="${ys[i] - fs/2 - 2}" width="${w}" height="${fs + 4}" rx="4" fill="${sel ? "var(--hl)" : "var(--surface)"}"/>`;
       s += `<text x="${cx}" y="${ys[i] + fs/2 - 2}" text-anchor="middle" font-size="${fs+1}" font-weight="${full ? 700 : 500}" fill="${full ? r[3] : "var(--ink)"}">${fret}</text>`;
     });
     s += `<title>${fmtLong(dt)}</title></g>`;
