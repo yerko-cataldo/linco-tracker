@@ -21,7 +21,7 @@
     {
       "binding": "DB",
       "database_name": "lincoyan",
-      "database_id": "REEMPLAZAR_CON_EL_ID_DE_D1",
+      "database_id": "08e41555-d7dc-4a06-b16e-4703e8424b85",
       "migrations_dir": "migrations"
     }
   ],
