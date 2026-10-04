@@ -90,6 +90,8 @@ El body de `/api/ai` es `{messages, images, tier, json, stream}`.
   - Paleta cálida tipo papel y tinta (`--bg`, `--surface`, `--sunken`, `--line`, `--line-strong`). Colores por área: `--food` terracota, `--bass` frambuesa, `--study` azul petróleo, `--act` añil.
   - Tipografías: Pirata One solo para el logo, Archivo semiexpandida (`--display`) para títulos y números, Hanken Grotesk para el texto y los botones.
   - Paneles con borde fino y esquinas redondeadas (`--r`), sin degradados ni sombras marcadas. Barras y chips redondeados.
+  - Íconos de línea como `<symbol id="i-…">` en el sprite del inicio del `<body>` (hoy, food, act, bass, study, coach, perfil, trophy). Cada sección abre con `.page-head` (ícono en `.tile` con el color del área).
+  - `ring()` dibuja anillos de progreso (tarjetas del resumen, kcal y macros). El metrónomo es un dial con los pulsos en círculo; las series se muestran como tarjetas con columna "Anterior"; cada libro tiene una portada de color derivada del título.
   - El resumen semanal es una tablatura de bajo: cuerdas G/D/A/E y traste 12 = meta cumplida.
 - **Audio:** el metrónomo, la batería (`GROOVES`) y las alarmas de los temporizadores se sintetizan con Web Audio en el objeto `Metro`, sin archivos de sonido. Los patrones de batería son strings de un compás de 4 tiempos (`X` acento, `x` golpe, `g` nota fantasma, `-` silencio).
 - **Textos:** español de Chile, tuteo, frases en minúscula inicial, sin mayúsculas sostenidas. Un botón dice exactamente lo que hace.

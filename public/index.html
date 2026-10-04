@@ -137,8 +137,6 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 .rank svg{width:76px;height:76px;flex:none}
 /* KPI */
 .kpi h3{display:flex;align-items:center;gap:8px;font-size:.95rem;color:var(--muted);font-weight:600}
-.kpi h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
-.kpi.flat h3::before{display:none}
 .kpi .big{font-weight:750;font-size:2.15rem;line-height:1.05;letter-spacing:-.02em}
 .kpi .big small{font-family:"Hanken Grotesk",system-ui,sans-serif;font-stretch:100%;font-size:.92rem;font-weight:500;color:var(--muted);letter-spacing:0}
 .kpi dl{display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:5px 12px;margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:.9rem}
@@ -164,13 +162,25 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 /* Metrónomo */
 .metro{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start}
 @media (max-width:860px){.metro{grid-template-columns:1fr;gap:24px}}
-.tempo{display:flex;align-items:center;gap:12px}
-.tempo .num{font-weight:800;font-size:clamp(4.2rem,11vw,7rem);line-height:.9;letter-spacing:-.04em;min-width:3.1ch;text-align:center;color:var(--bass)}
-.tempo .unit{color:var(--muted);font-weight:600;font-family:var(--display)}
-.tempo .pm{display:flex;flex-direction:column;gap:6px}
-.tempo .pm .btn{width:3.2rem;padding:0}
-.beats{display:flex;gap:10px;margin:20px 0 8px;flex-wrap:wrap;align-items:center;min-height:34px}
-.beats .beat{width:24px;height:24px;padding:0;background:none;border:2px solid var(--line-strong);border-radius:50%;cursor:pointer;transition:background .05s}
+/* Dial del metrónomo: pulsos en círculo alrededor del tempo */
+.metro-main>*+*{margin-top:16px}
+.dial{--size:min(300px,78vw);--r:calc(var(--size) / 2 - 20px);position:relative;width:var(--size);height:var(--size);margin:0 auto}
+.dial::before{content:"";position:absolute;inset:20px;border-radius:50%;border:1.5px solid var(--line)}
+.dial::after{content:"";position:absolute;inset:44px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--bass) 7%,var(--surface)) 0%,var(--surface) 70%)}
+.dial-center{position:absolute;inset:0;display:grid;place-content:center;text-align:center;z-index:1;pointer-events:none}
+.dial .num{font-weight:800;font-size:calc(var(--size) * .26);line-height:.9;letter-spacing:-.04em;color:var(--bass)}
+.dial .unit{color:var(--muted);font-weight:600;font-family:var(--display);font-size:.9rem;margin-top:4px}
+.dial .beats{position:absolute;inset:0;margin:0;z-index:2}
+.dial .beat{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(var(--a)) translateY(calc(-1 * var(--r))) rotate(calc(-1 * var(--a)))}
+.pulse{position:absolute;inset:44px;border-radius:50%;border:3px solid var(--bass);opacity:0;z-index:1;pointer-events:none}
+.pulse.go{animation:pulse .32s ease-out}
+.pulse.go.strong{animation-duration:.45s;border-width:5px}
+@keyframes pulse{from{opacity:.55;transform:scale(.9)}to{opacity:0;transform:scale(1.08)}}
+.tempo-row{display:flex;align-items:center;gap:6px;max-width:440px;margin-inline:auto}
+.tempo-row input[type=range]{flex:1;min-width:60px;margin:0 6px}
+.tempo-row .btn{padding:0 10px;min-width:42px}
+.btn.big-btn{min-height:46px;padding:0 26px;font-size:1rem;border-radius:999px}
+.beats .beat{width:24px;height:24px;padding:0;background:var(--surface);border:2px solid var(--line-strong);border-radius:50%;cursor:pointer;transition:background .05s}
 .beats .beat.a0{border-color:var(--bass);width:32px;height:32px}
 .beats .beat.a2{border-style:dashed;opacity:.45}
 .beats .beat.lit{background:var(--bass);border-color:var(--bass)}
@@ -187,13 +197,45 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 .split i{display:block;height:100%}
 .split-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.86rem}
 .split-legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);margin-right:6px}
-.macro{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--line)}
-.ex{padding:12px 0;border-bottom:1px solid var(--line)}
-.ex:last-child{border-bottom:0}
-.ex .sets{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.ex .set{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line-strong);border-radius:8px;padding:2px 4px 2px 9px;font-size:.88rem}
-.ex .set.pr{border-color:var(--act);color:var(--act);font-weight:600}
-.ex .set .btn{min-height:22px;padding:0 5px}
+.macro{padding-top:16px;margin-top:16px;border-top:1px solid var(--line)}
+/* Íconos, encabezados de sección y anillos */
+.ico{width:18px;height:18px;flex:none}
+nav.tabs button{display:inline-flex;align-items:center;gap:7px}
+nav.tabs button .ico{width:17px;height:17px;opacity:.75}
+nav.tabs button[aria-selected=true] .ico{opacity:1}
+nav.tabs button[data-tab=nutricion][aria-selected=true] .ico{color:var(--food)}
+nav.tabs button[data-tab=entreno][aria-selected=true] .ico{color:var(--act)}
+nav.tabs button[data-tab=bajo][aria-selected=true] .ico{color:var(--bass)}
+nav.tabs button[data-tab=estudio][aria-selected=true] .ico{color:var(--study)}
+.c-ink{--c:var(--ink)}
+.page-head{display:flex;gap:16px;align-items:center;margin-bottom:24px}
+.page-head h2{margin:0}
+.page-head .lede{margin:4px 0 0}
+.tile{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;flex:none;color:var(--c);background:color-mix(in srgb,var(--c) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 18%,transparent)}
+.tile .ico{width:24px;height:24px}
+.kpi h3 .ico{width:17px;height:17px;color:var(--c)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ring{display:block;flex:none}
+.ring text{font-family:var(--display);font-weight:700}
+.nut-hero{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;padding-bottom:18px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.macro-rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;text-align:center}
+.macro-rings .lbl{font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.3}
+.macro-rings .lbl strong{display:block;color:var(--ink);font-size:.9rem}
+.macro-rings .ring{margin:0 auto}
+@media (max-width:440px){.nut-hero{grid-template-columns:1fr;justify-items:center}}
+/* Tarjetas de ejercicio (tabla de series) */
+.ex-card{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;background:var(--bg)}
+.ex-card+.ex-card{margin-top:10px}
+.ex-card table{margin-top:6px;font-size:.9rem}
+.ex-card th{padding:6px 6px;border-bottom-color:var(--line)}
+.ex-card td{padding:6px;border-bottom:0;vertical-align:middle}
+.ex-card tr.pr td.n{color:var(--act);font-weight:700}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:999px;color:var(--act);background:color-mix(in srgb,var(--act) 12%,var(--surface))}
+.badge .ico{width:13px;height:13px}
+.set-n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--sunken);font-weight:700;font-size:.8rem}
+/* Libros con portada */
+.book{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start}
+.cover{width:42px;height:58px;border-radius:4px 7px 7px 4px;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:750;font-size:.95rem;letter-spacing:.02em;background:linear-gradient(90deg,rgba(0,0,0,.18) 0 4px,transparent 4px),oklch(.56 .09 var(--h));box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .heat svg{display:block}
 .heat rect.d{cursor:pointer}
 .heat rect.d:hover{stroke:var(--ink);stroke-width:1}
@@ -219,7 +261,7 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .spin{display:inline-block;width:.9em;height:.9em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}.beats i,.toast,.btn{transition:none}}
+@media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}.beats .beat,.toast,.btn{transition:none}.pulse.go{animation:none}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .ai-only[hidden]{display:none}
 details.manual{border-top:1px solid var(--line);padding-top:12px}
@@ -236,6 +278,14 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     <path d="M56,46 L49,62 L52,78 L56,78 L54,62 L61,48 Z M86,57 L85,78 L89,78 L90,59 Z" fill="currentColor" opacity=".4"/>
     <path d="M134,31 L120,24 L111,22 L106,19 L100,21 L105,25 L100,30 L91,37 Q80,38 72,34 Q62,28 52,31 Q45,33 41,40 Q37,46 39,53 L42,63 L37,78 L43,78 L46,64 L50,53 Q55,45 61,42 Q72,50 80,57 L86,59 L87,64 L88,78 L94,78 L93,63 L96,54 L99,46 L106,36 L114,33 L124,34 L133,34 Z" fill="currentColor"/>
   </symbol>
+  <symbol id="i-hoy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></g></symbol>
+  <symbol id="i-food" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c-2-1.6-6.2-1.4-7.2 2.3-1 3.7 1.4 9.6 4.4 10.4 1 .3 1.8-.3 2.8-.3s1.8.6 2.8.3c3-.8 5.4-6.7 4.4-10.4-1-3.7-5.2-3.9-7.2-2.3Z"/><path d="M12 7.5c0-2 1-3.6 3-4.3"/></g></symbol>
+  <symbol id="i-act" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/></g></symbol>
+  <symbol id="i-bass" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5.5l10-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></g></symbol>
+  <symbol id="i-study" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 21H20M8.5 7.5h7"/></g></symbol>
+  <symbol id="i-coach" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5a2 2 0 0 1-2 2H8.5L4 20.5V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z"/><path d="M8 8.5h8M8 12h5"/></g></symbol>
+  <symbol id="i-perfil" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></g></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.5 3.5M16 6h2.5A2.5 2.5 0 0 1 16 9.5M12 13v3.5M9 20h6M10 16.5h4"/></g></symbol>
   <symbol id="ico-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
   <symbol id="ico-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></symbol>
 </svg>
@@ -253,13 +303,13 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
     </div>
     <nav class="tabs" aria-label="Secciones">
-      <button data-tab="hoy" aria-selected="true">Resumen</button>
-      <button data-tab="nutricion" aria-selected="false">Nutrición</button>
-      <button data-tab="entreno" aria-selected="false">Entreno</button>
-      <button data-tab="bajo" aria-selected="false">Bajo</button>
-      <button data-tab="estudio" aria-selected="false">Estudio</button>
-      <button data-tab="coach" aria-selected="false">Coach</button>
-      <button data-tab="perfil" aria-selected="false">Perfil y metas</button>
+      <button data-tab="hoy" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="#i-hoy"/></svg>Resumen</button>
+      <button data-tab="nutricion" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-food"/></svg>Nutrición</button>
+      <button data-tab="entreno" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg>Entreno</button>
+      <button data-tab="bajo" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-bass"/></svg>Bajo</button>
+      <button data-tab="estudio" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-study"/></svg>Estudio</button>
+      <button data-tab="coach" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg>Coach</button>
+      <button data-tab="perfil" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-perfil"/></svg>Perfil y metas</button>
     </nav>
   </div>
 </header>
@@ -269,6 +319,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- RESUMEN -->
   <section class="tab on" id="tab-hoy">
+    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-hoy"/></svg></span><div><h2>Resumen</h2><p class="lede" id="hoyLede"></p></div></div>
     <div class="hero">
       <div class="panel tabstaff" id="staff"></div>
       <div class="panel rank" id="rank"></div>
@@ -293,13 +344,13 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- NUTRICIÓN -->
   <section class="tab" id="tab-nutricion">
-    <h2>Nutrición</h2>
-    <p class="lede" id="nutLede"></p>
+    <div class="page-head c-food"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-food"/></svg></span><div><h2>Nutrición</h2><p class="lede" id="nutLede"></p></div></div>
     <div class="grid g2">
       <div class="panel">
         <h3>Panel del día</h3>
-        <div id="macroSplit"></div>
+        <div id="nutRings"></div>
         <div id="nutMeters"></div>
+        <div id="macroSplit"></div>
         <div class="ai-only row mt" hidden>
           <button class="btn primary" data-action="nut-analyze">Qué me falta y qué comer ahora</button>
           <span class="small muted" id="nutAiStatus"></span>
@@ -374,8 +425,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- ENTRENO -->
   <section class="tab" id="tab-entreno">
-    <h2>Entreno</h2>
-    <p class="lede" id="actLede"></p>
+    <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
     <div class="grid g2">
       <div class="panel stack">
         <h3>Actividad del día</h3>
@@ -427,7 +477,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <label class="small"><input type="checkbox" id="restAuto" checked> Iniciar el descanso al registrar una serie</label>
         </div>
         <div class="panel">
-          <h3>Récords personales</h3>
+          <h3 style="display:flex;align-items:center;gap:8px"><svg class="ico" aria-hidden="true" style="color:var(--act)"><use href="#i-trophy"/></svg>Récords personales</h3>
           <div id="prList"></div>
           <p class="small muted" style="margin:10px 0 0">El 1RM estimado usa la fórmula de Epley: kg × (1 + reps / 30); con 1 repetición es el peso levantado. Una serie es récord cuando su 1RM estimado supera todos los anteriores de ese ejercicio.</p>
         </div>
@@ -437,31 +487,30 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- BAJO -->
   <section class="tab" id="tab-bajo">
-    <h2>Bajo</h2>
-    <p class="lede" id="bassLede"></p>
+    <div class="page-head c-bass"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-bass"/></svg></span><div><h2>Bajo</h2><p class="lede" id="bassLede"></p></div></div>
     <div class="panel metro">
-      <div>
-        <div class="tempo">
-          <div class="pm">
-            <button class="btn" data-action="bpm-step" data-v="5" aria-label="Subir 5 bpm">+5</button>
-            <button class="btn" data-action="bpm-step" data-v="1" aria-label="Subir 1 bpm">+1</button>
+      <div class="metro-main">
+        <div class="dial">
+          <div class="pulse" id="dialPulse"></div>
+          <div class="beats" id="beats"></div>
+          <div class="dial-center">
+            <div class="num" id="bpmNum" aria-live="polite">80</div>
+            <div class="unit">bpm</div>
           </div>
-          <div class="num" id="bpmNum" aria-live="polite">80</div>
-          <div class="pm">
-            <button class="btn" data-action="bpm-step" data-v="-5" aria-label="Bajar 5 bpm">−5</button>
-            <button class="btn" data-action="bpm-step" data-v="-1" aria-label="Bajar 1 bpm">−1</button>
-          </div>
-          <div class="unit">bpm</div>
         </div>
-        <label class="sr" for="bpmRange">Tempo</label>
-        <input type="range" id="bpmRange" min="30" max="280" value="80">
-        <div class="beats" id="beats"></div>
-        <p class="small muted" style="margin:0">Toca un pulso para cambiar su acento: fuerte, normal o en silencio.</p>
-        <div class="row" style="margin-top:14px">
-          <button class="btn primary" data-action="metro-toggle" id="metroBtn">Iniciar</button>
-          <button class="btn" data-action="tap">Tap</button>
-          <span class="small muted">Barra espaciadora: iniciar o detener</span>
+        <div class="tempo-row">
+          <button class="btn" data-action="bpm-step" data-v="-5" aria-label="Bajar 5 bpm">−5</button>
+          <button class="btn" data-action="bpm-step" data-v="-1" aria-label="Bajar 1 bpm">−1</button>
+          <label class="sr" for="bpmRange">Tempo</label>
+          <input type="range" id="bpmRange" min="30" max="280" value="80">
+          <button class="btn" data-action="bpm-step" data-v="1" aria-label="Subir 1 bpm">+1</button>
+          <button class="btn" data-action="bpm-step" data-v="5" aria-label="Subir 5 bpm">+5</button>
         </div>
+        <div class="row" style="justify-content:center">
+          <button class="btn primary big-btn" data-action="metro-toggle" id="metroBtn">Iniciar</button>
+          <button class="btn big-btn" data-action="tap">Tap</button>
+        </div>
+        <p class="small muted" style="margin:0;text-align:center">Toca un pulso del círculo para cambiar su acento: fuerte, normal o en silencio. Barra espaciadora: iniciar o detener.</p>
       </div>
       <div class="stack">
         <div class="controls">
@@ -524,8 +573,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- ESTUDIO -->
   <section class="tab" id="tab-estudio">
-    <h2>Lectura y estudio</h2>
-    <p class="lede" id="studyLede"></p>
+    <div class="page-head c-study"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-study"/></svg></span><div><h2>Lectura y estudio</h2><p class="lede" id="studyLede"></p></div></div>
     <div class="grid g2">
       <div class="panel stack">
         <h3>Registrar avance</h3>
@@ -566,8 +614,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- COACH -->
   <section class="tab" id="tab-coach">
-    <h2>Coach</h2>
-    <p class="lede">Conoce tu perfil y lee tus registros de las últimas dos semanas: nutrición, entreno, bajo y estudio.</p>
+    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg></span><div><h2>Coach</h2><p class="lede">Conoce tu perfil y lee tus registros de las últimas dos semanas: nutrición, entreno, bajo y estudio.</p></div></div>
     <div class="notice" id="coachOff" hidden>El coach no está disponible.</div>
     <div class="ai-only stack" id="coachOn" hidden>
       <div class="panel">
@@ -596,8 +643,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- PERFIL -->
   <section class="tab" id="tab-perfil">
-    <h2>Perfil y metas</h2>
-    <p class="lede">El coach usa tu perfil en cada respuesta. Las metas definen los indicadores, la tablatura y el rango semanal.</p>
+    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-perfil"/></svg></span><div><h2>Perfil y metas</h2><p class="lede">El coach usa tu perfil en cada respuesta. Las metas definen los indicadores, la tablatura y el rango semanal.</p></div></div>
     <div class="grid g2">
       <div class="panel stack">
         <h3>Perfil</h3>
@@ -915,15 +961,15 @@ function kcalAdjustment(){
 }
 
 /* ---------- gráficos ---------- */
-function barChart(values, labels, goal, color, unit){
+function barChart(values, labels, goal, color, unit, hi = (parseYmd(S.date).getDay() + 6) % 7){
   const W = 460, H = 180, L = 36, B = 26, T = 10, max = Math.max(goal || 0, ...values.map(v => v || 0)) * 1.12 || 1;
   const bw = (W - L - 10) / values.length, y = v => T + (H - T - B) * (1 - v / max);
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico semanal en ${unit}" style="width:100%;height:auto;font-family:'Hanken Grotesk',system-ui,sans-serif">`;
   [0, .5, 1].forEach(f => { const v = max * f / 1.12; s += `<line x1="${L}" x2="${W-6}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)">${fmt(v)}</text>`; });
   values.forEach((v, i) => {
     const x = L + i * bw + bw * .22, w = bw * .56, r = Math.min(5, w / 2, (H - B - y(v)) / 2);
-    if (v) s += `<path d="M${x},${H-B} V${y(v)+r} Q${x},${y(v)} ${x+r},${y(v)} H${x+w-r} Q${x+w},${y(v)} ${x+w},${y(v)+r} V${H-B} Z" fill="${color}"><title>${fmt(v)} ${unit}</title></path>`;
-    s += `<text x="${x + w/2}" y="${H - 8}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--muted)">${labels[i]}</text>`;
+    if (v) s += `<path d="M${x},${H-B} V${y(v)+r} Q${x},${y(v)} ${x+r},${y(v)} H${x+w-r} Q${x+w},${y(v)} ${x+w},${y(v)+r} V${H-B} Z" fill="${color}" fill-opacity="${i === hi ? 1 : .42}"><title>${fmt(v)} ${unit}</title></path>`;
+    s += `<text x="${x + w/2}" y="${H - 8}" text-anchor="middle" font-size="11" font-weight="${i === hi ? 800 : 600}" fill="${i === hi ? "var(--ink)" : "var(--muted)"}">${labels[i]}</text>`;
   });
   if (goal) s += `<line x1="${L}" x2="${W-6}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--ink)" stroke-opacity=".7" stroke-dasharray="4 4" stroke-width="1.2"/><text x="${W-6}" y="${y(goal)-6}" text-anchor="end" font-size="10.5" font-weight="600" fill="var(--ink)">meta ${fmt(goal)}</text>`;
   return s + "</svg>";
@@ -998,9 +1044,20 @@ function renderRank(){
     ${part("Nutrición", w.parts.food, "var(--food)")}${part("Entreno", w.parts.act, "var(--act)")}${part("Bajo", w.parts.bass, "var(--bass)")}${part("Estudio", w.parts.study, "var(--study)")}
     <p class="small muted" style="margin:8px 0 0">Promedio del cumplimiento de las cuatro áreas, prorrateado a los días transcurridos.</p>`);
 }
+// Anillo de progreso: pct en 0..1 (se recorta), con texto opcional al centro
+function ring(pct, color, size = 56, sw = 6, label = null, sub = null){
+  const r = (size - sw) / 2, C = 2 * Math.PI * r, p = clamp(isFinite(pct) ? pct : 0, 0, 1), c = size / 2;
+  return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--sunken)" stroke-width="${sw}"/>
+    ${p > 0 ? `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 ${c} ${c})"/>` : ""}
+    ${label !== null ? `<text x="${c}" y="${sub ? c + size * .02 : c + size * .07}" text-anchor="middle" font-size="${(size * (sub ? .2 : .21)).toFixed(1)}" fill="var(--ink)">${label}</text>` : ""}
+    ${sub ? `<text x="${c}" y="${c + size * .17}" text-anchor="middle" font-size="${(size * .085).toFixed(1)}" font-weight="500" fill="var(--muted)" style="font-family:'Hanken Grotesk',sans-serif">${sub}</text>` : ""}
+  </svg>`;
+}
+const AREA_ICO = {"c-food": "food", "c-act": "act", "c-bass": "bass", "c-study": "study"};
 function kpiBlock(cls, title, big, goal, unit, pct, dl){
-  return `<div class="panel kpi ${cls}"><h3>${title}</h3><div class="big">${big} <small>/ ${goal} ${unit}</small></div>
-    <div class="bar" style="margin-top:8px"><i style="width:${clamp(pct,0,100)}%;background:var(--c)"></i></div>
+  return `<div class="panel kpi ${cls}"><h3><svg class="ico" aria-hidden="true"><use href="#i-${AREA_ICO[cls]}"/></svg>${title}</h3>
+    <div class="kpi-top"><div class="big">${big} <small>/ ${goal} ${unit}</small></div>${ring(pct / 100, "var(--c)", 58, 6, fmt(pct) + "%")}</div>
     <dl>${dl.map(([a,b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("")}</dl></div>`;
 }
 const days_ = n => `${n} ${n === 1 ? "día" : "días"}`;
@@ -1008,6 +1065,7 @@ function renderKpis(){
   const g = goals(), st = dayStats(S.date), ws = weekStats(S.date), lbl = S.date === today() ? "hoy" : fmtShort(S.date);
   const lastTech = (() => { for (const dt of allDatesAsc().reverse()){ const l = day(dt).bass.logs.filter(x => x.clean); if (l.length){ const x = l[l.length-1]; const t = S.lib.techniques.find(t => t.id === x.techId); return t ? `${t.name} ${x.bpm}` : null; } } return null; })();
   const topBook = S.lib.books.filter(b => !b.archived).sort((a,b) => (b.current/b.total||0)-(a.current/a.total||0))[0];
+  $("#hoyLede").textContent = `${fmtLong(S.date)}. Esta semana vas en rango ${tierOf(ws.score).name} con ${ws.score} pts.`;
   setHTML($("#kpis"),
     kpiBlock("c-food", `Nutrición ${lbl}`, fmt(st.kcal), fmt(g.kcal), "kcal", st.kcal / g.kcal * 100, [
       ["Proteína", `${fmt(st.p)} / ${fmt(g.protein)} g`], ["Fibra", `${fmt(st.fib)} / ${fmt(g.fiber)} g`],
@@ -1051,12 +1109,15 @@ function renderNutrition(){
   $("#nutLede").textContent = `${fmtLong(S.date)}. Meta: ${fmt(g.kcal)} kcal ±${g.tol}%, ${fmt(g.protein)} g de proteína y ${fmt(g.fiber)} g de fibra.`;
   const kP = st.p * 4, kC = st.c * 4, kF = st.f * 9, kT = kP + kC + kF, gT = g.protein * 4 + g.carbs * 4 + g.fat * 9 || 1;
   const pc = v => kT ? Math.round(v / kT * 100) : 0;
+  const MC = ["var(--food)", "color-mix(in srgb,var(--food) 62%,var(--surface))", "color-mix(in srgb,var(--food) 36%,var(--surface))"];
   setHTML($("#macroSplit"), `<div class="macro"><div class="meter"><div class="lab"><span><strong>Reparto de las calorías</strong></span><span>meta ${Math.round(g.protein * 400 / gT)} / ${Math.round(g.carbs * 400 / gT)} / ${Math.round(g.fat * 900 / gT)}%</span></div></div>
-    <div class="split">${kT ? `<i style="width:${kP / kT * 100}%;background:var(--food)"></i><i style="width:${kC / kT * 100}%;background:color-mix(in srgb,var(--food) 55%,var(--surface))"></i><i style="width:${kF / kT * 100}%;background:color-mix(in srgb,var(--food) 25%,var(--surface))"></i>` : ""}</div>
-    <div class="split-legend"><span style="--c:var(--food)">Proteína ${pc(kP)}%</span><span style="--c:color-mix(in srgb,var(--food) 55%,var(--surface))">Carbohidratos ${pc(kC)}%</span><span style="--c:color-mix(in srgb,var(--food) 25%,var(--surface))">Grasa ${pc(kF)}%</span></div></div>`);
-  setHTML($("#nutMeters"), meter("Calorías", st.kcal, g.kcal, "kcal", "var(--food)") + meter("Proteína", st.p, g.protein, "g", "var(--food)") +
-    meter("Carbohidratos", st.c, g.carbs, "g", "var(--food)") + meter("Grasa", st.f, g.fat, "g", "var(--food)") +
-    meter("Fibra", st.fib, g.fiber, "g", "var(--ok)") + meter("Agua", d.water || 0, g.water, "vasos", "var(--study)"));
+    <div class="split">${kT ? `<i style="width:${kP / kT * 100}%;background:${MC[0]}"></i><i style="width:${kC / kT * 100}%;background:${MC[1]}"></i><i style="width:${kF / kT * 100}%;background:${MC[2]}"></i>` : ""}</div>
+    <div class="split-legend"><span style="--c:${MC[0]}">Proteína ${pc(kP)}%</span><span style="--c:${MC[1]}">Carbohidratos ${pc(kC)}%</span><span style="--c:${MC[2]}">Grasa ${pc(kF)}%</span></div></div>`);
+  const left = g.kcal - st.kcal;
+  setHTML($("#nutRings"), `<div class="nut-hero">${ring(st.kcal / g.kcal, left < 0 && -left > g.kcal * g.tol / 100 ? "var(--danger)" : "var(--food)", 136, 12, fmt(Math.abs(left)), left >= 0 ? "kcal restantes" : "kcal sobre la meta")}
+    <div class="macro-rings">${[["Proteína", st.p, g.protein], ["Carbohidratos", st.c, g.carbs], ["Grasa", st.f, g.fat]].map(([n, v, goal], i) =>
+      `<div>${ring(v / goal, MC[i], 64, 7, fmt(v / goal * 100) + "%")}<div class="lbl"><strong>${n}</strong>${fmt(v)} / ${fmt(goal)} g</div></div>`).join("")}</div></div>`);
+  setHTML($("#nutMeters"), meter("Fibra", st.fib, g.fiber, "g", "var(--ok)") + meter("Agua", d.water || 0, g.water, "vasos", "var(--study)"));
   const meals = [...d.meals].sort((a,b) => (a.time||"").localeCompare(b.time||""));
   setHTML($("#mealsTable"), meals.length ? `<table><thead><tr><th>Hora</th><th>Comida</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
     ${meals.map(m => `<tr><td>${esc(m.time||"")}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.items||[]).length ? `<div class="small muted">${esc(m.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))}</div>` : (m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td>
@@ -1136,9 +1197,13 @@ function renderSets(){
   $("#exList").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
   const groups = []; sets.forEach(s => { let g = groups.find(x => norm(x.ex) === norm(s.ex)); if (!g) groups.push(g = {ex: s.ex, sets: []}); g.sets.push(s); });
   setHTML($("#setsToday"), groups.length ? groups.map(g => {
-    const vol = sum(g.sets, s => s.kg * s.reps), top = Math.max(...g.sets.map(e1rm));
-    return `<div class="ex"><div class="item-head"><strong>${esc(g.ex)}</strong><span class="small muted">volumen ${fmt(vol)} kg, 1RM est. ${fmt(top, 1)} kg</span></div>
-      <div class="sets">${g.sets.map(s => `<span class="set${prIds.has(s.id) ? " pr" : ""}">${fmt(s.kg, 1)} × ${s.reps}${prIds.has(s.id) ? " · récord" : ""}<button class="btn small ghost danger" data-action="set-del" data-id="${s.id}" aria-label="Borrar serie">×</button></span>`).join("")}</div></div>`;
+    const vol = sum(g.sets, s => s.kg * s.reps), top = Math.max(...g.sets.map(e1rm)), prev = lastSession(g.ex, S.date);
+    return `<div class="ex-card"><div class="item-head"><strong>${esc(g.ex)}</strong><span class="small muted">volumen ${fmt(vol)} kg · 1RM est. ${fmt(top, 1)} kg</span></div>
+      <table><thead><tr><th>Serie</th><th>Anterior</th><th class="n">Kg</th><th class="n">Reps</th><th></th></tr></thead><tbody>
+      ${g.sets.map((s, i) => { const pr = prIds.has(s.id), p = prev && prev.sets[i];
+        return `<tr class="${pr ? "pr" : ""}"><td><span class="set-n">${i + 1}</span></td><td class="muted">${p ? `${fmt(p.kg, 1)} × ${p.reps}` : "—"}</td><td class="n">${fmt(s.kg, 1)}</td><td class="n">${s.reps}</td>
+          <td class="n">${pr ? `<span class="badge"><svg class="ico" aria-hidden="true"><use href="#i-trophy"/></svg>récord</span>` : ""}<button class="btn small ghost danger" data-action="set-del" data-id="${s.id}" aria-label="Borrar serie">×</button></td></tr>`; }).join("")}
+      </tbody></table></div>`;
   }).join("") : `<p class="empty">Sin series registradas este día.</p>`);
   const prs = Object.values(best).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
   setHTML($("#prList"), prs.length ? `<table><thead><tr><th>Ejercicio</th><th class="n">Serie</th><th class="n">1RM est.</th><th class="n">Fecha</th></tr></thead><tbody>
@@ -1193,12 +1258,14 @@ function renderStudy(){
   setHTML($("#bookList"), S.lib.books.length ? [...S.lib.books].sort((a,b) => (a.archived?1:0)-(b.archived?1:0)).map(b => {
     const pct = b.total ? (b.current || 0) / b.total * 100 : 0, rate = bookRate(b.id), rem = Math.max(0, (b.total||0) - (b.current||0));
     const eta = rem === 0 ? "terminado" : rate > 0 ? `termina aprox. el ${fmtShort(addDays(today(), Math.ceil(rem / rate)))}` : "sin ritmo reciente para proyectar";
-    return `<li style="${b.archived ? "opacity:.6" : ""}"><div class="item-head"><strong>${esc(b.title)}</strong><span class="tag">${esc(b.kind)}</span>
+    const hue = [...String(b.title)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7);
+    const ini = String(b.title).split(/\s+/).filter(w => w.length > 2).slice(0, 2).map(w => w[0].toUpperCase()).join("") || String(b.title).slice(0, 1).toUpperCase();
+    return `<li class="book" style="${b.archived ? "opacity:.6" : ""}"><span class="cover" style="--h:${hue}" aria-hidden="true">${esc(ini)}</span><div><div class="item-head"><strong>${esc(b.title)}</strong><span class="tag">${esc(b.kind)}</span>
       <span class="act"><button class="btn small ghost" data-action="book-edit" data-id="${b.id}">Editar</button>
       <button class="btn small ghost" data-action="book-arch" data-id="${b.id}">${b.archived ? "Reactivar" : "Archivar"}</button>
       <button class="btn small ghost danger" data-action="book-del" data-id="${b.id}">Borrar</button></span></div>
       <div class="small muted">${fmt(b.current||0,1)} de ${fmt(b.total,1)} ${esc(b.unit)} (${fmt(pct)}%). Ritmo 14 días: ${fmt(rate,1)} ${esc(b.unit)}/día, ${eta}.</div>
-      <div class="bar" style="margin-top:6px"><i style="width:${clamp(pct,0,100)}%;background:var(--study)"></i></div></li>`;
+      <div class="bar" style="margin-top:6px"><i style="width:${clamp(pct,0,100)}%;background:var(--study)"></i></div></div></li>`;
   }).join("") : `<li class="empty">Agrega un libro, curso o paper con su total de páginas, capítulos o lecciones.</li>`);
 }
 
@@ -1846,7 +1913,7 @@ const Metro = {
   drawBeats(){
     const lbl = ["fuerte", "normal", "en silencio"];
     $("#beats").innerHTML = Array.from({length: this.beats}, (_, i) => { const a = this.acc[i] ?? 1;
-      return `<button class="beat a${a}" data-action="beat-acc" data-i="${i}" aria-label="Pulso ${i + 1}: ${lbl[a]}" title="Pulso ${i + 1}: ${lbl[a]}"></button>`; }).join("");
+      return `<button class="beat a${a}" style="--a:${(360 * i / this.beats).toFixed(2)}deg" data-action="beat-acc" data-i="${i}" aria-label="Pulso ${i + 1}: ${lbl[a]}" title="Pulso ${i + 1}: ${lbl[a]}"></button>`; }).join("");
   },
   drawTime(){ const s = Math.floor(this.elapsed); $("#metroTime").textContent = `${Math.floor(s/60)}:${pad(s%60)}`; },
   toggle(){ this.playing ? this.stop() : this.start(); },
@@ -1956,7 +2023,11 @@ const Metro = {
     if (!this.playing) return;
     const ct = this.ctx.currentTime; let cur = null;
     while (this.queue.length && this.queue[0].t <= ct) cur = this.queue.shift();
-    if (cur){ $("#beats").classList.toggle("mute", cur.dim); document.querySelectorAll("#beats .beat").forEach((el, i) => el.classList.toggle("lit", i === cur.beat)); }
+    if (cur){
+      $("#beats").classList.toggle("mute", cur.dim); document.querySelectorAll("#beats .beat").forEach((el, i) => el.classList.toggle("lit", i === cur.beat));
+      const acc = this.acc[cur.beat] ?? 1, p = $("#dialPulse");
+      if (!cur.dim && acc !== 2){ p.classList.remove("go", "strong"); void p.offsetWidth; p.classList.add("go"); if (acc === 0) p.classList.add("strong"); }
+    }
     this.raf = requestAnimationFrame(() => this.draw());
   },
   tap(){
