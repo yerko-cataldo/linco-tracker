@@ -33,7 +33,7 @@ Ambas tablas guardan un documento JSON por fila.
   "meals": [{"id", "time", "desc", "kcal", "p", "c", "f", "fib", "plants": [], "items": [{"foodId", "name", "g", "kcal", "p", "c", "f", "fib", "plant", "ai"}], "ai"}],
   "weight": null,
   "water": 0,
-  "act": {"gym": "push|pull|legs|full|", "gymMin", "walkMin", "tennisMin", "bikeMin", "bikeKm"},
+  "act": {"gym": "push|pull|legs|full|", "gymMin", "walkMin", "tennisMin", "bikeMin", "bikeKm", "sets": [{"id", "ex", "kg", "reps"}]},
   "bass": {"minutes", "logs": [{"id", "techId", "bpm", "clean"}], "songs": [songId]},
   "study": [{"id", "itemId", "amount", "minutes"}]
 }
@@ -76,21 +76,22 @@ El body de `/api/ai` es `{messages, images, tier, json, stream}`.
    - Si `source` contiene "revisar", el valor es dudoso.
    - Los productos eCook traen además `satFat`, `sodiumMg` (por 100 g) y `semaforo`.
    - Las carnes crudas se nombran "(cruda)/(crudo)" y conviven con sus versiones cocidas.
-3. **Los KPIs son deterministas y explicables.** La tendencia de peso es una regresión lineal sobre 28 días. El ajuste de kcal sale de 7.700 kcal ≈ 1 kg, con tope de ±250. El rango semanal es el promedio prorrateado de las 4 áreas. Si cambias una fórmula, actualiza también el texto que la explica en la interfaz.
+3. **Los KPIs son deterministas y explicables.** La tendencia de peso es una regresión lineal sobre 28 días. El ajuste de kcal sale de 7.700 kcal ≈ 1 kg, con tope de ±250. El rango semanal es el promedio prorrateado de las 4 áreas. El 1RM estimado de cada serie usa Epley (kg × (1 + reps/30)) y un récord es un 1RM mayor que todos los anteriores del ejercicio. La constancia diaria es el promedio de las 4 áreas con tope de 100% cada una. Si cambias una fórmula, actualiza también el texto que la explica en la interfaz.
 4. **Privacidad.** No hay datos personales en el código: el perfil real llega por importación. Nunca subas exportaciones (`lincoyan-*.json`, `lincoyan-*.csv`, `exports/`) ni `.dev.vars`. Cualquier proveedor de IA nuevo debe tener una política de no entrenar con los datos.
 
 ## Convenciones del front
 
 - **Renderizado:** funciones `renderX()` que escriben con `setHTML()`. `setHTML()` no reemplaza un contenedor si tiene foco en un input, para no borrar lo que el usuario escribe. Los formularios son estáticos en el HTML; solo se re-renderizan los contenedores dinámicos.
 - **Acciones:** se declaran con el atributo `data-action="nombre"` y se implementan en el objeto `actions`. Hay un solo listener de clicks, por delegación.
-- **Persistencia:** `saveDay(date, mutator)` y `saveLib(key, mutator)` actualizan el estado de forma optimista y encolan el `PUT`, que va uno a la vez por documento. No se usa `localStorage` para datos.
+- **Persistencia:** `saveDay(date, mutator)` y `saveLib(key, mutator)` actualizan el estado de forma optimista y encolan el `PUT`, que va uno a la vez por documento. No se usa `localStorage` para datos; la única excepción es la preferencia de tema (`lincoyan-theme`), que es por dispositivo.
 - **IA en el front:** `S.sample` es un cliente de `/api/ai` con la misma interfaz que el runtime de artifacts de claude.ai. `sample(input, {onText, images, modelTier})` hace streaming; `sample.json(...)` devuelve JSON parseado.
 - **Diseño:**
   - Tokens CSS en `:root`, con variante oscura por `prefers-color-scheme` o `data-theme`.
-  - Colores por área: `--food` ámbar, `--bass` rosa, `--study` cian, `--act` violeta.
-  - Tipografías: Pirata One solo para el logo, Chakra Petch para títulos, números y botones, Barlow para el texto.
-  - Paneles con esquinas biseladas mediante `clip-path`.
+  - Paleta cálida tipo papel y tinta (`--bg`, `--surface`, `--sunken`, `--line`, `--line-strong`). Colores por área: `--food` terracota, `--bass` frambuesa, `--study` azul petróleo, `--act` añil.
+  - Tipografías: Pirata One solo para el logo, Archivo semiexpandida (`--display`) para títulos y números, Hanken Grotesk para el texto y los botones.
+  - Paneles con borde fino y esquinas redondeadas (`--r`), sin degradados ni sombras marcadas. Barras y chips redondeados.
   - El resumen semanal es una tablatura de bajo: cuerdas G/D/A/E y traste 12 = meta cumplida.
+- **Audio:** el metrónomo, la batería (`GROOVES`) y las alarmas de los temporizadores se sintetizan con Web Audio en el objeto `Metro`, sin archivos de sonido. Los patrones de batería son strings de un compás de 4 tiempos (`X` acento, `x` golpe, `g` nota fantasma, `-` silencio).
 - **Textos:** español de Chile, tuteo, frases en minúscula inicial, sin mayúsculas sostenidas. Un botón dice exactamente lo que hace.
 
 ## Evaluación de modelos
