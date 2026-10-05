@@ -95,9 +95,82 @@ async function api(request, env, url) {
     return json({ limit: Number(env.AI_DAILY_LIMIT || 150), days: rows.results });
   }
 
+  if (p === "/api/metrics" && m === "GET") return metrics(env);
+
   if (p === "/api/ai" && m === "POST") return ai(request, env);
 
   return json({ error: "not_found" }, 404);
+}
+
+/* ---------- métricas de uso ---------- */
+const CF_GRAPHQL = "https://api.cloudflare.com/client/v4/graphql";
+const SCRIPT_NAME = "lincoyan";
+const FREE_LIMITS = { requests: 100000, rowsRead: 5000000, rowsWritten: 100000, storageBytes: 5 * 1024 ** 3, neurons: 10000 };
+
+async function cfQuery(env, query, variables) {
+  const res = await fetch(CF_GRAPHQL, {
+    method: "POST",
+    headers: { authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}`, "content-type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+  });
+  const body = await res.json();
+  if (!res.ok || body.errors?.length) throw new Error(body.errors?.[0]?.message || `HTTP ${res.status}`);
+  return body.data.viewer.accounts[0];
+}
+
+const metricQueries = {
+  workers: `query($a:String!,$s:String!,$from:Time!,$to:Time!){viewer{accounts(filter:{accountTag:$a}){
+    workersInvocationsAdaptive(limit:100,filter:{scriptName:$s,datetime_geq:$from,datetime_leq:$to}){sum{requests errors}}}}}`,
+  d1: `query($a:String!,$d:String!,$day:Date!){viewer{accounts(filter:{accountTag:$a}){
+    d1AnalyticsAdaptiveGroups(limit:100,filter:{databaseId:$d,date_geq:$day,date_leq:$day}){sum{rowsRead rowsWritten}}}}}`,
+  storage: `query($a:String!,$d:String!,$day:Date!){viewer{accounts(filter:{accountTag:$a}){
+    d1StorageAdaptiveGroups(limit:1,filter:{databaseId:$d,date_geq:$day,date_leq:$day},orderBy:[date_DESC]){max{databaseSizeBytes}}}}}`,
+  ai: `query($a:String!,$from:Time!,$to:Time!){viewer{accounts(filter:{accountTag:$a}){
+    aiInferenceAdaptiveGroups(limit:1000,filter:{datetime_geq:$from,datetime_leq:$to}){sum{totalNeurons}}}}}`,
+};
+
+const sumField = (rows, field) => rows.reduce((t, r) => t + (r.sum?.[field] || 0), 0);
+
+async function cloudflareUsage(env) {
+  if (!env.CF_ANALYTICS_TOKEN || !env.CF_ACCOUNT_ID) return { configured: false, items: [] };
+  const now = new Date();
+  const day = now.toISOString().slice(0, 10);
+  const from = `${day}T00:00:00Z`, to = now.toISOString();
+  const base = { a: env.CF_ACCOUNT_ID };
+  const dbId = env.D1_DATABASE_ID;
+  const jobs = [
+    ["requests", "Requests del Worker", "requests", "hoy (UTC)", FREE_LIMITS.requests,
+      () => cfQuery(env, metricQueries.workers, { ...base, s: SCRIPT_NAME, from, to }).then((a) => sumField(a.workersInvocationsAdaptive, "requests"))],
+    ["rowsRead", "D1: filas leídas", "filas", "hoy (UTC)", FREE_LIMITS.rowsRead,
+      () => cfQuery(env, metricQueries.d1, { ...base, d: dbId, day }).then((a) => sumField(a.d1AnalyticsAdaptiveGroups, "rowsRead"))],
+    ["rowsWritten", "D1: filas escritas", "filas", "hoy (UTC)", FREE_LIMITS.rowsWritten,
+      () => cfQuery(env, metricQueries.d1, { ...base, d: dbId, day }).then((a) => sumField(a.d1AnalyticsAdaptiveGroups, "rowsWritten"))],
+    ["storage", "D1: almacenamiento", "bytes", "total", FREE_LIMITS.storageBytes,
+      () => cfQuery(env, metricQueries.storage, { ...base, d: dbId, day }).then((a) => a.d1StorageAdaptiveGroups[0]?.max?.databaseSizeBytes || 0)],
+    ["neurons", "Workers AI: neurons", "neurons", "hoy (UTC)", FREE_LIMITS.neurons,
+      () => cfQuery(env, metricQueries.ai, { ...base, from, to }).then((a) => sumField(a.aiInferenceAdaptiveGroups, "totalNeurons"))],
+  ];
+  const results = await Promise.allSettled(jobs.map(([, , , , , run]) => run()));
+  const items = jobs.map(([key, label, unit, period, limit], i) => {
+    const r = results[i];
+    return r.status === "fulfilled"
+      ? { key, label, unit, period, limit, used: r.value }
+      : { key, label, unit, period, limit, used: null, error: String(r.reason?.message || r.reason).slice(0, 160) };
+  });
+  return { configured: true, items };
+}
+
+async function metrics(env) {
+  const [cloudflare, usage] = await Promise.all([
+    cloudflareUsage(env),
+    env.DB.prepare("SELECT * FROM ai_usage ORDER BY day DESC LIMIT 30").all(),
+  ]);
+  const expires = /^\d{4}-\d{2}-\d{2}$/.test(env.DOMAIN_EXPIRY || "") ? env.DOMAIN_EXPIRY : null;
+  return json({
+    cloudflare,
+    ai: { limit: Number(env.AI_DAILY_LIMIT || 150), days: usage.results },
+    domain: { name: env.DOMAIN_NAME || null, expires },
+  });
 }
 
 const upsertDay = (env, date, body) =>

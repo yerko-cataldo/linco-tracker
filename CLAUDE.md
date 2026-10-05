@@ -59,6 +59,7 @@ Ambas tablas guardan un documento JSON por fila.
 | `PUT /api/lib/:key` | Upsert de una colección |
 | `POST /api/import` | Importa `{days, lib}` (reemplaza las claves que trae) |
 | `GET /api/usage` | Uso diario del modelo |
+| `GET /api/metrics` | Uso frente a los límites gratis de Cloudflare (GraphQL Analytics), uso del modelo y vencimiento del dominio |
 | `POST /api/ai` | Proxy al modelo |
 
 El body de `/api/ai` es `{messages, images, tier, json, stream}`.
