@@ -1,6 +1,6 @@
 # Lincoyán: contexto para Claude Code
 
-Bitácora personal de un solo usuario: nutrición, entreno, bajo eléctrico y estudio, con KPIs diarios y semanales y un coach de IA. En producción en **https://tracker.yerkolincoyan.cl**. La interfaz y los textos están en español de Chile.
+Tracker personal de un solo usuario: nutrición, entreno, bajo eléctrico y estudio, con KPIs diarios y semanales y un coach de IA. En producción en **https://tracker.yerkolincoyan.cl**. La interfaz y los textos están en español de Chile.
 
 ## Stack
 

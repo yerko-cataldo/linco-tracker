@@ -1,0 +1,311 @@
+model,task,rep,case,latency_s,json_ok,error,raw,ref_kcal,ref_p,ref_c,ref_f,kcal,p,c,f,fields,fields_ok
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,200 g de pechuga de pollo cocida sin piel,2.5836476999993465,True,,"{""c"": 0, ""f"": 3, ""kcal"": 140, ""p"": 31}",330.0,62.0,0.0,7.0,140.0,31.0,0.0,3.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,2 huevos enteros grandes revueltos sin aceite,0.8575693000002502,True,,"{""c"": 0, ""f"": 10, ""kcal"": 140, ""p"": 12}",144.0,12.6,0.8,9.6,140.0,12.0,0.0,10.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,150 g de arroz blanco cocido,0.605304900000192,True,,"{""c"": 44.8, ""f"": 0.6, ""kcal"": 205, ""p"": 2.7}",195.0,4.0,42.0,0.5,205.0,2.7,44.8,0.6,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,1 plátano mediano de 120 g,0.9670727000011539,True,,"{""c"": 26.9, ""f"": 0.3, ""kcal"": 105, ""p"": 1.3}",107.0,1.3,27.5,0.4,105.0,1.3,26.9,0.3,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,100 g de palta hass,0.7132541000009951,True,,"{""c"": 8.5, ""f"": 14.7, ""kcal"": 160, ""p"": 3.7}",160.0,2.0,8.5,14.7,160.0,3.7,8.5,14.7,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,40 g de avena en hojuelas (en seco),1.0072048000001814,True,,"{""c"": 27, ""f"": 2.5, ""kcal"": 148, ""p"": 2.5}",156.0,6.8,26.5,2.8,148.0,2.5,27.0,2.5,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,1 cucharada de aceite de oliva (13 g),0.9223125000007713,True,,"{""c"": 0, ""f"": 13.5, ""kcal"": 120, ""p"": 0}",115.0,0.0,0.0,13.0,120.0,0.0,0.0,13.5,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,30 g de almendras,2.418966100000034,True,,"{""c"": 6, ""f"": 14, ""kcal"": 161, ""p"": 6}",174.0,6.4,6.5,15.0,161.0,6.0,6.0,14.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,200 g de fideos cocidos sin salsa,0.7086181999984547,True,,"{""c"": 55, ""f"": 1.5, ""kcal"": 260, ""p"": 8}",316.0,11.6,62.0,1.9,260.0,8.0,55.0,1.5,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,150 g de brócoli cocido,0.6333646999992197,True,,"{""c"": 11, ""f"": 0.6, ""kcal"": 55, ""p"": 4}",52.0,3.6,10.8,0.6,55.0,4.0,11.0,0.6,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,150 g de tomate,1.3512593000014022,True,,"{""c"": 5, ""f"": 0, ""kcal"": 22, ""p"": 1}",27.0,1.3,5.8,0.3,22.0,1.0,5.0,0.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,10 g de mantequilla,1.1688999999987573,True,,"{""c"": 0, ""f"": 8, ""kcal"": 72, ""p"": 0}",72.0,0.1,0.0,8.1,72.0,0.0,0.0,8.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,150 g de pechuga de pollo cocida con 150 g de arroz blanco cocido,1.012042799999108,True,,"{""c"": 60, ""f"": 4, ""kcal"": 365, ""p"": 37}",443.0,50.5,42.0,5.9,365.0,37.0,60.0,4.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,2 huevos revueltos con 50 g de palta,0.7458395000012388,True,,"{""c"": 4, ""f"": 18, ""kcal"": 220, ""p"": 18}",224.0,13.6,5.0,17.0,220.0,18.0,4.0,18.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,40 g de avena con 1 plátano mediano (120 g),1.5264936000003217,True,,"{""c"": 47, ""f"": 4, ""kcal"": 245, ""p"": 5}",263.0,8.1,54.0,3.2,245.0,5.0,47.0,4.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,200 g de fideos cocidos con 1 cucharada de aceite de oliva,0.7458929999993416,True,,"{""c"": 45, ""f"": 10, ""kcal"": 260, ""p"": 8}",431.0,11.6,62.0,14.9,260.0,8.0,45.0,10.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,ensalada de 150 g de tomate con 100 g de palta y 1 cucharada de aceite de oliva,0.7067678999992495,True,,"{""c"": 14, ""f"": 18, ""kcal"": 220, ""p"": 3}",302.0,3.3,14.3,28.0,220.0,3.0,14.0,18.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,"150 g de pollo cocido, 150 g de brócoli cocido y 100 g de arroz cocido",0.6646613000011712,True,,"{""c"": 55, ""f"": 6, ""kcal"": 365, ""p"": 43}",430.0,53.0,39.0,6.3,365.0,43.0,55.0,6.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,3 huevos duros,0.7749736999994639,True,,"{""c"": 1, ""f"": 14, ""kcal"": 210, ""p"": 18}",216.0,18.9,1.2,14.4,210.0,18.0,1.0,14.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,meal,0,30 g de almendras y 1 plátano mediano (120 g),0.8053918000005069,True,,"{""c"": 30, ""f"": 16, ""kcal"": 220, ""p"": 6}",281.0,7.7,34.0,15.4,220.0,6.0,30.0,16.0,,
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,hoy hice pull 40 minutos y paseé al galgo 90 minutos,1.1067440000006172,True,,"{""act"": {""bikeKm"": null, ""bikeMin"": null, ""gym"": ""pull"", ""gymMin"": 40, ""tennisMin"": null, ""walkMin"": 90}, ""bassLogs"": [], ""bassMinutes"": null, ""study"": [], ""water"": null, ""weight"": null}",,,,,,,,,3.0,3.0
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,"practiqué bajo 35 min, slap a 92 bpm limpio",1.8976433000007091,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": 35,
+  ""bassLogs"": [
+    {
+      ""techId"": ""t2"",
+      ""techName"": ""Slap"",
+      ""bpm"": 92,
+      ""clean"": true
+    }
+  ],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,4.0,4.0
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,leí 25 páginas de Statistical Rethinking en 40 minutos,1.3538174999994226,True,,"{""act"": {""bikeKm"": null, ""bikeMin"": null, ""gym"": null, ""gymMin"": null, ""tennisMin"": null, ""walkMin"": null}, ""bassLogs"": [], ""bassMinutes"": null, ""study"": [{""amount"": 25, ""itemId"": ""b1"", ""minutes"": 40}], ""water"": null, ""weight"": null}",,,,,,,,,3.0,3.0
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,tenis 90 min y después 20 km en bici en una hora,1.481955299999754,True,,"{""act"": {""bikeKm"": 20, ""bikeMin"": 60, ""gym"": null, ""gymMin"": null, ""tennisMin"": 90, ""walkMin"": null}, ""bassLogs"": [], ""bassMinutes"": null, ""study"": [], ""water"": null, ""weight"": null}",,,,,,,,,3.0,3.0
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,"octavas a 110 pero me equivoqué harto, 20 minutos de práctica",1.8696394999988115,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": 20,
+  ""bassLogs"": [
+    {
+      ""techId"": ""t1"",
+      ""techName"": ""Octavas"",
+      ""bpm"": 110,
+      ""clean"": false
+    }
+  ],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,4.0,4.0
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,me pesé 91.4 kg y llevo 6 vasos de agua,2.5894807999993645,True,,"{""act"": {""bikeKm"": null, ""bikeMin"": null, ""gym"": null, ""gymMin"": null, ""tennisMin"": null, ""walkMin"": null}, ""bassLogs"": [], ""bassMinutes"": null, ""study"": [], ""water"": 6, ""weight"": 91.4}",,,,,,,,,2.0,2.0
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,"día de piernas 45 min, y el paseo con el perro fue cortito, 30 min",5.57387369999924,True,,"{""act"": {""bikeKm"": null, ""bikeMin"": null, ""gym"": ""legs"", ""gymMin"": 45, ""tennisMin"": null, ""walkMin"": 30}, ""bassLogs"": [], ""bassMinutes"": null, ""study"": [], ""water"": null, ""weight"": null}",,,,,,,,,3.0,3.0
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,quick,0,una hora de bajo: slap a 100 limpio y octavas a 120 limpio,2.879674600000726,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": 60,
+  ""bassLogs"": [
+    {
+      ""techId"": ""t2"",
+      ""techName"": ""Slap"",
+      ""bpm"": 100,
+      ""clean"": true
+    },
+    {
+      ""techId"": ""t1"",
+      ""techName"": ""Octavas"",
+      ""bpm"": 120,
+      ""clean"": true
+    }
+  ],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,3.0,3.0
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,200 g de pechuga de pollo cocida sin piel,0.6653979999991861,True,,"{""c"": 0, ""f"": 3, ""kcal"": 165, ""p"": 40}",330.0,62.0,0.0,7.0,165.0,40.0,0.0,3.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,2 huevos enteros grandes revueltos sin aceite,1.209549999999581,True,,"{""c"": 0, ""f"": 10, ""kcal"": 140, ""p"": 12}",144.0,12.6,0.8,9.6,140.0,12.0,0.0,10.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,150 g de arroz blanco cocido,0.7088711999986117,True,,"{""c"": 44, ""f"": 0, ""kcal"": 195, ""p"": 4}",195.0,4.0,42.0,0.5,195.0,4.0,44.0,0.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,1 plátano mediano de 120 g,0.8697680000004766,True,,"{""c"": 27, ""f"": 0, ""kcal"": 105, ""p"": 1}",107.0,1.3,27.5,0.4,105.0,1.0,27.0,0.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,100 g de palta hass,1.770976800000426,True,,"{""c"": 2.3, ""f"": 14.7, ""kcal"": 160, ""p"": 1.4}",160.0,2.0,8.5,14.7,160.0,1.4,2.3,14.7,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,40 g de avena en hojuelas (en seco),1.3926198999997723,True,,"{""c"": 27, ""f"": 2.8, ""kcal"": 154, ""p"": 5.2}",156.0,6.8,26.5,2.8,154.0,5.2,27.0,2.8,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,1 cucharada de aceite de oliva (13 g),1.462689699999828,True,,"{""c"": 0, ""f"": 14, ""kcal"": 119, ""p"": 0}",115.0,0.0,0.0,13.0,119.0,0.0,0.0,14.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,30 g de almendras,0.9659730000003037,True,,"{""c"": 6, ""f"": 14, ""kcal"": 170, ""p"": 6}",174.0,6.4,6.5,15.0,170.0,6.0,6.0,14.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,200 g de fideos cocidos sin salsa,1.1411881000003632,True,,"{""c"": 49, ""f"": 2, ""kcal"": 276, ""p"": 10}",316.0,11.6,62.0,1.9,276.0,10.0,49.0,2.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,150 g de brócoli cocido,1.6351685000008729,True,,"{""c"": 11, ""f"": 0.5, ""kcal"": 55, ""p"": 2.5}",52.0,3.6,10.8,0.6,55.0,2.5,11.0,0.5,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,150 g de tomate,0.7333608999997523,True,,"{""c"": 5, ""f"": 0, ""kcal"": 22, ""p"": 1}",27.0,1.3,5.8,0.3,22.0,1.0,5.0,0.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,10 g de mantequilla,1.0177187000008416,True,,"{""c"": 0, ""f"": 8, ""kcal"": 75, ""p"": 0}",72.0,0.1,0.0,8.1,75.0,0.0,0.0,8.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,150 g de pechuga de pollo cocida con 150 g de arroz blanco cocido,0.854413700000805,True,,"{""c"": 45, ""f"": 5, ""kcal"": 375, ""p"": 40}",443.0,50.5,42.0,5.9,375.0,40.0,45.0,5.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,2 huevos revueltos con 50 g de palta,0.981202500001018,True,,"{""c"": 2, ""f"": 14, ""kcal"": 188, ""p"": 14}",224.0,13.6,5.0,17.0,188.0,14.0,2.0,14.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,40 g de avena con 1 plátano mediano (120 g),1.1652923000001465,True,,"{""c"": 30, ""f"": 2, ""kcal"": 170, ""p"": 3}",263.0,8.1,54.0,3.2,170.0,3.0,30.0,2.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,200 g de fideos cocidos con 1 cucharada de aceite de oliva,1.16233850000026,True,,"{""c"": 53.2, ""f"": 10.3, ""kcal"": 338, ""p"": 6.2}",431.0,11.6,62.0,14.9,338.0,6.2,53.2,10.3,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,ensalada de 150 g de tomate con 100 g de palta y 1 cucharada de aceite de oliva,1.3044697999994241,True,,"{""c"": 11.4, ""f"": 22.1, ""kcal"": 245.5, ""p"": 3.4}",302.0,3.3,14.3,28.0,245.5,3.4,11.4,22.1,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,"150 g de pollo cocido, 150 g de brócoli cocido y 100 g de arroz cocido",1.0747737000001507,True,,"{""c"": 43, ""f"": 8, ""kcal"": 415, ""p"": 43}",430.0,53.0,39.0,6.3,415.0,43.0,43.0,8.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,3 huevos duros,1.0088280999989365,True,,"{""c"": 1, ""f"": 15, ""kcal"": 210, ""p"": 18}",216.0,18.9,1.2,14.4,210.0,18.0,1.0,15.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,meal,0,30 g de almendras y 1 plátano mediano (120 g),0.712249600001087,True,,"{""c"": 29, ""f"": 8, ""kcal"": 193, ""p"": 4}",281.0,7.7,34.0,15.4,193.0,4.0,29.0,8.0,,
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,hoy hice pull 40 minutos y paseé al galgo 90 minutos,2.433066699999472,True,,"```json
+{
+  ""act"": {
+    ""gym"": ""pull"",
+    ""gymMin"": 40,
+    ""walkMin"": 90,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": null,
+  ""bassLogs"": [],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,3.0,3.0
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,"practiqué bajo 35 min, slap a 92 bpm limpio",3.521795500000735,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": 35,
+  ""bassLogs"": [
+    {
+      ""techId"": ""t2"",
+      ""techName"": ""Slap"",
+      ""bpm"": 92,
+      ""clean"": true
+    }
+  ],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,4.0,4.0
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,leí 25 páginas de Statistical Rethinking en 40 minutos,2.574285200000304,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": null,
+  ""bassLogs"": [],
+  ""study"": [
+    {
+      ""itemId"": ""b1"",
+      ""amount"": 25,
+      ""minutes"": 40
+    }
+  ],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,3.0,3.0
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,tenis 90 min y después 20 km en bici en una hora,3.6952799999999115,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": 90,
+    ""bikeMin"": 60,
+    ""bikeKm"": 20
+  },
+  ""bassMinutes"": null,
+  ""bassLogs"": [],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,3.0,3.0
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,"octavas a 110 pero me equivoqué harto, 20 minutos de práctica",4.891455800001495,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": 20,
+  ""bassLogs"": [
+    {
+      ""techId"": ""t1"",
+      ""techName"": ""Octavas"",
+      ""bpm"": 110,
+      ""clean"": false
+    }
+  ],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,4.0,4.0
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,me pesé 91.4 kg y llevo 6 vasos de agua,2.7103526999999303,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": null,
+  ""bassLogs"": [],
+  ""study"": [],
+  ""weight"": 91.4,
+  ""water"": 6
+}
+```",,,,,,,,,2.0,2.0
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,"día de piernas 45 min, y el paseo con el perro fue cortito, 30 min",2.4476775000002817,True,,"```json
+{
+  ""act"": {
+    ""gym"": ""legs"",
+    ""gymMin"": 45,
+    ""walkMin"": 30,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": null,
+  ""bassLogs"": [],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,3.0,3.0
+@cf/meta/llama-4-scout-17b-16e-instruct,quick,0,una hora de bajo: slap a 100 limpio y octavas a 120 limpio,4.425124999999753,True,,"```json
+{
+  ""act"": {
+    ""gym"": null,
+    ""gymMin"": null,
+    ""walkMin"": null,
+    ""tennisMin"": null,
+    ""bikeMin"": null,
+    ""bikeKm"": null
+  },
+  ""bassMinutes"": 60,
+  ""bassLogs"": [
+    {""techId"": ""t2"", ""techName"": ""Slap"", ""bpm"": 100, ""clean"": true},
+    {""techId"": ""t1"", ""techName"": ""Octavas"", ""bpm"": 120, ""clean"": true}
+  ],
+  ""study"": [],
+  ""weight"": null,
+  ""water"": null
+}
+```",,,,,,,,,3.0,3.0
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,200 g de pechuga de pollo cocida sin piel,0.2772613999986788,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,330.0,62.0,0.0,7.0,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,2 huevos enteros grandes revueltos sin aceite,0.09185570000045118,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,144.0,12.6,0.8,9.6,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,150 g de arroz blanco cocido,0.07872369999859075,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,195.0,4.0,42.0,0.5,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,1 plátano mediano de 120 g,0.0905507999996189,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,107.0,1.3,27.5,0.4,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,100 g de palta hass,0.08921200000077079,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,160.0,2.0,8.5,14.7,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,40 g de avena en hojuelas (en seco),0.10398570000143081,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,156.0,6.8,26.5,2.8,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,1 cucharada de aceite de oliva (13 g),0.11461170000075072,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,115.0,0.0,0.0,13.0,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,30 g de almendras,0.11059969999951136,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,174.0,6.4,6.5,15.0,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,200 g de fideos cocidos sin salsa,0.09096280000085244,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,316.0,11.6,62.0,1.9,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,150 g de brócoli cocido,0.11248259999956645,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,52.0,3.6,10.8,0.6,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,150 g de tomate,0.09116589999939606,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,27.0,1.3,5.8,0.3,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,10 g de mantequilla,0.08876150000105554,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,72.0,0.1,0.0,8.1,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,150 g de pechuga de pollo cocida con 150 g de arroz blanco cocido,0.06854569999995874,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,443.0,50.5,42.0,5.9,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,2 huevos revueltos con 50 g de palta,0.07175420000021404,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,224.0,13.6,5.0,17.0,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,40 g de avena con 1 plátano mediano (120 g),0.07734780000100727,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,263.0,8.1,54.0,3.2,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,200 g de fideos cocidos con 1 cucharada de aceite de oliva,0.3419745999999577,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,431.0,11.6,62.0,14.9,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,ensalada de 150 g de tomate con 100 g de palta y 1 cucharada de aceite de oliva,0.09430880000036268,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,302.0,3.3,14.3,28.0,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,"150 g de pollo cocido, 150 g de brócoli cocido y 100 g de arroz cocido",0.0862025000005815,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,430.0,53.0,39.0,6.3,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,3 huevos duros,0.08400440000150411,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,216.0,18.9,1.2,14.4,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,meal,0,30 g de almendras y 1 plátano mediano (120 g),0.09961459999976796,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,281.0,7.7,34.0,15.4,,,,,,
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,hoy hice pull 40 minutos y paseé al galgo 90 minutos,0.10075180000058026,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,3.0,0.0
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,"practiqué bajo 35 min, slap a 92 bpm limpio",0.09644060000027821,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,4.0,0.0
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,leí 25 páginas de Statistical Rethinking en 40 minutos,0.09655589999965741,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,3.0,0.0
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,tenis 90 min y después 20 km en bici en una hora,0.07386229999974603,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,3.0,0.0
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,"octavas a 110 pero me equivoqué harto, 20 minutos de práctica",0.08324390000052517,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,4.0,0.0
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,me pesé 91.4 kg y llevo 6 vasos de agua,0.09263189999910537,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,2.0,0.0
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,"día de piernas 45 min, y el paseo con el perro fue cortito, 30 min",0.08999389999917184,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,3.0,0.0
+@cf/meta/llama-3.2-11b-vision-instruct,quick,0,una hora de bajo: slap a 100 limpio y octavas a 120 limpio,0.08743809999941732,False,403 Client Error: Forbidden for url: https://api.cloudflare.com/client/v4/accounts/820f0de182a0433466aa4461778f95ba/ai/run/@cf/meta/llama-3.2-11b-vision-instruct,,,,,,,,,,3.0,0.0

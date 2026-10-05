@@ -1,0 +1,4 @@
+modelo,json_ok_%,kcal_MAE,kcal_MAPE_%,kcal_sesgo,prot_MAE_g,registro_campos_ok_%,latencia_mediana_s,errores_api
+@cf/meta/llama-3.3-70b-instruct-fp8-fast,100.0,39.0,12.9,-37.2,4.1,100.0,1.01,0
+@cf/meta/llama-4-scout-17b-16e-instruct,100.0,34.4,12.4,-33.4,3.2,100.0,1.19,0
+@cf/meta/llama-3.2-11b-vision-instruct,0.0,,,,,0.0,0.09,28

@@ -59,7 +59,9 @@ npm run db:migrate                   # crea las tablas en D1
 
 El Worker valida el JWT de Access en cada request, así que aunque alguien llegara al Worker por otra ruta no podría entrar. Además, la URL `*.workers.dev` está desactivada.
 
-### 5. API key de Anthropic
+### 5. API key de Anthropic (opcional)
+
+Por defecto el coach usa Workers AI (gratis, sin key). Este paso solo hace falta si cambias alguna tarea a `"anthropic"` en `wrangler.jsonc`.
 
 En la consola de Anthropic, con tu cuenta personal:
 
@@ -99,11 +101,14 @@ npm run dev                       # http://localhost:8787
 
 ## Cambiar de modelo o de proveedor
 
-Todo se controla con variables en `wrangler.jsonc`:
+Cada tarea tiene su proveedor (`workers-ai` o `anthropic`) y su modelo en `wrangler.jsonc`:
 
-- `MODEL_DEFAULT` se usa para registros, estimación de comidas y chat.
-- `MODEL_COACH` se usa cuando el front pide `tier: "complex"`.
-- `ANTHROPIC_BASE_URL` apunta a cualquier endpoint compatible con la Messages API de Anthropic. Sirve para un A/B con otro proveedor, cambiando también la key.
+- `PROVIDER_DEFAULT` / `MODEL_DEFAULT`: registro rápido, estimación de comidas por texto y chat.
+- `PROVIDER_COACH` / `MODEL_COACH`: revisión semanal y panel "qué me falta".
+- `PROVIDER_VISION` / `MODEL_VISION`: fotos de comida.
+- `ANTHROPIC_BASE_URL`: cualquier endpoint compatible con la Messages API de Anthropic.
+
+Para comparar modelos con datos, usa `eval/benchmark_llm.py`.
 
 ## Respaldos
 

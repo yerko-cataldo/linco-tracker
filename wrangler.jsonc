@@ -14,7 +14,6 @@
   "preview_urls": false,
   "routes": [
     { "pattern": "tracker.yerkolincoyan.cl", "custom_domain": true }
-    // , { "pattern": "lincoyan.cl", "custom_domain": true }   // descomenta si compras también el dominio sin tilde
   ],
 
   "d1_databases": [
@@ -25,7 +24,7 @@
       "migrations_dir": "migrations"
     }
   ],
-  
+
   "ai": { "binding": "AI" },
 
   "vars": {
