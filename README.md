@@ -112,7 +112,7 @@ Para comparar modelos con datos, usa `eval/benchmark_llm.py`.
 
 ## Respaldos
 
-- **Desde la app:** **Exportar JSON** o **Exportar CSV diario**. El CSV está listo para pandas.
+- **Desde la app:** **Exportar JSON** o **Exportar CSV por alimento** (una fila por ingrediente, con fecha, hora y comida). El CSV está listo para pandas. El JSON trae además el resto de las áreas.
 - **Respaldo completo de D1:**
 
 ```bash

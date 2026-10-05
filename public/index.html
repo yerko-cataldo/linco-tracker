@@ -59,7 +59,7 @@ nav.tabs button[data-tab=nutricion][aria-selected=true]{border-bottom-color:var(
 nav.tabs button[data-tab=entreno][aria-selected=true]{border-bottom-color:var(--act)}
 nav.tabs button[data-tab=bajo][aria-selected=true]{border-bottom-color:var(--bass)}
 nav.tabs button[data-tab=estudio][aria-selected=true]{border-bottom-color:var(--study)}
-main.wrap{padding-top:44px}
+main.wrap{padding-top:24px}
 section.tab{display:none}
 section.tab.on{display:block}
 h2{font-weight:750;font-size:2rem;line-height:1.1;margin:0 0 6px;letter-spacing:-.02em}
@@ -70,6 +70,15 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:64ch;font-size:1.02rem}
 .panel{background:var(--surface);padding:22px 24px;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 @media (max-width:560px){.panel{padding:18px 16px}}
 .grid{display:grid;gap:16px}
+.days7{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day7{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;background:none;border:1px solid var(--line);border-radius:10px;color:var(--ink);cursor:pointer;font:inherit}
+.day7:hover{border-color:var(--line-strong)}
+.day7[aria-current=true]{border-color:var(--food)}
+.day7.empty{opacity:.5}
+.day7 .dw{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.day7 .dk{font-family:"Chakra Petch",system-ui,sans-serif;font-weight:600;font-size:1.3rem;line-height:1.2}
+.day7 .dp{font-size:.8rem;color:var(--muted)}
+@media (max-width:560px){.days7{gap:4px}.day7{padding:8px 2px}.day7 .dk{font-size:1rem}.day7 .dw{font-size:.62rem}}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -424,6 +433,8 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <h3 class="mt">Comidas frecuentes</h3>
       <div id="comboList"></div>
     </div>
+    <div class="panel mt"><h3>Últimos 7 días</h3><div class="days7" id="days7"></div>
+      <p class="small muted" style="margin:10px 0 0">Calorías y proteína de cada día. Verde: calorías dentro de la meta; ámbar: por debajo; rojo: sobre la meta. Toca un día para abrirlo.</p></div>
     <div class="grid g2 mt">
       <div class="panel"><h3>Calorías de la semana</h3><div id="kcalChart"></div></div>
       <div class="panel"><h3>Indicadores de la semana</h3><div id="nutWeek"></div></div>
@@ -720,7 +731,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <p class="small muted" id="dataInfo"></p>
           <div class="row">
             <button class="btn" data-action="export" id="exportBtn">Exportar JSON</button>
-            <button class="btn" data-action="export-csv" id="exportCsvBtn">Exportar CSV diario</button>
+            <button class="btn" data-action="export-csv" id="exportCsvBtn">Exportar CSV por alimento</button>
             <label class="btn">Importar JSON<input type="file" id="importFile" accept="application/json,.json" class="sr"></label>
           </div>
           <p class="small muted" id="importStatus"></p>
@@ -1156,6 +1167,14 @@ function renderNutrition(){
       <div class="field w7">Peso kg<input id="wInput" inputmode="decimal" value="${d.weight ?? ""}"></div>
       <button class="btn" data-action="weight-save">Guardar peso</button>
     </div>`);
+  setHTML($("#days7"), [6,5,4,3,2,1,0].map(n => {
+    const dt = addDays(S.date, -n), s = dayStats(dt), lo = g.kcal * (1 - g.tol / 100), hi = g.kcal * (1 + g.tol / 100);
+    const col = !s.meals ? "var(--muted)" : s.kcal > hi ? "var(--danger)" : s.kcal >= lo ? "var(--ok)" : "var(--food)";
+    return `<button class="day7${s.meals ? "" : " empty"}" data-action="day-open" data-d="${dt}"${dt === S.date ? ' aria-current="true"' : ""} aria-label="${esc(fmtLong(dt))}">
+      <span class="dw">${esc(parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))}</span>
+      <span class="dk" style="color:${col}">${s.meals ? fmt(s.kcal) : "–"}</span>
+      <span class="dp">${s.meals ? fmt(s.p) + " g" : "&nbsp;"}</span></button>`;
+  }).join(""));
   setHTML($("#kcalChart"), barChart(weekDates(S.date).map(x => dayStats(x).kcal), DOW, g.kcal, "var(--food)", "kcal"));
   const wt = weightTrend(), adj = kcalAdjustment(), protDays = ws.st.filter(s => s.meals && s.p >= 0.9 * g.protein).length;
   const adjTxt = !adj ? "Necesito al menos 6 pesajes en 2 semanas" : adj.ok ? `Vas al ritmo de ${adj.ph.label.toLowerCase()}, mantén las kcal` : `${adj.kcal > 0 ? "+" : ""}${adj.kcal} kcal/día para acercarte a ${fmt(adj.ph.rate, 2)} kg/sem`;
@@ -1576,6 +1595,7 @@ const actions = {
   },
   "weight-save": () => { const w = num($("#wInput").value); $("#wInput").blur(); saveDay(S.date, d => { d.weight = w; }); toast(w ? "Peso guardado." : "Peso borrado."); },
   "creatine": () => saveDay(S.date, d => { d.creatine = !d.creatine; }),
+  "day-open": el => setDate(el.dataset.d),
   "metrics-load": () => loadMetrics(),
   "water": el => saveDay(S.date, d => { d.water = Math.max(0, (d.water || 0) + Number(el.dataset.v)); }),
 
@@ -1672,10 +1692,17 @@ const actions = {
   },
   "export": () => saveFile(`lincoyan-${today()}.json`, JSON.stringify({exported: new Date().toISOString(), lib: S.lib, days: S.days}, null, 2)),
   "export-csv": () => {
-    const head = "fecha,kcal,proteina_g,carbos_g,grasa_g,fibra_g,comidas,peso_kg,agua_vasos,activo_min,paseo_min,gym,tenis_min,bici_km,gym_series,gym_volumen_kg,bajo_min,bajo_ejercicios,bajo_max_bpm_limpio,estudio_min,estudio_avance";
-    const rows = allDatesAsc().map(dt => { const s = dayStats(dt), d = s.d, cl = d.bass.logs.filter(l => l.clean).map(l => l.bpm);
-      return [dt, s.kcal, s.p, s.c, s.f, s.fib, s.meals, d.weight ?? "", d.water || 0, s.actMin, d.act.walkMin || 0, d.act.gym || "", d.act.tennisMin || 0, d.act.bikeKm || 0, d.act.sets.length, sum(d.act.sets, x => x.kg * x.reps), s.bassMin, d.bass.logs.length, cl.length ? Math.max(...cl) : "", s.studyMin, sum(d.study, x => x.amount)].join(","); });
-    saveFile(`lincoyan-diario-${today()}.csv`, [head, ...rows].join("\n"));
+    const q = v => { const t = String(v ?? ""); return /[",
+]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+    const head = "fecha,hora,comida,alimento,gramos,kcal,proteina_g,carbos_g,grasa_g,fibra_g,planta,estimado_ia";
+    const rows = [];
+    for (const dt of allDatesAsc()) for (const m of [...day(dt).meals].sort((a, b) => (a.time || "").localeCompare(b.time || ""))){
+      const items = m.items || [];
+      if (items.length) items.forEach(i => rows.push([dt, m.time, m.desc, i.name, i.g, i.kcal, i.p, i.c, i.f, i.fib, i.plant ? 1 : 0, i.ai ? 1 : 0].map(q).join(",")));
+      else rows.push([dt, m.time, m.desc, "", "", m.kcal, m.p, m.c, m.f, m.fib, "", m.ai ? 1 : 0].map(q).join(","));
+    }
+    saveFile(`lincoyan-detalle-${today()}.csv`, "﻿" + [head, ...rows].join("
+"));
   },
 
   "quick-parse": () => quickParse(),
