@@ -426,7 +426,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="panel"><h3>Calorías de la semana</h3><div id="kcalChart"></div></div>
       <div class="panel"><h3>Indicadores de la semana</h3><div id="nutWeek"></div></div>
     </div>
-    <div class="panel mt"><h3>Cuerpo e hidratación</h3><div id="bodyBox"></div></div>
+    <div class="panel mt"><h3>Cuerpo</h3><div id="bodyBox"></div></div>
   </section>
 
   <!-- ENTRENO -->
@@ -797,7 +797,7 @@ const S = {
 };
 const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list"};
 
-function emptyDay(date){ return {date, meals:[], weight:null, water:0, act:{gym:"", gymMin:0, walkMin:0, tennisMin:0, bikeMin:0, bikeKm:0, sets:[]}, bass:{minutes:0, logs:[], songs:[]}, study:[]}; }
+function emptyDay(date){ return {date, meals:[], weight:null, water:0, creatine:false, act:{gym:"", gymMin:0, walkMin:0, tennisMin:0, bikeMin:0, bikeKm:0, sets:[]}, bass:{minutes:0, logs:[], songs:[]}, study:[]}; }
 function normDay(d, date){
   const e = emptyDay(date); if (!d) return e;
   const o = Object.assign(e, clone(d));
@@ -1128,7 +1128,13 @@ function renderNutrition(){
       <div class="small muted">${left >= 0 ? `faltan <strong class="ink">${fmt(left)}</strong> kcal` : `<strong class="ink">${fmt(-left)}</strong> kcal sobre la meta`}</div></div>
     <div class="macro-rings">${[["Proteína", st.p, g.protein], ["Carbohidratos", st.c, g.carbs], ["Grasa", st.f, g.fat]].map(([n, v, goal], i) =>
       `<div>${ring(v / goal, MC[i], 64, 7, fmt(v / goal * 100) + "%")}<div class="lbl"><strong>${n}</strong>${fmt(v)} / ${fmt(goal)} g</div></div>`).join("")}</div></div>`);
-  setHTML($("#nutMeters"), meter("Fibra", st.fib, g.fiber, "g", "var(--ok)") + meter("Agua", d.water || 0, g.water, "vasos", "var(--study)"));
+  setHTML($("#nutMeters"), meter("Fibra", st.fib, g.fiber, "g", "var(--ok)") + meter("Agua", d.water || 0, g.water, "vasos", "var(--study)") +
+    meter("Creatina", d.creatine ? 1 : 0, 1, "dosis", "var(--act)") +
+    `<div class="row mt">
+      <button class="btn small" data-action="water" data-v="-1" aria-label="Quitar vaso">− vaso</button>
+      <button class="btn primary" data-action="water" data-v="1" aria-label="Agregar vaso">+ vaso de agua</button>
+      <button class="btn ${d.creatine ? "" : "primary"}" data-action="creatine">${d.creatine ? "Deshacer creatina" : "Tomé la creatina"}</button>
+    </div>`);
   const meals = [...d.meals].sort((a,b) => (a.time||"").localeCompare(b.time||""));
   setHTML($("#mealsTable"), meals.length ? `<table><thead><tr><th>Hora</th><th>Comida</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
     ${meals.map(m => `<tr><td>${esc(m.time||"")}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.items||[]).length ? `<div class="small muted">${esc(m.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))}</div>` : (m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td>
@@ -1138,9 +1144,6 @@ function renderNutrition(){
   setHTML($("#bodyBox"), `<div class="row">
       <div class="field w7">Peso kg<input id="wInput" inputmode="decimal" value="${d.weight ?? ""}"></div>
       <button class="btn" data-action="weight-save">Guardar peso</button>
-      <span style="margin-left:12px">Agua: <strong>${d.water || 0}</strong> / ${g.water} vasos</span>
-      <button class="btn small" data-action="water" data-v="-1" aria-label="Quitar vaso">−</button>
-      <button class="btn small" data-action="water" data-v="1" aria-label="Agregar vaso">+</button>
     </div>`);
   setHTML($("#kcalChart"), barChart(weekDates(S.date).map(x => dayStats(x).kcal), DOW, g.kcal, "var(--food)", "kcal"));
   const wt = weightTrend(), adj = kcalAdjustment(), protDays = ws.st.filter(s => s.meals && s.p >= 0.9 * g.protein).length;
@@ -1524,6 +1527,7 @@ const actions = {
     toast(`Copié ${src.length} ${src.length === 1 ? "comida" : "comidas"} del ${fmtShort(prev)}. Borra las que no repetiste.`);
   },
   "weight-save": () => { const w = num($("#wInput").value); $("#wInput").blur(); saveDay(S.date, d => { d.weight = w; }); toast(w ? "Peso guardado." : "Peso borrado."); },
+  "creatine": () => saveDay(S.date, d => { d.creatine = !d.creatine; }),
   "water": el => saveDay(S.date, d => { d.water = Math.max(0, (d.water || 0) + Number(el.dataset.v)); }),
 
   "act-save": () => {
