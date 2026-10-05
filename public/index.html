@@ -1132,8 +1132,8 @@ function renderNutrition(){
     meter("Creatina", d.creatine ? 1 : 0, 1, "dosis", "var(--act)") +
     `<div class="row mt">
       <button class="btn small" data-action="water" data-v="-1" aria-label="Quitar vaso">− vaso</button>
-      <button class="btn primary" data-action="water" data-v="1" aria-label="Agregar vaso">+ vaso de agua</button>
-      <button class="btn ${d.creatine ? "" : "primary"}" data-action="creatine">${d.creatine ? "Deshacer creatina" : "Tomé la creatina"}</button>
+      <button class="btn small primary" data-action="water" data-v="1" aria-label="Agregar vaso">+ vaso de agua</button>
+      <button class="btn small ${d.creatine ? "" : "primary"}" data-action="creatine">${d.creatine ? "Deshacer creatina" : "Tomé la creatina"}</button>
     </div>`);
   const meals = [...d.meals].sort((a,b) => (a.time||"").localeCompare(b.time||""));
   setHTML($("#mealsTable"), meals.length ? `<table><thead><tr><th>Hora</th><th>Comida</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
