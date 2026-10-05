@@ -1692,8 +1692,7 @@ const actions = {
   },
   "export": () => saveFile(`lincoyan-${today()}.json`, JSON.stringify({exported: new Date().toISOString(), lib: S.lib, days: S.days}, null, 2)),
   "export-csv": () => {
-    const q = v => { const t = String(v ?? ""); return /[",
-]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+    const q = v => { const t = String(v ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
     const head = "fecha,hora,comida,alimento,gramos,kcal,proteina_g,carbos_g,grasa_g,fibra_g,planta,estimado_ia";
     const rows = [];
     for (const dt of allDatesAsc()) for (const m of [...day(dt).meals].sort((a, b) => (a.time || "").localeCompare(b.time || ""))){
@@ -1701,8 +1700,7 @@ const actions = {
       if (items.length) items.forEach(i => rows.push([dt, m.time, m.desc, i.name, i.g, i.kcal, i.p, i.c, i.f, i.fib, i.plant ? 1 : 0, i.ai ? 1 : 0].map(q).join(",")));
       else rows.push([dt, m.time, m.desc, "", "", m.kcal, m.p, m.c, m.f, m.fib, "", m.ai ? 1 : 0].map(q).join(","));
     }
-    saveFile(`lincoyan-detalle-${today()}.csv`, "﻿" + [head, ...rows].join("
-"));
+    saveFile(`lincoyan-detalle-${today()}.csv`, "﻿" + [head, ...rows].join("\n"));
   },
 
   "quick-parse": () => quickParse(),
