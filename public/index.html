@@ -78,14 +78,28 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:64ch;font-size:1.02rem}
 .day7 .dw{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .day7 .dk{font-family:"Chakra Petch",system-ui,sans-serif;font-weight:600;font-size:1.3rem;line-height:1.2}
 .day7 .dp{font-size:.8rem;color:var(--muted)}
-.gwt td.gw{text-align:center;font-size:.82rem;line-height:1.25;cursor:pointer;padding:6px 2px}
-.gwt .gw-gym,.gwt .gw-bike{border-radius:6px;padding:3px 2px}
+.gwt{table-layout:fixed;min-width:700px}
+.gwt th{text-align:center;padding:6px 4px}
+.gwt th:first-child{text-align:left;width:116px}
+.gwt th:last-child{width:150px;text-align:left}
+.gwt td{padding:5px 3px;vertical-align:middle;border-bottom:1px solid var(--line)}
+.gwt td:first-child{font-size:.82rem;color:var(--muted);white-space:nowrap;padding-left:8px}
+.gwt td:last-child{font-size:.8rem;line-height:1.4;padding-left:10px}
+.gwt td.gw{height:60px;cursor:pointer;text-align:center;border-radius:6px}
+.gwt td.gw:hover{background:var(--sunken)}
+.gwt td.gw.today{box-shadow:inset 0 0 0 1.5px var(--act)}
+.gwt td.gw.fut{opacity:.35;cursor:default}
+.gwt .gw-gym,.gwt .gw-bike{border-radius:6px;padding:4px 2px;line-height:1.2;font-size:.78rem}
 .gwt .gw-gym{background:color-mix(in srgb,var(--act) 16%,var(--surface));color:var(--act)}
-.gwt .gw-bike{background:color-mix(in srgb,var(--study) 16%,var(--surface));color:var(--study)}
-.gwt .gw-gym+.gw-bike{margin-top:3px}
-.gwt th{text-align:center}
-.gwt th:first-child{text-align:left}
-@media (max-width:560px){.gwt td.gw{font-size:.68rem;padding:4px 0}}
+.gwt .gw-gym small,.gwt .gw-bike small{display:block;font-size:.72rem;opacity:.85}
+.gwt .gw-bike{background:color-mix(in srgb,var(--study) 16%,var(--surface));color:var(--study);margin-top:3px}
+.gwt .gw-gym:first-child{margin-top:0}
+.gwt .gw-gym+.gw-bike{padding:2px}
+.gwt .tot b{font-family:var(--display)}
+.gwt .tot.met b{color:var(--ok)}
+.gw-scroll{overflow-x:auto}
+.gw-legend{display:flex;gap:16px;font-size:.82rem;color:var(--muted);margin:-4px 0 10px}
+.gw-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .days7.act .day7[aria-current=true]{border-color:var(--act)}
 .days7.act .dk{font-size:1rem;font-family:var(--display);color:var(--act);text-align:center}
 .days7.act .day7.empty .dk{color:var(--muted)}
@@ -457,7 +471,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
     <div class="panel"><h3>Días de gimnasio (últimos 7 días)</h3><div class="days7 act" id="gymDays7"></div></div>
-    <div class="panel mt"><h3>Gimnasio y bici por semana (últimas 8)</h3><div id="gymWeeks"></div></div>
+    <div class="panel mt"><h3>Gimnasio y bici por semana</h3><div id="gymWeeks"></div></div>
     <div class="grid g2 mt">
       <div class="panel stack">
         <h3>Actividad del día</h3>
@@ -791,6 +805,7 @@ const DEFAULT_PROFILE = {
   about: "", goal: "", activity: "", foods: "", notes: "", phase: "recomp", pal: 1.55
 };
 const SONG_STATES = ["por aprender","aprendiendo","tocándola","dominada"];
+const GYM_START = "2026-09-28";
 const fmtDur = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`; };
 const GYM_LABEL ={push:"Push", pull:"Pull", legs:"Legs", full:"Full body"};
 // Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
@@ -1241,17 +1256,19 @@ function renderAct(){
       <span class="dk">${gym ? esc(GYM_LABEL[ga.gym] || ga.gym) : "Descanso"}</span>
       <span class="dp">${gym ? fmtDur(ga.gymMin || 40) : "&nbsp;"}</span></button>`;
   }).join(""));
-  const wk0 = weekDates(S.date)[0];
-  const wkRows = [0,1,2,3,4,5,6,7].map(i => {
+  const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
+  const wk0 = weekDates(S.date)[0], tdy = today(), WD = ["L","Ma","Mi","J","V","S","D"];
+  const wkIdx = []; for (let w = wk0; w >= GYM_START; w = addDays(w, -7)) wkIdx.push(wkIdx.length);
+  const wkRows = wkIdx.map(i => {
     const ds = weekDates(addDays(wk0, -7 * i)), all = ds.map(x => day(x).act), acts = all.filter(x => x.gym), bikes = all.filter(x => x.bikeMin || x.bikeKm);
     const cells = ds.map((x, j) => { const a = all[j], bike = a.bikeMin || a.bikeKm;
-      const gymTxt = a.gym ? `<div class="gw-gym"><strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><br><span class="small">${fmtDur(a.gymMin || 40)}</span></div>` : "";
-      const bikeTxt = bike ? `<div class="gw-bike"><strong>Bici${a.bikeKm ? " " + fmt(a.bikeKm, 1) + " km" : ""}</strong>${a.bikeMin ? `<br><span class="small">${fmtDur(a.bikeMin)}</span>` : ""}</div>` : "";
-      return `<td class="gw" data-action="day-open" data-d="${x}">${gymTxt}${bikeTxt}</td>`; }).join("");
+      const gymTxt = a.gym ? `<div class="gw-gym"><strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><small>${fmtDur(a.gymMin || 40)}</small></div>` : "";
+      const bikeTxt = bike ? `<div class="gw-bike"><strong>${a.bikeKm ? fmt(a.bikeKm, 1) + " km" : "Bici"}</strong>${a.bikeMin ? `<small>${fmtDur(a.bikeMin)}</small>` : ""}</div>` : "";
+      return `<td class="gw${x === tdy ? " today" : ""}${x > tdy ? " fut" : ""}"${x > tdy ? "" : ` data-action="day-open" data-d="${x}"`}>${gymTxt}${bikeTxt}</td>`; }).join("");
     const gymTot = acts.length ? fmtDur(sum(acts, x => x.gymMin || 40)) : "–", bikeKm = sum(bikes, x => x.bikeKm);
-    return `<tr><td>${fmtShort(ds[0])}</td>${cells}<td class="n"><strong>${acts.length}</strong> / ${g.gymWeek} gym<br><span class="small muted">${gymTot}</span>${bikes.length ? `<br><strong>${bikes.length}</strong> bici<br><span class="small muted">${bikeKm ? fmt(bikeKm, 1) + " km" : "–"}</span>` : ""}</td></tr>`;
+    return `<tr><td>${wkLabel(ds[0], ds[6])}</td>${cells}<td class="tot${acts.length >= g.gymWeek ? " met" : ""}"><b>${acts.length}/${g.gymWeek}</b> gym · ${gymTot}${bikes.length ? `<br><b>${bikes.length}</b> bici${bikeKm ? " · " + fmt(bikeKm, 1) + " km" : ""}` : ""}</td></tr>`;
   }).join("");
-  setHTML($("#gymWeeks"), `<table class="gwt"><thead><tr><th>Semana</th>${DOW.map(x => `<th>${x}</th>`).join("")}<th class="n">Total</th></tr></thead><tbody>${wkRows}</tbody></table>`);
+  setHTML($("#gymWeeks"), `<div class="gw-legend"><span><i style="background:var(--act)"></i>Gimnasio</span><span><i style="background:var(--study)"></i>Bici</span></div><div class="gw-scroll"><table class="gwt"><thead><tr><th>Semana</th>${WD.map(x => `<th>${x}</th>`).join("")}<th>Total semana</th></tr></thead><tbody>${wkRows}</tbody></table></div>`);
   setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)") + meter("Paseo con el galgo", a.walkMin || 0, g.walkMin, "min", "var(--act)"));
   setHTML($("#actChart"), barChart(weekDates(S.date).map(x => dayStats(x).actMin), DOW, g.activeMin, "var(--act)", "min"));
   const wSets = ws.st.flatMap(s => s.d.act.sets);
