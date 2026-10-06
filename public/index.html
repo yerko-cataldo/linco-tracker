@@ -79,7 +79,10 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:64ch;font-size:1.02rem}
 .day7 .dk{font-family:"Chakra Petch",system-ui,sans-serif;font-weight:600;font-size:1.3rem;line-height:1.2}
 .day7 .dp{font-size:.8rem;color:var(--muted)}
 .gwt td.gw{text-align:center;font-size:.82rem;line-height:1.25;cursor:pointer;padding:6px 2px}
-.gwt td.gw.on{background:color-mix(in srgb,var(--act) 14%,var(--surface));color:var(--act)}
+.gwt .gw-gym,.gwt .gw-bike{border-radius:6px;padding:3px 2px}
+.gwt .gw-gym{background:color-mix(in srgb,var(--act) 16%,var(--surface));color:var(--act)}
+.gwt .gw-bike{background:color-mix(in srgb,var(--study) 16%,var(--surface));color:var(--study)}
+.gwt .gw-gym+.gw-bike{margin-top:3px}
 .gwt th{text-align:center}
 .gwt th:first-child{text-align:left}
 @media (max-width:560px){.gwt td.gw{font-size:.68rem;padding:4px 0}}
@@ -454,7 +457,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
     <div class="panel"><h3>Días de gimnasio (últimos 7 días)</h3><div class="days7 act" id="gymDays7"></div></div>
-    <div class="panel mt"><h3>Gimnasio por semana (últimas 8)</h3><div id="gymWeeks"></div></div>
+    <div class="panel mt"><h3>Gimnasio y bici por semana (últimas 8)</h3><div id="gymWeeks"></div></div>
     <div class="grid g2 mt">
       <div class="panel stack">
         <h3>Actividad del día</h3>
@@ -1240,10 +1243,13 @@ function renderAct(){
   }).join(""));
   const wk0 = weekDates(S.date)[0];
   const wkRows = [0,1,2,3,4,5,6,7].map(i => {
-    const ds = weekDates(addDays(wk0, -7 * i)), acts = ds.map(x => day(x).act).filter(x => x.gym);
-    const cells = ds.map(x => { const a = day(x).act;
-      return `<td class="gw${a.gym ? " on" : ""}" data-action="day-open" data-d="${x}">${a.gym ? `<strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><br><span class="small muted">${fmtDur(a.gymMin || 40)}</span>` : ""}</td>`; }).join("");
-    return `<tr><td>${fmtShort(ds[0])}</td>${cells}<td class="n"><strong>${acts.length}</strong> / ${g.gymWeek}<br><span class="small muted">${acts.length ? fmtDur(sum(acts, x => x.gymMin || 40)) : "–"}</span></td></tr>`;
+    const ds = weekDates(addDays(wk0, -7 * i)), all = ds.map(x => day(x).act), acts = all.filter(x => x.gym), bikes = all.filter(x => x.bikeMin || x.bikeKm);
+    const cells = ds.map((x, j) => { const a = all[j], bike = a.bikeMin || a.bikeKm;
+      const gymTxt = a.gym ? `<div class="gw-gym"><strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><br><span class="small">${fmtDur(a.gymMin || 40)}</span></div>` : "";
+      const bikeTxt = bike ? `<div class="gw-bike"><strong>Bici${a.bikeKm ? " " + fmt(a.bikeKm, 1) + " km" : ""}</strong>${a.bikeMin ? `<br><span class="small">${fmtDur(a.bikeMin)}</span>` : ""}</div>` : "";
+      return `<td class="gw" data-action="day-open" data-d="${x}">${gymTxt}${bikeTxt}</td>`; }).join("");
+    const gymTot = acts.length ? fmtDur(sum(acts, x => x.gymMin || 40)) : "–", bikeKm = sum(bikes, x => x.bikeKm);
+    return `<tr><td>${fmtShort(ds[0])}</td>${cells}<td class="n"><strong>${acts.length}</strong> / ${g.gymWeek} gym<br><span class="small muted">${gymTot}</span>${bikes.length ? `<br><strong>${bikes.length}</strong> bici<br><span class="small muted">${bikeKm ? fmt(bikeKm, 1) + " km" : "–"}</span>` : ""}</td></tr>`;
   }).join("");
   setHTML($("#gymWeeks"), `<table class="gwt"><thead><tr><th>Semana</th>${DOW.map(x => `<th>${x}</th>`).join("")}<th class="n">Total</th></tr></thead><tbody>${wkRows}</tbody></table>`);
   setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)") + meter("Paseo con el galgo", a.walkMin || 0, g.walkMin, "min", "var(--act)"));
