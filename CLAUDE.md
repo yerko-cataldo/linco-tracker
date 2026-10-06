@@ -34,7 +34,7 @@ Ambas tablas guardan un documento JSON por fila.
   "weight": null,
   "water": 0,
   "creatine": false,
-  "act": {"gym": "push|pull|legs|full|", "gymMin", "walkMin", "tennisMin", "bikeMin", "bikeKm", "sets": [{"id", "ex", "kg", "reps"}]},
+  "act": {"gym": "push|pull|legs|full|", "gymMin", "tennisMin", "bikeMin", "bikeKm", "sets": [{"id", "ex", "kg", "reps"}]},
   "bass": {"minutes", "logs": [{"id", "techId", "bpm", "clean"}], "songs": [songId]},
   "study": [{"id", "itemId", "amount", "minutes"}]
 }

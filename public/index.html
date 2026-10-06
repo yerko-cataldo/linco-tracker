@@ -87,7 +87,11 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:64ch;font-size:1.02rem}
 .gwt td:last-child{font-size:.8rem;line-height:1.4;padding-left:10px}
 .gwt td.gw{height:60px;cursor:pointer;text-align:center;border-radius:6px}
 .gwt td.gw:hover{background:var(--sunken)}
-.gwt td.gw.today{box-shadow:inset 0 0 0 1.5px var(--act)}
+.gwt td.gw.today{outline:1.5px dashed var(--act);outline-offset:-3px}
+.gwt td.gw.sel{box-shadow:inset 0 0 0 2px var(--act)}
+.gwt tr.selwk td{background:color-mix(in srgb,var(--act) 5%,var(--surface))}
+.gwt tr.selwk td.gw:hover{background:var(--sunken)}
+.gwt tr.selwk td:first-child{color:var(--ink);font-weight:600}
 .gwt td.gw.fut{opacity:.35;cursor:default}
 .gwt .gw-gym,.gwt .gw-bike{border-radius:6px;padding:4px 2px;line-height:1.2;font-size:.78rem}
 .gwt .gw-gym{background:color-mix(in srgb,var(--act) 16%,var(--surface));color:var(--act)}
@@ -369,7 +373,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     <div class="panel quick ai-only" id="quickPanel" hidden>
       <h3>Registro rápido</h3>
       <label class="sr" for="quickText">Cuéntame qué hiciste</label>
-      <textarea id="quickText" placeholder="Ej: almorcé pechuga con arroz, palta y tomate; paseo de 90 min con el galgo; pull 40 min; 30 min de bajo, octavas a 110 limpio; leí 20 páginas"></textarea>
+      <textarea id="quickText" placeholder="Ej: almorcé pechuga con arroz, palta y tomate; tenis 60 min; pull 40 min; 30 min de bajo, octavas a 110 limpio; leí 20 páginas"></textarea>
       <div class="row" style="margin-top:8px">
         <button class="btn primary" data-action="quick-parse">Interpretar</button>
         <span class="small muted" id="quickStatus"></span>
@@ -470,7 +474,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <!-- ENTRENO -->
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
-    <div class="panel"><h3>Días de gimnasio (últimos 7 días)</h3><div class="days7 act" id="gymDays7"></div></div>
+    <div class="panel"><h3 id="gymWeekTitle">Semana seleccionada</h3><div class="days7 act" id="gymDays7"></div></div>
     <div class="panel mt"><h3>Gimnasio y bici por semana</h3><div id="gymWeeks"></div></div>
     <div class="grid g2 mt">
       <div class="panel stack">
@@ -480,14 +484,12 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="field w5">Minutos<input id="aGymMin" inputmode="numeric" placeholder="40"></div>
         </div>
         <div class="row">
-          <div class="field w7">Paseo galgo min<input id="aWalk" inputmode="numeric"></div>
           <div class="field w5">Tenis min<input id="aTennis" inputmode="numeric"></div>
           <div class="field w5">Bici min<input id="aBike" inputmode="numeric"></div>
           <div class="field w5">Bici km<input id="aBikeKm" inputmode="decimal"></div>
         </div>
         <div class="row">
           <button class="btn primary" data-action="act-save">Guardar actividad</button>
-          <button class="btn" data-action="act-walk">Paseo completo (meta)</button>
         </div>
         <div id="actToday"></div>
       </div>
@@ -743,7 +745,6 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           </div>
           <div class="row">
             <div class="field w7">Min activos/día<input id="gActive" inputmode="numeric"></div>
-            <div class="field w7">Paseo galgo min<input id="gWalk" inputmode="numeric"></div>
             <div class="field w7">Gimnasio/sem<input id="gGym" inputmode="numeric"></div>
           </div>
           <div class="row">
@@ -799,13 +800,14 @@ let toastT;
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600); }
 
 /* ---------- estado ---------- */
-const DEFAULT_GOALS = {kcal:2700, protein:185, carbs:300, fat:85, fiber:38, tol:10, plantsWeek:30, water:10, activeMin:120, walkMin:90, gymWeek:3, bassMin:30, bassDays:5, studyMin:30};
+const DEFAULT_GOALS = {kcal:2700, protein:185, carbs:300, fat:85, fiber:38, tol:10, plantsWeek:30, water:10, activeMin:120, gymWeek:3, bassMin:30, bassDays:5, studyMin:30};
 const DEFAULT_PROFILE = {
   sex: "hombre", age: 30, height: 175, weight: 75,
   about: "", goal: "", activity: "", foods: "", notes: "", phase: "recomp", pal: 1.55
 };
 const SONG_STATES = ["por aprender","aprendiendo","tocándola","dominada"];
-const GYM_START = "2026-09-28";
+const DATA_START = "2026-09-28", WALK_DAILY_MIN = 60;
+const walkOf = date => date >= DATA_START && date <= today() ? WALK_DAILY_MIN : 0;
 const fmtDur = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`; };
 const GYM_LABEL ={push:"Push", pull:"Pull", legs:"Legs", full:"Full body"};
 // Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
@@ -848,12 +850,12 @@ const S = {
 };
 const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list"};
 
-function emptyDay(date){ return {date, meals:[], weight:null, water:0, creatine:false, act:{gym:"", gymMin:0, walkMin:0, tennisMin:0, bikeMin:0, bikeKm:0, sets:[]}, bass:{minutes:0, logs:[], songs:[]}, study:[]}; }
+function emptyDay(date){ return {date, meals:[], weight:null, water:0, creatine:false, act:{gym:"", gymMin:0, tennisMin:0, bikeMin:0, bikeKm:0, sets:[]}, bass:{minutes:0, logs:[], songs:[]}, study:[]}; }
 function normDay(d, date){
   const e = emptyDay(date); if (!d) return e;
   const o = Object.assign(e, clone(d));
   o.bass = Object.assign({minutes:0, logs:[], songs:[]}, o.bass || {});
-  o.act = Object.assign({gym:"", gymMin:0, walkMin:0, tennisMin:0, bikeMin:0, bikeKm:0, sets:[]}, o.act || {});
+  o.act = Object.assign({gym:"", gymMin:0, tennisMin:0, bikeMin:0, bikeKm:0, sets:[]}, o.act || {});
   o.meals = o.meals || []; o.study = o.study || [];
   return o;
 }
@@ -925,7 +927,7 @@ function kcalScore(kcal, g){ const tolAbs = g.kcal * g.tol / 100, dev = Math.abs
 function dayStats(date){
   const d = day(date), g = goals(), a = d.act;
   const kcal = sum(d.meals, m => m.kcal), p = sum(d.meals, m => m.p), c = sum(d.meals, m => m.c), f = sum(d.meals, m => m.f), fib = sum(d.meals, m => m.fib);
-  const actMin = (a.walkMin || 0) + (a.gym ? (a.gymMin || 40) : 0) + (a.tennisMin || 0) + (a.bikeMin || 0);
+  const actMin = walkOf(date) + (a.gym ? (a.gymMin || 40) : 0) + (a.tennisMin || 0) + (a.bikeMin || 0);
   const studyMin = sum(d.study, s => s.minutes), bassMin = d.bass.minutes || 0;
   const pct = {
     food: d.meals.length ? .5 * Math.min(1, p / g.protein) + .5 * kcalScore(kcal, g) : null,
@@ -947,7 +949,7 @@ function weekStats(date){
     fibAvg: logged.length ? sum(logged, s => s.fib) / logged.length : null,
     foodOk: st.filter(s => s.pct.food !== null && s.pct.food >= .95).length, foodLogged: logged.length,
     plants: plants.size, plantList: [...plants],
-    actMin: sum(st, s => s.actMin), walkMin: sum(st, s => s.d.act.walkMin), tennisMin: sum(st, s => s.d.act.tennisMin), bikeKm: sum(st, s => s.d.act.bikeKm),
+    actMin: sum(st, s => s.actMin), tennisMin: sum(st, s => s.d.act.tennisMin), bikeKm: sum(st, s => s.d.act.bikeKm),
     gym, gymCount: Object.values(gym).reduce((a, b) => a + b, 0),
     bassMin: sum(st, s => s.bassMin), bassDays: st.filter(s => s.pct.bass !== null).length,
     studyMin: sum(st, s => s.studyMin), studyDays: st.filter(s => s.studyMin > 0).length
@@ -964,7 +966,6 @@ const TIERS = [[0,"Hierro"],[20,"Bronce"],[35,"Plata"],[50,"Oro"],[65,"Platino"]
 function tierOf(score){ let i = 0; TIERS.forEach((t, k) => { if (score >= t[0]) i = k; }); return {i, name: TIERS[i][1], next: TIERS[i+1]}; }
 function streak(pred){ let n = 0, d = today(); if (!pred(d)) d = addDays(d, -1); while (pred(d) && n < 999){ n++; d = addDays(d, -1); } return n; }
 const bassStreak = () => streak(x => { const s = day(x); return s.bass.minutes > 0 || s.bass.logs.length > 0; });
-const walkStreak = () => streak(x => (day(x).act.walkMin || 0) >= goals().walkMin);
 function allDatesAsc(){ return Object.keys(S.days).sort(); }
 function techHistory(id){ const out = []; for (const dt of allDatesAsc()) for (const l of day(dt).bass.logs) if (l.techId === id) out.push({date: dt, bpm: l.bpm, clean: !!l.clean}); return out; }
 function techBest(id){ const h = techHistory(id).filter(x => x.clean && x.bpm); return h.length ? Math.max(...h.map(x => x.bpm)) : null; }
@@ -1128,8 +1129,7 @@ function renderKpis(){
       ["Proteína", `${fmt(st.p)} / ${fmt(g.protein)} g`], ["Fibra", `${fmt(st.fib)} / ${fmt(g.fiber)} g`],
       ["Plantas distintas (sem)", `${ws.plants} / ${g.plantsWeek}`], ["Días en meta", `${ws.foodOk} de ${ws.foodLogged}`]]) +
     kpiBlock("c-act", `Entreno ${lbl}`, fmt(st.actMin), fmt(g.activeMin), "min", st.actMin / g.activeMin * 100, [
-      ["Paseo galgo", `${fmt(st.d.act.walkMin)} / ${fmt(g.walkMin)} min`], ["Gimnasio (sem)", `${ws.gymCount} / ${g.gymWeek}`],
-      ["Racha de paseos", days_(walkStreak())], ["Bici (sem)", `${fmt(ws.bikeKm, 1)} km`]]) +
+      ["Gimnasio (sem)", `${ws.gymCount} / ${g.gymWeek}`], ["Bici (sem)", `${fmt(ws.bikeKm, 1)} km`], ["Tenis (sem)", `${fmt(ws.tennisMin)} min`]]) +
     kpiBlock("c-bass", `Bajo ${lbl}`, fmt(st.bassMin), fmt(g.bassMin), "min", st.bassMin / g.bassMin * 100, [
       ["Semana", `${fmt(ws.bassMin)} / ${fmt(g.bassMin * g.bassDays)} min`], ["Días practicados", `${ws.bassDays} de ${g.bassDays}`],
       ["Racha", days_(bassStreak())], ["Último limpio", lastTech ? esc(lastTech) + " bpm" : "—"]]) +
@@ -1247,36 +1247,37 @@ function renderNutDash(){
 
 function renderAct(){
   const g = goals(), d = day(S.date), st = dayStats(S.date), ws = weekStats(S.date), a = d.act;
-  $("#actLede").textContent = `${fmtLong(S.date)}. Meta: ${g.activeMin} min activos al día, ${g.walkMin} min de paseo con el galgo y ${g.gymWeek} sesiones de gimnasio por semana.`;
-  setVal("#aGym", a.gym); setVal("#aGymMin", a.gymMin || ""); setVal("#aWalk", a.walkMin || ""); setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
-  setHTML($("#gymDays7"), [6,5,4,3,2,1,0].map(n => {
-    const dt = addDays(S.date, -n), ga = day(dt).act, gym = !!ga.gym;
+  $("#actLede").textContent = `${fmtLong(S.date)}. Meta: ${g.activeMin} min activos al día (incluye ${WALK_DAILY_MIN} min de paseo con el galgo) y ${g.gymWeek} sesiones de gimnasio por semana.`;
+  setVal("#aGym", a.gym); setVal("#aGymMin", a.gymMin || ""); setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
+  const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
+  const selWk = weekDates(S.date), tdy = today();
+  $("#gymWeekTitle").textContent = `Gimnasio de la semana del ${wkLabel(selWk[0], selWk[6])}`;
+  setHTML($("#gymDays7"), selWk.map(dt => {
+    const ga = day(dt).act, gym = !!ga.gym, fut = dt > tdy;
     return `<button class="day7${gym ? "" : " empty"}" data-action="day-open" data-d="${dt}"${dt === S.date ? ' aria-current="true"' : ""} aria-label="${esc(fmtLong(dt))}">
       <span class="dw">${esc(parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))} ${parseYmd(dt).getDate()}</span>
-      <span class="dk">${gym ? esc(GYM_LABEL[ga.gym] || ga.gym) : "Descanso"}</span>
+      <span class="dk">${gym ? esc(GYM_LABEL[ga.gym] || ga.gym) : fut ? "–" : "Descanso"}</span>
       <span class="dp">${gym ? fmtDur(ga.gymMin || 40) : "&nbsp;"}</span></button>`;
   }).join(""));
-  const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
-  const wk0 = weekDates(S.date)[0], tdy = today(), WD = ["L","Ma","Mi","J","V","S","D"];
-  const wkIdx = []; for (let w = wk0; w >= GYM_START; w = addDays(w, -7)) wkIdx.push(wkIdx.length);
+  const wk0 = weekDates(tdy)[0], WD = ["L","Ma","Mi","J","V","S","D"];
+  const wkIdx = []; for (let w = wk0; w >= DATA_START; w = addDays(w, -7)) wkIdx.push(wkIdx.length);
   const wkRows = wkIdx.map(i => {
     const ds = weekDates(addDays(wk0, -7 * i)), all = ds.map(x => day(x).act), acts = all.filter(x => x.gym), bikes = all.filter(x => x.bikeMin || x.bikeKm);
     const cells = ds.map((x, j) => { const a = all[j], bike = a.bikeMin || a.bikeKm;
       const gymTxt = a.gym ? `<div class="gw-gym"><strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><small>${fmtDur(a.gymMin || 40)}</small></div>` : "";
       const bikeTxt = bike ? `<div class="gw-bike"><strong>${a.bikeKm ? fmt(a.bikeKm, 1) + " km" : "Bici"}</strong>${a.bikeMin ? `<small>${fmtDur(a.bikeMin)}</small>` : ""}</div>` : "";
-      return `<td class="gw${x === tdy ? " today" : ""}${x > tdy ? " fut" : ""}"${x > tdy ? "" : ` data-action="day-open" data-d="${x}"`}>${gymTxt}${bikeTxt}</td>`; }).join("");
+      return `<td class="gw${x === tdy ? " today" : ""}${x === S.date ? " sel" : ""}${x > tdy ? " fut" : ""}"${x > tdy ? "" : ` data-action="day-open" data-d="${x}"`}>${gymTxt}${bikeTxt}</td>`; }).join("");
     const gymTot = acts.length ? fmtDur(sum(acts, x => x.gymMin || 40)) : "–", bikeKm = sum(bikes, x => x.bikeKm);
-    return `<tr><td>${wkLabel(ds[0], ds[6])}</td>${cells}<td class="tot${acts.length >= g.gymWeek ? " met" : ""}"><b>${acts.length}/${g.gymWeek}</b> gym · ${gymTot}${bikes.length ? `<br><b>${bikes.length}</b> bici${bikeKm ? " · " + fmt(bikeKm, 1) + " km" : ""}` : ""}</td></tr>`;
+    return `<tr${ds[0] === selWk[0] ? ' class="selwk"' : ""}><td>${wkLabel(ds[0], ds[6])}</td>${cells}<td class="tot${acts.length >= g.gymWeek ? " met" : ""}"><b>${acts.length}/${g.gymWeek}</b> gym · ${gymTot}${bikes.length ? `<br><b>${bikes.length}</b> bici${bikeKm ? " · " + fmt(bikeKm, 1) + " km" : ""}` : ""}</td></tr>`;
   }).join("");
-  setHTML($("#gymWeeks"), `<div class="gw-legend"><span><i style="background:var(--act)"></i>Gimnasio</span><span><i style="background:var(--study)"></i>Bici</span></div><div class="gw-scroll"><table class="gwt"><thead><tr><th>Semana</th>${WD.map(x => `<th>${x}</th>`).join("")}<th>Total semana</th></tr></thead><tbody>${wkRows}</tbody></table></div>`);
-  setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)") + meter("Paseo con el galgo", a.walkMin || 0, g.walkMin, "min", "var(--act)"));
+  setHTML($("#gymWeeks"), `<div class="gw-legend"><span><i style="background:var(--act)"></i>Gimnasio</span><span><i style="background:var(--study)"></i>Bici</span><span><i style="outline:1.5px dashed var(--act);outline-offset:-1px"></i>Hoy</span></div><div class="gw-scroll"><table class="gwt"><thead><tr><th>Semana</th>${WD.map(x => `<th>${x}</th>`).join("")}<th>Total semana</th></tr></thead><tbody>${wkRows}</tbody></table></div>`);
+  setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)"));
   setHTML($("#actChart"), barChart(weekDates(S.date).map(x => dayStats(x).actMin), DOW, g.activeMin, "var(--act)", "min"));
   const wSets = ws.st.flatMap(s => s.d.act.sets);
   const nextGym = (() => { const done = ["push","pull","legs"].map(k => [k, ws.gym[k] || 0]).sort((x, y) => x[1] - y[1]); return GYM_LABEL[done[0][0]]; })();
   setHTML($("#actWeek"), `<div class="kpi flat c-act" style="padding-top:0"><dl>
     <dt>Gimnasio</dt><dd>${ws.gymCount} / ${g.gymWeek} (Push ${ws.gym.push||0}, Pull ${ws.gym.pull||0}, Legs ${ws.gym.legs||0})</dd>
     <dt>Le toca al siguiente día de gimnasio</dt><dd>${nextGym}</dd>
-    <dt>Paseos con el galgo</dt><dd>${fmt(ws.walkMin)} min</dd>
     <dt>Tenis</dt><dd>${fmt(ws.tennisMin)} min</dd>
     <dt>Bici</dt><dd>${fmt(ws.bikeKm, 1)} km</dd>
     <dt>Series de gimnasio</dt><dd>${wSets.length}</dd>
@@ -1411,7 +1412,7 @@ function renderProfile(){
   setVal("#pAbout", p.about); setVal("#pGoal", p.goal); setVal("#pActivity", p.activity); setVal("#pFoods", p.foods); setVal("#pNotes", p.notes);
   setVal("#cPal", String(p.pal)); setVal("#cPhase", p.phase);
   setVal("#gKcal", g.kcal); setVal("#gProt", g.protein); setVal("#gCarb", g.carbs); setVal("#gFat", g.fat); setVal("#gFib", g.fiber);
-  setVal("#gTol", g.tol); setVal("#gPlants", g.plantsWeek); setVal("#gWater", g.water); setVal("#gActive", g.activeMin); setVal("#gWalk", g.walkMin); setVal("#gGym", g.gymWeek);
+  setVal("#gTol", g.tol); setVal("#gPlants", g.plantsWeek); setVal("#gWater", g.water); setVal("#gActive", g.activeMin); setVal("#gGym", g.gymWeek);
   setVal("#gBass", g.bassMin); setVal("#gBassDays", g.bassDays); setVal("#gStudy", g.studyMin);
   renderCalc();
   $("#dataInfo").textContent = (S.mode === "api" ? "Guardados en tu base de datos D1 en Cloudflare." : S.mode === "offline" ? "Sin conexión con la base de datos." : "Cargando…") + ` ${Object.keys(S.days).length} días cargados.`;
@@ -1650,7 +1651,7 @@ const actions = {
 
   "act-save": () => {
     const gym = $("#aGym").value;
-    saveDay(S.date, d => { Object.assign(d.act, {gym, gymMin: gym ? (num($("#aGymMin").value) || 40) : 0, walkMin: num($("#aWalk").value) || 0, tennisMin: num($("#aTennis").value) || 0, bikeMin: num($("#aBike").value) || 0, bikeKm: num($("#aBikeKm").value) || 0}); });
+    saveDay(S.date, d => { Object.assign(d.act, {gym, gymMin: gym ? (num($("#aGymMin").value) || 40) : 0, tennisMin: num($("#aTennis").value) || 0, bikeMin: num($("#aBike").value) || 0, bikeKm: num($("#aBikeKm").value) || 0}); });
     document.activeElement && document.activeElement.blur(); toast("Actividad guardada.");
   },
   "set-add": () => {
@@ -1668,7 +1669,6 @@ const actions = {
   "rest-set": el => { Rest.set(Number(el.dataset.v)); document.querySelectorAll("#restChips .chip").forEach(c => c.classList.toggle("sel", c === el)); },
   "rest-toggle": () => Rest.running ? Rest.stop() : Rest.start(),
   "rest-add": el => Rest.add(Number(el.dataset.v)),
-  "act-walk": () => { saveDay(S.date, d => { d.act.walkMin = goals().walkMin; }); toast("Paseo registrado. Buen chico."); },
 
   "metro-toggle": () => Metro.toggle(),
   "beat-acc": el => { const i = +el.dataset.i; Metro.acc[i] = ((Metro.acc[i] ?? 1) + 2) % 3; Metro.drawBeats(); },
@@ -1735,7 +1735,7 @@ const actions = {
   },
   "goals-save": () => {
     const v = {kcal: num($("#gKcal").value), protein: num($("#gProt").value), carbs: num($("#gCarb").value), fat: num($("#gFat").value), fiber: num($("#gFib").value), tol: num($("#gTol").value), plantsWeek: num($("#gPlants").value), water: num($("#gWater").value),
-      activeMin: num($("#gActive").value), walkMin: num($("#gWalk").value), gymWeek: num($("#gGym").value), bassMin: num($("#gBass").value), bassDays: num($("#gBassDays").value), studyMin: num($("#gStudy").value)};
+      activeMin: num($("#gActive").value), gymWeek: num($("#gGym").value), bassMin: num($("#gBass").value), bassDays: num($("#gBassDays").value), studyMin: num($("#gStudy").value)};
     for (const k in v) if (!v[k] || v[k] < 0) v[k] = DEFAULT_GOALS[k];
     document.activeElement && document.activeElement.blur(); saveLib("goals", () => v); toast("Metas guardadas.");
   },
@@ -1889,7 +1889,7 @@ Hora actual en Chile: ${chileNow()}. ${S.date !== today() ? `Ojo: está revisand
 Metas diarias: ${JSON.stringify({kcal: g.kcal, proteina_g: g.protein, carbohidratos_g: g.carbs, grasa_g: g.fat, fibra_g: g.fiber, agua_vasos: g.water})}
 Comido hasta ahora: ${JSON.stringify(st.d.meals.map(m => ({hora: m.time, comida: m.desc, kcal: m.kcal, p: m.p, c: m.c, g: m.f, fibra: m.fib})))}
 Lo que falta (calculado, no lo recalcules): ${JSON.stringify(falta)}
-Actividad del día: ${JSON.stringify({gimnasio: a.gym || "no", paseo_min: a.walkMin, tenis_min: a.tennisMin, bici_min: a.bikeMin})}
+Actividad del día: ${JSON.stringify({gimnasio: a.gym || "no", tenis_min: a.tennisMin, bici_min: a.bikeMin})}
 Alimentos que tengo registrados: ${foods().map(f => f.name).join(", ")}
 Plantas distintas comidas esta semana (${ws.plants} de meta ${g.plantsWeek}): ${ws.plantList.join(", ") || "ninguna registrada"}
 Instrucciones: evalúa micronutrientes clave según lo comido (por ejemplo magnesio, potasio, calcio, vitamina D, omega-3, hierro, zinc, vitamina C, folato); elige los 5 o 6 más relevantes para hoy. Propón exactamente 2 opciones para la siguiente comida que cuadren con lo que falta y con la hora, priorizando sus alimentos preferidos y sumando a lo más un alimento nuevo si cubre un déficit. No des consejos médicos.
@@ -1914,11 +1914,11 @@ ${profileText()}
 Catálogo existente (usa estos id cuando el texto se refiera a ellos, aunque el nombre no sea exacto): ${JSON.stringify(cat)}
 Mis alimentos (valores ya medidos por 100 g tal como se comen): ${JSON.stringify(foodsForPrompt())}
 Reglas para comidas: ${ITEMS_RULES} Si no se indican porciones, asume porciones típicas para esta persona.
-Otras reglas: "Paseo" o "caminata con el perro/galgo" va en walkMin. Si una técnica no existe en el catálogo, deja techId null y pon su nombre en techName. Si un libro no existe, deja itemId null y pon su título en title. No inventes lo que el texto no menciona: usa null o listas vacías.
+Otras reglas: El paseo diario con el galgo no se registra. Si una técnica no existe en el catálogo, deja techId null y pon su nombre en techName. Si un libro no existe, deja itemId null y pon su título en title. No inventes lo que el texto no menciona: usa null o listas vacías.
 Texto: """${text}"""
 Responde solo con este JSON:
 {"meals":[{"time":"HH:MM" o null,"desc":string,"items":${ITEMS_SCHEMA}}],
- "act":{"gym":"push"|"pull"|"legs"|"full"|null,"gymMin":number o null,"walkMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
+ "act":{"gym":"push"|"pull"|"legs"|"full"|null,"gymMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
  "bassMinutes": number o null,
  "bassLogs":[{"techId":string o null,"techName":string o null,"bpm":number,"clean":boolean}],
  "songsPracticed":[songId],
@@ -1935,7 +1935,6 @@ function renderQuickPreview(){
   (r.meals || []).forEach(m => { const mm = mealFromItems(itemsFromAI(m.items), m.desc); const ai = mm.items.filter(i => i.ai).length;
     li.push(`Comida: ${esc(mm.desc)}, ${fmt(mm.kcal)} kcal, ${fmt(mm.p)} g proteína (${esc(mm.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))})${ai ? `, ${ai} estimado(s) por IA` : ""}`); });
   if (a.gym) li.push(`Gimnasio: ${GYM_LABEL[a.gym] || esc(a.gym)} ${a.gymMin ? fmt(a.gymMin) + " min" : ""}`);
-  if (a.walkMin) li.push(`Paseo con el galgo: ${fmt(a.walkMin)} min`);
   if (a.tennisMin) li.push(`Tenis: ${fmt(a.tennisMin)} min`);
   if (a.bikeMin || a.bikeKm) li.push(`Bici: ${fmt(a.bikeMin)} min ${a.bikeKm ? fmt(a.bikeKm, 1) + " km" : ""}`);
   if (r.bassMinutes) li.push(`Bajo: +${fmt(r.bassMinutes)} min`);
@@ -1962,7 +1961,7 @@ function quickApply(){
   saveDay(S.date, d => {
     (r.meals || []).forEach(m => { const items = itemsFromAI(m.items); if (items.length) d.meals.push(mealFromItems(items, m.desc, m.time)); });
     if (a.gym && GYM_LABEL[a.gym]){ d.act.gym = a.gym; d.act.gymMin = a.gymMin || 40; }
-    ["walkMin","tennisMin","bikeMin","bikeKm"].forEach(k => { if (a[k]) d.act[k] = (d.act[k] || 0) + a[k]; });
+    ["tennisMin","bikeMin","bikeKm"].forEach(k => { if (a[k]) d.act[k] = (d.act[k] || 0) + a[k]; });
     if (r.bassMinutes) d.bass.minutes = (d.bass.minutes || 0) + r.bassMinutes;
     d.bass.logs.push(...logs);
     (r.songsPracticed || []).forEach(id => { if (S.lib.songs.some(s => s.id === id) && !d.bass.songs.includes(id)) d.bass.songs.push(id); });
@@ -1979,7 +1978,7 @@ function contextData(){
   for (let i = 13; i >= 0; i--){
     const dt = addDays(t, -i), s = dayStats(dt), d = s.d;
     dias.push({fecha: dt, dia: parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}), kcal: Math.round(s.kcal), prot_g: Math.round(s.p), fibra_g: Math.round(s.fib), comidas: d.meals.map(m => m.desc), peso: d.weight, agua: d.water,
-      gimnasio: d.act.gym || null, series: d.act.sets.map(x => `${x.ex} ${x.kg}x${x.reps}`), paseo_min: d.act.walkMin, tenis_min: d.act.tennisMin, bici_km: d.act.bikeKm,
+      gimnasio: d.act.gym || null, series: d.act.sets.map(x => `${x.ex} ${x.kg}x${x.reps}`), tenis_min: d.act.tennisMin, bici_km: d.act.bikeKm,
       bajo_min: s.bassMin, tecnicas: d.bass.logs.map(l => ({t: (S.lib.techniques.find(x => x.id === l.techId) || {}).name, bpm: l.bpm, limpio: l.clean})),
       canciones: d.bass.songs.map(id => (S.lib.songs.find(x => x.id === id) || {}).title).filter(Boolean),
       estudio_min: s.studyMin, estudio: d.study.map(x => ({item: (S.lib.books.find(b => b.id === x.itemId) || {}).title, avance: x.amount}))});
