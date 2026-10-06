@@ -78,6 +78,14 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:64ch;font-size:1.02rem}
 .day7 .dw{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .day7 .dk{font-family:"Chakra Petch",system-ui,sans-serif;font-weight:600;font-size:1.3rem;line-height:1.2}
 .day7 .dp{font-size:.8rem;color:var(--muted)}
+.gwt td.gw{text-align:center;font-size:.82rem;line-height:1.25;cursor:pointer;padding:6px 2px}
+.gwt td.gw.on{background:color-mix(in srgb,var(--act) 14%,var(--surface));color:var(--act)}
+.gwt th{text-align:center}
+.gwt th:first-child{text-align:left}
+@media (max-width:560px){.gwt td.gw{font-size:.68rem;padding:4px 0}}
+.days7.act .day7[aria-current=true]{border-color:var(--act)}
+.days7.act .dk{font-size:1rem;font-family:var(--display);color:var(--act);text-align:center}
+.days7.act .day7.empty .dk{color:var(--muted)}
 @media (max-width:560px){.days7{gap:4px}.day7{padding:8px 2px}.day7 .dk{font-size:1rem}.day7 .dw{font-size:.62rem}}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -445,7 +453,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <!-- ENTRENO -->
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
-    <div class="grid g2">
+    <div class="panel"><h3>Días de gimnasio (últimos 7 días)</h3><div class="days7 act" id="gymDays7"></div></div>
+    <div class="panel mt"><h3>Gimnasio por semana (últimas 8)</h3><div id="gymWeeks"></div></div>
+    <div class="grid g2 mt">
       <div class="panel stack">
         <h3>Actividad del día</h3>
         <div class="row">
@@ -778,7 +788,8 @@ const DEFAULT_PROFILE = {
   about: "", goal: "", activity: "", foods: "", notes: "", phase: "recomp", pal: 1.55
 };
 const SONG_STATES = ["por aprender","aprendiendo","tocándola","dominada"];
-const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body"};
+const fmtDur = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`; };
+const GYM_LABEL ={push:"Push", pull:"Pull", legs:"Legs", full:"Full body"};
 // Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
 // los marcados "revisar" dependen de la marca o del corte y conviene corregirlos con la etiqueta.
 const FOOD_SEED = [
@@ -1220,6 +1231,21 @@ function renderAct(){
   const g = goals(), d = day(S.date), st = dayStats(S.date), ws = weekStats(S.date), a = d.act;
   $("#actLede").textContent = `${fmtLong(S.date)}. Meta: ${g.activeMin} min activos al día, ${g.walkMin} min de paseo con el galgo y ${g.gymWeek} sesiones de gimnasio por semana.`;
   setVal("#aGym", a.gym); setVal("#aGymMin", a.gymMin || ""); setVal("#aWalk", a.walkMin || ""); setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
+  setHTML($("#gymDays7"), [6,5,4,3,2,1,0].map(n => {
+    const dt = addDays(S.date, -n), ga = day(dt).act, gym = !!ga.gym;
+    return `<button class="day7${gym ? "" : " empty"}" data-action="day-open" data-d="${dt}"${dt === S.date ? ' aria-current="true"' : ""} aria-label="${esc(fmtLong(dt))}">
+      <span class="dw">${esc(parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))} ${parseYmd(dt).getDate()}</span>
+      <span class="dk">${gym ? esc(GYM_LABEL[ga.gym] || ga.gym) : "Descanso"}</span>
+      <span class="dp">${gym ? fmtDur(ga.gymMin || 40) : "&nbsp;"}</span></button>`;
+  }).join(""));
+  const wk0 = weekDates(S.date)[0];
+  const wkRows = [0,1,2,3,4,5,6,7].map(i => {
+    const ds = weekDates(addDays(wk0, -7 * i)), acts = ds.map(x => day(x).act).filter(x => x.gym);
+    const cells = ds.map(x => { const a = day(x).act;
+      return `<td class="gw${a.gym ? " on" : ""}" data-action="day-open" data-d="${x}">${a.gym ? `<strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><br><span class="small muted">${fmtDur(a.gymMin || 40)}</span>` : ""}</td>`; }).join("");
+    return `<tr><td>${fmtShort(ds[0])}</td>${cells}<td class="n"><strong>${acts.length}</strong> / ${g.gymWeek}<br><span class="small muted">${acts.length ? fmtDur(sum(acts, x => x.gymMin || 40)) : "–"}</span></td></tr>`;
+  }).join("");
+  setHTML($("#gymWeeks"), `<table class="gwt"><thead><tr><th>Semana</th>${DOW.map(x => `<th>${x}</th>`).join("")}<th class="n">Total</th></tr></thead><tbody>${wkRows}</tbody></table>`);
   setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)") + meter("Paseo con el galgo", a.walkMin || 0, g.walkMin, "min", "var(--act)"));
   setHTML($("#actChart"), barChart(weekDates(S.date).map(x => dayStats(x).actMin), DOW, g.activeMin, "var(--act)", "min"));
   const wSets = ws.st.flatMap(s => s.d.act.sets);
