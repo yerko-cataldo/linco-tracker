@@ -229,7 +229,9 @@ async function ai(request, env) {
   const system = [
     "Responde en español de Chile.",
     body.json ? "Responde únicamente con JSON válido, sin texto adicional ni bloques de código." : "",
-  ].filter(Boolean).join(" ");
+  ].filter(Boolean).join(" ")
+    // Instrucciones fijas de la tarea que manda el front (por ejemplo, la propuesta del día)
+    + (typeof body.system === "string" && body.system.trim() ? "\n\n" + body.system.slice(0, 4000) : "");
   const stream = !!body.stream && !body.json;
   const maxTokens = Math.min(Math.max(Number(body.max_tokens) || 2000, 64), 4000);
 

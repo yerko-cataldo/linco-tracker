@@ -46,7 +46,7 @@ function loadApp() {
     matchMedia: () => ({ matches: false, addEventListener() {} }),
   };
   vm.createContext(ctx);
-  vm.runInContext(src + "\n;globalThis.__app = {S, generatePlan, planNeed, planSlots, mealHistory, slotOf, setTune: f => { tunePlanOpt = f; }, tunePlanOpt, renderPlan: () => {}};", ctx);
+  vm.runInContext(src + "\n;globalThis.__app = {S, generatePlan, planNeed, planTargets, mealHistory, slotOf, renderPlan: () => {}};", ctx);
   return ctx;
 }
 
@@ -76,11 +76,11 @@ async function run() {
   // Llamada al Worker con la misma forma que usa el front (tier complex, json)
   let last = null;
   S.sample = {
-    json: async (prompt) => {
+    json: async (prompt, opts = {}) => {
       const t0 = Date.now();
       const r = await fetch(`${base}/api/ai`, {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], tier: "complex", json: true, max_tokens: Number(args.max || 4000) }),
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], tier: "complex", json: true, system: opts.system, max_tokens: opts.maxTokens }),
       });
       const body = await r.json().catch(() => ({}));
       last = { status: r.status, latency_s: (Date.now() - t0) / 1000, model: body.model, provider: body.provider, truncated: body.truncated, error: body.error, promptChars: prompt.length };
@@ -90,10 +90,6 @@ async function run() {
       try { return JSON.parse(t.slice(a, b + 1)); } catch { throw { code: "invalid_json" }; }
     },
   };
-  // Guarda los totales antes del afinado: miden qué tan bien suma el modelo por sí solo
-  const tune = app.tunePlanOpt;
-  let rawTotals = [];
-  app.setTune((meals, need) => { const out = tune(meals, need); rawTotals.push({ kcal: meals.reduce((s, m) => s + m.tot.kcal, 0), p: meals.reduce((s, m) => s + m.tot.p, 0) }); return out; });
 
   const results = [];
   for (const date of days) {
@@ -101,18 +97,19 @@ async function run() {
     for (const sc of SCENARIOS) {
       const eaten = sc.upTo < 0 ? [] : full.meals.filter((m) => { const s = app.slotOf(m.time); return s !== null && s <= sc.upTo; });
       S.days[date] = { ...full, meals: eaten };
-      ctx.__T.date = date; ctx.__T.now = sc.now; ctx.__T.chile = chileLabel(date, sc.now);
-      S.plan = null; last = null; rawTotals = [];
+      S.date = date; ctx.__T.date = date; ctx.__T.now = sc.now; ctx.__T.chile = chileLabel(date, sc.now);
+      S.plan = null; last = null;
       const { need, st } = app.planNeed(date);
       process.stdout.write(`${args.label} · ${date} · ${sc.label}… `);
       await app.generatePlan();
       const p = S.plan || {};
       results.push({
-        label: args.label, date, scenario: sc.id, scenarioLabel: sc.label, slots: app.planSlots(date, st), eaten: eaten.map((m) => `${m.time} ${m.desc}`),
+        label: args.label, date, scenario: sc.id, scenarioLabel: sc.label, slots: app.planTargets(date, st, need).map((t) => `${t.slot} ${t.kcal} kcal`), eaten: eaten.map((m) => `${m.time} ${m.desc}`),
         need, call: last && { ...last, raw: undefined }, raw: last && last.raw, status: p.status, err: p.err, nota: p.nota,
-        opts: (p.opts || []).map((o, i) => ({
-          k: o.k, raw: rawTotals[i], tot: o.tot,
-          meals: o.meals.map((m) => ({ slot: m.slot, desc: m.desc, tot: m.tot, items: m.items.map((it) => ({ name: it.name, g: it.g, kcal: it.kcal, p: it.p, ai: it.ai })) })),
+        opts: (p.opts || []).map((o) => ({
+          tot: o.tot, k: o.meals.some((m) => m.k !== 1) ? Math.max(...o.meals.map((m) => Math.abs(m.k - 1))) + 1 : 1,
+          raw: { kcal: o.meals.reduce((s, m) => s + (m.rawKcal ?? m.tot.kcal), 0) },
+          meals: o.meals.map((m) => ({ slot: m.slot, desc: m.desc, tot: m.tot, k: m.k, rawKcal: m.rawKcal, items: m.items.map((it) => ({ name: it.name, g: it.g, kcal: it.kcal, p: it.p, ai: it.ai })) })),
         })),
       });
       console.log(p.status === "ok" ? `ok (${last.latency_s.toFixed(1)} s)` : `error: ${p.err}`);
