@@ -453,7 +453,6 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="ai-only row mt" hidden>
         <div class="field grow">Comenta o pide un cambio<input id="planNote" type="text" placeholder="Ej: repártelo en una once y una cena, sin arroz, algo rápido de preparar"></div>
         <button class="btn" data-action="plan-ai">Ajustar con IA</button>
-        <span class="small muted" id="planAiStatus"></span>
       </div>
     </div>
     <div class="panel mt" id="nutDash" hidden></div>
@@ -855,7 +854,7 @@ const S = {
   date: today(), tab: "hoy", days: {},
   lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: []},
   build: [],
-  mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planAI: null
+  mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planNote: ""
 };
 const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list"};
 
@@ -1494,20 +1493,15 @@ function renderFoods(){
 function comboItems(c){ return (c.items || []).map(it => { const fd = it.foodId && foods().find(f => f.id === it.foodId); return fd ? itemFromFood(fd, it.g) : {...it, id: uid()}; }); }
 
 /* ---------- propuesta del día ---------- */
-// Arma el resto del día con comidas que ya registraste en esa franja y escala las porciones para cubrir lo que falta.
-// Todo lo calcula el código: los macros salen de la base de alimentos, igual que al registrar.
+// La IA arma el resto del día (alimentos y gramos) a partir de lo que falta y de lo que sueles comer.
+// La app calcula los macros con la base de alimentos y, si el total se desvía, afina las porciones con un factor común.
 const SLOTS = [["Desayuno", 0], ["Almuerzo", 11 * 60], ["Once", 16 * 60], ["Cena", 19 * 60 + 30]];
-const PLAN_DAYS = 60, PLAN_CANDS = 6, PLAN_KS = Array.from({length: 23}, (_, i) => r1(0.5 + i * 0.05));
+const PLAN_DAYS = 60, PLAN_CANDS = 6, PLAN_TOL = .05, PLAN_TUNE = [.75, 1.25];
 function slotOf(t){
   const m = /^(\d{1,2}):(\d{2})/.exec(t || ""); if (!m) return null;
   const min = +m[1] * 60 + +m[2]; let s = 0;
   SLOTS.forEach(([, from], i) => { if (min >= from) s = i; });
   return s;
-}
-// Lleva una comida pasada a la base actual: los ingredientes con foodId se recalculan con los valores de hoy.
-function mealItems(m){
-  if ((m.items || []).length) return m.items.map(it => { const fd = it.foodId && foods().find(f => f.id === it.foodId); return fd ? itemFromFood(fd, it.g) : {...it, id: uid()}; });
-  return [{id: uid(), foodId: null, name: m.desc || "Comida", g: 0, kcal: m.kcal || 0, p: m.p || 0, c: m.c || 0, f: m.f || 0, fib: m.fib || 0, plant: false, ai: !!m.ai, whole: true}];
 }
 function scaleItem(it, k){
   const fd = it.foodId && foods().find(f => f.id === it.foodId);
@@ -1516,9 +1510,9 @@ function scaleItem(it, k){
     const g = units ? Math.max(1, Math.round(it.g * k / fd.unitG)) * fd.unitG : Math.max(5, Math.round(it.g * k / 5) * 5);
     return itemFromFood(fd, g);
   }
-  return {...it, id: uid(), g: it.whole || !it.g ? 0 : Math.max(5, Math.round(it.g * k / 5) * 5), kcal: r1(it.kcal * k), p: r1(it.p * k), c: r1(it.c * k), f: r1(it.f * k), fib: r1(it.fib * k), k: it.whole ? k : undefined};
+  return {...it, id: uid(), g: it.g ? Math.max(5, Math.round(it.g * k / 5) * 5) : 0, kcal: r1(it.kcal * k), p: r1(it.p * k), c: r1(it.c * k), f: r1(it.f * k), fib: r1(it.fib * k)};
 }
-// Candidatas por franja: comidas distintas de los últimos 60 días, de la más repetida a la menos; guarda la versión más reciente.
+// Comidas habituales por franja en los últimos 60 días, de la más repetida a la menos: le dicen a la IA qué te gusta.
 function mealHistory(date){
   const by = SLOTS.map(() => new Map());
   for (let i = 1; i <= PLAN_DAYS; i++){
@@ -1527,123 +1521,104 @@ function mealHistory(date){
       const s = slotOf(m.time); if (s === null || !(m.kcal > 0)) continue;
       const key = (m.items || []).length ? m.items.map(x => x.foodId || norm(x.name)).sort().join("|") : norm(m.desc);
       const e = by[s].get(key);
-      if (e) e.n++; else by[s].set(key, {key, n: 1, desc: m.desc, items: mealItems(m)});
+      if (e) e.n++; else by[s].set(key, {n: 1, desc: m.desc, items: (m.items || []).map(it => it.name)});
     }
   }
-  // Totales ya escalados y redondeados para cada factor de porción, para puntuar con lo que de verdad se propondría.
-  return by.map(mp => [...mp.values()].sort((a, b) => b.n - a.n).slice(0, PLAN_CANDS).map(c => ({...c, byK: PLAN_KS.map(k => mealFromItems(c.items.map(it => scaleItem(it, k))))})));
+  return by.map(mp => [...mp.values()].sort((a, b) => b.n - a.n).slice(0, PLAN_CANDS));
 }
-// nMeals 0 = las franjas que quedan, con libertad para saltarse alguna; 1 a 3 = exactamente esa cantidad de comidas.
-function buildPlan(date, nMeals = 0){
+function planNeed(date){
   const g = goals(), st = dayStats(date);
   const need = {kcal: g.kcal - st.kcal, p: g.protein - st.p, c: g.carbs - st.c, f: g.fat - st.f, fib: g.fiber - st.fib};
-  if (need.kcal <= g.kcal * g.tol / 100) return {need, done: true};
-  const hist = mealHistory(date), covered = new Set(st.d.meals.map(m => slotOf(m.time)));
-  const nowSlot = date === today() ? slotOf(nowHM()) : 0;
-  let slots = SLOTS.map((s, i) => i).filter(i => i >= nowSlot && !covered.has(i) && hist[i].length);
-  let cands = slots.map(i => hist[i]), labels = slots.map(i => SLOTS[i][0]);
-  const all = hist.flat().sort((a, b) => b.n - a.n).slice(0, PLAN_CANDS);
-  if (!all.length) return {need, empty: true};
-  // Si quedan menos franjas que comidas pedidas (o ninguna), se suman colaciones con lo más repetido de cualquier hora.
-  const at = Math.max(0, cands.length - 1);
-  while (cands.length < Math.max(1, nMeals)){ cands.splice(at, 0, all); labels.splice(at, 0, labels.includes("Colación") ? "Otra colación" : "Colación"); }
-  // Prueba todas las combinaciones (una comida o ninguna por franja) con un mismo factor de porción.
-  const combos = [];
-  const walk = (i, pick) => {
-    if (i === cands.length){
-      const chosen = pick.filter(Boolean); if (!chosen.length || (nMeals && chosen.length !== nMeals)) return;
-      if (new Set(chosen.map(x => x.key)).size < chosen.length) return;
-      let top = null;
-      PLAN_KS.forEach((k, ki) => {
-        const t = x => sum(chosen, m => m.byK[ki][x]);
-        const score = Math.abs(t("kcal") - need.kcal) / g.kcal * 3 + Math.max(0, need.p - t("p")) / g.protein * 2
-          + Math.abs(t("c") - need.c) / g.carbs * .7 + Math.abs(t("f") - need.f) / g.fat * .7 + Math.max(0, need.fib - t("fib")) / g.fiber * .7
-          + Math.abs(k - 1) * .4 + (nMeals ? 0 : (pick.length - chosen.length) * .6) - sum(chosen, x => Math.log(x.n)) * .02;
-        if (!top || score < top.score) top = {pick: [...pick], k, score};
-      });
-      combos.push(top);
-      return;
-    }
-    for (const c of [...cands[i], null]){ pick.push(c); walk(i + 1, pick); pick.pop(); }
-  };
-  walk(0, []);
-  if (!combos.length) return {need, empty: true};
-  combos.sort((a, b) => a.score - b.score);
-  const best = combos[0], used = new Set(best.pick.filter(Boolean).map(x => x.key));
-  const overlap = c => c.pick.filter(x => x && used.has(x.key)).length;
-  // La segunda opción es la que menos se repite con la primera entre las que quedan casi igual de cerca de la meta.
-  const alt = combos.filter(c => c !== best && overlap(c) < used.size && c.score <= best.score + .5).sort((a, b) => overlap(a) - overlap(b) || a.score - b.score)[0];
-  const opts = [best, alt].filter(Boolean).map(c => {
-    const meals = c.pick.map((x, i) => x && {slot: labels[i], desc: x.desc, n: x.n, items: x.items.map(it => scaleItem(it, c.k))}).filter(Boolean)
-      .map(m => ({...m, tot: mealFromItems(m.items)}));
-    const tot = {kcal: sum(meals, m => m.tot.kcal), p: sum(meals, m => m.tot.p), c: sum(meals, m => m.tot.c), f: sum(meals, m => m.tot.f), fib: sum(meals, m => m.tot.fib)};
-    return {meals, tot, k: c.k};
-  });
-  return {need, labels, opts};
+  return {g, st, need, done: need.kcal <= g.kcal * g.tol / 100};
 }
-const mealsSig = date => day(date).meals.map(m => m.id).join(",");
+// Franjas que quedan: desde la actual (si es hoy) y sin comida registrada.
+function planSlots(date, st){
+  const covered = new Set(st.d.meals.map(m => slotOf(m.time))), from = date === today() ? slotOf(nowHM()) : 0;
+  const left = SLOTS.map(([n], i) => i >= from && !covered.has(i) ? n : null).filter(Boolean);
+  return left.length ? left : ["Colación"];
+}
+const mealsSig = date => day(date).meals.map(m => `${m.id}:${m.kcal}`).join(",");
+const planKey = date => [date, mealsSig(date), S.planMeals, S.planNote].join("~");
+function planTotals(meals){ return {kcal: sum(meals, m => m.tot.kcal), p: sum(meals, m => m.tot.p), c: sum(meals, m => m.tot.c), f: sum(meals, m => m.tot.f), fib: sum(meals, m => m.tot.fib)}; }
+// Afinado: si la opción se aleja más de 5% de las kcal que faltan, todos sus gramos se multiplican por un factor común (0,75 a 1,25).
+function tunePlanOpt(meals, needKcal){
+  const tot = planTotals(meals), r = needKcal / (tot.kcal || 1);
+  if (!tot.kcal || Math.abs(r - 1) <= PLAN_TOL) return {meals, tot, k: 1};
+  const k = Math.round(clamp(r, ...PLAN_TUNE) * 20) / 20;
+  const tuned = meals.map(m => { const items = m.items.map(it => scaleItem(it, k)); return {...m, items, tot: mealFromItems(items)}; });
+  return {meals: tuned, tot: planTotals(tuned), k};
+}
+function foodsWithMacros(){ return foods().map(f => ({id: f.id, nombre: f.name, kcal: f.kcal, p: f.p, c: f.c, g: f.f, porcion: f.unit ? `1 ${f.unit} = ${f.unitG} g` : undefined})); }
+let planTimer = null;
+function schedulePlan(){
+  clearTimeout(planTimer);
+  planTimer = setTimeout(() => { if (S.tab === "nutricion" && S.date >= today()) generatePlan(); }, 900);
+}
+async function generatePlan(){
+  const date = S.date, key = planKey(date), {st, need, done} = planNeed(date);
+  if (done || !S.sample || S.mode !== "api" || (S.plan && S.plan.key === key && S.plan.status !== "error")) return;
+  S.plan = {key, status: "loading"}; renderPlan();
+  const slots = planSlots(date, st), hist = mealHistory(date);
+  const nMeals = S.planMeals ? `Reparte lo que falta en exactamente ${S.planMeals} ${S.planMeals === 1 ? "comida" : "comidas"}; si son más que las franjas que quedan, agrega colaciones.` : `Usa las franjas que quedan; puedes agregar una colación si hace falta para llegar a la meta sin comidas gigantes.`;
+  try {
+    const r = await S.sample.json(`Eres el nutricionista de esta persona. Propón cómo completar su día para cumplir sus metas.
+${profileText()}
+Hora actual en Chile: ${chileNow()}. ${date !== today() ? `Ojo: la propuesta es para el ${date}, no para hoy.` : ""}
+Comido hasta ahora: ${JSON.stringify(st.d.meals.map(m => ({hora: m.time, comida: m.desc, kcal: Math.round(m.kcal), p: Math.round(m.p)})))}
+Lo que falta (calculado, no lo recalcules): ${JSON.stringify({kcal: Math.round(need.kcal), proteina_g: Math.round(need.p), carbohidratos_g: Math.round(Math.max(0, need.c)), grasa_g: Math.round(Math.max(0, need.f)), fibra_g: Math.round(Math.max(0, need.fib))})}
+Franjas que quedan: ${slots.join(", ")}. ${nMeals}
+Lo que suele comer en cada franja (últimos ${PLAN_DAYS} días, con cuántas veces): ${JSON.stringify(SLOTS.map(([n], i) => ({franja: n, comidas: hist[i].map(c => `${c.desc} (${c.n})`)})))}
+Mis alimentos (por 100 g tal como se comen): ${JSON.stringify(foodsWithMacros())}
+${S.planNote ? `Pedido de la persona, respétalo: "${S.planNote}"\n` : ""}Instrucciones:
+- Arma exactamente 2 opciones distintas entre sí. Cada opción cubre las franjas que quedan con comidas completas y de tamaño razonable para su franja (nada de una cena de solo verduras si faltan muchas kcal).
+- Inspírate en lo que suele comer, pero elige los alimentos y los gramos de cero para que cada opción sume aproximadamente lo que falta: kcal dentro de ±5%, proteína igual o mayor a la que falta, y suma fibra con verduras, frutas o legumbres si falta.
+- Antes de responder, calcula con los valores por 100 g que las kcal y la proteína de cada opción cuadren, y corrige los gramos si no.
+- ${ITEMS_RULES}
+Responde solo con este JSON:
+{"nota": string (una frase sobre el criterio de las opciones), "opciones": [{"comidas": [{"franja": string, "desc": string breve, "items": ${ITEMS_SCHEMA}}]}]}`, {modelTier: "complex", cache: false});
+    const opts = (r.opciones || []).slice(0, 2).map(o => {
+      const meals = (o.comidas || []).map(c => { const items = itemsFromAI(c.items); return items.length && {slot: String(c.franja || "Comida"), desc: String(c.desc || ""), items, tot: mealFromItems(items)}; }).filter(Boolean);
+      return meals.length && tunePlanOpt(meals, need.kcal);
+    }).filter(Boolean);
+    if (planKey(date) !== key) return;
+    S.plan = opts.length ? {key, status: "ok", opts, nota: r.nota, at: new Date().toLocaleTimeString("es-CL", {timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit"})} : {key, status: "error", err: "La IA no devolvió comidas válidas."};
+  } catch (e) { if (planKey(date) === key) S.plan = {key, status: "error", err: aiErr(e)}; }
+  if (S.date === date) renderPlan();
+}
 function renderPlan(){
   const box = $("#planBox"), past = S.date < today();
   $("#planPanel").hidden = past;
-  if (past){ S.plan = null; return; }
-  // La versión ajustada con IA vale solo para el día y las comidas con que se pidió; si registras algo, vuelve la automática.
-  const ai = S.planAI && S.planAI.date === S.date && S.planAI.sig === mealsSig(S.date) ? S.planAI : null;
-  const stale = S.planAI && !ai && S.planAI.date === S.date;
-  if (!ai) S.planAI = null;
-  const g = goals(), st = dayStats(S.date), auto = buildPlan(S.date, S.planMeals), r = S.plan = ai ? {...auto, opts: ai.opts} : auto, n = r.need;
-  setHTML($("#planChips"), r.done || r.empty || ai ? "" : `<span class="small muted" style="align-self:center">Repartir en</span>` +
+  if (past) return;
+  const {g, st, need: n, done} = planNeed(S.date), key = planKey(S.date), r = S.plan && S.plan.key === key ? S.plan : null;
+  setHTML($("#planChips"), done ? "" : `<span class="small muted" style="align-self:center">Repartir en</span>` +
     [[0, "lo habitual"], [1, "1 comida"], [2, "2 comidas"], [3, "3 comidas"]].map(([v, t]) => `<button class="chip${S.planMeals === v ? " sel" : ""}" data-action="plan-meals" data-v="${v}" aria-pressed="${S.planMeals === v}">${t}</button>`).join(""));
-  const falta = `${fmt(n.kcal)} kcal, ${fmt(Math.max(0, n.p))} g de proteína, ${fmt(Math.max(0, n.c))} g de carbohidratos, ${fmt(Math.max(0, n.f))} g de grasa y ${fmt(Math.max(0, n.fib))} g de fibra`;
-  const how = ai ? `<p class="small muted" style="margin:12px 0 0">La IA eligió los alimentos y los gramos; los macros los calcula la app con tu base de alimentos (los que no están en ella quedan como estimados). Si registras una comida, vuelve la propuesta automática.</p>`
-    : `<p class="small muted" style="margin:12px 0 0">Sale de las comidas que registraste en los últimos ${PLAN_DAYS} días, agrupadas por franja (desayuno antes de las 11, almuerzo hasta las 16, once hasta las 19:30, cena después). Prueba las combinaciones para las franjas que te quedan (o para la cantidad de comidas que elijas, sumando colaciones si faltan franjas), ajusta las porciones con un mismo factor (entre 0,5 y 1,6) y elige la que más se acerca a lo que te falta, priorizando kcal y proteína. Los macros los calcula la app con tu base de alimentos, y se recalcula cada vez que registras algo.</p>`;
-  if (r.done){
+  if (done){
     setHTML(box, `<p style="margin:0">${n.kcal >= 0 ? "Ya estás dentro de tu meta de calorías" : `Llevas ${fmt(-n.kcal)} kcal sobre la meta`}.${n.p > 10 ? ` Te faltan ${fmt(n.p)} g de proteína: si comes algo más, que sea magro y con proteína.` : " No necesitas otra comida."}</p>`);
     return;
   }
-  if (r.empty && !ai){ setHTML(box, `<p class="empty">Te faltan ${falta}. Aún no hay comidas con hora en tus últimos ${PLAN_DAYS} días para armar una propuesta: registra algunas y aparecerá aquí.</p>`); return; }
+  const falta = `${fmt(n.kcal)} kcal, ${fmt(Math.max(0, n.p))} g de proteína, ${fmt(Math.max(0, n.c))} g de carbohidratos, ${fmt(Math.max(0, n.f))} g de grasa y ${fmt(Math.max(0, n.fib))} g de fibra`;
+  const note = S.planNote ? `<p class="small" style="margin:8px 0 0">Considerando tu comentario: <strong>“${esc(S.planNote)}”</strong> <button class="btn small ghost" data-action="plan-note-clear">Quitar comentario</button></p>` : "";
+  const head = `<p style="margin:0">${st.meals ? "Con lo que ya comiste, te faltan" : "Para cumplir tus metas de hoy necesitas"} ${falta}.</p>${note}`;
+  if (!S.sample || S.mode !== "api"){ setHTML(box, `${head}<p class="small muted">La propuesta la arma la IA y no está disponible sin conexión.</p>`); return; }
+  if (!r || r.status === "loading"){
+    setHTML(box, `${head}<p class="small muted" style="margin-top:12px"><span class="spin"></span> Armando una propuesta con lo que te falta…</p>`);
+    if (!r) schedulePlan();
+    return;
+  }
+  if (r.status === "error"){ setHTML(box, `${head}<div class="row mt"><span class="small muted">${esc(r.err)}</span><button class="btn small" data-action="plan-retry">Intentar de nuevo</button></div>`); return; }
   const line = t => `${fmt(t.kcal)} kcal, P ${fmt(t.p)} g, C ${fmt(t.c)} g, G ${fmt(t.f)} g, fibra ${fmt(t.fib)} g`;
-  const itemTxt = it => it.whole ? `${it.name} (porción ×${fmt(it.k, 2)})` : `${it.name} ${fmt(it.g)} g${it.ai ? " (estimado)" : ""}`;
-  const head = ai ? `<p style="margin:0">Ajustada a tu comentario: <strong>“${esc(ai.note)}”</strong>. Te faltan ${falta}.${ai.nota ? ` <span class="muted">${esc(ai.nota)}</span>` : ""}</p>
-      <div class="row mt"><button class="btn small" data-action="plan-ai-clear">Volver a la propuesta automática</button></div>`
-    : `${stale ? `<p class="small muted" style="margin:0 0 6px">Registraste algo después de tu comentario, así que volví a la propuesta automática.</p>` : ""}<p style="margin:0">${st.meals ? "Con lo que ya comiste, te faltan" : "Para cumplir tus metas de hoy necesitas"} ${falta}. ${r.opts.length > 1 ? "Dos opciones" : "Una opción"} con tus comidas de siempre:</p>`;
-  setHTML(box, `${head}
+  const itemTxt = it => `${it.name} ${fmt(it.g)} g${it.ai ? " (estimado)" : ""}`;
+  setHTML(box, `${head}${r.nota ? `<p class="small muted" style="margin:6px 0 0">${esc(r.nota)}</p>` : ""}
     <div class="dash">${r.opts.map((o, oi) => `<div>
-      <strong class="hud">Opción ${oi + 1}${o.k && o.k !== 1 ? ` <span class="muted small">porciones ×${fmt(o.k, 2)}</span>` : ""}</strong>
-      ${o.meals.map((m, mi) => `<div class="opt"><div class="item-head"><strong>${esc(m.slot)}</strong><span class="muted small">${esc(m.desc)}${m.n > 1 ? `, la comiste ${m.n} veces` : ""}</span>
+      <strong class="hud">Opción ${oi + 1}${o.k !== 1 ? ` <span class="muted small">porciones afinadas ×${fmt(o.k, 2)}</span>` : ""}</strong>
+      ${o.meals.map((m, mi) => `<div class="opt"><div class="item-head"><strong>${esc(m.slot)}</strong><span class="muted small">${esc(m.desc)}</span>
         <span class="act"><button class="btn small" data-action="plan-load" data-o="${oi}" data-m="${mi}">Armar esta comida</button></span></div>
         <div class="small">${esc(m.items.map(itemTxt).join(", "))}</div>
         <div class="small muted">${line(m.tot)}</div></div>`).join("")}
       <p class="small" style="margin:10px 0 0">Cerrarías el día en <strong>${fmt(st.kcal + o.tot.kcal)}</strong> / ${fmt(g.kcal)} kcal y <strong>${fmt(st.p + o.tot.p)}</strong> / ${fmt(g.protein)} g de proteína, con ${fmt(st.fib + o.tot.fib)} / ${fmt(g.fiber)} g de fibra.</p>
-    </div>`).join("")}</div>${how}`);
-}
-async function planAI(){
-  const note = $("#planNote").value.trim(); if (!note){ toast("Escribe tu comentario o el cambio que quieres."); return; }
-  const st = dayStats(S.date), auto = buildPlan(S.date, S.planMeals), n = auto.need, st_ = $("#planAiStatus");
-  if (auto.done){ toast("Ya estás en tu meta de calorías: no hay nada que ajustar."); return; }
-  st_.innerHTML = `<span class="spin"></span> Ajustando…`;
-  const hist = mealHistory(S.date).flatMap((l, i) => l.map(c => ({franja: SLOTS[i][0], comida: c.desc, veces: c.n, ingredientes: c.items.map(it => `${it.name} ${fmt(it.g)} g`)})));
-  const shown = (auto.opts || []).map((o, i) => ({opcion: i + 1, comidas: o.meals.map(m => ({franja: m.slot, comida: m.desc, ingredientes: m.items.map(it => `${it.name} ${fmt(it.g)} g`)}))}));
-  try {
-    const r = await S.sample.json(`Eres el nutricionista de esta persona. Le propusiste cómo completar el día y te hizo un comentario: ajusta la propuesta según lo que pide.
-${profileText()}
-Hora actual en Chile: ${chileNow()}. ${S.date !== today() ? `Ojo: la propuesta es para el ${S.date}, no para hoy.` : ""}
-Comido hasta ahora: ${JSON.stringify(st.d.meals.map(m => ({hora: m.time, comida: m.desc})))}
-Lo que falta para sus metas (calculado, no lo recalcules): ${JSON.stringify({kcal: Math.round(n.kcal), proteina_g: Math.round(n.p), carbohidratos_g: Math.round(n.c), grasa_g: Math.round(n.f), fibra_g: Math.round(n.fib)})}
-Propuesta que vio: ${JSON.stringify(shown)}
-Comidas que suele comer (últimos ${PLAN_DAYS} días): ${JSON.stringify(hist)}
-Mis alimentos (valores ya medidos por 100 g tal como se comen): ${JSON.stringify(foodsForPrompt())}
-Su comentario: "${note}"
-Instrucciones: haz lo que pide el comentario. Arma 1 o 2 opciones; las comidas de cada opción deben sumar aproximadamente lo que falta, priorizando kcal y proteína. Prefiere comidas y alimentos que ya suele comer; usa alimentos nuevos solo si el comentario lo pide o si cubren un déficit. ${ITEMS_RULES}
-Responde solo con este JSON:
-{"nota": string (una frase sobre qué cambiaste), "opciones": [{"comidas": [{"franja": "Desayuno"|"Almuerzo"|"Once"|"Cena"|"Colación", "desc": string breve, "items": ${ITEMS_SCHEMA}}]}]}`, {modelTier: "complex", cache: false});
-    const opts = (r.opciones || []).slice(0, 2).map(o => {
-      const meals = (o.comidas || []).map(c => { const items = itemsFromAI(c.items); return items.length && {slot: String(c.franja || "Comida"), desc: String(c.desc || ""), items, tot: mealFromItems(items)}; }).filter(Boolean);
-      return meals.length && {meals, tot: {kcal: sum(meals, m => m.tot.kcal), p: sum(meals, m => m.tot.p), c: sum(meals, m => m.tot.c), f: sum(meals, m => m.tot.f), fib: sum(meals, m => m.tot.fib)}};
-    }).filter(Boolean);
-    if (!opts.length){ st_.textContent = "La IA no devolvió comidas válidas. Prueba con otro comentario."; return; }
-    S.planAI = {date: S.date, sig: mealsSig(S.date), note, nota: r.nota, opts};
-    st_.textContent = ""; renderPlan(); $("#planPanel").scrollIntoView({behavior: "smooth", block: "start"});
-  } catch (e) { st_.textContent = aiErr(e); }
+    </div>`).join("")}</div>
+    <div class="row mt"><button class="btn small" data-action="plan-retry">Proponer otras opciones</button><span class="small muted">Propuesta de las ${esc(r.at)}.</span></div>
+    <p class="small muted" style="margin:12px 0 0">La IA elige los alimentos y los gramos según lo que te falta y lo que sueles comer en cada franja. Los macros los calcula la app con tu base de alimentos (los que no están en ella quedan como estimados), y si una opción se aleja más de 5% de las kcal que faltan, la app afina todos sus gramos con un mismo factor (entre 0,75 y 1,25). Se vuelve a armar cada vez que registras una comida.</p>`);
 }
 function updateUnits(){
   const fd = findFood($("#fdFood").value), sel = $("#fdUnit");
@@ -1794,14 +1769,15 @@ const actions = {
   "food-del": el => confirmClick(el, () => saveLib("foods", l => l.filter(x => x.id !== el.dataset.id))),
   "plan-load": el => {
     const m = S.plan && (S.plan.opts || [])[+el.dataset.o] && S.plan.opts[+el.dataset.o].meals[+el.dataset.m]; if (!m) return;
-    S.build = m.items.map(it => { const {whole, k, ...x} = it; return {...x, id: uid(), name: whole ? `${it.name} (×${fmt(k, 2)})` : it.name}; });
+    S.build = m.items.map(it => ({...it, id: uid()}));
     $("#mDesc").value = m.desc || ""; renderBuild();
     $("#buildBox").scrollIntoView({behavior: "smooth", block: "center"});
     toast("Comida armada: ajusta los gramos si hace falta y regístrala.");
   },
   "plan-meals": el => { S.planMeals = +el.dataset.v; renderPlan(); },
-  "plan-ai": () => planAI(),
-  "plan-ai-clear": () => { S.planAI = null; $("#planNote").value = ""; renderPlan(); },
+  "plan-ai": () => { const v = $("#planNote").value.trim(); if (!v){ toast("Escribe tu comentario o el cambio que quieres."); return; } S.planNote = v; $("#planNote").value = ""; renderPlan(); },
+  "plan-note-clear": () => { S.planNote = ""; renderPlan(); },
+  "plan-retry": () => { S.plan = null; renderPlan(); },
   "nut-analyze": () => analyzeDay(),
   "nut-dash-close": () => { S.nutDash = null; renderNutDash(); },
   "nut-use-opt": el => {
@@ -2396,6 +2372,7 @@ function wireUI(){
     document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
     document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + S.tab));
     if (S.tab === "metricas") loadMetrics();
+    if (S.tab === "nutricion") renderPlan();
   }));
   $("#datePick").addEventListener("change", e => { if (e.target.value) setDate(e.target.value); });
   $("#bpmRange").addEventListener("input", e => Metro.setBpm(+e.target.value));

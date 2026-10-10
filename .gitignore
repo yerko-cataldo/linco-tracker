@@ -6,3 +6,6 @@ node_modules/
 exports/
 lincoyan-*.json
 lincoyan-*.csv
+
+# Resultados de la comparación de la propuesta: contienen tus comidas
+eval/results/plan/
