@@ -145,6 +145,10 @@ input[type=checkbox]{accent-color:var(--ink);width:16px;height:16px;vertical-ali
 .list>li{padding:14px 0;border-bottom:1px solid var(--line)}
 .list>li:first-child{padding-top:4px}
 .list>li:last-child{border-bottom:0;padding-bottom:0}
+.shop{list-style:none;margin:6px 0 0;padding:0}
+.shop>li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.shop>li:last-child{border-bottom:0}
+.shop>li>span:last-child{font-family:var(--display);white-space:nowrap;text-align:right}
 .item-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .item-head h3{margin-bottom:0}
 .panel>.item-head:first-child{margin-bottom:12px}
@@ -457,6 +461,10 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     </div>
     <div class="panel mt" id="nutDash" hidden></div>
     <div class="panel mt">
+      <div class="item-head"><h3>Compras y cocina de la semana</h3><span class="act"><button class="btn small" data-action="week-shift" data-v="-7">Semana anterior</button><button class="btn small" data-action="week-shift" data-v="7">Semana siguiente</button><button class="btn small primary" data-action="week-copy">Copiar lista de compras</button></span></div>
+      <div id="weekBox"></div>
+    </div>
+    <div class="panel mt">
       <div class="item-head"><h3>Comidas del día</h3><span class="act"><button class="btn small" data-action="meals-copy-prev">Copiar comidas del día anterior</button></span></div>
       <div class="scroll" id="mealsTable"></div>
     </div>
@@ -468,6 +476,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="row" style="margin-bottom:8px"><div class="field grow"><span class="sr">Filtrar alimentos</span><input id="foodFilter" placeholder="Filtrar alimentos"></div></div>
       <div class="scroll" id="foodTable"></div>
       <h3 class="mt">Comidas frecuentes</h3>
+      <p class="small muted" id="comboHint" style="margin:0 0 6px" hidden>Marca cada comida como de teletrabajo u oficina: así arman el plan de cada tipo de día, la lista de compras y lo que hay que cocinar.</p>
       <div id="comboList"></div>
     </div>
     <div class="panel mt"><h3>Últimos 7 días</h3><div class="days7" id="days7"></div>
@@ -808,10 +817,11 @@ let toastT;
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600); }
 
 /* ---------- estado ---------- */
-const DEFAULT_GOALS = {kcal:2600, protein:180, carbs:310, fat:75, fiber:32, tol:10, plantsWeek:30, water:10, activeMin:120, gymWeek:3, bassMin:30, bassDays:5, studyMin:30};
+const DEFAULT_GOALS = {kcal:2550, protein:190, carbs:280, fat:75, fiber:36, tol:10, plantsWeek:30, water:10, activeMin:120, gymWeek:3, bassMin:30, bassDays:5, studyMin:30};
 const DEFAULT_PROFILE = {
   sex: "hombre", age: 30, height: 175, weight: 75,
-  about: "", goal: "", activity: "", foods: "", notes: "", phase: "recomp", pal: 1.55
+  about: "", goal: "", activity: "", foods: "", notes: "", phase: "recomp", pal: 1.55,
+  officeDays: [], cookDays: [0, 3] // días de la semana como getDay(): 0 = domingo
 };
 const SONG_STATES = ["por aprender","aprendiendo","tocándola","dominada"];
 const DATA_START = "2026-09-28", WALK_DAILY_MIN = 60;
@@ -854,6 +864,7 @@ const S = {
   date: today(), tab: "hoy", days: {},
   lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: []},
   build: [],
+  weekFrom: null,
   mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planNote: ""
 };
 const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list"};
@@ -1013,7 +1024,7 @@ function calcTargets(p){
   const bmr = 10 * w + 6.25 * p.height - 5 * p.age + (p.sex === "mujer" ? -161 : 5);
   const tdee = bmr * p.pal, ph = PHASES[p.phase] || PHASES.recomp;
   const kcal = Math.round((tdee + ph.delta) / 50) * 50;
-  const protein = Math.round(w * 2.0 / 5) * 5, fat = Math.round(w * 0.9 / 5) * 5;
+  const protein = Math.round(w * 2.0 / 5) * 5, fat = Math.round(w * 0.8 / 5) * 5;
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4 / 5) * 5);
   const fiber = Math.round(kcal / 1000 * 14);
   return {w, bmr, tdee, ph, kcal, protein, fat, carbs, fiber};
@@ -1171,7 +1182,7 @@ function renderHeat(){
 
 function renderNutrition(){
   const g = goals(), st = dayStats(S.date), d = st.d, ws = weekStats(S.date);
-  $("#nutLede").textContent = `${fmtLong(S.date)}. Meta: ${fmt(g.kcal)} kcal ±${g.tol}%, ${fmt(g.protein)} g de proteína y ${fmt(g.fiber)} g de fibra.`;
+  $("#nutLede").textContent = `${fmtLong(S.date)}, día de ${KIND_LABEL[dayKind(S.date)]}. Meta: ${fmt(g.kcal)} kcal ±${g.tol}%, ${fmt(g.protein)} g de proteína y ${fmt(g.fiber)} g de fibra.`;
   const kP = st.p * 4, kC = st.c * 4, kF = st.f * 9, kT = kP + kC + kF, gT = g.protein * 4 + g.carbs * 4 + g.fat * 9 || 1;
   const pc = v => kT ? Math.round(v / kT * 100) : 0;
   const MC = ["var(--food)", "color-mix(in srgb,var(--food) 62%,var(--surface))", "color-mix(in srgb,var(--food) 36%,var(--surface))"];
@@ -1227,7 +1238,7 @@ function renderNutrition(){
     <dt>Tendencia de peso (28 días)</dt><dd>${wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "faltan datos"}</dd>
     <dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>
   </dl></div><p class="small muted" style="margin-top:10px">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara esa pendiente con el ritmo de tu fase (7.700 kcal ≈ 1 kg), con tope de ±250 kcal. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
-  renderPlan(); renderNutDash(); renderBuild(); renderFoods();
+  renderPlan(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
 }
 function renderNutDash(){
   const box = $("#nutDash"), r = S.nutDash;
@@ -1434,7 +1445,7 @@ function renderCalc(){
   $("#calcOut").innerHTML = `Metabolismo basal (Mifflin-St Jeor, ${fmt(c.w, 1)} kg${lw ? ", último pesaje" : ""}): <strong>${fmt(c.bmr)} kcal</strong><br>
     Gasto total estimado (× ${fmt(calcInput().pal, 2)}): <strong>${fmt(c.tdee)} kcal</strong><br>
     ${c.ph.label} (${c.ph.delta > 0 ? "+" : ""}${c.ph.delta}): <strong>${fmt(c.kcal)} kcal</strong><br>
-    Proteína 2,0 g/kg: <strong>${c.protein} g</strong>. Grasa 0,9 g/kg: <strong>${c.fat} g</strong>. Carbohidratos (resto): <strong>${c.carbs} g</strong>. Fibra 14 g/1.000 kcal: <strong>${c.fiber} g</strong>.<br>
+    Proteína 2,0 g/kg: <strong>${c.protein} g</strong>. Grasa 0,8 g/kg: <strong>${c.fat} g</strong>. Carbohidratos (resto): <strong>${c.carbs} g</strong>. Fibra 14 g/1.000 kcal: <strong>${c.fiber} g</strong>.<br>
     <span class="muted">Es un punto de partida: después de 2 a 3 semanas, el ajuste sugerido en Nutrición lo calibra con tu tendencia de peso real.</span>`;
 }
 
@@ -1470,7 +1481,10 @@ const ITEMS_RULES = `Descompón cada comida en ingredientes sin omitir ninguno (
 
 function renderBuild(){
   const items = S.build;
-  setHTML($("#comboChips"), (S.lib.combos || []).length ? `<span class="small muted" style="align-self:center">Frecuentes:</span>` + S.lib.combos.map(c => `<button class="chip" data-action="combo-load" data-id="${c.id}">${esc(c.name)}</button>`).join("") : "");
+  const kind = dayKind(S.date), tpl = templateOf(kind), rest = (S.lib.combos || []).filter(c => !tpl.includes(c));
+  const chip = c => `<button class="chip" data-action="combo-load" data-id="${c.id}">${c.time && tpl.includes(c) ? esc(c.time) + " · " : ""}${esc(c.name)}</button>`;
+  setHTML($("#comboChips"), (tpl.length ? `<span class="small muted" style="align-self:center">Plan de ${KIND_LABEL[kind]}:</span>` + tpl.map(chip).join("") : "")
+    + (rest.length ? `<span class="small muted" style="align-self:center">${tpl.length ? "Otras frecuentes:" : "Frecuentes:"}</span>` + rest.map(chip).join("") : ""));
   if (!items.length){ setHTML($("#buildBox"), `<p class="small muted" style="margin:0">Busca un alimento y su cantidad, elige una comida frecuente o desglosa con IA.</p>`); return; }
   const t = mealFromItems(items);
   setHTML($("#buildBox"), `<div class="scroll"><table class="build"><thead><tr><th>Ingrediente</th><th class="n">g</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
@@ -1487,10 +1501,129 @@ function renderFoods(){
       <td class="small">${f.unit ? `1 ${esc(f.unit)} = ${fmt(f.unitG)} g` : "—"}</td><td><span class="tag" style="${/revisar/.test(f.source || "") ? "border-color:var(--food);color:var(--food)" : ""}">${esc(f.source || "")}</span></td>
       <td class="n"><button class="btn small ghost" data-action="food-edit" data-id="${f.id}">Editar</button><button class="btn small ghost danger" data-action="food-del" data-id="${f.id}">Borrar</button></td></tr>`).join("")}</tbody></table>`
     : `<p class="empty">No hay alimentos que coincidan. Agrega uno o lee una etiqueta.</p>`);
-  setHTML($("#comboList"), (S.lib.combos || []).length ? `<ul class="list">${S.lib.combos.map(c => { const m = mealFromItems(comboItems(c)); return `<li class="item-head"><strong>${esc(c.name)}</strong><span class="small muted">${fmt(m.kcal)} kcal, ${fmt(m.p)} g proteína, ${c.items.length} ingredientes</span><span class="act"><button class="btn small" data-action="combo-load" data-id="${c.id}">Usar</button><button class="btn small ghost danger" data-action="combo-del" data-id="${c.id}">Borrar</button></span></li>`; }).join("")}</ul>`
+  setHTML($("#comboList"), (S.lib.combos || []).length ? `<ul class="list">${S.lib.combos.map(c => { const m = mealFromItems(comboItems(c)); return `<li class="item-head"><strong>${esc(c.name)}</strong><span class="small muted">${c.time ? esc(c.time) + " · " : ""}${fmt(m.kcal)} kcal, ${fmt(m.p)} g proteína, ${c.items.length} ingredientes</span><span class="act"><span class="chips">${["tele", "ofi"].map(k => `<button class="chip${c.day === k ? " sel" : ""}" data-action="combo-day" data-id="${c.id}" data-v="${k}" aria-pressed="${c.day === k}">${KIND_LABEL[k]}</button>`).join("")}</span><button class="btn small" data-action="combo-load" data-id="${c.id}">Usar</button><button class="btn small ghost danger" data-action="combo-del" data-id="${c.id}">Borrar</button></span></li>`; }).join("")}</ul>`
     : `<p class="empty">Arma una comida con ingredientes y presiona "Guardar como frecuente" para reutilizarla con un clic.</p>`);
+  $("#comboHint").hidden = !(S.lib.combos || []).length;
 }
 function comboItems(c){ return (c.items || []).map(it => { const fd = it.foodId && foods().find(f => f.id === it.foodId); return fd ? itemFromFood(fd, it.g) : {...it, id: uid()}; }); }
+
+/* ---------- semana: oficina, compras y cocina ---------- */
+// Día de oficina: un día hábil con bici registrada (va en bici a la oficina) o un día de la semana marcado en profile.officeDays.
+// Cada comida frecuente puede ser de teletrabajo u oficina (combo.day) y tener hora (combo.time): juntas forman el plan de ese tipo de día.
+const WD = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const KIND_LABEL = {ofi: "oficina", tele: "teletrabajo"};
+const wdOf = date => parseYmd(date).getDay();
+const wdList = ws => { const n = ws.map(w => /o$/.test(WD[w]) ? WD[w] + "s" : WD[w]); return n.length > 1 ? n.slice(0, -1).join(", ") + " y " + n[n.length - 1] : n.join(""); };
+const cookDays = () => profile().cookDays || DEFAULT_PROFILE.cookDays;
+function isOffice(date){
+  const w = wdOf(date), a = day(date).act;
+  return (w >= 1 && w <= 5 && (a.bikeMin > 0 || a.bikeKm > 0)) || (profile().officeDays || []).includes(w);
+}
+const dayKind = date => isOffice(date) ? "ofi" : "tele";
+const templateOf = kind => (S.lib.combos || []).filter(c => c.day === kind).sort((a, b) => (a.time || "99").localeCompare(b.time || "99"));
+function scheduleText(){
+  const od = profile().officeDays || [];
+  return od.length ? `Semana: va a la oficina los ${wdList(od)}, en bici entre 8:00 y 8:30; antes de salir come solo un plátano, al llegar huevos duros, y el almuerzo lo lleva en táper (preparado en casa o recalentado). Los demás días hace teletrabajo y controla todo lo que come. Cocina en tanda los ${wdList(cookDays())}, y también puede cocinar o calentar día a día.` : "";
+}
+function planDayText(date){
+  const kind = dayKind(date), tpl = templateOf(kind);
+  return `Ese día (${WD[wdOf(date)]}) es de ${KIND_LABEL[kind]}.${tpl.length ? ` Su plan base para días de ${KIND_LABEL[kind]}: ${tpl.map(c => `${c.time || ""} ${c.name} (${comboItems(c).map(i => `${i.name} ${fmt(i.g)} g`).join(", ")})`).join("; ")}. Si calza con lo que falta, prefiere esas comidas o variaciones cercanas.` : ""}`;
+}
+// Cocción: gramos crudos (o secos) por gramo cocido, y si conviene cocinarlo en tanda (dura 3 a 4 días en el refrigerador).
+const PREP = [
+  [/^arroz.*cocido/, .4, true, "crudo"], [/^fideos.*cocidos/, .43, false, "secos"], [/^pechuga de pollo cocida/, 1.33, true, "cruda"],
+  [/^(posta|lomo|asiento).*cocid/, 1.4, true, "crudo"], [/^chuleta.*cocida/, 1.35, true, "cruda"], [/^papa cocida/, 1.1, true, "crudas"],
+  [/^lentejas cocidas/, .4, true, "secas"], [/^garbanzos cocidos/, .45, true, "secos"], [/^brocoli/, 1.1, true, "crudo"], [/^huevo duro/, 1, true, ""]
+];
+function prepOf(fd){
+  const n = norm(fd.name), m = PREP.find(([rx]) => rx.test(n)); if (!m) return null;
+  return {k: m[1], batch: m[2], word: m[3], base: m[1] === 1 ? "Huevos" : fd.name.replace(/\s+(cocid[oa]s?|al vapor)\b/i, "")};
+}
+// Dónde se compra: campo shop del alimento si existe; si no, por el nombre. Frutas y verduras en la feria.
+function shopOf(fd){
+  if (fd.shop) return fd.shop;
+  const n = norm(fd.name);
+  if (/ecook/.test(n)) return "ecook";
+  if (/^salsa/.test(n)) return "super";
+  if (/aceite|avena|proteina en polvo|creatina|miel|mantequilla de mani|frutos secos|almendra|nuez|nueces/.test(n)) return "despensa";
+  if (/tomate|palta|brocoli|platano|manzana|^papa|lechuga|arandano|frutilla|zanahoria|cebolla|pepino|naranja|limon|zapallo|espinaca|pimenton|choclo|uva|pera|kiwi/.test(n)) return "feria";
+  return "super";
+}
+const SHOP_LABEL = {feria: "Feria", super: "Supermercado", ecook: "eCook", despensa: "Despensa (revisa si queda)"};
+const plural = (n, w) => n === 1 ? w : /ón$/.test(w) ? w.replace(/ón$/, "ones") : /[aeiouáéíóú]$/i.test(w) ? w + "s" : w + "es";
+const fmtW = g => { const r = Math.ceil(g / 50) * 50; return r >= 1000 ? `${fmt(Math.ceil(g / 100) / 10, 1)} kg` : `${fmt(r)} g`; };
+const BUY_UNIT = [[/^palta/, "palta", 140], [/^leche/, "L", 1000]];
+// Cantidad a comprar: en crudo si se cocina, en unidades si el alimento tiene porción, en litros la leche y si no en peso.
+function buyQty(fd, g){
+  const pr = prepOf(fd), bu = BUY_UNIT.find(([rx]) => rx.test(norm(fd.name)));
+  if (pr && pr.k !== 1) return `${fmtW(g * pr.k)} ${pr.word}`;
+  if (bu) return bu[1] === "L" ? `${fmt(Math.ceil(g / 500) / 2, 1)} L` : `${Math.ceil(g / bu[2] - .05)} ${plural(Math.ceil(g / bu[2] - .05), bu[1])}`;
+  if (fd.unit && fd.unitG && !/^scoop$/i.test(fd.unit)){ const n = Math.ceil(g / fd.unitG - .05); return `${n} ${plural(n, fd.unit)}`; }
+  return fmtW(g);
+}
+// La semana parte en el próximo día de cocina (o hoy si no hay días de cocina).
+function shopFrom(){
+  if (S.weekFrom) return S.weekFrom;
+  const cd = cookDays(); let d = today();
+  for (let i = 0; i < 7 && cd.length && !cd.includes(wdOf(d)); i++) d = addDays(d, 1);
+  return d;
+}
+function weekPlan(){
+  const from = shopFrom(), dates = Array.from({length: 7}, (_, i) => addDays(from, i)), cd = cookDays();
+  const need = new Map(), add = (it, date) => {
+    const fd = it.foodId && foods().find(f => f.id === it.foodId), key = fd ? fd.id : "ai:" + norm(it.name);
+    const e = need.get(key) || {fd: fd || {name: it.name, shop: "super"}, g: 0, byDate: {}};
+    e.g += it.g || 0; e.byDate[date] = (e.byDate[date] || 0) + (it.g || 0); need.set(key, e);
+  };
+  const days = dates.map(date => { const kind = dayKind(date), tpl = templateOf(kind); tpl.forEach(c => comboItems(c).forEach(it => add(it, date))); return {date, kind, n: tpl.length}; });
+  const items = [...need.values()].filter(e => e.g > 0);
+  const shop = {feria: [], super: [], ecook: [], despensa: []};
+  items.forEach(e => shop[shopOf(e.fd)].push({name: prepOf(e.fd) ? prepOf(e.fd).base : e.fd.name, qty: buyQty(e.fd, e.g)}));
+  Object.values(shop).forEach(l => l.sort((a, b) => a.name.localeCompare(b.name, "es")));
+  // Sesiones de cocina: cada día de la semana queda a cargo de la última sesión anterior o igual a él.
+  const sess = dates.filter(d => cd.includes(wdOf(d))).map(d => ({date: d, dates: [], items: []}));
+  dates.forEach(d => { const s = [...sess].reverse().find(x => x.date <= d); if (s) s.dates.push(d); });
+  sess.forEach(s => {
+    items.forEach(e => {
+      const pr = prepOf(e.fd); if (!pr || !pr.batch) return;
+      const g = sum(s.dates, d => e.byDate[d] || 0); if (!g) return;
+      s.items.push(pr.k === 1 ? `Huevos duros: ${Math.ceil(g / (e.fd.unitG || 50) - .05)}` : `${pr.base}: ${fmtW(g * pr.k)} ${pr.word} (≈ ${fmtW(g)} cocido)`);
+    });
+  });
+  const daily = [];
+  items.forEach(e => { const pr = prepOf(e.fd); if (pr && !pr.batch) daily.push(`cocer ${pr.base.toLowerCase()} al momento`); });
+  if (items.some(e => shopOf(e.fd) === "ecook")) daily.push("calentar el eCook");
+  daily.push("armar batidos, ensaladas y colaciones");
+  const shopText = items.length ? `Compras ${fmtShort(from)} a ${fmtShort(dates[6])}\n` + Object.entries(shop).filter(([, l]) => l.length).map(([k, l]) => `\n${SHOP_LABEL[k]}\n` + l.map(x => `- ${x.name}: ${x.qty}`).join("\n")).join("\n") : "";
+  return {from, dates, days, shop, sess, daily, shopText, empty: !items.length, before: dates.filter(d => !sess.some(s => s.dates.includes(d)))};
+}
+function renderWeek(){
+  const w = weekPlan(), od = profile().officeDays || [], cd = cookDays();
+  const dayChips = w.days.map(x => `<button class="chip${x.kind === "ofi" ? " sel" : ""}" data-action="week-office" data-w="${wdOf(x.date)}" aria-pressed="${x.kind === "ofi"}">${esc(parseYmd(x.date).toLocaleDateString("es-CL", {weekday: "short", day: "numeric"}).replace(".", ""))} · ${KIND_LABEL[x.kind]}</button>`).join("");
+  const cookChips = [1, 2, 3, 4, 5, 6, 0].map(i => `<button class="chip${cd.includes(i) ? " sel" : ""}" data-action="week-cook" data-w="${i}" aria-pressed="${cd.includes(i)}">${WD[i]}</button>`).join("");
+  const tplLine = ["tele", "ofi"].map(k => { const t = templateOf(k), m = mealFromItems(t.flatMap(comboItems)); return t.length ? `${KIND_LABEL[k]}: ${t.length} comidas, ${fmt(m.kcal)} kcal y ${fmt(m.p)} g de proteína` : `${KIND_LABEL[k]}: sin comidas marcadas`; }).join(" · ");
+  const sessHtml = w.sess.map(s => {
+    const last = s.dates[s.dates.length - 1], long = s.dates.length > 4;
+    return `<div class="opt"><div class="item-head"><strong>${esc(fmtLong(s.date))}</strong><span class="muted small">para ${s.dates.length === 1 ? "ese día" : `${WD[wdOf(s.date)]} a ${WD[wdOf(last)]} (${days_(s.dates.length)})`}</span></div>
+      ${s.items.length ? `<ul class="shop">${s.items.map(t => `<li><span>${esc(t)}</span></li>`).join("")}</ul>` : `<p class="small muted" style="margin:6px 0 0">Nada que cocinar en tanda para esos días.</p>`}
+      ${long ? `<p class="small" style="margin:8px 0 0;color:var(--danger)">Cubre más de 4 días: congela las porciones desde el quinto día.</p>` : ""}</div>`;
+  }).join("");
+  setHTML($("#weekBox"), `<p class="small muted" style="margin:0">Del ${esc(fmtLong(w.from))} al ${esc(fmtLong(w.dates[6]))}. Cada día usa el plan de su tipo: ${esc(tplLine)}.</p>
+    <div class="chips mt"><span class="small muted" style="align-self:center">Oficina o teletrabajo:</span>${dayChips}</div>
+    <p class="small muted" style="margin:6px 0 0">Toca un día para cambiarlo; se repite todas las semanas. Un día hábil con bici registrada cuenta como oficina.</p>
+    <div class="chips mt"><span class="small muted" style="align-self:center">Cocino los:</span>${cookChips}</div>
+    ${w.empty ? `<p class="empty">Marca tus comidas frecuentes como de teletrabajo u oficina (más abajo, en Mis alimentos) para armar la lista de compras y lo que hay que cocinar.</p>` : `
+    <div class="dash">
+      <div><strong class="hud">Lista de compras</strong>
+        ${Object.entries(w.shop).filter(([, l]) => l.length).map(([k, l]) => `<div class="small" style="margin:12px 0 0;font-weight:600">${SHOP_LABEL[k]}</div><ul class="shop">${l.map(x => `<li><span>${esc(x.name)}</span><span>${esc(x.qty)}</span></li>`).join("")}</ul>`).join("")}
+        <p class="small muted" style="margin:10px 0 0">Las cantidades salen de los gramos de cada plan: lo que se cocina va en crudo o seco (arroz ×0,4, fideos ×0,43, pollo ×1,33, carne ×1,4, legumbres ×0,4).</p></div>
+      <div><strong class="hud">Qué cocinar</strong>
+        ${w.before.length ? `<p class="small" style="margin:8px 0 0">${esc(w.before.map(d => WD[wdOf(d)]).join(", "))}: antes de tu primera sesión, usa lo que tengas o cocina al día.</p>` : ""}
+        ${sessHtml || `<p class="small muted">Elige al menos un día de cocina.</p>`}
+        <p class="small" style="margin:12px 0 0"><strong>Día a día:</strong> ${esc(w.daily.join(", "))}.</p>
+        <p class="small muted" style="margin:6px 0 0">Lo cocido dura 3 a 4 días en el refrigerador; los huevos duros con cáscara, una semana.</p></div>
+    </div>`}`);
+}
 
 /* ---------- propuesta del día ---------- */
 // El código decide qué comidas quedan y la meta de kcal y proteína de cada una; la IA arma cada plato (alimentos y gramos).
@@ -1546,7 +1679,7 @@ function planTargets(date, st, need){
   return names.map(x => ({slot: x, kcal: Math.round(need.kcal * SLOT_W[x] / W / 10) * 10, p: Math.round(Math.max(0, need.p) * SLOT_W[x] / W)}));
 }
 const mealsSig = date => day(date).meals.map(m => `${m.id}:${m.kcal}`).join(",");
-const planKey = date => [date, mealsSig(date), S.planMeals, S.planNote].join("~");
+const planKey = date => [date, mealsSig(date), dayKind(date), S.planMeals, S.planNote].join("~");
 function planTotals(meals){ return {kcal: sum(meals, m => m.tot.kcal), p: sum(meals, m => m.tot.p), c: sum(meals, m => m.tot.c), f: sum(meals, m => m.tot.f), fib: sum(meals, m => m.tot.fib)}; }
 // Afinado por comida: si se aleja más de 7% de su meta de kcal, sus gramos se multiplican por un factor común (0,6 a 1,6).
 function tuneMeal(m, target){
@@ -1582,6 +1715,7 @@ async function generatePlan(){
     for (let attempt = 0; attempt < 2 && !valid.length; attempt++){
     r = await S.sample.json(`${profileText()}
 Hora actual en Chile: ${chileNow()}.${date !== today() ? ` La propuesta es para el ${date}.` : ""}
+${planDayText(date)}
 Ya comió hoy (no lo repitas): ${st.d.meals.length ? st.d.meals.map(m => `${m.time} ${m.desc} (${(m.items || []).map(i => i.name).join(", ")})`).join("; ") : "nada todavía"}
 Comidas que debes armar, en este orden, con su meta: ${targets.map((t, i) => `${i + 1}) ${t.slot}: ${t.kcal} kcal y ${t.p} g de proteína`).join("; ")}
 Lo que suele comer en cada franja (últimos ${PLAN_DAYS} días, con cuántas veces): ${JSON.stringify(SLOTS.map(([n], i) => ({franja: n, comidas: hist[i].map(c => `${c.desc} (${c.n})`)})))}
@@ -1785,6 +1919,15 @@ const actions = {
     S.build = comboItems(c); $("#mDesc").value = c.name; renderBuild();
     if (S.tab !== "nutricion") document.querySelector('nav.tabs button[data-tab=nutricion]').click();
     $("#buildBox").scrollIntoView({behavior: "smooth", block: "center"});
+  },
+  "combo-day": el => saveLib("combos", l => { const c = l.find(x => x.id === el.dataset.id); if (c) c.day = c.day === el.dataset.v ? undefined : el.dataset.v; }),
+  "week-office": el => saveLib("profile", p => { const w = +el.dataset.w, od = p.officeDays || []; p.officeDays = od.includes(w) ? od.filter(x => x !== w) : [...od, w].sort(); }),
+  "week-cook": el => saveLib("profile", p => { const w = +el.dataset.w, cd = p.cookDays || DEFAULT_PROFILE.cookDays; p.cookDays = cd.includes(w) ? cd.filter(x => x !== w) : [...cd, w].sort(); S.weekFrom = null; }),
+  "week-shift": el => { S.weekFrom = addDays(shopFrom(), +el.dataset.v); renderWeek(); },
+  "week-copy": () => {
+    const txt = weekPlan().shopText;
+    if (!txt){ toast("La lista está vacía: marca comidas frecuentes como de teletrabajo u oficina."); return; }
+    navigator.clipboard.writeText(txt).then(() => toast("Lista de compras copiada."), () => toast("No se pudo copiar."));
   },
   "combo-del": el => confirmClick(el, () => saveLib("combos", l => l.filter(c => c.id !== el.dataset.id))),
   "food-new": () => openDialog("Agregar alimento", FOOD_FIELDS({}), v => saveLib("foods", l => { l.push({id: "f-" + uid(), ...foodFromForm(v)}); })),
@@ -2027,6 +2170,7 @@ function profileText(){
 ${p.about ? "Sobre la persona: " + p.about + "\n" : ""}Objetivo: ${p.goal}
 Actividad habitual: ${p.activity}
 Alimentos preferidos: ${p.foods}
+${scheduleText()}
 ${p.notes ? "Otras consideraciones: " + p.notes : ""}`;
 }
 const MEAL_SCHEMA = `{"desc": string breve, "kcal": number, "p": number (g proteína), "c": number (g carbohidratos), "f": number (g grasa), "fib": number (g fibra), "plants": [string] (cada vegetal, fruta, cereal integral, legumbre, fruto seco o semilla distinto, en minúsculas y singular; [] si no hay), "assumptions": string (porciones supuestas, una frase)}`;
