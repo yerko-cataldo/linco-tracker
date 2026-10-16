@@ -318,7 +318,8 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 .wchart svg{display:block;width:100%;height:auto}
 .wchart g.pt{cursor:pointer}
 .wchart g.pt:hover circle.dot{fill:var(--food)}
-@media (max-width:560px){.wstats strong{font-size:1.2rem}}
+.wstats.w4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:560px){.wstats strong{font-size:1.2rem}.wstats.w4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Secciones desplegables */
 details.sec{padding:0}
 details.sec>summary{list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px 24px;cursor:pointer;border-radius:var(--r)}
@@ -802,6 +803,12 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
             <div class="field w7">Días bajo/sem<input id="gBassDays" inputmode="numeric"></div>
             <div class="field w7">Estudio min/día<input id="gStudy" inputmode="numeric"></div>
           </div>
+          <div class="row">
+            <div class="field w10">Fecha meta de peso<input id="gWDate" type="date"></div>
+            <div class="field w7">% grasa meta<input id="gWFat" inputmode="decimal"></div>
+            <div class="field w10">Masa libre de grasa kg<input id="gWLean" inputmode="decimal"></div>
+          </div>
+          <p class="small muted" id="gWInfo" style="margin:0"></p>
           <div><button class="btn primary" data-action="goals-save">Guardar metas</button></div>
         </div>
         <div class="panel stack">
@@ -1048,7 +1055,8 @@ function weightTrend(){
   for (let i = 0; i < 28; i++){ const dt = addDays(today(), -i), w = day(dt).weight; if (w) pts.push([(parseYmd(dt).getTime() - t) / 864e5, w]); }
   const b = linreg(pts); if (b === null) return null;
   const span = pts.length ? -Math.min(...pts.map(p => p[0])) : 0;
-  return {perWeek: b * 7, n: pts.length, span};
+  const now = sum(pts, p => p[1]) / pts.length - b * sum(pts, p => p[0]) / pts.length;
+  return {perWeek: b * 7, perDay: b, now, n: pts.length, span};
 }
 function lastWeight(){ for (const dt of allDatesAsc().reverse()){ const w = day(dt).weight; if (w) return {w, dt}; } return null; }
 const PHASES = {recomp: {label: "Recomposición", delta: -400, rate: -0.25}, cut: {label: "Definición", delta: -600, rate: -0.5}, maint: {label: "Mantención", delta: 0, rate: 0}, bulk: {label: "Volumen limpio", delta: 250, rate: 0.2}};
@@ -1074,6 +1082,22 @@ function kcalAdjustment(){
 // Peso de tendencia: promedio móvil exponencial (10% por día) sobre pesajes diarios, con interpolación lineal en los días sin pesaje.
 const WEIGHT_ALPHA = 0.1, WEIGHT_DAYS = 84;
 const kg1 = v => v.toLocaleString("es-CL", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+const WEIGHT_PROJ_MIN = {n: 6, span: 10};
+function weightGoal(){
+  const g = goals();
+  if (!g.wDate || !(g.wFat > 0) || !(g.wLean > 0)) return null;
+  return {date: g.wDate, fat: g.wFat, lean: g.wLean, kg: g.wLean / (1 - g.wFat / 100)};
+}
+function weightPlan(ser){
+  const goal = weightGoal(), wt = weightTrend(), t = today();
+  if (!goal || goal.date <= t) return null;
+  const days = Math.round((parseYmd(goal.date) - parseYmd(t)) / 864e5);
+  const proj = wt && wt.n >= WEIGHT_PROJ_MIN.n && wt.span >= WEIGHT_PROJ_MIN.span;
+  const now = proj ? wt.now : ser[ser.length - 1].trend;
+  const end = proj ? now + wt.perDay * days : null;
+  const eta = proj && wt.perDay && Math.sign(goal.kg - now) === Math.sign(wt.perDay) ? addDays(t, Math.ceil((goal.kg - now) / wt.perDay)) : null;
+  return {goal, days, now, proj, end, eta, need: (goal.kg - now) / days * 7, rate: proj ? wt.perWeek : null};
+}
 function weightSeries(){
   const end = today(), from = addDays(end, -(WEIGHT_DAYS - 1));
   const pts = allDatesAsc().filter(dt => dt <= end && day(dt).weight).map(dt => [dt, day(dt).weight]);
@@ -1089,28 +1113,46 @@ function weightSeries(){
   }
   return out;
 }
-function weightChart(ser, width){
-  const W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 210 : 250, L = 38, R = 14, T = 14, B = 28;
-  const vals = ser.flatMap(p => [p.w, p.trend]).filter(v => v !== null);
+function weightChart(ser, width, plan){
+  const W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 220 : 270, L = 38, R = 16, T = 18, B = 28, t = today();
+  const d0 = ser[0].dt, off = dt => Math.round((parseYmd(dt) - parseYmd(d0)) / 864e5);
+  const last = plan ? plan.goal.date : ser[ser.length - 1].dt, n = off(last) + 1, iT = off(t);
+  const vals = ser.flatMap(p => [p.w, p.trend]).filter(v => v !== null).concat(plan ? [plan.goal.kg, plan.now].concat(plan.end !== null ? [plan.end] : []) : []);
   const lo = Math.min(...vals), hi = Math.max(...vals), step = hi - lo <= 2.5 ? .5 : hi - lo <= 6 ? 1 : 2;
   const mn = Math.floor((lo - .3) / step) * step, mx = Math.ceil((hi + .3) / step) * step;
-  const n = ser.length, x = i => L + (W - L - R) * (n === 1 ? .5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - (v - mn) / (mx - mn));
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pesajes diarios y peso de tendencia" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  const x = i => L + (W - L - R) * (n === 1 ? .5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - (v - mn) / (mx - mn));
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pesajes diarios, peso de tendencia y proyección a la meta" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  if (plan) s += `<rect x="${x(iT)}" y="${T}" width="${x(n - 1) - x(iT)}" height="${H - T - B}" fill="var(--sunken)" opacity=".6"/>`;
   for (let v = mn; v <= mx + 1e-9; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(v, 1)}</text>`;
-  const daily = n * 26 <= W - L - R, biweek = n / 7 * 52 > W - L - R;
-  ser.forEach((p, i) => {
-    const d = parseYmd(p.dt), wk = Math.round((d - parseYmd(ser[0].dt)) / 864e5 / 7);
-    if (daily || (d.getDay() === 1 && (!biweek || wk % 2 === 0)))
-      s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(daily ? String(d.getDate()) : fmtShort(p.dt).replace(".", ""))}</text>`;
-  });
+  const perDay = (W - L - R) / Math.max(1, n - 1), daily = perDay >= 26, every = Math.max(1, Math.ceil(52 / (perDay * 7)));
+  for (let i = 0, mon = 0; i < n; i++){
+    const dt = addDays(d0, i), d = parseYmd(dt);
+    if (daily || (d.getDay() === 1 && mon++ % every === 0))
+      s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(daily ? String(d.getDate()) : fmtShort(dt).replace(".", ""))}</text>`;
+  }
   ser.forEach((p, i) => { if (p.w !== null && p.trend !== null) s += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(p.w)}" y2="${y(p.trend)}" stroke="var(--line-strong)" stroke-width="1.5"/>`; });
   const tl = ser.map((p, i) => p.trend === null ? null : `${x(i).toFixed(1)},${y(p.trend).toFixed(1)}`).filter(Boolean);
   if (tl.length > 1) s += `<polyline points="${tl.join(" ")}" fill="none" stroke="var(--food)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
   ser.forEach((p, i) => { if (p.w !== null) s += `<g class="pt" data-action="day-open" data-d="${p.dt}"><title>${esc(fmtLong(p.dt))}: ${kg1(p.w)} kg (tendencia ${kg1(p.trend)} kg)</title><circle cx="${x(i)}" cy="${y(p.w)}" r="9" fill="transparent"/><circle class="dot" cx="${x(i)}" cy="${y(p.w)}" r="3.4" fill="var(--ink)" stroke="var(--surface)" stroke-width="1.5"/></g>`; });
-  const last = ser[n - 1];
-  if (last.trend !== null) s += `<text x="${x(n - 1) - 4}" y="${y(last.trend) - 9}" text-anchor="end" font-size="12" font-weight="700" fill="var(--food)">${kg1(last.trend)}</text>`;
+  if (plan){
+    const iG = n - 1, gx = x(iG), gy = y(plan.goal.kg);
+    s += `<text x="${x(iT) + 6}" y="${T + 12}" font-size="11" font-weight="600" fill="var(--muted)">hoy</text>`;
+    s += `<line x1="${x(iT)}" y1="${y(plan.now)}" x2="${gx}" y2="${gy}" stroke="var(--ok)" stroke-width="2" stroke-dasharray="6 5"><title>Ruta a la meta: ${fmt(plan.need, 2)} kg/sem</title></line>`;
+    if (plan.end !== null){
+      const ex = x(iG), ey = y(plan.end);
+      s += `<line x1="${x(iT)}" y1="${y(plan.now)}" x2="${ex}" y2="${ey}" stroke="var(--food)" stroke-width="2.4" stroke-dasharray="1.5 5" stroke-linecap="round"><title>Proyección a tu ritmo: ${kg1(plan.end)} kg el ${esc(fmtShort(plan.goal.date))}</title></line>`;
+      s += `<text x="${ex - 8}" y="${ey + (plan.end > plan.goal.kg ? -9 : 17)}" text-anchor="end" font-size="11.5" font-weight="700" fill="var(--food)">${kg1(plan.end)}</text>`;
+    }
+    s += `<circle cx="${x(iT)}" cy="${y(plan.now)}" r="3.6" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.8"/>`;
+    s += `<circle cx="${gx}" cy="${gy}" r="6" fill="var(--surface)" stroke="var(--ok)" stroke-width="2.4"/><circle cx="${gx}" cy="${gy}" r="2.2" fill="var(--ok)"/>`;
+    s += `<text x="${gx - 10}" y="${gy + (plan.end !== null && plan.end > plan.goal.kg ? 18 : -10)}" text-anchor="end" font-size="11.5" font-weight="700" fill="var(--ok)">meta ${kg1(plan.goal.kg)}</text>`;
+  } else {
+    const lt = ser[ser.length - 1];
+    if (lt.trend !== null) s += `<text x="${x(ser.length - 1) - 4}" y="${y(lt.trend) - 9}" text-anchor="end" font-size="12" font-weight="700" fill="var(--food)">${kg1(lt.trend)}</text>`;
+  }
   return s + "</svg>";
 }
+
 function barChart(values, labels, goal, color, unit, hi = (parseYmd(S.date).getDay() + 6) % 7){
   const W = 460, H = 180, L = 36, B = 26, T = 10, max = Math.max(goal || 0, ...values.map(v => v || 0)) * 1.12 || 1;
   const bw = (W - L - 10) / values.length, y = v => T + (H - T - B) * (1 - v / max);
@@ -1315,18 +1357,33 @@ function renderNutrition(){
 }
 function renderWeight(){
   const ser = weightSeries(), lw = lastWeight(), wt = weightTrend(), box = $("#weightBox");
-  const rate = wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "faltan pesajes";
-  $("#weightSum").textContent = lw ? `${kg1(lw.w)} kg · ${rate}` : "sin pesajes";
+  const sg = v => `${v > 0 ? "+" : ""}${fmt(v, 2)}`;
+  const rate = wt ? `${sg(wt.perWeek)} kg/sem` : "faltan pesajes";
+  const goal = weightGoal();
+  $("#weightSum").textContent = lw ? `${kg1(lw.w)} kg · ${rate}${goal ? ` · meta ${kg1(goal.kg)} kg` : ""}` : "sin pesajes";
   if (!$("#weightPanel").open) return;
   if (!ser || !ser.some(p => p.w !== null)){ setHTML(box, `<p class="empty">Sin pesajes en las últimas ${WEIGHT_DAYS / 7} semanas. Registra tu peso en el panel del día.</p>`); return; }
-  const tr = ser[ser.length - 1].trend, tr7 = ser.length > 7 ? ser[ser.length - 8].trend : null;
-  setHTML(box, `<div class="wstats">
+  const plan = weightPlan(ser), tr = ser[ser.length - 1].trend, tr7 = ser.length > 7 ? ser[ser.length - 8].trend : null;
+  const gd = plan ? fmtShort(plan.goal.date) : "";
+  let verdict = "";
+  if (plan && plan.proj){
+    const ahead = Math.sign(plan.need) === Math.sign(plan.rate) && Math.abs(plan.rate) >= Math.abs(plan.need);
+    verdict = `<p style="margin:12px 0 0"><span class="dot" style="display:inline-block;background:${ahead ? "var(--ok)" : "var(--danger)"};margin-right:8px"></span>A tu ritmo actual llegarías al ${esc(gd)} con <strong>${kg1(plan.end)} kg</strong>${ahead && plan.eta ? `: alcanzarías la meta el <strong>${esc(fmtLong(plan.eta))}</strong>` : `, ${kg1(Math.abs(plan.end - plan.goal.kg))} kg ${plan.end > plan.goal.kg ? "sobre" : "bajo"} la meta`}.</p>`;
+  } else if (plan){
+    verdict = `<p class="small muted" style="margin:12px 0 0">Para proyectar tu avance necesito al menos ${WEIGHT_PROJ_MIN.n} pesajes repartidos en ${WEIGHT_PROJ_MIN.span} días o más dentro de las últimas 4 semanas.</p>`;
+  } else if (!goal){
+    verdict = `<p class="small muted" style="margin:12px 0 0">Define tu meta de peso en Perfil y metas para ver la proyección.</p>`;
+  }
+  setHTML(box, `<div class="wstats${plan ? " w4" : ""}">
       <div><span>Último pesaje</span><strong>${kg1(lw.w)} kg</strong><small>${esc(fmtShort(lw.dt))}</small></div>
-      <div><span>Peso de tendencia</span><strong>${kg1(tr)} kg</strong><small>${tr7 !== null ? `${tr - tr7 > 0 ? "+" : ""}${fmt(tr - tr7, 2)} kg en 7 días` : "&nbsp;"}</small></div>
-      <div><span>Ritmo (28 días)</span><strong>${wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)}` : "—"}</strong><small>${wt ? `kg/sem, ${wt.n} pesajes` : "faltan pesajes"}</small></div>
+      <div><span>Peso de tendencia</span><strong>${kg1(tr)} kg</strong><small>${tr7 !== null ? `${sg(tr - tr7)} kg en 7 días` : "&nbsp;"}</small></div>
+      <div><span>Ritmo (28 días)</span><strong>${wt ? sg(wt.perWeek) : "—"}</strong><small>${wt ? `kg/sem, ${wt.n} pesajes` : "faltan pesajes"}</small></div>
+      ${plan ? `<div><span>Ritmo necesario</span><strong>${sg(plan.need)}</strong><small>kg/sem para ${kg1(plan.goal.kg)} kg al ${esc(gd)}</small></div>` : ""}
     </div>
-    <div class="wchart">${weightChart(ser, box.clientWidth)}</div>
-    <p class="small muted" style="margin:10px 0 0">Cada punto es un pesaje; tócalo para abrir ese día. La línea es tu peso de tendencia: un promedio móvil exponencial en que cada día mueve la tendencia un 10% hacia el pesaje; los días sin pesaje se rellenan con una recta entre los pesajes vecinos. El trazo vertical es la distancia entre el pesaje y la tendencia, que suele ser agua, sal o digestión. El ritmo es la pendiente de una regresión lineal sobre los pesajes de 28 días, la misma que usa el ajuste sugerido de calorías.</p>`);
+    <div class="wchart">${weightChart(ser, box.clientWidth, plan)}</div>
+    ${plan ? `<div class="gw-legend" style="margin:8px 0 0"><span><i style="background:var(--food)"></i>Tendencia y proyección a tu ritmo</span><span><i style="background:var(--ok)"></i>Ruta a la meta</span></div>` : ""}
+    ${verdict}
+    <p class="small muted" style="margin:10px 0 0">Cada punto es un pesaje; tócalo para abrir ese día. La línea es tu peso de tendencia: un promedio móvil exponencial en que cada día mueve la tendencia un 10% hacia el pesaje; los días sin pesaje se rellenan con una recta entre los pesajes vecinos. El trazo vertical es la distancia entre el pesaje y la tendencia, que suele ser agua, sal o digestión. El ritmo es la pendiente de una regresión lineal sobre los pesajes de 28 días, la misma que usa el ajuste sugerido de calorías.${plan ? ` El peso meta es tu masa libre de grasa dividida por (1 − % de grasa meta): ${kg1(plan.goal.lean)} ÷ (1 − ${fmt(plan.goal.fat, 1)}%) = ${kg1(plan.goal.kg)} kg, suponiendo que mantienes la masa libre de grasa. La proyección y la ruta parten del valor de la regresión para hoy (${kg1(plan.now)} kg), que no tiene el retraso del promedio móvil; la proyección sigue tu ritmo actual y la ruta es la recta hasta la meta.` : ""}</p>`);
 }
 function renderNutDash(){
   const box = $("#nutDash"), r = S.nutDash;
@@ -1514,8 +1571,16 @@ function renderProfile(){
   setVal("#gKcal", g.kcal); setVal("#gProt", g.protein); setVal("#gCarb", g.carbs); setVal("#gFat", g.fat); setVal("#gFib", g.fiber);
   setVal("#gTol", g.tol); setVal("#gPlants", g.plantsWeek); setVal("#gWater", g.water); setVal("#gActive", g.activeMin); setVal("#gGym", g.gymWeek);
   setVal("#gBass", g.bassMin); setVal("#gBassDays", g.bassDays); setVal("#gStudy", g.studyMin);
+  setVal("#gWDate", g.wDate || ""); setVal("#gWFat", g.wFat ?? ""); setVal("#gWLean", g.wLean ?? "");
+  renderGoalInfo();
   renderCalc();
   $("#dataInfo").textContent = (S.mode === "api" ? "Guardados en tu base de datos D1 en Cloudflare." : S.mode === "offline" ? "Sin conexión con la base de datos." : "Cargando…") + ` ${Object.keys(S.days).length} días cargados.`;
+}
+function renderGoalInfo(){
+  const date = $("#gWDate").value, fat = num($("#gWFat").value), lean = num($("#gWLean").value);
+  $("#gWInfo").textContent = date && fat > 0 && fat < 60 && lean > 0
+    ? `Peso meta: ${kg1(lean / (1 - fat / 100))} kg al ${fmtLong(date)} (${kg1(lean)} kg ÷ (1 − ${fmt(fat, 1)}%)). Supone que mantienes tu masa libre de grasa.`
+    : "Meta de peso: indica la fecha, el % de grasa meta y tu masa libre de grasa (sale del examen de composición corporal).";
 }
 function calcInput(){
   const p = profile();
@@ -2136,6 +2201,8 @@ const actions = {
     const v = {kcal: num($("#gKcal").value), protein: num($("#gProt").value), carbs: num($("#gCarb").value), fat: num($("#gFat").value), fiber: num($("#gFib").value), tol: num($("#gTol").value), plantsWeek: num($("#gPlants").value), water: num($("#gWater").value),
       activeMin: num($("#gActive").value), gymWeek: num($("#gGym").value), bassMin: num($("#gBass").value), bassDays: num($("#gBassDays").value), studyMin: num($("#gStudy").value)};
     for (const k in v) if (!v[k] || v[k] < 0) v[k] = DEFAULT_GOALS[k];
+    const wFat = num($("#gWFat").value), wLean = num($("#gWLean").value);
+    Object.assign(v, {wDate: $("#gWDate").value || null, wFat: wFat > 0 && wFat < 60 ? wFat : null, wLean: wLean > 0 ? wLean : null});
     document.activeElement && document.activeElement.blur(); saveLib("goals", () => v); toast("Metas guardadas.");
   },
   "export": () => saveFile(`lincoyan-${today()}.json`, JSON.stringify({exported: new Date().toISOString(), lib: S.lib, days: S.days}, null, 2)),
@@ -2628,6 +2695,7 @@ function wireUI(){
   }));
   $("#planPanel").addEventListener("toggle", renderPlan);
   $("#weightPanel").addEventListener("toggle", renderWeight);
+  ["#gWDate", "#gWFat", "#gWLean"].forEach(q => $(q).addEventListener("input", renderGoalInfo));
   $("#datePick").addEventListener("change", e => { if (e.target.value) setDate(e.target.value); });
   $("#bpmRange").addEventListener("input", e => Metro.setBpm(+e.target.value));
   $("#mBeats").addEventListener("change", e => Metro.setBeats(+e.target.value));
