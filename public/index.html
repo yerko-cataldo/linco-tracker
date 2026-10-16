@@ -104,9 +104,6 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:64ch;font-size:1.02rem}
 .gw-scroll{overflow-x:auto}
 .gw-legend{display:flex;gap:16px;font-size:.82rem;color:var(--muted);margin:-4px 0 10px}
 .gw-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.days7.act .day7[aria-current=true]{border-color:var(--act)}
-.days7.act .dk{font-size:1rem;font-family:var(--display);color:var(--act);text-align:center}
-.days7.act .day7.empty .dk{color:var(--muted)}
 @media (max-width:560px){.days7{gap:4px}.day7{padding:8px 2px}.day7 .dk{font-size:1rem}.day7 .dw{font-size:.62rem}}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -312,6 +309,17 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 @media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}.beats .beat,.toast,.btn{transition:none}.pulse.go{animation:none}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .ai-only[hidden]{display:none}
+/* Secciones desplegables */
+details.sec{padding:0}
+details.sec>summary{list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px 24px;cursor:pointer;border-radius:var(--r)}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary h3{margin:0}
+details.sec>summary .hint{margin-left:auto;color:var(--muted);font-size:.86rem}
+details.sec>summary::after{content:"";width:8px;height:8px;flex:none;border-right:1.8px solid var(--muted);border-bottom:1.8px solid var(--muted);transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+details.sec[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+details.sec>summary:hover h3{color:var(--food)}
+details.sec>.sec-body{padding:0 24px 22px}
+@media (max-width:560px){details.sec>summary{padding:16px}details.sec>.sec-body{padding:0 16px 18px}}
 details.manual{border-top:1px solid var(--line);padding-top:12px}
 details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-weight:550}
 .build td,.build th{padding:6px}
@@ -401,6 +409,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div id="nutRings"></div>
         <div id="nutMeters"></div>
         <div id="macroSplit"></div>
+        <div class="macro" id="bodyBox"></div>
         <div class="ai-only row mt" hidden>
           <button class="btn primary" data-action="nut-analyze">Qué me falta y qué comer ahora</button>
           <span class="small muted" id="nutAiStatus"></span>
@@ -451,48 +460,58 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <p class="small muted" id="mealAiNote"></p>
       </div>
     </div>
-    <div class="panel mt" id="planPanel">
-      <div class="item-head"><h3>Propuesta para completar el día</h3><span class="act chips" id="planChips"></span></div>
-      <div id="planBox"></div>
-      <div class="ai-only row mt" hidden>
-        <div class="field grow">Comenta o pide un cambio<input id="planNote" type="text" placeholder="Ej: repártelo en una once y una cena, sin arroz, algo rápido de preparar"></div>
-        <button class="btn" data-action="plan-ai">Ajustar con IA</button>
-      </div>
-    </div>
-    <div class="panel mt" id="nutDash" hidden></div>
-    <div class="panel mt">
-      <div class="item-head"><h3>Compras y cocina de la semana</h3><span class="act"><button class="btn small" data-action="week-shift" data-v="-7">Semana anterior</button><button class="btn small" data-action="week-shift" data-v="7">Semana siguiente</button><button class="btn small primary" data-action="week-copy">Copiar lista de compras</button></span></div>
-      <div id="weekBox"></div>
-    </div>
     <div class="panel mt">
       <div class="item-head"><h3>Comidas del día</h3><span class="act"><button class="btn small" data-action="meals-copy-prev">Copiar comidas del día anterior</button></span></div>
       <div class="scroll" id="mealsTable"></div>
     </div>
-    <div class="panel mt">
-      <div class="item-head"><h3>Mis alimentos</h3><span class="act">
-        <label class="btn small ai-only" hidden>Leer etiqueta (foto)<input type="file" id="labelPhoto" accept="image/*" class="sr"></label>
-        <button class="btn small" data-action="food-new">Agregar alimento</button></span></div>
-      <p class="small muted" style="margin:0 0 10px">Valores por 100 g (o 100 ml) del alimento tal como lo comes: cocido si lo comes cocido. Los que dicen "revisar" dependen de la marca o la receta: corrígelos con la etiqueta. <span id="labelStatus"></span></p>
-      <div class="row" style="margin-bottom:8px"><div class="field grow"><span class="sr">Filtrar alimentos</span><input id="foodFilter" placeholder="Filtrar alimentos"></div></div>
-      <div class="scroll" id="foodTable"></div>
-      <h3 class="mt">Comidas frecuentes</h3>
-      <p class="small muted" id="comboHint" style="margin:0 0 6px" hidden>Marca cada comida como de teletrabajo u oficina: así arman el plan de cada tipo de día, la lista de compras y lo que hay que cocinar.</p>
-      <div id="comboList"></div>
-    </div>
-    <div class="panel mt"><h3>Últimos 7 días</h3><div class="days7" id="days7"></div>
-      <p class="small muted" style="margin:10px 0 0">Calorías y proteína de cada día. Verde: calorías dentro de la meta; ámbar: por debajo; rojo: sobre la meta. Toca un día para abrirlo.</p></div>
-    <div class="grid g2 mt">
-      <div class="panel"><h3>Calorías de la semana</h3><div id="kcalChart"></div></div>
-      <div class="panel"><h3>Indicadores de la semana</h3><div id="nutWeek"></div></div>
-    </div>
-    <div class="panel mt"><h3>Cuerpo</h3><div id="bodyBox"></div></div>
+    <div class="panel mt" id="nutDash" hidden></div>
+    <details class="panel sec mt" id="planPanel">
+      <summary><h3>Propuesta para completar el día</h3><span class="hint" id="planSum"></span></summary>
+      <div class="sec-body">
+        <div class="chips" id="planChips" style="margin-bottom:12px"></div>
+        <div id="planBox"></div>
+        <div class="ai-only row mt" hidden>
+          <div class="field grow">Comenta o pide un cambio<input id="planNote" type="text" placeholder="Ej: repártelo en una once y una cena, sin arroz, algo rápido de preparar"></div>
+          <button class="btn" data-action="plan-ai">Ajustar con IA</button>
+        </div>
+      </div>
+    </details>
+    <details class="panel sec mt">
+      <summary><h3>Semana</h3><span class="hint" id="nutWeekSum"></span></summary>
+      <div class="sec-body">
+        <div class="days7" id="days7"></div>
+        <p class="small muted" style="margin:10px 0 18px">Calorías y proteína de cada día de la semana. Verde: calorías dentro de la meta; ámbar: por debajo; rojo: sobre la meta. Toca un día para abrirlo.</p>
+        <div id="nutWeek"></div>
+      </div>
+    </details>
+    <details class="panel sec mt">
+      <summary><h3>Compras y cocina</h3><span class="hint" id="weekSum"></span></summary>
+      <div class="sec-body">
+        <div class="row" style="margin-bottom:12px"><button class="btn small" data-action="week-shift" data-v="-7">Semana anterior</button><button class="btn small" data-action="week-shift" data-v="7">Semana siguiente</button><button class="btn small primary" data-action="week-copy">Copiar lista de compras</button></div>
+        <div id="weekBox"></div>
+      </div>
+    </details>
+    <details class="panel sec mt">
+      <summary><h3>Mis alimentos y comidas frecuentes</h3><span class="hint" id="foodSum"></span></summary>
+      <div class="sec-body">
+        <div class="row" style="margin-bottom:12px">
+          <button class="btn small" data-action="food-new">Agregar alimento</button>
+          <label class="btn small ai-only" hidden>Leer etiqueta (foto)<input type="file" id="labelPhoto" accept="image/*" class="sr"></label>
+        </div>
+        <p class="small muted" style="margin:0 0 10px">Valores por 100 g (o 100 ml) del alimento tal como lo comes: cocido si lo comes cocido. Los que dicen "revisar" dependen de la marca o la receta: corrígelos con la etiqueta. <span id="labelStatus"></span></p>
+        <div class="row" style="margin-bottom:8px"><div class="field grow"><span class="sr">Filtrar alimentos</span><input id="foodFilter" placeholder="Filtrar alimentos"></div></div>
+        <div class="scroll" id="foodTable"></div>
+        <h3 class="mt">Comidas frecuentes</h3>
+        <p class="small muted" id="comboHint" style="margin:0 0 6px" hidden>Marca cada comida como de teletrabajo u oficina: así arman el plan de cada tipo de día, la lista de compras y lo que hay que cocinar.</p>
+        <div id="comboList"></div>
+      </div>
+    </details>
   </section>
 
   <!-- ENTRENO -->
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
-    <div class="panel"><h3 id="gymWeekTitle">Semana seleccionada</h3><div class="days7 act" id="gymDays7"></div></div>
-    <div class="panel mt"><h3>Gimnasio y bici por semana</h3><div id="gymWeeks"></div></div>
+    <div class="panel"><h3>Gimnasio y bici por semana</h3><div id="gymWeeks"></div></div>
     <div class="grid g2 mt">
       <div class="panel stack">
         <h3>Actividad del día</h3>
@@ -510,7 +529,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
         <div id="actToday"></div>
       </div>
-      <div class="panel"><h3>Minutos activos de la semana</h3><div id="actChart"></div><div id="actWeek"></div></div>
+      <div class="panel"><h3>Semana</h3><div id="actWeek"></div></div>
     </div>
     <div class="grid g2 mt">
       <div class="panel stack">
@@ -1213,17 +1232,16 @@ function renderNutrition(){
     : `<p class="empty">Sin comidas registradas este día. Agrega la primera arriba o usa el registro rápido del resumen.</p>`);
   setHTML($("#bodyBox"), `<div class="row">
       <div class="field w7">Peso kg<input id="wInput" inputmode="decimal" value="${d.weight ?? ""}"></div>
-      <button class="btn" data-action="weight-save">Guardar peso</button>
+      <button class="btn small" data-action="weight-save">Guardar peso</button>
     </div>`);
-  setHTML($("#days7"), [6,5,4,3,2,1,0].map(n => {
-    const dt = addDays(S.date, -n), s = dayStats(dt), lo = g.kcal * (1 - g.tol / 100), hi = g.kcal * (1 + g.tol / 100);
+  setHTML($("#days7"), weekDates(S.date).map(dt => {
+    const s = dayStats(dt), lo = g.kcal * (1 - g.tol / 100), hi = g.kcal * (1 + g.tol / 100);
     const col = !s.meals ? "var(--muted)" : s.kcal > hi ? "var(--danger)" : s.kcal >= lo ? "var(--ok)" : "var(--food)";
     return `<button class="day7${s.meals ? "" : " empty"}" data-action="day-open" data-d="${dt}"${dt === S.date ? ' aria-current="true"' : ""} aria-label="${esc(fmtLong(dt))}">
-      <span class="dw">${esc(parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))}</span>
+      <span class="dw">${esc(parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))} ${parseYmd(dt).getDate()}</span>
       <span class="dk" style="color:${col}">${s.meals ? fmt(s.kcal) : "–"}</span>
       <span class="dp">${s.meals ? fmt(s.p) + " g" : "&nbsp;"}</span></button>`;
   }).join(""));
-  setHTML($("#kcalChart"), barChart(weekDates(S.date).map(x => dayStats(x).kcal), DOW, g.kcal, "var(--food)", "kcal"));
   const wt = weightTrend(), adj = kcalAdjustment(), protDays = ws.st.filter(s => s.meals && s.p >= 0.9 * g.protein).length;
   const adjTxt = !adj ? "Necesito al menos 6 pesajes en 2 semanas" : adj.ok ? `Vas al ritmo de ${adj.ph.label.toLowerCase()}, mantén las kcal` : `${adj.kcal > 0 ? "+" : ""}${adj.kcal} kcal/día para acercarte a ${fmt(adj.ph.rate, 2)} kg/sem`;
   setHTML($("#nutWeek"), `<div class="kpi flat c-food" style="padding-top:0"><dl style="margin:0">
@@ -1237,7 +1255,8 @@ function renderNutrition(){
     <dt>Plantas distintas</dt><dd>${ws.plants} / ${g.plantsWeek}</dd>
     <dt>Tendencia de peso (28 días)</dt><dd>${wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "faltan datos"}</dd>
     <dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>
-  </dl></div><p class="small muted" style="margin-top:10px">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara esa pendiente con el ritmo de tu fase (7.700 kcal ≈ 1 kg), con tope de ±250 kcal. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
+  </dl></div><p class="small muted" style="margin:10px 0 0">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara esa pendiente con el ritmo de tu fase (7.700 kcal ≈ 1 kg), con tope de ±250 kcal. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
+  $("#nutWeekSum").textContent = `${ws.foodOk} de ${ws.n} días en meta · ${wt ? `peso ${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "tendencia de peso sin datos"}`;
   renderPlan(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
 }
 function renderNutDash(){
@@ -1270,14 +1289,6 @@ function renderAct(){
   setVal("#aGym", a.gym); setVal("#aGymMin", a.gymMin || ""); setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
   const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
   const selWk = weekDates(S.date), tdy = today();
-  $("#gymWeekTitle").textContent = `Gimnasio de la semana del ${wkLabel(selWk[0], selWk[6])}`;
-  setHTML($("#gymDays7"), selWk.map(dt => {
-    const ga = day(dt).act, gym = !!ga.gym, fut = dt > tdy;
-    return `<button class="day7${gym ? "" : " empty"}" data-action="day-open" data-d="${dt}"${dt === S.date ? ' aria-current="true"' : ""} aria-label="${esc(fmtLong(dt))}">
-      <span class="dw">${esc(parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))} ${parseYmd(dt).getDate()}</span>
-      <span class="dk">${gym ? esc(GYM_LABEL[ga.gym] || ga.gym) : fut ? "–" : "Descanso"}</span>
-      <span class="dp">${gym ? fmtDur(ga.gymMin || 40) : "&nbsp;"}</span></button>`;
-  }).join(""));
   const wk0 = weekDates(tdy)[0], WD = ["L","Ma","Mi","J","V","S","D"];
   const wkIdx = []; for (let w = wk0; w >= DATA_START; w = addDays(w, -7)) wkIdx.push(wkIdx.length);
   const wkRows = wkIdx.map(i => {
@@ -1291,14 +1302,15 @@ function renderAct(){
   }).join("");
   setHTML($("#gymWeeks"), `<div class="gw-legend"><span><i style="background:var(--act)"></i>Gimnasio</span><span><i style="background:var(--study)"></i>Bici</span><span><i style="outline:1.5px dashed var(--act);outline-offset:-1px"></i>Hoy</span></div><div class="gw-scroll"><table class="gwt"><thead><tr><th>Semana</th>${WD.map(x => `<th>${x}</th>`).join("")}<th>Total semana</th></tr></thead><tbody>${wkRows}</tbody></table></div>`);
   setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)"));
-  setHTML($("#actChart"), barChart(weekDates(S.date).map(x => dayStats(x).actMin), DOW, g.activeMin, "var(--act)", "min"));
-  const wSets = ws.st.flatMap(s => s.d.act.sets);
+  const wSets = ws.st.flatMap(s => s.d.act.sets), wDone = selWk.filter(x => x <= tdy);
+  const actDays = wDone.filter(x => dayStats(x).actMin >= g.activeMin).length;
   const nextGym = (() => { const done = ["push","pull","legs"].map(k => [k, ws.gym[k] || 0]).sort((x, y) => x[1] - y[1]); return GYM_LABEL[done[0][0]]; })();
-  setHTML($("#actWeek"), `<div class="kpi flat c-act" style="padding-top:0"><dl>
-    <dt>Gimnasio</dt><dd>${ws.gymCount} / ${g.gymWeek} (Push ${ws.gym.push||0}, Pull ${ws.gym.pull||0}, Legs ${ws.gym.legs||0})</dd>
+  setHTML($("#actWeek"), `<div class="kpi flat c-act" style="padding-top:0"><dl style="margin:0">
+    <dt>Semana</dt><dd>${wkLabel(selWk[0], selWk[6])}</dd>
+    <dt>Días con la meta de minutos activos</dt><dd>${actDays} de ${wDone.length}</dd>
+    <dt>Push / Pull / Legs</dt><dd>${ws.gym.push||0} / ${ws.gym.pull||0} / ${ws.gym.legs||0}</dd>
     <dt>Le toca al siguiente día de gimnasio</dt><dd>${nextGym}</dd>
     <dt>Tenis</dt><dd>${fmt(ws.tennisMin)} min</dd>
-    <dt>Bici</dt><dd>${fmt(ws.bikeKm, 1)} km</dd>
     <dt>Series de gimnasio</dt><dd>${wSets.length}</dd>
     <dt>Volumen levantado (kg × reps)</dt><dd>${fmt(sum(wSets, s => s.kg * s.reps))} kg</dd>
   </dl></div>`);
@@ -1504,6 +1516,7 @@ function renderFoods(){
   setHTML($("#comboList"), (S.lib.combos || []).length ? `<ul class="list">${S.lib.combos.map(c => { const m = mealFromItems(comboItems(c)); return `<li class="item-head"><strong>${esc(c.name)}</strong><span class="small muted">${c.time ? esc(c.time) + " · " : ""}${fmt(m.kcal)} kcal, ${fmt(m.p)} g proteína, ${c.items.length} ingredientes</span><span class="act"><span class="chips">${["tele", "ofi"].map(k => `<button class="chip${c.day === k ? " sel" : ""}" data-action="combo-day" data-id="${c.id}" data-v="${k}" aria-pressed="${c.day === k}">${KIND_LABEL[k]}</button>`).join("")}</span><button class="btn small" data-action="combo-load" data-id="${c.id}">Usar</button><button class="btn small ghost danger" data-action="combo-del" data-id="${c.id}">Borrar</button></span></li>`; }).join("")}</ul>`
     : `<p class="empty">Arma una comida con ingredientes y presiona "Guardar como frecuente" para reutilizarla con un clic.</p>`);
   $("#comboHint").hidden = !(S.lib.combos || []).length;
+  $("#foodSum").textContent = `${foods().length} alimentos · ${(S.lib.combos || []).length} comidas frecuentes`;
 }
 function comboItems(c){ return (c.items || []).map(it => { const fd = it.foodId && foods().find(f => f.id === it.foodId); return fd ? itemFromFood(fd, it.g) : {...it, id: uid()}; }); }
 
@@ -1608,6 +1621,7 @@ function renderWeek(){
       ${s.items.length ? `<ul class="shop">${s.items.map(t => `<li><span>${esc(t)}</span></li>`).join("")}</ul>` : `<p class="small muted" style="margin:6px 0 0">Nada que cocinar en tanda para esos días.</p>`}
       ${long ? `<p class="small" style="margin:8px 0 0;color:var(--danger)">Cubre más de 4 días: congela las porciones desde el quinto día.</p>` : ""}</div>`;
   }).join("");
+  $("#weekSum").textContent = w.empty ? "sin plan por tipo de día" : `del ${fmtShort(w.from)} al ${fmtShort(w.dates[6])} · ${w.sess.length} ${w.sess.length === 1 ? "sesión" : "sesiones"} de cocina`;
   setHTML($("#weekBox"), `<p class="small muted" style="margin:0">Del ${esc(fmtLong(w.from))} al ${esc(fmtLong(w.dates[6]))}. Cada día usa el plan de su tipo: ${esc(tplLine)}.</p>
     <div class="chips mt"><span class="small muted" style="align-self:center">Oficina o teletrabajo:</span>${dayChips}</div>
     <p class="small muted" style="margin:6px 0 0">Toca un día para cambiarlo; se repite todas las semanas. Un día hábil con bici registrada cuenta como oficina.</p>
@@ -1702,7 +1716,7 @@ Reglas:
 let planTimer = null;
 function schedulePlan(){
   clearTimeout(planTimer);
-  planTimer = setTimeout(() => { if (S.tab === "nutricion" && S.date >= today()) generatePlan(); }, 900);
+  planTimer = setTimeout(() => { if (S.tab === "nutricion" && $("#planPanel").open && S.date >= today()) generatePlan(); }, 900);
 }
 async function generatePlan(){
   const date = S.date, key = planKey(date), {st, need, done} = planNeed(date);
@@ -1745,6 +1759,8 @@ function renderPlan(){
   $("#planPanel").hidden = past;
   if (past) return;
   const {g, st, need: n, done} = planNeed(S.date), key = planKey(S.date), r = S.plan && S.plan.key === key ? S.plan : null;
+  $("#planSum").textContent = done ? "día cubierto" : `faltan ${fmt(n.kcal)} kcal y ${fmt(Math.max(0, n.p))} g de proteína`;
+  if (!$("#planPanel").open) return;
   setHTML($("#planChips"), done ? "" : `<span class="small muted" style="align-self:center">Repartir en</span>` +
     [[0, "lo habitual"], [1, "1 comida"], [2, "2 comidas"], [3, "3 comidas"]].map(([v, t]) => `<button class="chip${S.planMeals === v ? " sel" : ""}" data-action="plan-meals" data-v="${v}" aria-pressed="${S.planMeals === v}">${t}</button>`).join(""));
   if (done){
@@ -2541,6 +2557,7 @@ function wireUI(){
     if (S.tab === "metricas") loadMetrics();
     if (S.tab === "nutricion") renderPlan();
   }));
+  $("#planPanel").addEventListener("toggle", renderPlan);
   $("#datePick").addEventListener("change", e => { if (e.target.value) setDate(e.target.value); });
   $("#bpmRange").addEventListener("input", e => Metro.setBpm(+e.target.value));
   $("#mBeats").addEventListener("change", e => Metro.setBeats(+e.target.value));
