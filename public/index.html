@@ -309,6 +309,16 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 @media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}.beats .beat,.toast,.btn{transition:none}.pulse.go{animation:none}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .ai-only[hidden]{display:none}
+/* Peso */
+.wstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.wstats div{display:flex;flex-direction:column;gap:2px}
+.wstats span{font-size:.82rem;color:var(--muted)}
+.wstats strong{font-family:var(--display);font-stretch:112%;font-weight:750;font-size:1.5rem;line-height:1.1}
+.wstats small{font-size:.8rem;color:var(--muted)}
+.wchart svg{display:block;width:100%;height:auto}
+.wchart g.pt{cursor:pointer}
+.wchart g.pt:hover circle.dot{fill:var(--food)}
+@media (max-width:560px){.wstats strong{font-size:1.2rem}}
 /* Secciones desplegables */
 details.sec{padding:0}
 details.sec>summary{list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px 24px;cursor:pointer;border-radius:var(--r)}
@@ -465,6 +475,10 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="scroll" id="mealsTable"></div>
     </div>
     <div class="panel mt" id="nutDash" hidden></div>
+    <details class="panel sec mt" id="weightPanel">
+      <summary><h3>Peso</h3><span class="hint" id="weightSum"></span></summary>
+      <div class="sec-body" id="weightBox"></div>
+    </details>
     <details class="panel sec mt" id="planPanel">
       <summary><h3>Propuesta para completar el día</h3><span class="hint" id="planSum"></span></summary>
       <div class="sec-body">
@@ -1057,6 +1071,46 @@ function kcalAdjustment(){
 }
 
 /* ---------- gráficos ---------- */
+// Peso de tendencia: promedio móvil exponencial (10% por día) sobre pesajes diarios, con interpolación lineal en los días sin pesaje.
+const WEIGHT_ALPHA = 0.1, WEIGHT_DAYS = 84;
+const kg1 = v => v.toLocaleString("es-CL", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+function weightSeries(){
+  const end = today(), from = addDays(end, -(WEIGHT_DAYS - 1));
+  const pts = allDatesAsc().filter(dt => dt <= end && day(dt).weight).map(dt => [dt, day(dt).weight]);
+  if (!pts.length) return null;
+  const gap = (a, b) => Math.round((parseYmd(b) - parseYmd(a)) / 864e5), out = [];
+  let trend = null, j = 0;
+  for (let dt = pts[0][0]; dt <= end; dt = addDays(dt, 1)){
+    while (j < pts.length - 1 && pts[j + 1][0] <= dt) j++;
+    const [d0, w0] = pts[j], nx = pts[j + 1];
+    const w = d0 === dt ? w0 : nx ? w0 + (nx[1] - w0) * gap(d0, dt) / gap(d0, nx[0]) : null;
+    if (w !== null) trend = trend === null ? w : trend + WEIGHT_ALPHA * (w - trend);
+    if (dt >= from) out.push({dt, w: d0 === dt ? w0 : null, trend});
+  }
+  return out;
+}
+function weightChart(ser, width){
+  const W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 210 : 250, L = 38, R = 14, T = 14, B = 28;
+  const vals = ser.flatMap(p => [p.w, p.trend]).filter(v => v !== null);
+  const lo = Math.min(...vals), hi = Math.max(...vals), step = hi - lo <= 2.5 ? .5 : hi - lo <= 6 ? 1 : 2;
+  const mn = Math.floor((lo - .3) / step) * step, mx = Math.ceil((hi + .3) / step) * step;
+  const n = ser.length, x = i => L + (W - L - R) * (n === 1 ? .5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - (v - mn) / (mx - mn));
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pesajes diarios y peso de tendencia" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  for (let v = mn; v <= mx + 1e-9; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(v, 1)}</text>`;
+  const daily = n * 26 <= W - L - R, biweek = n / 7 * 52 > W - L - R;
+  ser.forEach((p, i) => {
+    const d = parseYmd(p.dt), wk = Math.round((d - parseYmd(ser[0].dt)) / 864e5 / 7);
+    if (daily || (d.getDay() === 1 && (!biweek || wk % 2 === 0)))
+      s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(daily ? String(d.getDate()) : fmtShort(p.dt).replace(".", ""))}</text>`;
+  });
+  ser.forEach((p, i) => { if (p.w !== null && p.trend !== null) s += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(p.w)}" y2="${y(p.trend)}" stroke="var(--line-strong)" stroke-width="1.5"/>`; });
+  const tl = ser.map((p, i) => p.trend === null ? null : `${x(i).toFixed(1)},${y(p.trend).toFixed(1)}`).filter(Boolean);
+  if (tl.length > 1) s += `<polyline points="${tl.join(" ")}" fill="none" stroke="var(--food)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+  ser.forEach((p, i) => { if (p.w !== null) s += `<g class="pt" data-action="day-open" data-d="${p.dt}"><title>${esc(fmtLong(p.dt))}: ${kg1(p.w)} kg (tendencia ${kg1(p.trend)} kg)</title><circle cx="${x(i)}" cy="${y(p.w)}" r="9" fill="transparent"/><circle class="dot" cx="${x(i)}" cy="${y(p.w)}" r="3.4" fill="var(--ink)" stroke="var(--surface)" stroke-width="1.5"/></g>`; });
+  const last = ser[n - 1];
+  if (last.trend !== null) s += `<text x="${x(n - 1) - 4}" y="${y(last.trend) - 9}" text-anchor="end" font-size="12" font-weight="700" fill="var(--food)">${kg1(last.trend)}</text>`;
+  return s + "</svg>";
+}
 function barChart(values, labels, goal, color, unit, hi = (parseYmd(S.date).getDay() + 6) % 7){
   const W = 460, H = 180, L = 36, B = 26, T = 10, max = Math.max(goal || 0, ...values.map(v => v || 0)) * 1.12 || 1;
   const bw = (W - L - 10) / values.length, y = v => T + (H - T - B) * (1 - v / max);
@@ -1257,7 +1311,22 @@ function renderNutrition(){
     <dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>
   </dl></div><p class="small muted" style="margin:10px 0 0">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara esa pendiente con el ritmo de tu fase (7.700 kcal ≈ 1 kg), con tope de ±250 kcal. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
   $("#nutWeekSum").textContent = `${ws.foodOk} de ${ws.n} días en meta · ${wt ? `peso ${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "tendencia de peso sin datos"}`;
-  renderPlan(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
+  renderPlan(); renderWeight(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
+}
+function renderWeight(){
+  const ser = weightSeries(), lw = lastWeight(), wt = weightTrend(), box = $("#weightBox");
+  const rate = wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "faltan pesajes";
+  $("#weightSum").textContent = lw ? `${kg1(lw.w)} kg · ${rate}` : "sin pesajes";
+  if (!$("#weightPanel").open) return;
+  if (!ser || !ser.some(p => p.w !== null)){ setHTML(box, `<p class="empty">Sin pesajes en las últimas ${WEIGHT_DAYS / 7} semanas. Registra tu peso en el panel del día.</p>`); return; }
+  const tr = ser[ser.length - 1].trend, tr7 = ser.length > 7 ? ser[ser.length - 8].trend : null;
+  setHTML(box, `<div class="wstats">
+      <div><span>Último pesaje</span><strong>${kg1(lw.w)} kg</strong><small>${esc(fmtShort(lw.dt))}</small></div>
+      <div><span>Peso de tendencia</span><strong>${kg1(tr)} kg</strong><small>${tr7 !== null ? `${tr - tr7 > 0 ? "+" : ""}${fmt(tr - tr7, 2)} kg en 7 días` : "&nbsp;"}</small></div>
+      <div><span>Ritmo (28 días)</span><strong>${wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)}` : "—"}</strong><small>${wt ? `kg/sem, ${wt.n} pesajes` : "faltan pesajes"}</small></div>
+    </div>
+    <div class="wchart">${weightChart(ser, box.clientWidth)}</div>
+    <p class="small muted" style="margin:10px 0 0">Cada punto es un pesaje; tócalo para abrir ese día. La línea es tu peso de tendencia: un promedio móvil exponencial en que cada día mueve la tendencia un 10% hacia el pesaje; los días sin pesaje se rellenan con una recta entre los pesajes vecinos. El trazo vertical es la distancia entre el pesaje y la tendencia, que suele ser agua, sal o digestión. El ritmo es la pendiente de una regresión lineal sobre los pesajes de 28 días, la misma que usa el ajuste sugerido de calorías.</p>`);
 }
 function renderNutDash(){
   const box = $("#nutDash"), r = S.nutDash;
@@ -2558,6 +2627,7 @@ function wireUI(){
     if (S.tab === "nutricion") renderPlan();
   }));
   $("#planPanel").addEventListener("toggle", renderPlan);
+  $("#weightPanel").addEventListener("toggle", renderWeight);
   $("#datePick").addEventListener("change", e => { if (e.target.value) setDate(e.target.value); });
   $("#bpmRange").addEventListener("input", e => Metro.setBpm(+e.target.value));
   $("#mBeats").addEventListener("change", e => Metro.setBeats(+e.target.value));
@@ -2583,7 +2653,7 @@ function wireUI(){
     const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT|BUTTON/.test(a.tagName)) return;
     e.preventDefault(); Metro.toggle();
   });
-  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(renderStaff, 150); });
+  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); }, 150); });
   Metro.drawBeats(); Metro.setBpm(80);
 }
 init();
