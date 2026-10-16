@@ -806,7 +806,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="row">
             <div class="field w10">Fecha meta de peso<input id="gWDate" type="date"></div>
             <div class="field w7">% grasa meta<input id="gWFat" inputmode="decimal"></div>
-            <div class="field w10">Masa libre de grasa kg<input id="gWLean" inputmode="decimal"></div>
+            <div class="field w10">Masa libre de grasa actual kg<input id="gWLean" inputmode="decimal"></div>
           </div>
           <p class="small muted" id="gWInfo" style="margin:0"></p>
           <div><button class="btn primary" data-action="goals-save">Guardar metas</button></div>
@@ -1580,7 +1580,7 @@ function renderGoalInfo(){
   const date = $("#gWDate").value, fat = num($("#gWFat").value), lean = num($("#gWLean").value);
   $("#gWInfo").textContent = date && fat > 0 && fat < 60 && lean > 0
     ? `Peso meta: ${kg1(lean / (1 - fat / 100))} kg al ${fmtLong(date)} (${kg1(lean)} kg ÷ (1 − ${fmt(fat, 1)}%)). Supone que mantienes tu masa libre de grasa.`
-    : "Meta de peso: indica la fecha, el % de grasa meta y tu masa libre de grasa (sale del examen de composición corporal).";
+    : "Meta de peso: indica la fecha, el % de grasa meta y tu masa libre de grasa actual, que sale de tu último examen de composición corporal (peso × (1 − % de grasa)). Con eso calculo el peso meta.";
 }
 function calcInput(){
   const p = profile();
