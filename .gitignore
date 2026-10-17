@@ -9,3 +9,4 @@ lincoyan-*.csv
 
 # Resultados de la comparación de la propuesta: contienen tus comidas
 eval/results/plan/
+__pycache__/

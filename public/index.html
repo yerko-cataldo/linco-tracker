@@ -278,6 +278,155 @@ strong.ink{color:var(--ink)}
 .badge{display:inline-flex;align-items:center;gap:4px;font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:999px;color:var(--act);background:color-mix(in srgb,var(--act) 12%,var(--surface))}
 .badge .ico{width:13px;height:13px}
 .set-n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--sunken);font-weight:700;font-size:.8rem}
+.set-n.w{background:none;border:1.5px dashed var(--line-strong);color:var(--muted)}
+.ex-card tr.warm td{color:var(--muted)}
+.ex-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ex-head .grow{flex:1 1 140px;min-width:0}
+.mus{display:block;font-size:.8rem;color:var(--muted);line-height:1.35}
+.ex-title{font-family:var(--display);font-stretch:108%;font-size:1.15rem}
+/* Figura muscular */
+.fig{display:block;height:auto;overflow:visible}
+.fig .out>*{fill:none;stroke:var(--line-strong);stroke-width:2.6;stroke-linejoin:round}
+.fig .base>*{fill:var(--sunken)}
+.fig .mu path{stroke:var(--sunken);stroke-width:1.1;stroke-linejoin:round}
+.fig.mini{width:30px;flex:none}
+.fig.mini .out>*{stroke-width:4}
+.fig.mini .mu path{stroke-width:1.6}
+.fig.none{display:inline-block;width:30px;height:57px;border-radius:8px;background:var(--sunken)}
+.body-map{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:32px;align-items:start}
+@media (max-width:760px){.body-map{grid-template-columns:1fr;gap:20px}}
+.figs{display:flex;justify-content:center;gap:clamp(8px,4vw,32px)}
+.figs figure{margin:0;text-align:center}
+.figs .fig{width:clamp(110px,30vw,150px)}
+.figs figcaption{font-size:.8rem;color:var(--muted);font-weight:600;margin-top:6px}
+.figs .mu g:hover{filter:brightness(1.08)}
+.mu-legend{display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:center;font-size:.8rem;color:var(--muted);margin-top:12px}
+.mu-legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+/* Progreso por ejercicio */
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.prog{display:flex;flex-direction:column;gap:8px;text-align:left;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;cursor:pointer;transition:border-color .12s}
+.prog:hover{border-color:var(--line-strong)}
+.prog[aria-pressed=true]{border-color:var(--act);box-shadow:inset 0 0 0 1px var(--act)}
+.prog .top{display:flex;gap:10px;align-items:center}
+.prog .top .grow{display:flex;flex-direction:column;min-width:0}
+.prog .mid{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.big-n{font-family:var(--display);font-stretch:112%;font-weight:750;font-size:1.3rem;line-height:1.1}
+.pills{display:flex;flex-wrap:wrap;gap:4px}
+.pill{display:inline-flex;align-items:baseline;gap:5px;font-size:.8rem;padding:2px 9px;border-radius:999px;background:var(--sunken);white-space:nowrap}
+.pill small{font-size:.72rem;color:var(--muted)}
+.pill.warm{background:none;box-shadow:inset 0 0 0 1px var(--line-strong);color:var(--muted)}
+.ses-table td{vertical-align:middle}
+button.link{background:none;border:0;padding:0;color:inherit;font:inherit;text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px;cursor:pointer}
+.wchart g.pt:hover circle.dot{fill:var(--ink)}
+/* Historial de sesiones */
+.sess-list{list-style:none;margin:0;padding:0}
+.sess-list li+li{border-top:1px solid var(--line)}
+.sess{width:100%;display:grid;grid-template-columns:3.2rem auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 8px;background:none;border:0;border-radius:var(--r-sm);font:inherit;color:inherit;text-align:left;cursor:pointer}
+.sess:hover{background:var(--sunken)}
+.sess.sel{box-shadow:inset 3px 0 0 var(--act)}
+.sess-date{display:flex;flex-direction:column;align-items:center;line-height:1.1;font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sess-date strong{font-family:var(--display);font-size:1.45rem;color:var(--ink);letter-spacing:-.02em}
+.sess-figs{display:flex;gap:4px}
+.sess-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sess-title{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sess-stats{display:flex;flex-direction:column;align-items:flex-end;font-size:.82rem;color:var(--muted);white-space:nowrap}
+.sess-stats b{font-family:var(--display);color:var(--ink)}
+@media (max-width:560px){.sess{grid-template-columns:2.6rem auto minmax(0,1fr);gap:10px}.sess-stats{grid-column:2/-1;flex-direction:row;gap:12px;justify-content:flex-start}}
+/* Rutina desde notas */
+.rt-ses+.rt-ses{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.rt-date{font-family:var(--display);font-stretch:108%}
+.rt-list{list-style:none;margin:10px 0 0;padding:0}
+.rt-list li{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.rt-list li:last-child{border-bottom:0}
+.rt-list .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.mini-sel,.mini-in{border:1px solid var(--line-strong);background:var(--bg);border-radius:8px;padding:3px 8px;min-height:30px;font-size:.88rem}
+.mini-in{width:4.2rem}
+.mu-sum{margin:0 0 12px;font-size:1.02rem;line-height:1.5}
+.mu-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mu-chip{display:inline-flex;align-items:center;gap:7px;font-size:.86rem;padding:4px 11px;border-radius:999px;background:var(--sunken)}
+.mu-chip i{width:9px;height:9px;border-radius:50%}
+.trend{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-weight:800;font-size:.9rem;flex:none}
+.trend.up{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+.trend.down{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,var(--surface))}
+.trend.eq{color:var(--muted);background:var(--sunken)}
+.prog-now{display:flex;gap:8px;align-items:center}
+.prog .mid .spark{margin-left:auto}
+/* Checklist del entreno */
+.wk-panel .wk-types{margin-left:auto}
+.wk-src{margin:-4px 0 12px}
+.wk-ex{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px 8px;background:var(--bg)}
+.wk-ex+.wk-ex{margin-top:10px}
+.wk-ex.closed{padding:8px 14px;background:none}
+.wk-ex.closed .fig.mini{width:22px}
+.wk-head{display:flex;gap:12px;align-items:center}
+.wk-head .grow{flex:1;min-width:0;display:flex;flex-direction:column}
+.wk-hint{font-size:.82rem;font-weight:600}
+.wk-hint.up{color:var(--act)}
+.wk-hint.down{color:var(--muted)}
+.wk-count{font-size:.82rem;color:var(--muted);font-weight:600}
+.wk-ok{display:inline-flex;align-items:center;gap:5px;font-size:.84rem;color:var(--ok);font-weight:600}
+.wk-ok svg{width:16px;height:16px}
+.wk-rows{list-style:none;margin:8px 0 0;padding:0}
+.wk-row{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 0}
+.wk-row+.wk-row{border-top:1px solid var(--line)}
+.chk{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);color:transparent;display:grid;place-items:center;padding:0;cursor:pointer;transition:background .12s,border-color .12s}
+.chk svg{width:20px;height:20px}
+button.chk:hover{border-color:var(--act);color:color-mix(in srgb,var(--act) 45%,transparent)}
+.chk.on{background:var(--act);border-color:var(--act);color:var(--surface)}
+.chk.wait{border-style:dashed;border-color:var(--line);cursor:default}
+.wk-row.done .wk-val{color:var(--muted)}
+.wk-val{font-family:var(--display);font-stretch:106%;font-weight:650;font-size:1.02rem}
+button.wk-val.plain{background:none;border:0;padding:6px 0;color:inherit;cursor:pointer;text-align:left}
+button.wk-val.plain:hover{color:var(--act)}
+.wk-tag{font-size:.74rem;color:var(--muted);border:1px dashed var(--line-strong);border-radius:999px;padding:0 7px}
+.wk-edit{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.stepper{display:inline-flex;align-items:center;gap:4px}
+.stepper>button:not(.wk-unit){width:38px;height:38px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);font-size:1.25rem;line-height:1;cursor:pointer;padding:0}
+.stepper>button:not(.wk-unit):hover{background:var(--sunken)}
+.wk-num{width:3.6rem;text-align:center;font-family:var(--display);font-stretch:106%;font-weight:700;font-size:1.15rem;border:0;border-bottom:1.5px solid var(--line-strong);background:none;padding:4px 0;border-radius:0}
+.wk-num:focus{outline:none;border-bottom-color:var(--act)}
+.wk-unit,.wk-u{font-size:.82rem;color:var(--muted);min-width:2.2rem}
+.wk-unit{background:none;border:0;padding:4px 2px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.wk-foot{display:flex;gap:2px;margin:2px 0 0 -6px}
+.wk-x{margin-left:auto;flex:none;min-width:30px;height:30px;border-radius:8px;border:0;background:none;color:var(--muted);font-size:1.15rem;line-height:1;cursor:pointer;padding:0 6px}
+.wk-x:hover{background:var(--sunken);color:var(--danger)}
+.wk-head .wk-x{margin-left:0}
+.wk-add{margin-top:14px}
+/* Pictogramas de ejercicios */
+.pic{display:block;flex:none;width:72px;aspect-ratio:200/160;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pic svg{display:block;width:100%;height:100%}
+.pic.big{width:120px}
+.wk-ex.closed .pic{width:44px;border-radius:7px}
+.pic .b{fill:color-mix(in srgb,var(--ink) 64%,var(--surface))}
+.pic .bf{fill:color-mix(in srgb,var(--ink) 30%,var(--surface))}
+.pic .m{fill:var(--act)}
+.pic .mf{fill:color-mix(in srgb,var(--act) 48%,var(--surface))}
+.pic .mk{fill:var(--line-strong)}
+.pic .sk{fill:var(--sunken);stroke:var(--line-strong);stroke-width:1}
+.pic .pad{fill:var(--line-strong);stroke:var(--line-strong)}
+.pic .pl{fill:var(--sunken);stroke:var(--line-strong);stroke-width:2}
+.pic .pl2{fill:none;stroke:var(--line-strong);stroke-width:1}
+.pic .mkl{stroke:var(--line-strong);fill:none}
+.pic .sep{stroke:var(--line-strong)}
+.pic .cab{stroke:var(--muted)}
+.pic .bar{fill:var(--muted)}
+.pic .barl{stroke:var(--muted)}
+.pic .fl{stroke:var(--line);stroke-width:1.5}
+.pic .t{fill:color-mix(in srgb,var(--ink) 54%,var(--surface))}
+.pic .halo{fill:var(--surface);stroke:var(--surface);stroke-width:1.5;stroke-linejoin:round}
+.pic .dl{fill:none;stroke:var(--surface);stroke-width:.8;opacity:.45}
+.wk-head .mus{margin-top:1px}
+.cat-list{list-style:none;margin:14px 0 0;padding:0}
+.cat-list li{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.cat-list .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.cat-tip{font-size:.84rem;line-height:1.4;margin-top:2px}
+.cat-list .btn,.cat-list .wk-ok{flex:none}
+.rest-bar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px 10px 18px;border-radius:999px;background:var(--ink);color:var(--bg);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.rest-bar[hidden]{display:none}
+.rest-bar .rest-lab{font-size:.86rem;opacity:.8}
+.rest-bar .clock{font-size:1.5rem;margin-right:auto}
+.rest-bar .btn{color:var(--bg);border-color:color-mix(in srgb,var(--bg) 40%,transparent);background:none}
+.rest-bar .btn:hover{background:color-mix(in srgb,var(--bg) 14%,transparent)}
 /* Libros con portada */
 .book{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start}
 .cover{width:42px;height:58px;border-radius:4px 7px 7px 4px;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:750;font-size:.95rem;letter-spacing:.02em;background:linear-gradient(90deg,rgba(0,0,0,.18) 0 4px,transparent 4px),oklch(.56 .09 var(--h));box-shadow:0 1px 2px rgba(0,0,0,.12)}
@@ -527,6 +676,49 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
     <div class="panel"><h3>Gimnasio y bici por semana</h3><div id="gymWeeks"></div></div>
+    <div class="panel wk-panel mt" id="workout">
+      <div class="item-head" style="margin-bottom:14px"><h3 id="wkTitle">Entrenar hoy</h3><div class="chips wk-types" id="wkTypes"></div></div>
+      <div id="wkBody"></div>
+      <div class="row wk-add">
+        <div class="field grow"><span class="sr">Ejercicio</span><input id="wkEx" list="exList" autocomplete="off" placeholder="Agregar ejercicio"></div>
+        <button class="btn" data-action="wk-ex-add">Agregar</button>
+      </div>
+      <datalist id="exList"></datalist>
+      <div class="rest-bar" id="restBar" hidden>
+        <span class="rest-lab">desde la última serie</span><span class="clock" id="restTime">0:00</span>
+        <button class="btn small" data-action="rest-toggle" id="restBtn">Ocultar</button>
+      </div>
+      <details class="manual" id="rtBox">
+        <summary>Pegar rutina desde tus notas</summary>
+        <div class="stack" style="margin-top:12px">
+          <p class="small muted" style="margin:0">Una línea por dato: la fecha con el tipo de sesión ("14/10 Legs") o con el primer ejercicio, el nombre del ejercicio, cada serie como carga×reps ("50x8"; "N7x12" si la máquina va por nivel; "12 reps" sin carga) y el descanso que siguió ("2min30s"). Dos ejercicios en paralelo van con "/" ("Crunch/reverse crunch" y luego "12/8 reps"). Sin fecha, se guarda en el día seleccionado.</p>
+          <div class="field">Notas<textarea id="rtText" rows="8" placeholder="14/10 Legs&#10;Hack slide&#10;30x10&#10;2min&#10;50x8&#10;2min30s"></textarea></div>
+          <div class="row"><button class="btn" data-action="rt-parse">Revisar antes de guardar</button></div>
+          <div id="rtPreview"></div>
+        </div>
+      </details>
+    </div>
+    <div class="panel mt">
+      <div class="item-head" style="margin-bottom:14px"><h3>Músculos de la semana</h3><span class="small muted" id="muscleSub"></span></div>
+      <div id="muscleMap"></div>
+    </div>
+    <div class="panel mt">
+      <h3>Progreso por ejercicio</h3>
+      <div id="progDetail"></div>
+      <div id="progCards" class="prog-grid mt"></div>
+      <details class="manual mt">
+        <summary>Cómo se calcula</summary>
+        <p class="small muted" style="margin:10px 0 0">La línea une el 1RM estimado de la mejor serie de cada sesión, con la fórmula de Epley: carga × (1 + reps / 30). Las libras se convierten a kg; en máquinas por nivel se aplica la misma fórmula al nivel; sin carga externa se cuentan las reps totales. La flecha compara con la sesión anterior. El checklist propone la carga con doble progresión en 8 a 12 reps: con 12 o más en todas las series a la carga más alta, sube la carga (2,5 kg bajo 40 kg, 5 kg desde 40 kg, 5 o 10 lb, o un nivel) y parte en 8; si ninguna llega a 6 reps, baja cerca de un 10%; si no, mantiene la carga.</p>
+      </details>
+    </div>
+    <details class="panel sec mt" id="catBox">
+      <summary><h3>Ejercicios</h3><span class="hint">qué trabaja cada uno</span></summary>
+      <div class="sec-body">
+        <div class="row" style="margin-bottom:12px"><div class="field grow"><span class="sr">Buscar</span><input id="catQ" autocomplete="off" placeholder="Buscar ejercicio o músculo"></div></div>
+        <div class="chips" id="catChips"></div>
+        <ul class="cat-list" id="catList"></ul>
+      </div>
+    </details>
     <div class="grid g2 mt">
       <div class="panel stack">
         <h3>Actividad del día</h3>
@@ -546,42 +738,15 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
       <div class="panel"><h3>Semana</h3><div id="actWeek"></div></div>
     </div>
-    <div class="grid g2 mt">
-      <div class="panel stack">
-        <h3>Series de gimnasio</h3>
-        <div class="row">
-          <div class="field grow">Ejercicio<input id="lEx" list="exList" autocomplete="off" placeholder="Press banca"></div>
-          <div class="field w5">Kg<input id="lKg" inputmode="decimal"></div>
-          <div class="field w5">Reps<input id="lReps" inputmode="numeric"></div>
-          <button class="btn primary" data-action="set-add">Registrar serie</button>
-        </div>
-        <datalist id="exList"></datalist>
-        <p class="small muted" id="lPrev" style="margin:0"></p>
-        <div id="setsToday"></div>
+    <details class="panel sec mt">
+      <summary><h3>Historial y récords</h3><span class="hint">sesiones anteriores y mejores marcas</span></summary>
+      <div class="sec-body">
+        <div id="sessList"></div>
+        <h3 class="mt" style="display:flex;align-items:center;gap:8px"><svg class="ico" aria-hidden="true" style="color:var(--act)"><use href="#i-trophy"/></svg>Récords personales</h3>
+        <div id="prList"></div>
+        <p class="small muted" style="margin:10px 0 0">La mejor serie del día es récord cuando su 1RM estimado supera el de todas las sesiones anteriores de ese ejercicio.</p>
       </div>
-      <div class="stack">
-        <div class="panel stack">
-          <h3>Descanso entre series</h3>
-          <div class="clock" id="restTime">1:30</div>
-          <div class="chips" id="restChips">
-            <button class="chip" data-action="rest-set" data-v="60">1 min</button>
-            <button class="chip sel" data-action="rest-set" data-v="90">1:30</button>
-            <button class="chip" data-action="rest-set" data-v="120">2 min</button>
-            <button class="chip" data-action="rest-set" data-v="180">3 min</button>
-          </div>
-          <div class="row">
-            <button class="btn" data-action="rest-toggle" id="restBtn">Iniciar descanso</button>
-            <button class="btn ghost small" data-action="rest-add" data-v="30">+30 s</button>
-          </div>
-          <label class="small"><input type="checkbox" id="restAuto" checked> Iniciar el descanso al registrar una serie</label>
-        </div>
-        <div class="panel">
-          <h3 style="display:flex;align-items:center;gap:8px"><svg class="ico" aria-hidden="true" style="color:var(--act)"><use href="#i-trophy"/></svg>Récords personales</h3>
-          <div id="prList"></div>
-          <p class="small muted" style="margin:10px 0 0">El 1RM estimado usa la fórmula de Epley: kg × (1 + reps / 30); con 1 repetición es el peso levantado. Una serie es récord cuando su 1RM estimado supera todos los anteriores de ese ejercicio.</p>
-        </div>
-      </div>
-    </div>
+    </details>
   </section>
 
   <!-- BAJO -->
@@ -1028,23 +1193,292 @@ const bassStreak = () => streak(x => { const s = day(x); return s.bass.minutes >
 function allDatesAsc(){ return Object.keys(S.days).sort(); }
 function techHistory(id){ const out = []; for (const dt of allDatesAsc()) for (const l of day(dt).bass.logs) if (l.techId === id) out.push({date: dt, bpm: l.bpm, clean: !!l.clean}); return out; }
 function techBest(id){ const h = techHistory(id).filter(x => x.clean && x.bpm); return h.length ? Math.max(...h.map(x => x.bpm)) : null; }
-/* Gimnasio: 1RM estimado de Epley y récords personales */
-const e1rm = s => (Number(s.kg) || 0) * (s.reps > 1 ? 1 + s.reps / 30 : 1);
-function liftStats(){
+/* ---------- gimnasio ---------- */
+/* Catálogo de ejercicios: músculos principales, secundarios, tipo de sesión y alias */
+const MUSCLES = {pecho: "Pecho", hombro: "Hombros", hombroPost: "Deltoide posterior", trapecio: "Trapecio", espalda: "Espalda media", dorsal: "Dorsales", lumbar: "Lumbar", biceps: "Bíceps", triceps: "Tríceps", antebrazo: "Antebrazos", abdomen: "Abdomen", oblicuos: "Oblicuos", gluteo: "Glúteos", abductor: "Abductores", aductor: "Aductores", cuadriceps: "Cuádriceps", isquio: "Isquiotibiales", gemelo: "Pantorrillas"};
+const EX_CAT = [
+  // Pecho
+  ["Press banca", "pecho", "triceps hombro", "push", "bench press, press de banca, press plano, press banca plano", "Pectoral completo; los codos a unos 45° cuidan el hombro."],
+  ["Press banca con mancuernas", "pecho", "triceps hombro", "push", "dumbbell bench press, press plano con mancuernas", "Más recorrido que con barra y cada lado trabaja por separado."],
+  ["Press inclinado con barra", "pecho", "hombro triceps", "push", "incline bench press, press inclinado barra, press banca inclinado", "Énfasis en la parte alta del pecho (porción clavicular)."],
+  ["Press inclinado con mancuernas", "pecho", "hombro triceps", "push", "incline dumbbell press, press inclinado", "Parte alta del pecho, con más estiramiento abajo."],
+  ["Press declinado", "pecho", "triceps", "push", "decline bench press, press declinado con barra, press banca declinado", "Énfasis en la parte baja del pecho."],
+  ["Press de pecho en máquina", "pecho", "triceps hombro", "push", "chest press, machine chest press, press pecho maquina, press de pecho", "Trayectoria guiada: permite llegar cerca del fallo con seguridad."],
+  ["Press inclinado en máquina", "pecho", "hombro triceps", "push", "incline chest press, incline machine press", "Parte alta del pecho con trayectoria guiada."],
+  ["Aperturas", "pecho", "", "push", "fly, flyes, pec deck, peck deck, contractor de pecho, mariposa, aperturas en maquina", "Aísla el pectoral; los brazos casi no doblan el codo."],
+  ["Aperturas con mancuernas", "pecho", "hombro", "push", "dumbbell fly, dumbbell flyes", "Gran estiramiento del pectoral abajo; carga moderada."],
+  ["Cruce de poleas", "pecho", "hombro", "push", "cable crossover, cable fly, cruces en polea", "Tensión constante; de abajo hacia arriba enfoca el pecho alto."],
+  ["Fondos", "pecho triceps", "hombro", "push", "dips, fondos en paralelas", "Inclinado hacia adelante carga más pecho; vertical, más tríceps."],
+  ["Flexiones", "pecho triceps", "hombro abdomen", "push", "push up, push ups, lagartijas, flexiones de brazos", "Peso corporal; el core sostiene el cuerpo recto."],
+  // Hombros
+  ["Press militar", "hombro", "triceps trapecio", "push", "overhead press, ohp, military press, press militar con barra", "Deltoide anterior y lateral; de pie exige además core."],
+  ["Press de hombros con mancuernas", "hombro", "triceps", "push", "dumbbell shoulder press, press de hombros, press militar con mancuernas, shoulder press", "Deltoide anterior y lateral, cada brazo por separado."],
+  ["Press de hombros en máquina", "hombro", "triceps", "push", "machine shoulder press, press hombro maquina", "Deltoides con trayectoria guiada."],
+  ["Press Arnold", "hombro", "triceps", "push", "arnold press", "La rotación suma deltoide anterior y lateral."],
+  ["Elevaciones laterales", "hombro", "trapecio", "push", "lateral raise, lateral raises, vuelos laterales, elevaciones laterales con mancuernas", "Deltoide lateral: da ancho de hombros. Carga baja, sin impulso."],
+  ["Elevaciones laterales en polea", "hombro", "", "push", "cable lateral raise, laterales en polea", "Deltoide lateral con tensión también abajo del recorrido."],
+  ["Elevaciones frontales", "hombro", "pecho", "push", "front raise, front raises, vuelos frontales", "Deltoide anterior; suele recibir trabajo de sobra con los press."],
+  ["Pájaros", "hombroPost", "espalda trapecio", "pull", "reverse fly, rear delt fly, vuelos posteriores, pajaros con mancuernas", "Deltoide posterior; equilibra la postura frente al trabajo de pecho."],
+  ["Deltoide posterior en máquina", "hombroPost", "espalda", "pull", "reverse pec deck, rear delt machine, peck deck inverso", "Deltoide posterior con trayectoria guiada."],
+  ["Face pull", "hombroPost espalda", "trapecio", "pull", "face pulls", "Deltoide posterior y rotadores externos; salud del hombro."],
+  ["Remo al mentón", "hombro trapecio", "biceps", "push", "upright row, remo al menton", "Deltoide lateral y trapecio; agarre ancho cuida el hombro."],
+  ["Encogimientos", "trapecio", "antebrazo", "pull", "shrugs, shrug, encogimientos de hombros", "Trapecio superior."],
+  // Espalda
+  ["Dominadas", "dorsal", "biceps espalda", "pull", "pull up, pull ups, pullups, dominadas pronas", "Dorsales: dan el ancho de la espalda."],
+  ["Dominadas supinas", "dorsal biceps", "espalda", "pull", "chin up, chin ups, chinups", "Agarre supino: más bíceps que la dominada prona."],
+  ["Dominadas asistidas", "dorsal", "biceps espalda", "pull", "assisted pull up, dominadas en maquina, dominada asistida", "Igual que la dominada, con contrapeso que ayuda."],
+  ["Jalón al pecho", "dorsal", "biceps espalda", "pull", "lat pulldown, pulldown, jalon, jalon al pecho en polea", "Dorsales; lleva la barra al pecho bajando los codos."],
+  ["Jalón con agarre estrecho", "dorsal", "biceps espalda", "pull", "close grip pulldown, jalon agarre cerrado, jalon triangulo", "Dorsales con más recorrido y algo más de bíceps."],
+  ["Pullover en polea", "dorsal", "triceps", "pull", "straight arm pulldown, cable pullover, jalon con brazos rectos", "Aísla el dorsal sin que ayude el bíceps."],
+  ["Remo con barra", "espalda dorsal", "biceps hombroPost lumbar", "pull", "barbell row, bent over row, remo inclinado", "Espalda media y dorsales; la lumbar sostiene la inclinación."],
+  ["Remo con mancuerna", "dorsal espalda", "biceps hombroPost", "pull", "dumbbell row, one arm row, remo unilateral, remo a una mano", "Un lado a la vez; mucho recorrido para el dorsal."],
+  ["Remo en polea", "espalda dorsal", "biceps hombroPost", "pull", "cable row, seated cable row, remo sentado, remo bajo", "Espalda media; junta las escápulas al final."],
+  ["Remo en máquina", "espalda dorsal", "biceps hombroPost", "pull", "row, machine row, seated row, remo maquina", "Espalda media con trayectoria guiada y apoyo de pecho."],
+  ["Remo en T", "espalda dorsal", "biceps hombroPost lumbar", "pull", "t bar row, remo t, remo en barra t", "Espalda media gruesa; admite mucha carga."],
+  ["Hiperextensiones", "lumbar gluteo", "isquio", "legs", "back extension, back extensions, extensiones lumbares, hiperextension", "Erectores de la columna y glúteos."],
+  // Bíceps y antebrazo
+  ["Curl de bíceps", "biceps", "antebrazo", "pull", "biceps, biceps curl, curl biceps, curl con barra, barbell curl", "Bíceps completo."],
+  ["Curl con barra Z", "biceps", "antebrazo", "pull", "biceps barra z, curl barra z, ez bar curl, ez curl", "Bíceps; el agarre en Z alivia las muñecas."],
+  ["Curl con mancuernas", "biceps", "antebrazo", "pull", "dumbbell curl, curl alterno, curl de biceps con mancuernas", "Bíceps; girar la muñeca al subir suma supinación."],
+  ["Curl martillo", "biceps antebrazo", "", "pull", "hammer curl, biceps mancuerna martillo, biceps martillo, curl martillo con mancuernas", "Braquial y braquiorradial: da grosor al brazo."],
+  ["Curl inclinado", "biceps", "", "pull", "incline curl, incline dumbbell curl, curl en banco inclinado", "Bíceps estirado: énfasis en la porción larga."],
+  ["Curl predicador", "biceps", "", "pull", "preacher curl, curl scott, curl en banco scott", "Bíceps sin balanceo; énfasis en la parte baja."],
+  ["Curl en polea", "biceps", "antebrazo", "pull", "cable curl, curl en polea baja", "Bíceps con tensión constante."],
+  ["Curl de muñeca", "antebrazo", "", "pull", "wrist curl, curl de antebrazo", "Flexores del antebrazo y agarre."],
+  // Tríceps
+  ["Extensión de tríceps", "triceps", "", "push", "triceps extension, tricep extension, pushdown, triceps pushdown, tricep pushdown, extension de triceps en polea", "Tríceps en polea; codos pegados al cuerpo."],
+  ["Extensión de tríceps con cuerda", "triceps", "", "push", "rope pushdown, triceps rope, extension con cuerda", "Tríceps; separar la cuerda abajo enfatiza la porción lateral."],
+  ["Extensión de tríceps sobre la cabeza", "triceps", "", "push", "overhead triceps extension, overhead extension, extension tras nuca", "Tríceps estirado: énfasis en la porción larga."],
+  ["Press francés", "triceps", "", "push", "skull crusher, skullcrusher, press frances", "Tríceps acostado, con barra Z o mancuernas."],
+  ["Press banca agarre cerrado", "triceps pecho", "hombro", "push", "close grip bench press, press cerrado", "Tríceps con mucha carga."],
+  ["Patada de tríceps", "triceps", "", "push", "triceps kickback, kickback, patada de triceps con mancuerna", "Tríceps acortado; carga baja."],
+  ["Fondos en banco", "triceps", "pecho hombro", "push", "bench dips, fondos entre bancos", "Tríceps con peso corporal."],
+  // Piernas: cuádriceps y glúteos
+  ["Sentadilla", "cuadriceps gluteo", "aductor lumbar", "legs", "squat, back squat, sentadilla con barra, sentadilla libre", "Cuádriceps y glúteos; la base del tren inferior."],
+  ["Sentadilla frontal", "cuadriceps", "gluteo abdomen", "legs", "front squat", "Torso más vertical: más cuádriceps."],
+  ["Sentadilla goblet", "cuadriceps gluteo", "abdomen", "legs", "goblet squat, sentadilla copa", "Con una mancuerna al pecho; buena para aprender la técnica."],
+  ["Sentadilla hack", "cuadriceps gluteo", "aductor", "legs", "hack, hack squat, hack slide, hack side, sentadilla hack en maquina", "Cuádriceps con la espalda apoyada."],
+  ["Sentadilla en Smith", "cuadriceps gluteo", "aductor", "legs", "smith squat, sentadilla multipower", "Trayectoria guiada; pies adelante cargan más glúteo."],
+  ["Sentadilla búlgara", "cuadriceps gluteo", "aductor isquio", "legs", "bulgarian split squat, split squat, bulgaras, zancada bulgara", "Una pierna a la vez; glúteo y cuádriceps con mucho estiramiento."],
+  ["Prensa", "cuadriceps gluteo", "aductor", "legs", "leg press, prensa de piernas, prensa 45", "Pies bajos cargan cuádriceps; pies altos, glúteos e isquios."],
+  ["Zancadas", "cuadriceps gluteo", "aductor", "legs", "lunge, lunges, estocadas, zancadas con mancuernas, walking lunges", "Cuádriceps y glúteos con equilibrio."],
+  ["Step up", "cuadriceps gluteo", "", "legs", "step ups, subida al cajon, subidas al banco", "Una pierna a la vez, subiendo a un cajón."],
+  ["Extensión de cuádriceps", "cuadriceps", "", "legs", "leg extension, leg extensions, extension de piernas, sillon de cuadriceps", "Aísla el cuádriceps, sobre todo el recto anterior."],
+  ["Hip thrust", "gluteo", "isquio", "legs", "puente de gluteos con barra, hip thrust con barra", "Glúteo mayor con mucha carga, máxima tensión arriba."],
+  ["Puente de glúteos", "gluteo", "isquio", "legs", "glute bridge, puente de gluteos", "Glúteo mayor desde el suelo."],
+  ["Patada de glúteo", "gluteo", "isquio", "legs", "glute kickback, cable kickback, patada de gluteo en polea", "Glúteo mayor, una pierna a la vez."],
+  ["Abductores en máquina", "abductor", "gluteo", "legs", "hip abductor, abductor, abductores", "Glúteo medio y menor: estabilizan cadera y rodilla."],
+  ["Aductores en máquina", "aductor", "", "legs", "hip adductor, adductor, aductor, aductores", "Cara interna del muslo."],
+  // Piernas: isquios y pantorrillas
+  ["Peso muerto", "isquio gluteo lumbar", "espalda trapecio antebrazo cuadriceps", "legs", "deadlift, peso muerto convencional", "Cadena posterior completa; muy demandante."],
+  ["Peso muerto rumano", "isquio gluteo", "lumbar antebrazo", "legs", "rdl, romanian deadlift, peso muerto rumano con barra", "Isquios estirados; rodillas casi fijas, cadera atrás."],
+  ["Peso muerto rumano con mancuernas", "isquio gluteo", "lumbar", "legs", "dumbbell rdl, rdl con mancuernas", "Igual que el rumano, con mancuernas."],
+  ["Peso muerto sumo", "gluteo aductor cuadriceps", "isquio lumbar", "legs", "sumo deadlift", "Piernas abiertas: más glúteo y aductores."],
+  ["Buenos días", "isquio lumbar", "gluteo", "legs", "good morning, good mornings", "Isquios y lumbar con la barra en la espalda."],
+  ["Curl femoral", "isquio", "gemelo", "legs", "leg curl, lying leg curl, curl femoral acostado, curl femoral tumbado", "Isquiotibiales acostado."],
+  ["Curl femoral sentado", "isquio", "", "legs", "seated leg curl, curl femoral en maquina sentado", "Isquiotibiales estirados desde la cadera: muy buen estímulo."],
+  ["Curl nórdico", "isquio", "", "legs", "nordic curl, nordic hamstring curl, curl nordico", "Isquios en excéntrica; previene lesiones."],
+  ["Elevación de talones", "gemelo", "", "legs", "calf raise, calf raises, pantorrillas, gemelos, elevacion de talones de pie, standing calf raise", "Gemelos con la rodilla estirada."],
+  ["Elevación de talones sentado", "gemelo", "", "legs", "seated calf raise, gemelo sentado, soleo", "Sóleo: la rodilla doblada saca de juego al gemelo."],
+  ["Gemelos en prensa", "gemelo", "", "legs", "calf press, leg press calf raise, pantorrillas en prensa", "Gemelos con las piernas estiradas en la prensa."],
+  // Core
+  ["Plancha", "abdomen", "oblicuos hombro", "", "plank, plancha frontal", "Core en isometría; la duración va en reps como segundos."],
+  ["Plancha lateral", "oblicuos", "abdomen abductor", "", "side plank", "Oblicuos y glúteo medio en isometría."],
+  ["Crunch", "abdomen", "", "", "crunch abdominal, abdominales, encogimiento abdominal", "Recto abdominal, parte alta."],
+  ["Crunch inverso", "abdomen", "oblicuos", "", "reverse crunch", "Recto abdominal, énfasis bajo."],
+  ["Crunch en polea", "abdomen", "", "", "cable crunch, crunch con cuerda, crunch en polea alta", "Recto abdominal con carga progresiva."],
+  ["Crunch en máquina", "abdomen", "", "", "ab crunch machine, abdominal en maquina", "Recto abdominal con carga guiada."],
+  ["Elevación de piernas", "abdomen", "oblicuos", "", "leg raise, leg raises, hanging leg raise, elevacion de piernas colgado, elevaciones de piernas", "Abdomen bajo y flexores de cadera."],
+  ["Rueda abdominal", "abdomen", "dorsal hombro", "", "ab wheel, ab rollout, rueda", "Core en anti-extensión; muy exigente."],
+  ["Giros rusos", "oblicuos", "abdomen", "", "russian twist, russian twists", "Oblicuos en rotación."],
+  ["Pallof press", "oblicuos abdomen", "", "", "pallof, press pallof", "Core en anti-rotación con polea."],
+  ["Bicho muerto", "abdomen", "oblicuos", "", "dead bug, dead bugs", "Control del core con la lumbar pegada al suelo."],
+  ["Leñador en polea", "oblicuos", "abdomen hombro", "", "woodchopper, cable woodchop, lenador", "Oblicuos en rotación con polea."],
+  // Cuerpo completo y cardio
+  ["Kettlebell swing", "gluteo isquio", "lumbar hombro antebrazo", "full", "kb swing, swing con pesa rusa, swings", "Cadena posterior explosiva; la cadera hace el trabajo."],
+  ["Thruster", "cuadriceps hombro", "gluteo triceps", "full", "thrusters", "Sentadilla frontal más press: piernas y hombros."],
+  ["Paseo del granjero", "antebrazo trapecio", "abdomen gluteo", "full", "farmer walk, farmers walk, farmer carry", "Agarre, trapecio y core caminando con peso."],
+  ["Burpees", "cuadriceps pecho", "hombro abdomen", "full", "burpee", "Cuerpo completo y cardio."],
+  ["Remo ergómetro", "dorsal cuadriceps", "espalda isquio biceps", "full", "rowing machine, remoergometro, maquina de remo, ergometro", "Cardio de cuerpo completo; cuenta las reps como minutos."]
+].map(([name, m, m2, t, al, tip]) => ({name, m: m.split(" "), m2: m2 ? m2.split(" ") : [], t, al: al.split(",").map(x => x.trim()).filter(Boolean), tip: tip || ""}));
+const EXERCISES = EX_CAT.map(e => e.name);
+const exClean = s => norm(s).replace(/\([^)]*\)/g, " ").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+const EX_KEYS = EX_CAT.flatMap(e => [e.name, ...e.al].map(k => [exClean(k), e])).sort((a, b) => b[0].length - a[0].length);
+/* Palabras que pueden seguir al nombre de un ejercicio sin cambiar el ejercicio */
+const EX_DESC = new Set("en de del con la el a maquina polea barra z mancuerna mancuernas sentado sentada parado de pie smith cable unilateral agarre abierto cerrado neutro sentadilla un una mano brazo pierna".split(" "));
+const exMemo = new Map();
+function exInfo(name){
+  const n = exClean(name);
+  if (!exMemo.has(n)){
+    const hit = n && (EX_KEYS.find(([k]) => n === k) || EX_KEYS.find(([k]) => n.startsWith(k + " ") && n.slice(k.length + 1).split(" ").every(w => EX_DESC.has(w))));
+    exMemo.set(n, hit ? hit[1] : null);
+  }
+  return exMemo.get(n);
+}
+const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
+const exName = name => (exInfo(name) || {}).name || capFirst(String(name || "").trim());
+const exKey = name => norm(exName(name));
+
+/* Carga: kg, libras convertidas a kg o nivel de máquina sin conversión; 1RM estimado de Epley */
+const LB_KG = 0.4536;
+const loadOf = s => (Number(s.kg) || 0) * (s.unit === "lb" ? LB_KG : 1);
+const volOf = s => s.unit === "nivel" ? 0 : loadOf(s) * (Number(s.reps) || 0);
+const e1rm = s => loadOf(s) * (s.reps > 1 ? 1 + s.reps / 30 : 1);
+const wTxt = (kg, unit) => unit === "nivel" ? `nivel ${fmt(kg, 1)}` : `${fmt(kg, 1)} ${unit === "lb" ? "lb" : "kg"}`;
+const setTxt = s => Number(s.kg) ? `${wTxt(s.kg, s.unit)} × ${s.reps}` : `${s.reps} reps`;
+const e1Txt = (v, unit) => unit === "nivel" ? `índice ${fmt(v, 1)}` : `${fmt(v, 1)} kg`;
+const kgStep = (kg, unit) => unit === "nivel" ? 1 : unit === "lb" ? 5 : kg < 20 ? 1 : 2.5;
+
+/* Series de aproximación: las iniciales con carga y menos del 75% de la carga más alta del ejercicio en el día */
+const WARM_RATIO = .75;
+function warmIds(sets){
+  const top = Math.max(0, ...sets.map(loadOf)), out = new Set();
+  if (!top) return out;
+  for (const s of sets){ if (!loadOf(s) || loadOf(s) >= WARM_RATIO * top) break; out.add(s.id); }
+  return out;
+}
+/* Grupo por ejercicio: series, aproximaciones, series de trabajo y mejor serie */
+function groupSets(sets){
+  const gs = [];
+  sets.forEach(s => { const k = exKey(s.ex); let g = gs.find(x => x.k === k); if (!g) gs.push(g = {k, ex: exName(s.ex), sets: []}); g.sets.push(s); });
+  gs.forEach(g => {
+    g.info = exInfo(g.ex); g.warm = warmIds(g.sets); g.work = g.sets.filter(s => !g.warm.has(s.id));
+    const w = g.work.length ? g.work : g.sets;
+    g.top = w.reduce((a, s) => e1rm(s) > e1rm(a) || (e1rm(s) === e1rm(a) && s.reps > a.reps) ? s : a);
+  });
+  return gs;
+}
+/* Récords: la mejor serie del día cuando su 1RM estimado supera el de todas las sesiones anteriores */
+function liftStats(until){
   const best = {}, prIds = new Set();
-  for (const dt of allDatesAsc()) for (const s of day(dt).act.sets){
-    const k = norm(s.ex), v = e1rm(s); if (!k || !v) continue;
-    if (best[k] && v > best[k].e1rm + 1e-9) prIds.add(s.id);
-    if (!best[k] || v > best[k].e1rm) best[k] = {ex: s.ex, e1rm: v, kg: s.kg, reps: s.reps, date: dt};
+  for (const dt of allDatesAsc()){
+    if (until && dt >= until) break;
+    const top = {};
+    for (const s of day(dt).act.sets){ const k = exKey(s.ex), v = e1rm(s); if (k && v && (!top[k] || v > top[k].v)) top[k] = {s, v}; }
+    for (const [k, {s, v}] of Object.entries(top)){
+      if (best[k] && v > best[k].e1rm + 1e-9) prIds.add(s.id);
+      if (!best[k] || v > best[k].e1rm) best[k] = {ex: exName(s.ex), e1rm: v, kg: s.kg, reps: s.reps, unit: s.unit, date: dt};
+    }
   }
   return {best, prIds};
 }
 function lastSession(ex, before){
-  const k = norm(ex); if (!k) return null;
-  for (const dt of allDatesAsc().reverse()){ if (dt >= before) continue; const sets = day(dt).act.sets.filter(s => norm(s.ex) === k); if (sets.length) return {date: dt, sets}; }
+  const k = exKey(ex); if (!k) return null;
+  for (const dt of allDatesAsc().reverse()){ if (dt >= before) continue; const sets = day(dt).act.sets.filter(s => exKey(s.ex) === k); if (sets.length) return {date: dt, sets}; }
   return null;
 }
-const EXERCISES = ["Press banca","Press inclinado con mancuernas","Press militar","Fondos","Aperturas","Elevaciones laterales","Extensión de tríceps","Dominadas","Jalón al pecho","Remo con barra","Remo en polea","Face pull","Curl de bíceps","Sentadilla","Peso muerto","Peso muerto rumano","Prensa","Zancadas","Hip thrust","Curl femoral","Elevación de talones","Plancha"];
+/* Series efectivas por músculo: 1 por serie si es principal, 0,5 si es secundario; sin aproximaciones */
+const MUSCLE_RANGE = [10, 20];
+function muscleSets(dates){
+  const out = {};
+  for (const dt of dates) for (const g of groupSets(day(dt).act.sets)){
+    if (!g.info) continue;
+    const n = g.work.length;
+    g.info.m.forEach(k => out[k] = (out[k] || 0) + n);
+    g.info.m2.forEach(k => out[k] = (out[k] || 0) + n / 2);
+  }
+  return out;
+}
+/* Historial por ejercicio: por sesión, mejor serie y métrica (1RM estimado; reps totales si el ejercicio nunca tuvo carga) */
+function exHistory(){
+  const map = {};
+  for (const dt of allDatesAsc()) groupSets(day(dt).act.sets).forEach((g, ord) => {
+    const h = map[g.k] || (map[g.k] = {k: g.k, ex: g.ex, info: g.info, ses: []});
+    h.ses.push({date: dt, sets: g.sets, warm: g.warm, work: g.work.length ? g.work : g.sets, top: g.top});
+    h.ord = ord;
+  });
+  const hs = Object.values(map);
+  hs.forEach(h => {
+    h.bw = h.ses.every(s => !Number(s.top.kg));
+    h.ses.forEach(s => { s.metric = h.bw ? sum(s.work, x => x.reps) : e1rm(s.top); });
+  });
+  return hs;
+}
+/* Doble progresión en 8–12 reps sobre la última sesión: 12 o más en todas las series a la carga más alta sube la carga y parte en 8; menos de 6 en todas la baja un 10% */
+const REP_RANGE = [8, 12], REP_FLOOR = 6;
+function nextStep(g){
+  const work = g.work.length ? g.work : g.sets, top = Math.max(...work.map(s => Number(s.kg) || 0)), u = g.top.unit;
+  if (!top) return {kind: "keep", kg: 0, reps: null, txt: "suma 1 o 2 reps por serie"};
+  const reps = work.filter(s => (Number(s.kg) || 0) === top).map(s => s.reps);
+  if (Math.min(...reps) >= REP_RANGE[1]){
+    const kg = top + (u === "nivel" ? 1 : u === "lb" ? (top >= 80 ? 10 : 5) : top >= 40 ? 5 : 2.5);
+    return {kind: "up", top, kg, reps: REP_RANGE[0], txt: `sube a ${wTxt(kg, u)}`};
+  }
+  if (Math.max(...reps) < REP_FLOOR){
+    const r = kgStep(top, u), kg = Math.min(Math.max(r, Math.round(top * .9 / r) * r), top - r);
+    return {kind: "down", top, kg, reps: REP_RANGE[0], txt: `baja a ${wTxt(kg, u)}`};
+  }
+  return {kind: "keep", top, kg: top, reps: null, txt: `mantén ${wTxt(top, u)} y suma reps`};
+}
+
+/* Figura humana: mitad izquierda de cada región; la derecha es su reflejo */
+const BODY_BASE = [
+  "M60,36 C52,37 46,39 42,41 C34,42 29,48 29,58 L31,68 L39,66 C40,80 41,96 40,110 L60,114 Z",
+  "M29,58 C27,72 28,86 31,94 C28,104 26,114 26,126 L34,126 C36,114 39,104 40,94 C41,84 41,74 39,66 Z",
+  "M30,125 C33,125 34.5,128.5 34.5,132.5 C34.5,136.5 32.5,139.5 30,139.5 C27.5,139.5 25.5,136.5 25.5,132.5 C25.5,128.5 27,125 30,125 Z",
+  "M40,110 C38,130 39,150 42,168 C39,180 39,196 42,212 L42,220 L52,220 L52,212 C55,196 56,182 55,170 C58,152 60,134 60,116 Z",
+  "M41,219 L52,219 L53,226 L37,226 C37,222 39,220 41,219 Z"
+];
+const ARM_LOW = ["M33,95 C30,103 28.3,112 27.8,122 L33.5,122 C35.8,113 38.2,104 39.2,96 C37,94.5 35,94.5 33,95 Z"];
+const BODY_MU = {
+  front: {
+    trapecio: ["M55,35 C53,38 49,40 43,41.5 L56,43 Z"],
+    hombro: ["M43,42.5 C35,42.5 30,47 30,56 C30,61 31,64 32,66 C35,58 39,52 45,48 Z"],
+    pecho: ["M46.5,46 C51,44.2 56,44 59.4,44.8 L59.4,62 C54,65 46,65 40.5,60 C40.5,54 42.5,49 46.5,46 Z"],
+    biceps: ["M32.5,68 C31.5,76 32,84 34,91 C37,89 39,84 39.5,76 C39.5,71 38,67.5 35.5,66 Z"],
+    antebrazo: ARM_LOW,
+    abdomen: ["M52,66 L59.3,66 L59.3,78.5 L51.6,78.5 Z", "M51.6,80 L59.3,80 L59.3,92.5 L51.6,92.5 Z", "M51.6,94 L59.3,94 L59.3,109 L53.2,108 Z"],
+    oblicuos: ["M41.5,63.5 C44,66 47.5,67 50.4,67 L50.2,92 C50.2,99 50.8,104 52,108.5 C47,106.5 43.4,102 42,96 C41.2,86 41.2,74 41.5,63.5 Z"],
+    abductor: ["M41.2,104 C43,102.5 45.5,103 47,105.5 L43.4,118 C42,114 41,109 41.2,104 Z"],
+    cuadriceps: ["M44,112 C49,110 54,112 57,117 C57,133 55,150 53,164 C49,166 45,166 43,163 C40,148 40,128 44,112 Z"],
+    aductor: ["M57.6,118 C59,122 59.6,128 59.6,134 C58.5,142 56.6,149 54.6,155 C55.6,140 56.6,128 57.6,118 Z"],
+    gemelo: ["M42,177 C40,187 40,198 42.5,208 L45.2,208 C45.4,196 45.2,186 44.6,177 Z"]
+  },
+  back: {
+    trapecio: ["M59.6,33 L59.6,73 C57,65 52,55 44,46 C48.5,43 53,40 55.5,33 Z"],
+    hombroPost: ["M43,43 C35,43 30,48 30,56 C30,60 31,63 32,65 C35,58 39,52 44.5,49 Z"],
+    espalda: ["M46,49.5 C50,53 54,59 56.8,67 C53,69 49,69 46,67 C45,61 45,55 46,49.5 Z"],
+    dorsal: ["M41.2,58 C43.5,66 48.5,70.5 56,70.5 L59.4,75 L59.4,90 C54,94 47,96 43,92 C41,82 40.5,70 41.2,58 Z"],
+    lumbar: ["M53,92.8 L59.4,91.6 L59.4,110 L53,110 C52.2,104 52.2,98 53,92.8 Z"],
+    triceps: ["M31.3,60 C30,70 30.5,80 33,90 C36.5,88 39,82 39.5,74 C39.5,67 37,62 33.5,59 Z"],
+    antebrazo: ARM_LOW,
+    abductor: ["M41,100 C45,99 50,100.5 52.5,105 C48,106.5 44.5,108 42.3,111 C41,107.5 40.6,104 41,100 Z"],
+    gluteo: ["M44,111 C49,108 55,108.5 59.4,112 L59.4,132 C53,136 46,135.5 42.6,130.5 C41.2,123 41.6,115 44,111 Z"],
+    isquio: ["M43,137 C48,139 54,139 57.6,137 C57.2,150 55.4,160 53.6,167 C50,169 46,168.5 43.2,165.5 C41.2,155 41.2,145 43,137 Z"],
+    gemelo: ["M42.2,175 C39.6,184 40,196 43.6,205 C46.2,203 48.2,196 48.6,187 C48.6,181 46.2,176.2 42.2,175 Z", "M49.8,177 C53.2,179 55.2,186 54.8,194 C53.8,200 51.8,203 50.2,201 C49.6,193 49.6,184 49.8,177 Z"]
+  }
+};
+const BACK_MU = new Set(["trapecio", "hombroPost", "espalda", "dorsal", "lumbar", "triceps", "gluteo", "abductor", "isquio", "gemelo"]);
+const MU_SEC = "color-mix(in srgb,var(--act) 38%,var(--line))";
+function bodyFig(view, fill, cls = "fig", label = ""){
+  const both = d => `<path d="${d}"/><path d="${d}" transform="matrix(-1 0 0 1 120 0)"/>`;
+  const base = BODY_BASE.map(both).join("") + `<circle cx="60" cy="17" r="11"/><rect x="54" y="26" width="12" height="12" rx="3"/>`;
+  const mus = Object.entries(BODY_MU[view]).map(([k, ds]) => { const [c, t] = fill(k); return `<g fill="${c}">${t ? `<title>${esc(t)}</title>` : ""}${ds.map(both).join("")}</g>`; }).join("");
+  return `<svg class="${cls}" viewBox="0 0 120 230" ${label ? `role="img" aria-label="${esc(label)}"` : `aria-hidden="true"`}><g class="out">${base}</g><g class="base">${base}</g><g class="mu">${mus}</g></svg>`;
+}
+const exView = info => info.m.filter(k => BACK_MU.has(k)).length > info.m.filter(k => !BACK_MU.has(k) && k !== "antebrazo").length ? "back" : "front";
+function exFig(info){
+  if (!info) return `<span class="fig mini none" aria-hidden="true"></span>`;
+  return bodyFig(exView(info), k => [info.m.includes(k) ? "var(--act)" : info.m2.includes(k) ? MU_SEC : "var(--line)"], "fig mini");
+}
+const muNames = info => info ? info.m.map(k => MUSCLES[k]).join(", ") : "sin músculos asignados";
+const muDetail = info => !info ? "sin músculos asignados" : muNames(info) + (info.m2.length ? ` · también ${info.m2.map(k => MUSCLES[k].toLowerCase()).join(", ")}` : "");
+/* Grupo del catálogo según el primer músculo principal */
+const EX_GROUPS = [["pecho", "Pecho", ["pecho"]], ["hombros", "Hombros", ["hombro", "hombroPost", "trapecio"]], ["espalda", "Espalda", ["dorsal", "espalda", "lumbar"]], ["brazos", "Brazos", ["biceps", "triceps", "antebrazo"]], ["piernas", "Piernas", ["cuadriceps", "gluteo", "isquio", "gemelo", "aductor", "abductor"]], ["core", "Core", ["abdomen", "oblicuos"]], ["full", "Cuerpo completo", []]];
+const exGroup = e => e.t === "full" ? "full" : (EX_GROUPS.find(([, , ks]) => ks.includes(e.m[0])) || ["core"])[0];
+/* Ilustraciones de ejercicios en silueta (generadas con un script de Python, ver docs/technical.md) */
+/* ILLU:inicio */
+const ILLU = {
+  "Jalón al pecho": "<svg aria-hidden=\"true\" viewBox=\"0 0 200 160\"><defs><clipPath id=\"jpc1\"><path d=\"M75.8 60.6C77.4 59.6 78.3 60.5 79.4 61.3C80.5 62.1 81.2 64.2 82.5 65.5C83.9 66.9 86 68.1 87.5 69.5C89.1 71 90.5 73.1 91.6 74.3C92.7 75.6 93.5 76 94 76.8C94.6 77.7 95.2 78.4 94.9 79.4C94.6 80.4 93.1 82.2 92.1 82.8C91.2 83.3 90.7 83.3 89.3 82.6C87.8 82 85.6 80 83.6 78.7C81.6 77.4 79.3 75.9 77.3 74.7C75.3 73.5 72.8 72.7 71.6 71.6C70.4 70.4 69.4 69.4 70.1 67.6C70.8 65.8 74.2 61.7 75.8 60.6Z\"/></clipPath><clipPath id=\"jpc2\"><path d=\"M75.8 60.6C77.4 59.6 78.3 60.5 79.4 61.3C80.5 62.1 81.2 64.2 82.5 65.5C83.9 66.9 86 68.1 87.5 69.5C89.1 71 90.5 73.1 91.6 74.3C92.7 75.6 93.5 76 94 76.8C94.6 77.7 95.2 78.4 94.9 79.4C94.6 80.4 93.1 82.2 92.1 82.8C91.2 83.3 90.7 83.3 89.3 82.6C87.8 82 85.6 80 83.6 78.7C81.6 77.4 79.3 75.9 77.3 74.7C75.3 73.5 72.8 72.7 71.6 71.6C70.4 70.4 69.4 69.4 70.1 67.6C70.8 65.8 74.2 61.7 75.8 60.6Z\"/></clipPath><clipPath id=\"jpc3\"><path d=\"M79.1 57.2C81.4 57.6 82.2 59.6 84 61.3C85.8 62.9 88.8 65 90.1 67.1C91.5 69.2 91.8 71.7 92 73.8C92.1 76 91.1 77.7 91.1 80.1C91.1 82.5 91.5 85.5 91.9 88.1C92.3 90.7 93.3 93.6 93.5 95.9C93.8 98.2 93.8 99.9 93.4 102C93 104.1 92.7 106.6 91.3 108.6C89.9 110.6 87.4 112.9 85.1 113.9C82.7 115 79.2 115.5 77 114.6C74.9 113.7 72.9 111.1 72.1 108.5C71.3 106 72.4 102.2 72.2 99.4C72 96.5 71.6 94.2 70.7 91.5C69.9 88.8 68.3 85.9 67.3 83.1C66.4 80.2 65.1 77.3 64.9 74.4C64.7 71.6 65.3 68.6 66.2 66C67.1 63.5 67.9 60.6 70.1 59.1C72.2 57.6 76.7 56.9 79.1 57.2Z\"/><path d=\"M79.1 60.4L79.1 53.1A4.8 4.8 0 0 0 69.7 51.8L67.7 58.9A5.8 5.8 0 1 0 79.1 60.4Z\"/></clipPath><clipPath id=\"jpc4\"><path d=\"M77.8 61.7C79.4 60.6 80.4 61.5 81.5 62.4C82.6 63.2 83.2 65.2 84.5 66.6C85.8 68 88 69.2 89.5 70.7C91 72.2 92.5 74.3 93.5 75.5C94.6 76.8 95.4 77.2 95.9 78.1C96.4 78.9 97.1 79.6 96.8 80.6C96.4 81.6 94.9 83.5 93.9 84C93 84.5 92.5 84.5 91.1 83.8C89.7 83.1 87.4 81.2 85.4 79.8C83.4 78.5 81.2 77 79.2 75.8C77.2 74.5 74.7 73.7 73.5 72.5C72.3 71.3 71.3 70.4 72 68.6C72.8 66.7 76.3 62.7 77.8 61.7Z\"/></clipPath><clipPath id=\"jpc5\"><path d=\"M77.8 61.7C79.4 60.6 80.4 61.5 81.5 62.4C82.6 63.2 83.2 65.2 84.5 66.6C85.8 68 88 69.2 89.5 70.7C91 72.2 92.5 74.3 93.5 75.5C94.6 76.8 95.4 77.2 95.9 78.1C96.4 78.9 97.1 79.6 96.8 80.6C96.4 81.6 94.9 83.5 93.9 84C93 84.5 92.5 84.5 91.1 83.8C89.7 83.1 87.4 81.2 85.4 79.8C83.4 78.5 81.2 77 79.2 75.8C77.2 74.5 74.7 73.7 73.5 72.5C72.3 71.3 71.3 70.4 72 68.6C72.8 66.7 76.3 62.7 77.8 61.7Z\"/></clipPath><clipPath id=\"jpc6\"><path d=\"M77.8 61.7C79.4 60.6 80.4 61.5 81.5 62.4C82.6 63.2 83.2 65.2 84.5 66.6C85.8 68 88 69.2 89.5 70.7C91 72.2 92.5 74.3 93.5 75.5C94.6 76.8 95.4 77.2 95.9 78.1C96.4 78.9 97.1 79.6 96.8 80.6C96.4 81.6 94.9 83.5 93.9 84C93 84.5 92.5 84.5 91.1 83.8C89.7 83.1 87.4 81.2 85.4 79.8C83.4 78.5 81.2 77 79.2 75.8C77.2 74.5 74.7 73.7 73.5 72.5C72.3 71.3 71.3 70.4 72 68.6C72.8 66.7 76.3 62.7 77.8 61.7Z\"/></clipPath><clipPath id=\"jpc7\"><path d=\"M79.1 57.2C81.4 57.6 82.2 59.6 84 61.3C85.8 62.9 88.8 65 90.1 67.1C91.5 69.2 91.8 71.7 92 73.8C92.1 76 91.1 77.7 91.1 80.1C91.1 82.5 91.5 85.5 91.9 88.1C92.3 90.7 93.3 93.6 93.5 95.9C93.8 98.2 93.8 99.9 93.4 102C93 104.1 92.7 106.6 91.3 108.6C89.9 110.6 87.4 112.9 85.1 113.9C82.7 115 79.2 115.5 77 114.6C74.9 113.7 72.9 111.1 72.1 108.5C71.3 106 72.4 102.2 72.2 99.4C72 96.5 71.6 94.2 70.7 91.5C69.9 88.8 68.3 85.9 67.3 83.1C66.4 80.2 65.1 77.3 64.9 74.4C64.7 71.6 65.3 68.6 66.2 66C67.1 63.5 67.9 60.6 70.1 59.1C72.2 57.6 76.7 56.9 79.1 57.2Z\"/><path d=\"M79.1 60.4L79.1 53.1A4.8 4.8 0 0 0 69.7 51.8L67.7 58.9A5.8 5.8 0 1 0 79.1 60.4Z\"/></clipPath><clipPath id=\"jpc8\"><path d=\"M81.5 97.7C82.5 95.4 83.8 95.7 86.4 95.6C89 95.5 93.6 96.4 97.1 97C100.7 97.7 105 99 107.8 99.7C110.6 100.4 112.3 100.6 113.9 101.3C115.5 101.9 116.9 102.1 117.4 103.6C117.8 105.2 117.2 109.4 116.7 110.8C116.2 112.2 115.8 112 114.3 112.2C112.9 112.4 111.1 112.1 108.1 112.2C105.1 112.3 100.1 112.6 96.2 112.8C92.3 113 87.3 114 84.6 113.5C82 113 80.9 112.3 80.3 109.7C79.8 107 80.5 100.1 81.5 97.7Z\"/></clipPath><clipPath id=\"jpc9\"><path d=\"M119.3 105.2C120.9 105.9 120.2 107.2 120.2 109.1C120.2 111 119.5 113.3 119.1 116.7C118.7 120.1 117.9 125.9 117.6 129.5C117.2 133.1 117.2 136.2 116.9 138.1C116.7 140 117 140.5 116.1 141C115.3 141.4 112.6 141.4 111.7 140.9C110.9 140.4 111.2 139.2 111.1 138C111 136.7 111.4 135.6 111.2 133.2C110.9 130.8 110.1 126.5 109.6 123.5C109.1 120.6 108.3 117.9 108.3 115.5C108.4 113 109.4 110.5 109.8 108.8C110.2 107 108.9 105.6 110.5 105C112.1 104.4 117.7 104.5 119.3 105.2Z\"/><circle cx=\"114.9\" cy=\"107\" r=\"5.4\"/></clipPath></defs><line class=\"fl\" x1=\"12\" y1=\"146\" x2=\"188\" y2=\"146\"/><rect class=\"mk\" x=\"150\" y=\"12\" width=\"12\" height=\"134\" rx=\"3\"/><rect class=\"sk\" x=\"138\" y=\"96\" width=\"14\" height=\"46\" rx=\"2\"/><line class=\"sep\" x1=\"139\" y1=\"100\" x2=\"151\" y2=\"100\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"139\" y1=\"106\" x2=\"151\" y2=\"106\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"139\" y1=\"112\" x2=\"151\" y2=\"112\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"139\" y1=\"118\" x2=\"151\" y2=\"118\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"139\" y1=\"124\" x2=\"151\" y2=\"124\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"139\" y1=\"130\" x2=\"151\" y2=\"130\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"139\" y1=\"136\" x2=\"151\" y2=\"136\" stroke-width=\"1\" stroke-linecap=\"round\"/><rect class=\"mk\" x=\"136\" y=\"142\" width=\"34\" height=\"4\" rx=\"2\"/><rect class=\"mk\" x=\"93\" y=\"11\" width=\"69\" height=\"6\" rx=\"3\"/><line class=\"cab\" x1=\"90.5\" y1=\"17\" x2=\"90.5\" y2=\"58.6\" stroke-width=\"1.1\" stroke-linecap=\"round\"/><circle class=\"pl\" cx=\"95\" cy=\"17\" r=\"6\"/><circle class=\"mk\" cx=\"95\" cy=\"17\" r=\"2\"/><rect class=\"mk\" x=\"82\" y=\"120\" width=\"6\" height=\"26\" rx=\"2\"/><rect class=\"mk\" x=\"62\" y=\"142\" width=\"52\" height=\"4\" rx=\"2\"/><rect class=\"pad\" x=\"62\" y=\"112\" width=\"46\" height=\"8\" rx=\"4\"/><line class=\"mkl\" x1=\"119\" y1=\"92\" x2=\"150\" y2=\"92\" stroke-width=\"4\" stroke-linecap=\"round\"/><line class=\"barl\" x1=\"90.5\" y1=\"58.6\" x2=\"84.5\" y2=\"64.6\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><g class=\"bf\"><path d=\"M79.8 96.6C80.9 94.3 82.2 94.7 84.8 94.7C87.4 94.7 91.9 95.8 95.5 96.7C99 97.5 103.2 99 106 99.8C108.7 100.7 110.4 101 112 101.7C113.5 102.5 115 102.7 115.3 104.3C115.7 105.9 114.9 110 114.3 111.4C113.7 112.8 113.3 112.5 111.9 112.7C110.5 112.8 108.7 112.4 105.7 112.3C102.7 112.3 97.7 112.4 93.8 112.4C89.9 112.4 84.8 113.2 82.2 112.5C79.5 111.9 78.5 111.1 78.1 108.5C77.7 105.8 78.7 98.9 79.8 96.6Z\"/><path d=\"M117.3 106.4C118.8 107.3 118 108.5 117.6 110.4C117.3 112.2 116.3 114.5 115.4 117.8C114.4 121 112.8 126.7 111.9 130.1C111.1 133.6 110.5 136.7 110 138.6C109.5 140.4 109.7 141 108.8 141.3C107.9 141.6 105.2 141.1 104.5 140.5C103.7 139.9 104.2 138.8 104.3 137.5C104.4 136.3 105 135.2 105.1 132.8C105.2 130.4 105 126 105 123C105 120 104.5 117.3 104.9 114.9C105.3 112.5 106.8 110.2 107.4 108.5C108 106.8 107 105.2 108.7 104.8C110.3 104.5 115.8 105.5 117.3 106.4Z\"/><circle cx=\"112.7\" cy=\"107.5\" r=\"5.4\"/><path d=\"M105.9 142.1L116.1 145.6A2.5 2.5 0 0 0 118.1 141.1L108.5 136.1A3.3 3.3 0 1 0 105.9 142.1Z\"/><path d=\"M104 145.5L123 145.3A1.7 1.7 0 0 0 123.2 141.9L104.3 139.7A2.9 2.9 0 1 0 104 145.5Z\"/><circle cx=\"104\" cy=\"142.6\" r=\"3\"/></g><g class=\"bf\"><path d=\"M75.8 60.6C77.4 59.6 78.3 60.5 79.4 61.3C80.5 62.1 81.2 64.2 82.5 65.5C83.9 66.9 86 68.1 87.5 69.5C89.1 71 90.5 73.1 91.6 74.3C92.7 75.6 93.5 76 94 76.8C94.6 77.7 95.2 78.4 94.9 79.4C94.6 80.4 93.1 82.2 92.1 82.8C91.2 83.3 90.7 83.3 89.3 82.6C87.8 82 85.6 80 83.6 78.7C81.6 77.4 79.3 75.9 77.3 74.7C75.3 73.5 72.8 72.7 71.6 71.6C70.4 70.4 69.4 69.4 70.1 67.6C70.8 65.8 74.2 61.7 75.8 60.6Z\"/><circle cx=\"91.8\" cy=\"79.6\" r=\"3.9\"/><path d=\"M88.7 81.8C87.4 81.6 87.7 80.5 87.3 79.4C86.9 78.2 86.5 76.9 86.3 74.9C86.1 72.9 86.2 69.4 86.1 67.2C86 65 85.6 62.7 85.5 61.5C85.5 60.3 85.3 60.3 85.9 59.9C86.6 59.5 88.7 59 89.5 59.2C90.2 59.3 89.9 59.1 90.5 60.5C91 61.9 91.8 65.2 92.6 67.4C93.4 69.7 94.8 72.4 95.3 74.1C95.9 75.8 95.7 76.6 95.7 77.7C95.8 78.7 96.6 79.8 95.4 80.4C94.2 81.1 90.1 82 88.7 81.8Z\"/><circle cx=\"87.3\" cy=\"57.7\" r=\"3.6\"/><path d=\"M90.7 60.7L90 55.3A3.1 3.1 0 1 0 83.9 56.5L85.4 61.7A2.7 2.7 0 0 0 90.7 60.7Z\"/></g><g clip-path=\"url(#jpc1)\"><ellipse class=\"mf\" cx=\"72.6\" cy=\"69.6\" rx=\"5.5\" ry=\"6.5\" transform=\"rotate(39.5 72.6 69.6)\"/></g><g clip-path=\"url(#jpc2)\"><ellipse class=\"mf\" cx=\"87\" cy=\"70.2\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(39.5 87 70.2)\"/></g><g class=\"b\"><path d=\"M79.1 57.2C81.4 57.6 82.2 59.6 84 61.3C85.8 62.9 88.8 65 90.1 67.1C91.5 69.2 91.8 71.7 92 73.8C92.1 76 91.1 77.7 91.1 80.1C91.1 82.5 91.5 85.5 91.9 88.1C92.3 90.7 93.3 93.6 93.5 95.9C93.8 98.2 93.8 99.9 93.4 102C93 104.1 92.7 106.6 91.3 108.6C89.9 110.6 87.4 112.9 85.1 113.9C82.7 115 79.2 115.5 77 114.6C74.9 113.7 72.9 111.1 72.1 108.5C71.3 106 72.4 102.2 72.2 99.4C72 96.5 71.6 94.2 70.7 91.5C69.9 88.8 68.3 85.9 67.3 83.1C66.4 80.2 65.1 77.3 64.9 74.4C64.7 71.6 65.3 68.6 66.2 66C67.1 63.5 67.9 60.6 70.1 59.1C72.2 57.6 76.7 56.9 79.1 57.2Z\"/><path d=\"M79.1 60.4L79.1 53.1A4.8 4.8 0 0 0 69.7 51.8L67.7 58.9A5.8 5.8 0 1 0 79.1 60.4Z\"/><ellipse cx=\"73.8\" cy=\"46\" rx=\"7.4\" ry=\"8.6\" transform=\"rotate(-11.9 73.8 46)\"/><path d=\"M76 53.3L80.3 53.9A2.6 2.6 0 0 0 83.2 50.6L82 46.5A5.4 5.4 0 1 0 76 53.3Z\"/><circle cx=\"80.9\" cy=\"44.7\" r=\"1.5\"/></g><g clip-path=\"url(#jpc7)\"><ellipse class=\"t\" cx=\"86.9\" cy=\"71.9\" rx=\"7.8\" ry=\"8.6\" transform=\"rotate(-11.9 86.9 71.9)\"/></g><g clip-path=\"url(#jpc3)\"><ellipse class=\"m\" cx=\"72.5\" cy=\"81\" rx=\"6.5\" ry=\"15\" transform=\"rotate(-11.9 72.5 81)\"/></g><g class=\"halo\"><path d=\"M81.5 97.7C82.5 95.4 83.8 95.7 86.4 95.6C89 95.5 93.6 96.4 97.1 97C100.7 97.7 105 99 107.8 99.7C110.6 100.4 112.3 100.6 113.9 101.3C115.5 101.9 116.9 102.1 117.4 103.6C117.8 105.2 117.2 109.4 116.7 110.8C116.2 112.2 115.8 112 114.3 112.2C112.9 112.4 111.1 112.1 108.1 112.2C105.1 112.3 100.1 112.6 96.2 112.8C92.3 113 87.3 114 84.6 113.5C82 113 80.9 112.3 80.3 109.7C79.8 107 80.5 100.1 81.5 97.7Z\"/><path d=\"M119.3 105.2C120.9 105.9 120.2 107.2 120.2 109.1C120.2 111 119.5 113.3 119.1 116.7C118.7 120.1 117.9 125.9 117.6 129.5C117.2 133.1 117.2 136.2 116.9 138.1C116.7 140 117 140.5 116.1 141C115.3 141.4 112.6 141.4 111.7 140.9C110.9 140.4 111.2 139.2 111.1 138C111 136.7 111.4 135.6 111.2 133.2C110.9 130.8 110.1 126.5 109.6 123.5C109.1 120.6 108.3 117.9 108.3 115.5C108.4 113 109.4 110.5 109.8 108.8C110.2 107 108.9 105.6 110.5 105C112.1 104.4 117.7 104.5 119.3 105.2Z\"/><circle cx=\"114.9\" cy=\"107\" r=\"5.4\"/><path d=\"M112.9 142.1L123.1 145.6A2.5 2.5 0 0 0 125.1 141.1L115.5 136.1A3.3 3.3 0 1 0 112.9 142.1Z\"/><path d=\"M111 145.5L130 145.3A1.7 1.7 0 0 0 130.2 141.9L111.3 139.7A2.9 2.9 0 1 0 111 145.5Z\"/><circle cx=\"111\" cy=\"142.6\" r=\"3\"/></g><g class=\"b\"><path d=\"M81.5 97.7C82.5 95.4 83.8 95.7 86.4 95.6C89 95.5 93.6 96.4 97.1 97C100.7 97.7 105 99 107.8 99.7C110.6 100.4 112.3 100.6 113.9 101.3C115.5 101.9 116.9 102.1 117.4 103.6C117.8 105.2 117.2 109.4 116.7 110.8C116.2 112.2 115.8 112 114.3 112.2C112.9 112.4 111.1 112.1 108.1 112.2C105.1 112.3 100.1 112.6 96.2 112.8C92.3 113 87.3 114 84.6 113.5C82 113 80.9 112.3 80.3 109.7C79.8 107 80.5 100.1 81.5 97.7Z\"/><path d=\"M119.3 105.2C120.9 105.9 120.2 107.2 120.2 109.1C120.2 111 119.5 113.3 119.1 116.7C118.7 120.1 117.9 125.9 117.6 129.5C117.2 133.1 117.2 136.2 116.9 138.1C116.7 140 117 140.5 116.1 141C115.3 141.4 112.6 141.4 111.7 140.9C110.9 140.4 111.2 139.2 111.1 138C111 136.7 111.4 135.6 111.2 133.2C110.9 130.8 110.1 126.5 109.6 123.5C109.1 120.6 108.3 117.9 108.3 115.5C108.4 113 109.4 110.5 109.8 108.8C110.2 107 108.9 105.6 110.5 105C112.1 104.4 117.7 104.5 119.3 105.2Z\"/><circle cx=\"114.9\" cy=\"107\" r=\"5.4\"/><path d=\"M112.9 142.1L123.1 145.6A2.5 2.5 0 0 0 125.1 141.1L115.5 136.1A3.3 3.3 0 1 0 112.9 142.1Z\"/><path d=\"M111 145.5L130 145.3A1.7 1.7 0 0 0 130.2 141.9L111.3 139.7A2.9 2.9 0 1 0 111 145.5Z\"/><circle cx=\"111\" cy=\"142.6\" r=\"3\"/></g><circle class=\"pad\" cx=\"119\" cy=\"92\" r=\"6.6\"/><circle class=\"mk\" cx=\"119\" cy=\"92\" r=\"2\"/><g class=\"halo\"><path d=\"M77.8 61.7C79.4 60.6 80.4 61.5 81.5 62.4C82.6 63.2 83.2 65.2 84.5 66.6C85.8 68 88 69.2 89.5 70.7C91 72.2 92.5 74.3 93.5 75.5C94.6 76.8 95.4 77.2 95.9 78.1C96.4 78.9 97.1 79.6 96.8 80.6C96.4 81.6 94.9 83.5 93.9 84C93 84.5 92.5 84.5 91.1 83.8C89.7 83.1 87.4 81.2 85.4 79.8C83.4 78.5 81.2 77 79.2 75.8C77.2 74.5 74.7 73.7 73.5 72.5C72.3 71.3 71.3 70.4 72 68.6C72.8 66.7 76.3 62.7 77.8 61.7Z\"/><circle cx=\"93.6\" cy=\"80.8\" r=\"3.9\"/><path d=\"M90.4 82.8C89.1 82.5 89.5 81.4 89.2 80.3C88.8 79.1 88.5 77.8 88.5 75.8C88.4 73.7 88.7 70.3 88.7 68.1C88.7 65.8 88.5 63.6 88.5 62.3C88.6 61.1 88.3 61.1 89 60.7C89.7 60.4 91.8 60.1 92.6 60.2C93.3 60.4 93 60.2 93.5 61.7C93.9 63.1 94.5 66.4 95.2 68.7C95.8 71 97.1 73.8 97.5 75.5C97.9 77.2 97.7 78 97.7 79.1C97.6 80.2 98.4 81.3 97.2 81.9C96 82.5 91.8 83.1 90.4 82.8Z\"/><circle cx=\"90.5\" cy=\"58.6\" r=\"3.6\"/><path d=\"M93.7 61.8L93.4 56.5A3.1 3.1 0 1 0 87.2 57.3L88.4 62.6A2.7 2.7 0 0 0 93.7 61.8Z\"/></g><g class=\"b\"><path d=\"M77.8 61.7C79.4 60.6 80.4 61.5 81.5 62.4C82.6 63.2 83.2 65.2 84.5 66.6C85.8 68 88 69.2 89.5 70.7C91 72.2 92.5 74.3 93.5 75.5C94.6 76.8 95.4 77.2 95.9 78.1C96.4 78.9 97.1 79.6 96.8 80.6C96.4 81.6 94.9 83.5 93.9 84C93 84.5 92.5 84.5 91.1 83.8C89.7 83.1 87.4 81.2 85.4 79.8C83.4 78.5 81.2 77 79.2 75.8C77.2 74.5 74.7 73.7 73.5 72.5C72.3 71.3 71.3 70.4 72 68.6C72.8 66.7 76.3 62.7 77.8 61.7Z\"/><circle cx=\"93.6\" cy=\"80.8\" r=\"3.9\"/><path d=\"M90.4 82.8C89.1 82.5 89.5 81.4 89.2 80.3C88.8 79.1 88.5 77.8 88.5 75.8C88.4 73.7 88.7 70.3 88.7 68.1C88.7 65.8 88.5 63.6 88.5 62.3C88.6 61.1 88.3 61.1 89 60.7C89.7 60.4 91.8 60.1 92.6 60.2C93.3 60.4 93 60.2 93.5 61.7C93.9 63.1 94.5 66.4 95.2 68.7C95.8 71 97.1 73.8 97.5 75.5C97.9 77.2 97.7 78 97.7 79.1C97.6 80.2 98.4 81.3 97.2 81.9C96 82.5 91.8 83.1 90.4 82.8Z\"/><circle cx=\"90.5\" cy=\"58.6\" r=\"3.6\"/><path d=\"M93.7 61.8L93.4 56.5A3.1 3.1 0 1 0 87.2 57.3L88.4 62.6A2.7 2.7 0 0 0 93.7 61.8Z\"/></g><g clip-path=\"url(#jpc4)\"><ellipse class=\"t\" cx=\"77.8\" cy=\"67.5\" rx=\"6\" ry=\"7\" transform=\"rotate(40.1 77.8 67.5)\"/></g><g clip-path=\"url(#jpc5)\"><ellipse class=\"m\" cx=\"74.5\" cy=\"70.6\" rx=\"5.5\" ry=\"6.5\" transform=\"rotate(40.1 74.5 70.6)\"/></g><g clip-path=\"url(#jpc6)\"><ellipse class=\"m\" cx=\"88.9\" cy=\"71.4\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(40.1 88.9 71.4)\"/></g><g clip-path=\"url(#jpc8)\"><ellipse class=\"t\" cx=\"100\" cy=\"99.3\" rx=\"17.4\" ry=\"7.4\" transform=\"rotate(5.6 100 99.3)\"/></g><g clip-path=\"url(#jpc9)\"><ellipse class=\"t\" cx=\"110.6\" cy=\"117.1\" rx=\"9.6\" ry=\"4.5\" transform=\"rotate(91.5 110.6 117.1)\"/></g><circle class=\"bar\" cx=\"90.5\" cy=\"58.6\" r=\"2.3\"/></svg>",
+  "Remo en máquina": "<svg aria-hidden=\"true\" viewBox=\"0 0 200 160\"><defs><clipPath id=\"remoc1\"><path d=\"M95.5 59.9C97.5 61.2 97.3 63.4 98.2 65.7C99.2 67.9 101 71.1 101.3 73.5C101.6 76 100.9 78.3 100.1 80.3C99.3 82.4 97.7 83.5 96.6 85.6C95.6 87.8 94.7 90.6 93.9 93.1C93.2 95.6 92.8 98.6 92.1 100.8C91.3 103 90.6 104.5 89.3 106.2C88.1 108 86.7 110 84.6 111.2C82.5 112.4 79.3 113.5 76.7 113.4C74.1 113.3 70.7 112.3 69.2 110.6C67.6 108.8 66.9 105.6 67.3 103C67.6 100.4 70.3 97.4 71.3 94.8C72.3 92.2 72.9 89.9 73.3 87.1C73.8 84.4 73.5 81.1 73.9 78.1C74.2 75.2 74.3 72 75.4 69.3C76.4 66.7 78.3 64.3 80.1 62.3C82 60.4 84 58.2 86.6 57.8C89.1 57.4 93.6 58.6 95.5 59.9Z\"/><path d=\"M94.2 62.8L97.3 56.2A4.8 4.8 0 0 0 89.4 51L84.6 56.5A5.8 5.8 0 1 0 94.2 62.8Z\"/></clipPath><clipPath id=\"remoc2\"><path d=\"M91.6 66.7C92.8 68 92.1 69.1 91.4 70.3C90.8 71.6 88.9 72.5 87.7 74C86.5 75.5 85.7 77.8 84.5 79.6C83.2 81.3 81.3 83 80.3 84.3C79.2 85.5 78.9 86.4 78.2 87C77.4 87.7 76.8 88.5 75.8 88.3C74.8 88.1 72.7 86.9 72 86C71.3 85.1 71.3 84.7 71.8 83.2C72.2 81.6 73.8 79.1 74.8 76.9C75.8 74.8 77 72.3 77.9 70.2C78.7 68 79.2 65.4 80.2 64C81.2 62.7 82 61.6 83.9 62C85.8 62.4 90.3 65.3 91.6 66.7Z\"/></clipPath><clipPath id=\"remoc3\"><path d=\"M91.6 66.7C92.8 68 92.1 69.1 91.4 70.3C90.8 71.6 88.9 72.5 87.7 74C86.5 75.5 85.7 77.8 84.5 79.6C83.2 81.3 81.3 83 80.3 84.3C79.2 85.5 78.9 86.4 78.2 87C77.4 87.7 76.8 88.5 75.8 88.3C74.8 88.1 72.7 86.9 72 86C71.3 85.1 71.3 84.7 71.8 83.2C72.2 81.6 73.8 79.1 74.8 76.9C75.8 74.8 77 72.3 77.9 70.2C78.7 68 79.2 65.4 80.2 64C81.2 62.7 82 61.6 83.9 62C85.8 62.4 90.3 65.3 91.6 66.7Z\"/></clipPath><clipPath id=\"remoc4\"><path d=\"M95.5 59.9C97.5 61.2 97.3 63.4 98.2 65.7C99.2 67.9 101 71.1 101.3 73.5C101.6 76 100.9 78.3 100.1 80.3C99.3 82.4 97.7 83.5 96.6 85.6C95.6 87.8 94.7 90.6 93.9 93.1C93.2 95.6 92.8 98.6 92.1 100.8C91.3 103 90.6 104.5 89.3 106.2C88.1 108 86.7 110 84.6 111.2C82.5 112.4 79.3 113.5 76.7 113.4C74.1 113.3 70.7 112.3 69.2 110.6C67.6 108.8 66.9 105.6 67.3 103C67.6 100.4 70.3 97.4 71.3 94.8C72.3 92.2 72.9 89.9 73.3 87.1C73.8 84.4 73.5 81.1 73.9 78.1C74.2 75.2 74.3 72 75.4 69.3C76.4 66.7 78.3 64.3 80.1 62.3C82 60.4 84 58.2 86.6 57.8C89.1 57.4 93.6 58.6 95.5 59.9Z\"/><path d=\"M94.2 62.8L97.3 56.2A4.8 4.8 0 0 0 89.4 51L84.6 56.5A5.8 5.8 0 1 0 94.2 62.8Z\"/></clipPath><clipPath id=\"remoc5\"><path d=\"M93.6 67.7C94.8 69 94.1 70.1 93.4 71.3C92.8 72.6 90.9 73.5 89.7 75C88.5 76.5 87.7 78.8 86.5 80.6C85.2 82.3 83.3 84 82.3 85.3C81.2 86.5 80.9 87.4 80.2 88C79.4 88.7 78.8 89.5 77.8 89.3C76.8 89.1 74.7 87.9 74 87C73.3 86.1 73.3 85.7 73.8 84.2C74.2 82.6 75.8 80.1 76.8 77.9C77.8 75.8 79 73.3 79.9 71.2C80.7 69 81.2 66.4 82.2 65C83.2 63.7 84 62.6 85.9 63C87.8 63.4 92.3 66.3 93.6 67.7Z\"/></clipPath><clipPath id=\"remoc6\"><path d=\"M93.6 67.7C94.8 69 94.1 70.1 93.4 71.3C92.8 72.6 90.9 73.5 89.7 75C88.5 76.5 87.7 78.8 86.5 80.6C85.2 82.3 83.3 84 82.3 85.3C81.2 86.5 80.9 87.4 80.2 88C79.4 88.7 78.8 89.5 77.8 89.3C76.8 89.1 74.7 87.9 74 87C73.3 86.1 73.3 85.7 73.8 84.2C74.2 82.6 75.8 80.1 76.8 77.9C77.8 75.8 79 73.3 79.9 71.2C80.7 69 81.2 66.4 82.2 65C83.2 63.7 84 62.6 85.9 63C87.8 63.4 92.3 66.3 93.6 67.7Z\"/></clipPath><clipPath id=\"remoc7\"><path d=\"M93.6 67.7C94.8 69 94.1 70.1 93.4 71.3C92.8 72.6 90.9 73.5 89.7 75C88.5 76.5 87.7 78.8 86.5 80.6C85.2 82.3 83.3 84 82.3 85.3C81.2 86.5 80.9 87.4 80.2 88C79.4 88.7 78.8 89.5 77.8 89.3C76.8 89.1 74.7 87.9 74 87C73.3 86.1 73.3 85.7 73.8 84.2C74.2 82.6 75.8 80.1 76.8 77.9C77.8 75.8 79 73.3 79.9 71.2C80.7 69 81.2 66.4 82.2 65C83.2 63.7 84 62.6 85.9 63C87.8 63.4 92.3 66.3 93.6 67.7Z\"/></clipPath><clipPath id=\"remoc8\"><path d=\"M95.5 59.9C97.5 61.2 97.3 63.4 98.2 65.7C99.2 67.9 101 71.1 101.3 73.5C101.6 76 100.9 78.3 100.1 80.3C99.3 82.4 97.7 83.5 96.6 85.6C95.6 87.8 94.7 90.6 93.9 93.1C93.2 95.6 92.8 98.6 92.1 100.8C91.3 103 90.6 104.5 89.3 106.2C88.1 108 86.7 110 84.6 111.2C82.5 112.4 79.3 113.5 76.7 113.4C74.1 113.3 70.7 112.3 69.2 110.6C67.6 108.8 66.9 105.6 67.3 103C67.6 100.4 70.3 97.4 71.3 94.8C72.3 92.2 72.9 89.9 73.3 87.1C73.8 84.4 73.5 81.1 73.9 78.1C74.2 75.2 74.3 72 75.4 69.3C76.4 66.7 78.3 64.3 80.1 62.3C82 60.4 84 58.2 86.6 57.8C89.1 57.4 93.6 58.6 95.5 59.9Z\"/><path d=\"M94.2 62.8L97.3 56.2A4.8 4.8 0 0 0 89.4 51L84.6 56.5A5.8 5.8 0 1 0 94.2 62.8Z\"/></clipPath><clipPath id=\"remoc9\"><path d=\"M77.5 97.7C78.5 95.4 79.8 95.7 82.4 95.6C85 95.5 89.6 96.4 93.2 97.1C96.7 97.8 101 99.1 103.8 99.8C106.6 100.5 108.3 100.8 109.9 101.4C111.5 102.1 112.9 102.2 113.4 103.8C113.8 105.4 113.1 109.5 112.6 111C112.1 112.4 111.7 112.1 110.3 112.3C108.9 112.6 107.1 112.2 104.1 112.3C101.1 112.4 96.1 112.7 92.2 112.9C88.3 113.1 83.2 114 80.6 113.5C77.9 113 76.8 112.3 76.3 109.7C75.8 107 76.5 100.1 77.5 97.7Z\"/></clipPath><clipPath id=\"remoc10\"><path d=\"M115 104.8C116.7 105.3 116.2 106.6 116.4 108.5C116.6 110.4 116.3 112.8 116.3 116.3C116.3 119.7 116.2 125.5 116.3 129.1C116.4 132.7 116.8 135.8 116.8 137.8C116.8 139.7 117.2 140.1 116.4 140.7C115.6 141.3 112.9 141.5 112 141.1C111.1 140.7 111.3 139.6 111 138.3C110.8 137.1 111 135.9 110.4 133.6C109.9 131.2 108.5 127.1 107.7 124.2C106.9 121.3 105.7 118.8 105.4 116.4C105.1 113.9 105.9 111.3 106.1 109.6C106.2 107.8 104.8 106.5 106.3 105.7C107.8 104.9 113.3 104.3 115 104.8Z\"/><circle cx=\"110.8\" cy=\"107.2\" r=\"5.4\"/></clipPath></defs><line class=\"fl\" x1=\"12\" y1=\"146\" x2=\"188\" y2=\"146\"/><rect class=\"mk\" x=\"146\" y=\"22\" width=\"10\" height=\"124\" rx=\"3\"/><rect class=\"mk\" x=\"56\" y=\"142\" width=\"112\" height=\"4\" rx=\"2\"/><line class=\"mkl\" x1=\"109.1\" y1=\"84.7\" x2=\"146\" y2=\"86.7\" stroke-width=\"4\" stroke-linecap=\"round\"/><rect class=\"mk\" x=\"78\" y=\"120\" width=\"6\" height=\"26\" rx=\"2\"/><rect class=\"pad\" x=\"60\" y=\"112\" width=\"40\" height=\"8\" rx=\"4\"/><line class=\"mkl\" x1=\"148\" y1=\"30\" x2=\"97.4\" y2=\"87.3\" stroke-width=\"3\" stroke-linecap=\"round\"/><line class=\"mkl\" x1=\"97.4\" y1=\"81.3\" x2=\"97.4\" y2=\"94.3\" stroke-width=\"3\" stroke-linecap=\"round\"/><g class=\"bf\"><path d=\"M75.7 96.6C76.8 94.3 78.1 94.7 80.7 94.7C83.3 94.6 87.8 95.7 91.4 96.5C94.9 97.3 99.2 98.7 101.9 99.5C104.7 100.3 106.4 100.6 107.9 101.3C109.5 102 110.9 102.2 111.4 103.8C111.8 105.4 111 109.5 110.4 110.9C109.9 112.3 109.5 112 108.1 112.2C106.6 112.4 104.9 112 101.8 112C98.8 112 93.8 112.1 89.9 112.2C86 112.3 80.9 113.1 78.3 112.5C75.7 111.9 74.6 111.2 74.1 108.5C73.7 105.9 74.6 99 75.7 96.6Z\"/><path d=\"M113.2 105.4C114.8 106.1 114.1 107.3 114 109.3C113.9 111.2 113.2 113.5 112.7 116.9C112.2 120.3 111.3 126 110.8 129.6C110.4 133.1 110.2 136.3 109.9 138.2C109.7 140.1 110 140.6 109.1 141C108.2 141.5 105.5 141.3 104.7 140.8C103.9 140.3 104.2 139.2 104.2 137.9C104.1 136.6 104.5 135.5 104.3 133.1C104.1 130.7 103.4 126.4 103 123.4C102.6 120.4 101.9 117.8 102 115.3C102.1 112.9 103.2 110.4 103.6 108.7C104 107 102.8 105.4 104.4 104.9C106 104.3 111.6 104.6 113.2 105.4Z\"/><circle cx=\"108.7\" cy=\"107\" r=\"5.4\"/><path d=\"M105.9 142.1L116.1 145.6A2.5 2.5 0 0 0 118.1 141.1L108.5 136.1A3.3 3.3 0 1 0 105.9 142.1Z\"/><path d=\"M104 145.5L123 145.3A1.7 1.7 0 0 0 123.2 141.9L104.3 139.7A2.9 2.9 0 1 0 104 145.5Z\"/><circle cx=\"104\" cy=\"142.6\" r=\"3\"/></g><g class=\"bf\"><path d=\"M91.6 66.7C92.8 68 92.1 69.1 91.4 70.3C90.8 71.6 88.9 72.5 87.7 74C86.5 75.5 85.7 77.8 84.5 79.6C83.2 81.3 81.3 83 80.3 84.3C79.2 85.5 78.9 86.4 78.2 87C77.4 87.7 76.8 88.5 75.8 88.3C74.8 88.1 72.7 86.9 72 86C71.3 85.1 71.3 84.7 71.8 83.2C72.2 81.6 73.8 79.1 74.8 76.9C75.8 74.8 77 72.3 77.9 70.2C78.7 68 79.2 65.4 80.2 64C81.2 62.7 82 61.6 83.9 62C85.8 62.4 90.3 65.3 91.6 66.7Z\"/><circle cx=\"75.1\" cy=\"85.2\" r=\"3.9\"/><path d=\"M73.9 81.6C74.5 80.4 75.4 81.1 76.6 81C77.8 81 79.2 80.9 81.2 81.3C83.2 81.7 86.4 82.8 88.6 83.4C90.8 83.9 93.1 84.2 94.2 84.5C95.4 84.8 95.5 84.6 95.7 85.4C95.9 86.1 95.7 88.2 95.3 88.9C95 89.6 95.2 89.4 93.8 89.5C92.3 89.6 88.9 89.4 86.5 89.5C84.1 89.6 81.2 90.2 79.4 90.2C77.6 90.2 76.8 89.9 75.8 89.6C74.8 89.3 73.6 89.7 73.2 88.4C72.9 87.1 73.3 82.9 73.9 81.6Z\"/><circle cx=\"97.4\" cy=\"87.3\" r=\"3.6\"/><path d=\"M93.5 89.7L98.8 90.6A3.1 3.1 0 1 0 99.4 84.4L94.1 84.3A2.7 2.7 0 0 0 93.5 89.7Z\"/></g><g clip-path=\"url(#remoc2)\"><ellipse class=\"mf\" cx=\"82.2\" cy=\"64.7\" rx=\"5.5\" ry=\"6.5\" transform=\"rotate(121.2 82.2 64.7)\"/></g><g clip-path=\"url(#remoc3)\"><ellipse class=\"mf\" cx=\"83.7\" cy=\"79.1\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(121.2 83.7 79.1)\"/></g><line class=\"mkl\" x1=\"150\" y1=\"30\" x2=\"136\" y2=\"62.9\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle class=\"pl\" cx=\"136\" cy=\"62.9\" r=\"14\"/><circle class=\"pl2\" cx=\"136\" cy=\"62.9\" r=\"9.3\"/><circle class=\"mk\" cx=\"136\" cy=\"62.9\" r=\"3\"/><line class=\"mkl\" x1=\"150\" y1=\"30\" x2=\"99.4\" y2=\"88.3\" stroke-width=\"3.4\" stroke-linecap=\"round\"/><circle class=\"pl\" cx=\"150\" cy=\"30\" r=\"4.5\"/><circle class=\"mk\" cx=\"150\" cy=\"30\" r=\"1.8\"/><g class=\"b\"><path d=\"M95.5 59.9C97.5 61.2 97.3 63.4 98.2 65.7C99.2 67.9 101 71.1 101.3 73.5C101.6 76 100.9 78.3 100.1 80.3C99.3 82.4 97.7 83.5 96.6 85.6C95.6 87.8 94.7 90.6 93.9 93.1C93.2 95.6 92.8 98.6 92.1 100.8C91.3 103 90.6 104.5 89.3 106.2C88.1 108 86.7 110 84.6 111.2C82.5 112.4 79.3 113.5 76.7 113.4C74.1 113.3 70.7 112.3 69.2 110.6C67.6 108.8 66.9 105.6 67.3 103C67.6 100.4 70.3 97.4 71.3 94.8C72.3 92.2 72.9 89.9 73.3 87.1C73.8 84.4 73.5 81.1 73.9 78.1C74.2 75.2 74.3 72 75.4 69.3C76.4 66.7 78.3 64.3 80.1 62.3C82 60.4 84 58.2 86.6 57.8C89.1 57.4 93.6 58.6 95.5 59.9Z\"/><path d=\"M94.2 62.8L97.3 56.2A4.8 4.8 0 0 0 89.4 51L84.6 56.5A5.8 5.8 0 1 0 94.2 62.8Z\"/><ellipse cx=\"94.6\" cy=\"47.3\" rx=\"7.4\" ry=\"8.6\" transform=\"rotate(13.5 94.6 47.3)\"/><path d=\"M93.5 54.8L97.1 57.2A2.6 2.6 0 0 0 101.1 55.4L101.8 51.2A5.4 5.4 0 1 0 93.5 54.8Z\"/><circle cx=\"101.6\" cy=\"49.2\" r=\"1.5\"/></g><g clip-path=\"url(#remoc8)\"><ellipse class=\"t\" cx=\"96.4\" cy=\"76.5\" rx=\"7.8\" ry=\"8.6\" transform=\"rotate(13.5 96.4 76.5)\"/></g><g clip-path=\"url(#remoc4)\"><ellipse class=\"m\" cx=\"79.4\" cy=\"78.5\" rx=\"6.5\" ry=\"15\" transform=\"rotate(13.5 79.4 78.5)\"/></g><g class=\"halo\"><path d=\"M77.5 97.7C78.5 95.4 79.8 95.7 82.4 95.6C85 95.5 89.6 96.4 93.2 97.1C96.7 97.8 101 99.1 103.8 99.8C106.6 100.5 108.3 100.8 109.9 101.4C111.5 102.1 112.9 102.2 113.4 103.8C113.8 105.4 113.1 109.5 112.6 111C112.1 112.4 111.7 112.1 110.3 112.3C108.9 112.6 107.1 112.2 104.1 112.3C101.1 112.4 96.1 112.7 92.2 112.9C88.3 113.1 83.2 114 80.6 113.5C77.9 113 76.8 112.3 76.3 109.7C75.8 107 76.5 100.1 77.5 97.7Z\"/><path d=\"M115 104.8C116.7 105.3 116.2 106.6 116.4 108.5C116.6 110.4 116.3 112.8 116.3 116.3C116.3 119.7 116.2 125.5 116.3 129.1C116.4 132.7 116.8 135.8 116.8 137.8C116.8 139.7 117.2 140.1 116.4 140.7C115.6 141.3 112.9 141.5 112 141.1C111.1 140.7 111.3 139.6 111 138.3C110.8 137.1 111 135.9 110.4 133.6C109.9 131.2 108.5 127.1 107.7 124.2C106.9 121.3 105.7 118.8 105.4 116.4C105.1 113.9 105.9 111.3 106.1 109.6C106.2 107.8 104.8 106.5 106.3 105.7C107.8 104.9 113.3 104.3 115 104.8Z\"/><circle cx=\"110.8\" cy=\"107.2\" r=\"5.4\"/><path d=\"M112.9 142.1L123.1 145.6A2.5 2.5 0 0 0 125.1 141.1L115.5 136.1A3.3 3.3 0 1 0 112.9 142.1Z\"/><path d=\"M111 145.5L130 145.3A1.7 1.7 0 0 0 130.2 141.9L111.3 139.7A2.9 2.9 0 1 0 111 145.5Z\"/><circle cx=\"111\" cy=\"142.6\" r=\"3\"/></g><g class=\"b\"><path d=\"M77.5 97.7C78.5 95.4 79.8 95.7 82.4 95.6C85 95.5 89.6 96.4 93.2 97.1C96.7 97.8 101 99.1 103.8 99.8C106.6 100.5 108.3 100.8 109.9 101.4C111.5 102.1 112.9 102.2 113.4 103.8C113.8 105.4 113.1 109.5 112.6 111C112.1 112.4 111.7 112.1 110.3 112.3C108.9 112.6 107.1 112.2 104.1 112.3C101.1 112.4 96.1 112.7 92.2 112.9C88.3 113.1 83.2 114 80.6 113.5C77.9 113 76.8 112.3 76.3 109.7C75.8 107 76.5 100.1 77.5 97.7Z\"/><path d=\"M115 104.8C116.7 105.3 116.2 106.6 116.4 108.5C116.6 110.4 116.3 112.8 116.3 116.3C116.3 119.7 116.2 125.5 116.3 129.1C116.4 132.7 116.8 135.8 116.8 137.8C116.8 139.7 117.2 140.1 116.4 140.7C115.6 141.3 112.9 141.5 112 141.1C111.1 140.7 111.3 139.6 111 138.3C110.8 137.1 111 135.9 110.4 133.6C109.9 131.2 108.5 127.1 107.7 124.2C106.9 121.3 105.7 118.8 105.4 116.4C105.1 113.9 105.9 111.3 106.1 109.6C106.2 107.8 104.8 106.5 106.3 105.7C107.8 104.9 113.3 104.3 115 104.8Z\"/><circle cx=\"110.8\" cy=\"107.2\" r=\"5.4\"/><path d=\"M112.9 142.1L123.1 145.6A2.5 2.5 0 0 0 125.1 141.1L115.5 136.1A3.3 3.3 0 1 0 112.9 142.1Z\"/><path d=\"M111 145.5L130 145.3A1.7 1.7 0 0 0 130.2 141.9L111.3 139.7A2.9 2.9 0 1 0 111 145.5Z\"/><circle cx=\"111\" cy=\"142.6\" r=\"3\"/></g><g clip-path=\"url(#remoc1)\"><ellipse class=\"m\" cx=\"75.2\" cy=\"87.8\" rx=\"5.5\" ry=\"10\" transform=\"rotate(13.5 75.2 87.8)\"/></g><polygon class=\"pad\" points=\"106.8,68.7 112.6,70.1 105.6,99.3 99.8,97.9\" stroke-linejoin=\"round\" stroke-width=\"4\"/><line class=\"barl\" x1=\"100\" y1=\"80.3\" x2=\"98.8\" y2=\"95.8\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><g class=\"halo\"><path d=\"M93.6 67.7C94.8 69 94.1 70.1 93.4 71.3C92.8 72.6 90.9 73.5 89.7 75C88.5 76.5 87.7 78.8 86.5 80.6C85.2 82.3 83.3 84 82.3 85.3C81.2 86.5 80.9 87.4 80.2 88C79.4 88.7 78.8 89.5 77.8 89.3C76.8 89.1 74.7 87.9 74 87C73.3 86.1 73.3 85.7 73.8 84.2C74.2 82.6 75.8 80.1 76.8 77.9C77.8 75.8 79 73.3 79.9 71.2C80.7 69 81.2 66.4 82.2 65C83.2 63.7 84 62.6 85.9 63C87.8 63.4 92.3 66.3 93.6 67.7Z\"/><circle cx=\"77.1\" cy=\"86.2\" r=\"3.9\"/><path d=\"M75.9 82.6C76.5 81.4 77.4 82.1 78.6 82C79.8 82 81.2 81.9 83.2 82.3C85.2 82.7 88.4 83.8 90.6 84.4C92.8 84.9 95.1 85.2 96.2 85.5C97.4 85.8 97.5 85.6 97.7 86.4C97.9 87.1 97.7 89.2 97.3 89.9C97 90.6 97.2 90.4 95.8 90.5C94.3 90.6 90.9 90.4 88.5 90.5C86.1 90.6 83.2 91.2 81.4 91.2C79.6 91.2 78.8 90.9 77.8 90.6C76.8 90.3 75.6 90.7 75.2 89.4C74.9 88.1 75.3 83.9 75.9 82.6Z\"/><circle cx=\"99.4\" cy=\"88.3\" r=\"3.6\"/><path d=\"M95.5 90.7L100.8 91.6A3.1 3.1 0 1 0 101.4 85.4L96.1 85.3A2.7 2.7 0 0 0 95.5 90.7Z\"/></g><g class=\"b\"><path d=\"M93.6 67.7C94.8 69 94.1 70.1 93.4 71.3C92.8 72.6 90.9 73.5 89.7 75C88.5 76.5 87.7 78.8 86.5 80.6C85.2 82.3 83.3 84 82.3 85.3C81.2 86.5 80.9 87.4 80.2 88C79.4 88.7 78.8 89.5 77.8 89.3C76.8 89.1 74.7 87.9 74 87C73.3 86.1 73.3 85.7 73.8 84.2C74.2 82.6 75.8 80.1 76.8 77.9C77.8 75.8 79 73.3 79.9 71.2C80.7 69 81.2 66.4 82.2 65C83.2 63.7 84 62.6 85.9 63C87.8 63.4 92.3 66.3 93.6 67.7Z\"/><circle cx=\"77.1\" cy=\"86.2\" r=\"3.9\"/><path d=\"M75.9 82.6C76.5 81.4 77.4 82.1 78.6 82C79.8 82 81.2 81.9 83.2 82.3C85.2 82.7 88.4 83.8 90.6 84.4C92.8 84.9 95.1 85.2 96.2 85.5C97.4 85.8 97.5 85.6 97.7 86.4C97.9 87.1 97.7 89.2 97.3 89.9C97 90.6 97.2 90.4 95.8 90.5C94.3 90.6 90.9 90.4 88.5 90.5C86.1 90.6 83.2 91.2 81.4 91.2C79.6 91.2 78.8 90.9 77.8 90.6C76.8 90.3 75.6 90.7 75.2 89.4C74.9 88.1 75.3 83.9 75.9 82.6Z\"/><circle cx=\"99.4\" cy=\"88.3\" r=\"3.6\"/><path d=\"M95.5 90.7L100.8 91.6A3.1 3.1 0 1 0 101.4 85.4L96.1 85.3A2.7 2.7 0 0 0 95.5 90.7Z\"/></g><g clip-path=\"url(#remoc5)\"><ellipse class=\"t\" cx=\"87.8\" cy=\"68.5\" rx=\"6\" ry=\"7\" transform=\"rotate(121.2 87.8 68.5)\"/></g><g clip-path=\"url(#remoc6)\"><ellipse class=\"m\" cx=\"84.2\" cy=\"65.7\" rx=\"5.5\" ry=\"6.5\" transform=\"rotate(121.2 84.2 65.7)\"/></g><g clip-path=\"url(#remoc7)\"><ellipse class=\"m\" cx=\"85.7\" cy=\"80.1\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(121.2 85.7 80.1)\"/></g><g clip-path=\"url(#remoc9)\"><ellipse class=\"t\" cx=\"96.1\" cy=\"99.4\" rx=\"17.4\" ry=\"7.4\" transform=\"rotate(5.8 96.1 99.4)\"/></g><g clip-path=\"url(#remoc10)\"><ellipse class=\"t\" cx=\"107.9\" cy=\"117.7\" rx=\"9.6\" ry=\"4.5\" transform=\"rotate(84.3 107.9 117.7)\"/></g></svg>",
+  "Face pull": "<svg aria-hidden=\"true\" viewBox=\"0 0 200 160\"><defs><clipPath id=\"facepullc1\"><path d=\"M96.7 32.6C99 33.1 99.6 35.2 101.3 36.9C103.1 38.7 105.8 41 107 43.1C108.2 45.3 108.3 47.7 108.3 49.9C108.3 52 107.2 53.7 107 56C106.8 58.4 106.9 61.3 107.1 63.9C107.3 66.5 108.1 69.4 108.1 71.7C108.2 74 108.1 75.7 107.5 77.7C107 79.8 106.5 82.2 104.9 84C103.4 85.9 100.7 88.1 98.3 88.9C95.8 89.7 92.3 90 90.2 88.9C88.1 87.9 86.4 85.2 85.8 82.6C85.2 80 86.6 76.4 86.6 73.6C86.6 70.8 86.4 68.5 85.8 65.7C85.2 63 83.8 60.1 83 57.2C82.3 54.3 81.2 51.3 81.3 48.5C81.3 45.7 82.2 42.8 83.2 40.3C84.3 37.9 85.4 35.1 87.6 33.8C89.9 32.5 94.4 32.1 96.7 32.6Z\"/><path d=\"M96.5 35.7L97.1 28.4A4.8 4.8 0 0 0 87.8 26.3L85.3 33.3A5.8 5.8 0 1 0 96.5 35.7Z\"/></clipPath><clipPath id=\"facepullc2\"><path d=\"M91.2 45.2C89.9 46.5 89.3 46 88.5 45.6C87.8 45.2 87.5 43.6 86.6 42.8C85.7 41.9 84.2 41.5 83.2 40.6C82.2 39.7 81.3 38.3 80.6 37.5C79.9 36.8 79.3 36.6 79 36C78.7 35.4 78.2 35 78.6 34C78.9 33.1 80.3 31.1 81 30.4C81.8 29.7 82.2 29.5 83.2 29.8C84.2 30 85.7 31 87.1 31.7C88.5 32.3 90 33 91.4 33.5C92.8 34 94.7 34 95.5 34.7C96.3 35.4 96.9 36 96.2 37.7C95.5 39.5 92.5 43.9 91.2 45.2Z\"/></clipPath><clipPath id=\"facepullc3\"><path d=\"M88.8 44C87.4 45.2 86.8 44.6 86.1 44.2C85.4 43.7 85.3 42.1 84.5 41.2C83.7 40.3 82.3 39.7 81.4 38.7C80.5 37.8 79.7 36.3 79.1 35.4C78.5 34.6 78 34.4 77.7 33.8C77.5 33.2 77.1 32.7 77.5 31.8C77.9 30.9 79.5 29 80.3 28.4C81.1 27.8 81.5 27.7 82.5 28C83.4 28.3 84.9 29.5 86.1 30.2C87.4 31 88.9 31.8 90.2 32.4C91.6 33 93.4 33.2 94.1 34C94.8 34.8 95.4 35.4 94.5 37.1C93.6 38.7 90.2 42.8 88.8 44Z\"/></clipPath><clipPath id=\"facepullc4\"><path d=\"M91.2 45.2C89.9 46.5 89.3 46 88.5 45.6C87.8 45.2 87.5 43.6 86.6 42.8C85.7 41.9 84.2 41.5 83.2 40.6C82.2 39.7 81.3 38.3 80.6 37.5C79.9 36.8 79.3 36.6 79 36C78.7 35.4 78.2 35 78.6 34C78.9 33.1 80.3 31.1 81 30.4C81.8 29.7 82.2 29.5 83.2 29.8C84.2 30 85.7 31 87.1 31.7C88.5 32.3 90 33 91.4 33.5C92.8 34 94.7 34 95.5 34.7C96.3 35.4 96.9 36 96.2 37.7C95.5 39.5 92.5 43.9 91.2 45.2Z\"/></clipPath><clipPath id=\"facepullc5\"><path d=\"M91.2 45.2C89.9 46.5 89.3 46 88.5 45.6C87.8 45.2 87.5 43.6 86.6 42.8C85.7 41.9 84.2 41.5 83.2 40.6C82.2 39.7 81.3 38.3 80.6 37.5C79.9 36.8 79.3 36.6 79 36C78.7 35.4 78.2 35 78.6 34C78.9 33.1 80.3 31.1 81 30.4C81.8 29.7 82.2 29.5 83.2 29.8C84.2 30 85.7 31 87.1 31.7C88.5 32.3 90 33 91.4 33.5C92.8 34 94.7 34 95.5 34.7C96.3 35.4 96.9 36 96.2 37.7C95.5 39.5 92.5 43.9 91.2 45.2Z\"/></clipPath><clipPath id=\"facepullc6\"><path d=\"M96.7 32.6C99 33.1 99.6 35.2 101.3 36.9C103.1 38.7 105.8 41 107 43.1C108.2 45.3 108.3 47.7 108.3 49.9C108.3 52 107.2 53.7 107 56C106.8 58.4 106.9 61.3 107.1 63.9C107.3 66.5 108.1 69.4 108.1 71.7C108.2 74 108.1 75.7 107.5 77.7C107 79.8 106.5 82.2 104.9 84C103.4 85.9 100.7 88.1 98.3 88.9C95.8 89.7 92.3 90 90.2 88.9C88.1 87.9 86.4 85.2 85.8 82.6C85.2 80 86.6 76.4 86.6 73.6C86.6 70.8 86.4 68.5 85.8 65.7C85.2 63 83.8 60.1 83 57.2C82.3 54.3 81.2 51.3 81.3 48.5C81.3 45.7 82.2 42.8 83.2 40.3C84.3 37.9 85.4 35.1 87.6 33.8C89.9 32.5 94.4 32.1 96.7 32.6Z\"/><path d=\"M96.5 35.7L97.1 28.4A4.8 4.8 0 0 0 87.8 26.3L85.3 33.3A5.8 5.8 0 1 0 96.5 35.7Z\"/></clipPath><clipPath id=\"facepullc7\"><path d=\"M102.5 73.9C105 73.8 105.3 75 106.6 77.3C107.9 79.6 109.2 84.1 110.2 87.5C111.2 91 112 95.4 112.6 98.2C113.3 101 113.8 102.6 114 104.4C114.1 106.1 114.7 107.4 113.5 108.6C112.3 109.7 108.3 111 106.8 111.2C105.3 111.4 105.3 110.9 104.5 109.8C103.6 108.6 103.1 106.8 101.7 104.2C100.2 101.6 97.7 97.3 95.7 93.9C93.7 90.5 90.6 86.5 89.8 83.9C89.1 81.3 89.2 80 91.3 78.3C93.4 76.6 99.9 74.1 102.5 73.9Z\"/></clipPath><clipPath id=\"facepullc8\"><path d=\"M114.1 107C115.5 108 114.6 109.1 114.2 111C113.7 112.8 112.6 115 111.5 118.2C110.4 121.5 108.5 127 107.4 130.4C106.3 133.8 105.7 136.9 105 138.7C104.4 140.6 104.6 141.1 103.7 141.4C102.8 141.6 100.1 141 99.4 140.4C98.7 139.7 99.2 138.7 99.4 137.4C99.6 136.1 100.2 135.1 100.4 132.7C100.6 130.3 100.7 125.9 100.8 122.9C101 120 100.7 117.2 101.2 114.8C101.8 112.4 103.3 110.2 104 108.6C104.7 106.9 103.8 105.2 105.5 105C107.2 104.7 112.6 106 114.1 107Z\"/><circle cx=\"109.3\" cy=\"107.9\" r=\"5.4\"/></clipPath></defs><line class=\"fl\" x1=\"12\" y1=\"146\" x2=\"188\" y2=\"146\"/><rect class=\"mk\" x=\"160\" y=\"10\" width=\"12\" height=\"136\" rx=\"3\"/><rect class=\"sk\" x=\"146\" y=\"96\" width=\"14\" height=\"46\" rx=\"2\"/><line class=\"sep\" x1=\"147\" y1=\"100\" x2=\"159\" y2=\"100\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"147\" y1=\"106\" x2=\"159\" y2=\"106\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"147\" y1=\"112\" x2=\"159\" y2=\"112\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"147\" y1=\"118\" x2=\"159\" y2=\"118\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"147\" y1=\"124\" x2=\"159\" y2=\"124\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"147\" y1=\"130\" x2=\"159\" y2=\"130\" stroke-width=\"1\" stroke-linecap=\"round\"/><line class=\"sep\" x1=\"147\" y1=\"136\" x2=\"159\" y2=\"136\" stroke-width=\"1\" stroke-linecap=\"round\"/><rect class=\"mk\" x=\"142\" y=\"142\" width=\"38\" height=\"4\" rx=\"2\"/><rect class=\"mk\" x=\"152\" y=\"19\" width=\"10\" height=\"10\" rx=\"2\"/><circle class=\"pl\" cx=\"156\" cy=\"24\" r=\"5.5\"/><circle class=\"mk\" cx=\"156\" cy=\"24\" r=\"1.8\"/><line class=\"cab\" x1=\"155\" y1=\"29.2\" x2=\"103.3\" y2=\"25.2\" stroke-width=\"1.1\" stroke-linecap=\"round\"/><g class=\"bf\"><path d=\"M101.7 74.4C104.2 74.9 104.1 76.2 104.7 78.8C105.3 81.3 105.3 86 105.3 89.6C105.3 93.2 104.8 97.7 104.7 100.6C104.5 103.4 104.6 105.1 104.2 106.8C103.9 108.5 104 110 102.6 110.7C101.1 111.5 96.9 111.6 95.4 111.4C93.9 111.1 94.1 110.7 93.6 109.3C93.1 108 93.1 106.2 92.5 103.2C91.8 100.3 90.5 95.5 89.6 91.7C88.7 87.8 86.8 83.1 86.8 80.4C86.8 77.7 87.3 76.5 89.7 75.5C92.2 74.4 99.2 73.8 101.7 74.4Z\"/><path d=\"M103.6 108.6C104.9 109.7 103.9 110.7 103.2 112.5C102.6 114.3 101.3 116.3 99.8 119.4C98.3 122.5 95.8 127.8 94.3 131.1C92.9 134.3 91.9 137.3 91.1 139.1C90.2 140.8 90.4 141.4 89.4 141.5C88.5 141.7 85.9 140.8 85.3 140.1C84.6 139.3 85.3 138.4 85.6 137.1C85.9 135.9 86.6 134.9 87.1 132.6C87.6 130.2 88.2 125.9 88.7 122.9C89.1 120 89.2 117.2 89.9 114.9C90.7 112.6 92.5 110.5 93.4 109C94.3 107.4 93.6 105.7 95.3 105.6C97 105.5 102.3 107.4 103.6 108.6Z\"/><circle cx=\"98.8\" cy=\"108.9\" r=\"5.4\"/><path d=\"M86.9 142.1L97.1 145.6A2.5 2.5 0 0 0 99.1 141.1L89.5 136.1A3.3 3.3 0 1 0 86.9 142.1Z\"/><path d=\"M85 145.5L104 145.3A1.7 1.7 0 0 0 104.2 141.9L85.3 139.7A2.9 2.9 0 1 0 85 145.5Z\"/><circle cx=\"85\" cy=\"142.6\" r=\"3\"/></g><g class=\"bf\"><path d=\"M88.8 44C87.4 45.2 86.8 44.6 86.1 44.2C85.4 43.7 85.3 42.1 84.5 41.2C83.7 40.3 82.3 39.7 81.4 38.7C80.5 37.8 79.7 36.3 79.1 35.4C78.5 34.6 78 34.4 77.7 33.8C77.5 33.2 77.1 32.7 77.5 31.8C77.9 30.9 79.5 29 80.3 28.4C81.1 27.8 81.5 27.7 82.5 28C83.4 28.3 84.9 29.5 86.1 30.2C87.4 31 88.9 31.8 90.2 32.4C91.6 33 93.4 33.2 94.1 34C94.8 34.8 95.4 35.4 94.5 37.1C93.6 38.7 90.2 42.8 88.8 44Z\"/><circle cx=\"80\" cy=\"31\" r=\"3.9\"/><path d=\"M77.6 28.1C77.7 26.7 78.9 27 80.2 26.5C81.4 26.1 82.8 25.6 84.9 25.2C87.1 24.9 90.8 24.8 93.2 24.5C95.7 24.2 98.1 23.7 99.4 23.6C100.7 23.5 100.7 23.2 101.2 23.9C101.6 24.5 102.1 26.6 102 27.3C101.9 28.1 102.1 27.8 100.6 28.4C99.1 29 95.6 30 93.2 31C90.8 32 87.9 33.6 86.1 34.2C84.3 34.9 83.4 34.8 82.2 34.9C81.1 35 80 35.8 79.2 34.7C78.4 33.6 77.4 29.5 77.6 28.1Z\"/><circle cx=\"103.3\" cy=\"25.2\" r=\"3.6\"/><path d=\"M100.5 28.7L105.8 27.7A3.1 3.1 0 1 0 104.3 21.7L99.2 23.4A2.7 2.7 0 0 0 100.5 28.7Z\"/></g><g clip-path=\"url(#facepullc3)\"><ellipse class=\"mf\" cx=\"93\" cy=\"35.8\" rx=\"5.5\" ry=\"6.5\" transform=\"rotate(-140.7 93 35.8)\"/></g><line class=\"cab\" x1=\"155\" y1=\"29.2\" x2=\"105.3\" y2=\"26.1\" stroke-width=\"1.1\" stroke-linecap=\"round\"/><line class=\"barl\" x1=\"104.3\" y1=\"28.1\" x2=\"105.8\" y2=\"32.6\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><g class=\"b\"><path d=\"M96.7 32.6C99 33.1 99.6 35.2 101.3 36.9C103.1 38.7 105.8 41 107 43.1C108.2 45.3 108.3 47.7 108.3 49.9C108.3 52 107.2 53.7 107 56C106.8 58.4 106.9 61.3 107.1 63.9C107.3 66.5 108.1 69.4 108.1 71.7C108.2 74 108.1 75.7 107.5 77.7C107 79.8 106.5 82.2 104.9 84C103.4 85.9 100.7 88.1 98.3 88.9C95.8 89.7 92.3 90 90.2 88.9C88.1 87.9 86.4 85.2 85.8 82.6C85.2 80 86.6 76.4 86.6 73.6C86.6 70.8 86.4 68.5 85.8 65.7C85.2 63 83.8 60.1 83 57.2C82.3 54.3 81.2 51.3 81.3 48.5C81.3 45.7 82.2 42.8 83.2 40.3C84.3 37.9 85.4 35.1 87.6 33.8C89.9 32.5 94.4 32.1 96.7 32.6Z\"/><path d=\"M96.5 35.7L97.1 28.4A4.8 4.8 0 0 0 87.8 26.3L85.3 33.3A5.8 5.8 0 1 0 96.5 35.7Z\"/><ellipse cx=\"92.4\" cy=\"20.9\" rx=\"7.4\" ry=\"8.6\" transform=\"rotate(-7.5 92.4 20.9)\"/><path d=\"M94 28.3L98.2 29.3A2.6 2.6 0 0 0 101.3 26.2L100.5 22A5.4 5.4 0 1 0 94 28.3Z\"/><circle cx=\"99.5\" cy=\"20.2\" r=\"1.5\"/></g><g clip-path=\"url(#facepullc6)\"><ellipse class=\"t\" cx=\"103.5\" cy=\"47.7\" rx=\"7.8\" ry=\"8.6\" transform=\"rotate(-7.5 103.5 47.7)\"/></g><g class=\"halo\"><path d=\"M102.5 73.9C105 73.8 105.3 75 106.6 77.3C107.9 79.6 109.2 84.1 110.2 87.5C111.2 91 112 95.4 112.6 98.2C113.3 101 113.8 102.6 114 104.4C114.1 106.1 114.7 107.4 113.5 108.6C112.3 109.7 108.3 111 106.8 111.2C105.3 111.4 105.3 110.9 104.5 109.8C103.6 108.6 103.1 106.8 101.7 104.2C100.2 101.6 97.7 97.3 95.7 93.9C93.7 90.5 90.6 86.5 89.8 83.9C89.1 81.3 89.2 80 91.3 78.3C93.4 76.6 99.9 74.1 102.5 73.9Z\"/><path d=\"M114.1 107C115.5 108 114.6 109.1 114.2 111C113.7 112.8 112.6 115 111.5 118.2C110.4 121.5 108.5 127 107.4 130.4C106.3 133.8 105.7 136.9 105 138.7C104.4 140.6 104.6 141.1 103.7 141.4C102.8 141.6 100.1 141 99.4 140.4C98.7 139.7 99.2 138.7 99.4 137.4C99.6 136.1 100.2 135.1 100.4 132.7C100.6 130.3 100.7 125.9 100.8 122.9C101 120 100.7 117.2 101.2 114.8C101.8 112.4 103.3 110.2 104 108.6C104.7 106.9 103.8 105.2 105.5 105C107.2 104.7 112.6 106 114.1 107Z\"/><circle cx=\"109.3\" cy=\"107.9\" r=\"5.4\"/><path d=\"M100.9 142.1L111.1 145.6A2.5 2.5 0 0 0 113.1 141.1L103.5 136.1A3.3 3.3 0 1 0 100.9 142.1Z\"/><path d=\"M99 145.5L118 145.3A1.7 1.7 0 0 0 118.2 141.9L99.3 139.7A2.9 2.9 0 1 0 99 145.5Z\"/><circle cx=\"99\" cy=\"142.6\" r=\"3\"/></g><g class=\"b\"><path d=\"M102.5 73.9C105 73.8 105.3 75 106.6 77.3C107.9 79.6 109.2 84.1 110.2 87.5C111.2 91 112 95.4 112.6 98.2C113.3 101 113.8 102.6 114 104.4C114.1 106.1 114.7 107.4 113.5 108.6C112.3 109.7 108.3 111 106.8 111.2C105.3 111.4 105.3 110.9 104.5 109.8C103.6 108.6 103.1 106.8 101.7 104.2C100.2 101.6 97.7 97.3 95.7 93.9C93.7 90.5 90.6 86.5 89.8 83.9C89.1 81.3 89.2 80 91.3 78.3C93.4 76.6 99.9 74.1 102.5 73.9Z\"/><path d=\"M114.1 107C115.5 108 114.6 109.1 114.2 111C113.7 112.8 112.6 115 111.5 118.2C110.4 121.5 108.5 127 107.4 130.4C106.3 133.8 105.7 136.9 105 138.7C104.4 140.6 104.6 141.1 103.7 141.4C102.8 141.6 100.1 141 99.4 140.4C98.7 139.7 99.2 138.7 99.4 137.4C99.6 136.1 100.2 135.1 100.4 132.7C100.6 130.3 100.7 125.9 100.8 122.9C101 120 100.7 117.2 101.2 114.8C101.8 112.4 103.3 110.2 104 108.6C104.7 106.9 103.8 105.2 105.5 105C107.2 104.7 112.6 106 114.1 107Z\"/><circle cx=\"109.3\" cy=\"107.9\" r=\"5.4\"/><path d=\"M100.9 142.1L111.1 145.6A2.5 2.5 0 0 0 113.1 141.1L103.5 136.1A3.3 3.3 0 1 0 100.9 142.1Z\"/><path d=\"M99 145.5L118 145.3A1.7 1.7 0 0 0 118.2 141.9L99.3 139.7A2.9 2.9 0 1 0 99 145.5Z\"/><circle cx=\"99\" cy=\"142.6\" r=\"3\"/></g><g clip-path=\"url(#facepullc1)\"><ellipse class=\"m\" cx=\"85.8\" cy=\"47.4\" rx=\"5.5\" ry=\"7.5\" transform=\"rotate(-7.5 85.8 47.4)\"/></g><g class=\"halo\"><path d=\"M91.2 45.2C89.9 46.5 89.3 46 88.5 45.6C87.8 45.2 87.5 43.6 86.6 42.8C85.7 41.9 84.2 41.5 83.2 40.6C82.2 39.7 81.3 38.3 80.6 37.5C79.9 36.8 79.3 36.6 79 36C78.7 35.4 78.2 35 78.6 34C78.9 33.1 80.3 31.1 81 30.4C81.8 29.7 82.2 29.5 83.2 29.8C84.2 30 85.7 31 87.1 31.7C88.5 32.3 90 33 91.4 33.5C92.8 34 94.7 34 95.5 34.7C96.3 35.4 96.9 36 96.2 37.7C95.5 39.5 92.5 43.9 91.2 45.2Z\"/><circle cx=\"81\" cy=\"33\" r=\"3.9\"/><path d=\"M78.4 30.2C78.5 28.8 79.8 29 81.1 28.5C82.4 28 83.8 27.4 86.1 27C88.4 26.5 92.3 26.2 94.8 25.8C97.4 25.4 99.9 24.8 101.3 24.6C102.7 24.4 102.7 24.2 103.2 24.8C103.7 25.4 104.3 27.5 104.2 28.3C104.1 29 104.2 28.7 102.7 29.4C101.1 30.1 97.4 31.3 94.9 32.4C92.4 33.4 89.4 35.2 87.5 35.9C85.6 36.7 84.7 36.6 83.4 36.8C82.2 36.9 81.1 37.8 80.3 36.7C79.4 35.7 78.2 31.6 78.4 30.2Z\"/><circle cx=\"105.3\" cy=\"26.1\" r=\"3.6\"/><path d=\"M102.5 29.6L107.8 28.6A3.1 3.1 0 1 0 106.1 22.6L101.1 24.5A2.7 2.7 0 0 0 102.5 29.6Z\"/></g><g class=\"b\"><path d=\"M91.2 45.2C89.9 46.5 89.3 46 88.5 45.6C87.8 45.2 87.5 43.6 86.6 42.8C85.7 41.9 84.2 41.5 83.2 40.6C82.2 39.7 81.3 38.3 80.6 37.5C79.9 36.8 79.3 36.6 79 36C78.7 35.4 78.2 35 78.6 34C78.9 33.1 80.3 31.1 81 30.4C81.8 29.7 82.2 29.5 83.2 29.8C84.2 30 85.7 31 87.1 31.7C88.5 32.3 90 33 91.4 33.5C92.8 34 94.7 34 95.5 34.7C96.3 35.4 96.9 36 96.2 37.7C95.5 39.5 92.5 43.9 91.2 45.2Z\"/><circle cx=\"81\" cy=\"33\" r=\"3.9\"/><path d=\"M78.4 30.2C78.5 28.8 79.8 29 81.1 28.5C82.4 28 83.8 27.4 86.1 27C88.4 26.5 92.3 26.2 94.8 25.8C97.4 25.4 99.9 24.8 101.3 24.6C102.7 24.4 102.7 24.2 103.2 24.8C103.7 25.4 104.3 27.5 104.2 28.3C104.1 29 104.2 28.7 102.7 29.4C101.1 30.1 97.4 31.3 94.9 32.4C92.4 33.4 89.4 35.2 87.5 35.9C85.6 36.7 84.7 36.6 83.4 36.8C82.2 36.9 81.1 37.8 80.3 36.7C79.4 35.7 78.2 31.6 78.4 30.2Z\"/><circle cx=\"105.3\" cy=\"26.1\" r=\"3.6\"/><path d=\"M102.5 29.6L107.8 28.6A3.1 3.1 0 1 0 106.1 22.6L101.1 24.5A2.7 2.7 0 0 0 102.5 29.6Z\"/></g><g clip-path=\"url(#facepullc4)\"><ellipse class=\"t\" cx=\"91.8\" cy=\"40.2\" rx=\"6\" ry=\"7\" transform=\"rotate(-146.3 91.8 40.2)\"/></g><g clip-path=\"url(#facepullc5)\"><ellipse class=\"m\" cx=\"94.5\" cy=\"36.6\" rx=\"5.5\" ry=\"6.5\" transform=\"rotate(-146.3 94.5 36.6)\"/></g><g clip-path=\"url(#facepullc7)\"><ellipse class=\"t\" cx=\"109.4\" cy=\"91.2\" rx=\"17.4\" ry=\"7.4\" transform=\"rotate(68.5 109.4 91.2)\"/></g><g clip-path=\"url(#facepullc8)\"><ellipse class=\"t\" cx=\"103.1\" cy=\"116.9\" rx=\"9.6\" ry=\"4.5\" transform=\"rotate(103.3 103.1 116.9)\"/></g><g clip-path=\"url(#facepullc2)\"><ellipse class=\"m\" cx=\"89\" cy=\"40\" rx=\"7.5\" ry=\"6.5\" transform=\"rotate(-146.3 89 40)\"/></g><circle class=\"bar\" cx=\"105.3\" cy=\"26.1\" r=\"2.1\"/></svg>",
+  "Curl con barra Z": "<svg aria-hidden=\"true\" viewBox=\"0 0 200 160\"><defs><clipPath id=\"curlzc1\"><path d=\"M90.4 36.2C92.2 36.6 92.2 37.9 92.4 39.3C92.6 40.7 91.6 42.5 91.6 44.4C91.5 46.4 92.2 48.7 92.2 50.8C92.3 53 91.8 55.5 91.7 57.1C91.6 58.7 91.8 59.6 91.6 60.6C91.4 61.6 91.3 62.5 90.4 63C89.5 63.5 87.1 63.7 86 63.4C85 63.1 84.6 62.7 84.1 61.2C83.6 59.7 83.4 56.8 82.9 54.4C82.5 52.1 81.9 49.4 81.4 47.2C80.8 44.9 79.6 42.6 79.6 40.9C79.6 39.2 79.6 37.8 81.4 37C83.2 36.2 88.5 35.9 90.4 36.2Z\"/></clipPath><clipPath id=\"curlzc2\"><path d=\"M88.4 35.2C90.2 35.6 90.2 36.9 90.4 38.3C90.6 39.7 89.6 41.5 89.6 43.4C89.6 45.4 90.2 47.7 90.2 49.8C90.3 52 89.8 54.5 89.7 56.1C89.6 57.8 89.8 58.6 89.6 59.6C89.4 60.6 89.3 61.5 88.4 62C87.5 62.5 85.1 62.7 84 62.4C83 62.1 82.6 61.7 82.1 60.3C81.6 58.8 81.4 55.8 80.9 53.4C80.5 51.1 79.9 48.4 79.4 46.2C78.8 43.9 77.6 41.6 77.6 39.9C77.6 38.2 77.6 36.8 79.4 36C81.2 35.2 86.5 34.9 88.4 35.2Z\"/></clipPath><clipPath id=\"curlzc3\"><path d=\"M90.4 36.2C92.2 36.6 92.2 37.9 92.4 39.3C92.6 40.7 91.6 42.5 91.6 44.4C91.5 46.4 92.2 48.7 92.2 50.8C92.3 53 91.8 55.5 91.7 57.1C91.6 58.7 91.8 59.6 91.6 60.6C91.4 61.6 91.3 62.5 90.4 63C89.5 63.5 87.1 63.7 86 63.4C85 63.1 84.6 62.7 84.1 61.2C83.6 59.7 83.4 56.8 82.9 54.4C82.5 52.1 81.9 49.4 81.4 47.2C80.8 44.9 79.6 42.6 79.6 40.9C79.6 39.2 79.6 37.8 81.4 37C83.2 36.2 88.5 35.9 90.4 36.2Z\"/></clipPath><clipPath id=\"curlzc4\"><path d=\"M90.4 36.2C92.2 36.6 92.2 37.9 92.4 39.3C92.6 40.7 91.6 42.5 91.6 44.4C91.5 46.4 92.2 48.7 92.2 50.8C92.3 53 91.8 55.5 91.7 57.1C91.6 58.7 91.8 59.6 91.6 60.6C91.4 61.6 91.3 62.5 90.4 63C89.5 63.5 87.1 63.7 86 63.4C85 63.1 84.6 62.7 84.1 61.2C83.6 59.7 83.4 56.8 82.9 54.4C82.5 52.1 81.9 49.4 81.4 47.2C80.8 44.9 79.6 42.6 79.6 40.9C79.6 39.2 79.6 37.8 81.4 37C83.2 36.2 88.5 35.9 90.4 36.2Z\"/></clipPath><clipPath id=\"curlzc5\"><path d=\"M90.6 29.9C92.8 30.7 93.2 32.8 94.7 34.8C96.2 36.7 98.8 39.3 99.7 41.7C100.6 44 100.5 46.5 100.3 48.6C100 50.8 98.8 52.3 98.3 54.7C97.9 57 97.7 60 97.6 62.7C97.6 65.4 98 68.4 97.8 70.7C97.7 73.1 97.3 74.7 96.6 76.8C95.8 78.8 95.1 81.1 93.4 82.8C91.6 84.6 88.8 86.5 86.3 87C83.7 87.6 80.2 87.5 78.2 86.2C76.3 84.9 74.8 82 74.5 79.3C74.1 76.7 75.9 73.1 76.2 70.3C76.5 67.4 76.5 65.1 76.2 62.3C75.9 59.4 74.8 56.3 74.4 53.3C73.9 50.3 73.2 47.2 73.6 44.3C73.9 41.5 75 38.6 76.4 36.2C77.7 33.9 79 31.2 81.4 30.1C83.8 29.1 88.4 29.1 90.6 29.9Z\"/><path d=\"M90.1 33.1L91.4 25.8A4.8 4.8 0 0 0 82.3 22.9L79.1 29.5A5.8 5.8 0 1 0 90.1 33.1Z\"/></clipPath><clipPath id=\"curlzc6\"><path d=\"M92.2 72.7C94.7 72.9 94.8 74.2 95.7 76.6C96.7 79 97.3 83.7 97.7 87.3C98.2 90.9 98.4 95.3 98.6 98.2C98.8 101.1 99.1 102.8 99 104.5C98.9 106.2 99.2 107.6 97.8 108.6C96.5 109.5 92.3 110.2 90.8 110.1C89.3 110.1 89.4 109.7 88.8 108.4C88.1 107.1 87.9 105.3 86.8 102.5C85.8 99.6 83.9 95 82.5 91.4C81 87.7 78.5 83.3 78.2 80.6C77.8 77.9 78.1 76.6 80.5 75.3C82.8 74 89.6 72.4 92.2 72.7Z\"/></clipPath><clipPath id=\"curlzc7\"><path d=\"M98.5 105.9C100 106.7 99.2 107.9 99 109.8C98.8 111.7 97.9 114 97.2 117.3C96.4 120.7 95.1 126.4 94.4 129.9C93.7 133.4 93.4 136.5 93 138.4C92.6 140.3 92.9 140.8 92 141.2C91.1 141.5 88.4 141.2 87.6 140.6C86.8 140.1 87.2 139 87.2 137.7C87.3 136.4 87.7 135.3 87.7 132.9C87.7 130.5 87.3 126.2 87.1 123.2C86.9 120.2 86.3 117.5 86.6 115.1C86.8 112.6 88.1 110.2 88.7 108.5C89.2 106.8 88.1 105.2 89.7 104.8C91.3 104.4 96.9 105 98.5 105.9Z\"/><circle cx=\"93.9\" cy=\"107.2\" r=\"5.4\"/></clipPath></defs><line class=\"fl\" x1=\"12\" y1=\"146\" x2=\"188\" y2=\"146\"/><circle class=\"pl\" cx=\"108.8\" cy=\"52.5\" r=\"14\"/><circle class=\"pl2\" cx=\"108.8\" cy=\"52.5\" r=\"9.2\"/><circle class=\"mk\" cx=\"108.8\" cy=\"52.5\" r=\"2.4\"/><g class=\"bf\"><path d=\"M89.8 72.6C92.3 73.2 92.2 74.5 92.7 77.1C93.2 79.6 93 84.3 92.9 87.9C92.8 91.5 92.2 96 91.9 98.8C91.6 101.7 91.7 103.4 91.2 105.1C90.8 106.8 91 108.2 89.5 108.9C88 109.6 83.8 109.6 82.3 109.3C80.8 109 81 108.6 80.6 107.2C80.1 105.9 80.2 104.1 79.6 101.1C79 98.1 78 93.3 77.1 89.4C76.3 85.6 74.6 80.8 74.7 78.1C74.8 75.4 75.3 74.2 77.8 73.2C80.4 72.3 87.3 71.9 89.8 72.6Z\"/><path d=\"M90.2 105.1C91.8 105.8 91.1 107.1 91.1 109C91.1 110.9 90.5 113.3 90 116.7C89.6 120.1 88.9 125.9 88.5 129.5C88.2 133 88.1 136.2 87.9 138.1C87.7 140 88 140.5 87.2 141C86.3 141.4 83.6 141.4 82.8 140.9C81.9 140.4 82.2 139.3 82.1 138C82 136.7 82.4 135.6 82.1 133.2C81.9 130.8 81 126.5 80.6 123.5C80.1 120.6 79.2 117.9 79.2 115.5C79.3 113 80.3 110.5 80.7 108.8C81.1 107 79.8 105.5 81.4 104.9C83 104.3 88.6 104.5 90.2 105.1Z\"/><circle cx=\"85.7\" cy=\"107\" r=\"5.4\"/><path d=\"M83.8 142.1L93 145.6A2.5 2.5 0 0 0 95.2 141.1L86.7 136.1A3.3 3.3 0 1 0 83.8 142.1Z\"/><path d=\"M81 145.5L100 145.3A1.7 1.7 0 0 0 100.2 141.9L81.3 139.7A2.9 2.9 0 1 0 81 145.5Z\"/><circle cx=\"81\" cy=\"142.6\" r=\"3\"/></g><g class=\"bf\"><path d=\"M88.4 35.2C90.2 35.6 90.2 36.9 90.4 38.3C90.6 39.7 89.6 41.5 89.6 43.4C89.6 45.4 90.2 47.7 90.2 49.8C90.3 52 89.8 54.5 89.7 56.1C89.6 57.8 89.8 58.6 89.6 59.6C89.4 60.6 89.3 61.5 88.4 62C87.5 62.5 85.1 62.7 84 62.4C83 62.1 82.6 61.7 82.1 60.3C81.6 58.8 81.4 55.8 80.9 53.4C80.5 51.1 79.9 48.4 79.4 46.2C78.8 43.9 77.6 41.6 77.6 39.9C77.6 38.2 77.6 36.8 79.4 36C81.2 35.2 86.5 34.9 88.4 35.2Z\"/><circle cx=\"86\" cy=\"59.9\" r=\"3.9\"/><path d=\"M83.3 57.3C83.2 56 84.4 56.1 85.4 55.5C86.5 54.9 87.7 54.3 89.6 53.7C91.6 53.1 95 52.6 97.2 52C99.3 51.5 101.5 50.7 102.7 50.5C103.9 50.2 103.8 50 104.3 50.5C104.9 51.1 105.7 53.1 105.7 53.9C105.7 54.6 105.8 54.3 104.6 55.1C103.3 55.9 100.2 57.2 98.1 58.5C96.1 59.7 93.7 61.6 92.1 62.4C90.6 63.2 89.7 63.3 88.7 63.5C87.6 63.7 86.8 64.7 85.9 63.6C85 62.6 83.4 58.7 83.3 57.3Z\"/><circle cx=\"106.8\" cy=\"51.5\" r=\"3.6\"/><path d=\"M104.4 55.4L109.6 53.7A3.1 3.1 0 1 0 107.2 48L102.4 50.4A2.7 2.7 0 0 0 104.4 55.4Z\"/></g><g clip-path=\"url(#curlzc2)\"><ellipse class=\"mf\" cx=\"89.3\" cy=\"49.9\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(85 89.3 49.9)\"/></g><g class=\"b\"><path d=\"M90.6 29.9C92.8 30.7 93.2 32.8 94.7 34.8C96.2 36.7 98.8 39.3 99.7 41.7C100.6 44 100.5 46.5 100.3 48.6C100 50.8 98.8 52.3 98.3 54.7C97.9 57 97.7 60 97.6 62.7C97.6 65.4 98 68.4 97.8 70.7C97.7 73.1 97.3 74.7 96.6 76.8C95.8 78.8 95.1 81.1 93.4 82.8C91.6 84.6 88.8 86.5 86.3 87C83.7 87.6 80.2 87.5 78.2 86.2C76.3 84.9 74.8 82 74.5 79.3C74.1 76.7 75.9 73.1 76.2 70.3C76.5 67.4 76.5 65.1 76.2 62.3C75.9 59.4 74.8 56.3 74.4 53.3C73.9 50.3 73.2 47.2 73.6 44.3C73.9 41.5 75 38.6 76.4 36.2C77.7 33.9 79 31.2 81.4 30.1C83.8 29.1 88.4 29.1 90.6 29.9Z\"/><path d=\"M90.1 33.1L91.4 25.8A4.8 4.8 0 0 0 82.3 22.9L79.1 29.5A5.8 5.8 0 1 0 90.1 33.1Z\"/><ellipse cx=\"87.5\" cy=\"18\" rx=\"7.4\" ry=\"8.6\" transform=\"rotate(-1.5 87.5 18)\"/><path d=\"M88.3 25.5L92.4 26.9A2.6 2.6 0 0 0 95.8 24.2L95.4 19.9A5.4 5.4 0 1 0 88.3 25.5Z\"/><circle cx=\"94.7\" cy=\"18\" r=\"1.5\"/></g><g clip-path=\"url(#curlzc5)\"><ellipse class=\"t\" cx=\"95.7\" cy=\"45.8\" rx=\"7.8\" ry=\"8.6\" transform=\"rotate(-1.5 95.7 45.8)\"/></g><g class=\"halo\"><path d=\"M92.2 72.7C94.7 72.9 94.8 74.2 95.7 76.6C96.7 79 97.3 83.7 97.7 87.3C98.2 90.9 98.4 95.3 98.6 98.2C98.8 101.1 99.1 102.8 99 104.5C98.9 106.2 99.2 107.6 97.8 108.6C96.5 109.5 92.3 110.2 90.8 110.1C89.3 110.1 89.4 109.7 88.8 108.4C88.1 107.1 87.9 105.3 86.8 102.5C85.8 99.6 83.9 95 82.5 91.4C81 87.7 78.5 83.3 78.2 80.6C77.8 77.9 78.1 76.6 80.5 75.3C82.8 74 89.6 72.4 92.2 72.7Z\"/><path d=\"M98.5 105.9C100 106.7 99.2 107.9 99 109.8C98.8 111.7 97.9 114 97.2 117.3C96.4 120.7 95.1 126.4 94.4 129.9C93.7 133.4 93.4 136.5 93 138.4C92.6 140.3 92.9 140.8 92 141.2C91.1 141.5 88.4 141.2 87.6 140.6C86.8 140.1 87.2 139 87.2 137.7C87.3 136.4 87.7 135.3 87.7 132.9C87.7 130.5 87.3 126.2 87.1 123.2C86.9 120.2 86.3 117.5 86.6 115.1C86.8 112.6 88.1 110.2 88.7 108.5C89.2 106.8 88.1 105.2 89.7 104.8C91.3 104.4 96.9 105 98.5 105.9Z\"/><circle cx=\"93.9\" cy=\"107.2\" r=\"5.4\"/><path d=\"M88.9 142.1L99.1 145.6A2.5 2.5 0 0 0 101.1 141.1L91.5 136.1A3.3 3.3 0 1 0 88.9 142.1Z\"/><path d=\"M87 145.5L106 145.3A1.7 1.7 0 0 0 106.2 141.9L87.3 139.7A2.9 2.9 0 1 0 87 145.5Z\"/><circle cx=\"87\" cy=\"142.6\" r=\"3\"/></g><g class=\"b\"><path d=\"M92.2 72.7C94.7 72.9 94.8 74.2 95.7 76.6C96.7 79 97.3 83.7 97.7 87.3C98.2 90.9 98.4 95.3 98.6 98.2C98.8 101.1 99.1 102.8 99 104.5C98.9 106.2 99.2 107.6 97.8 108.6C96.5 109.5 92.3 110.2 90.8 110.1C89.3 110.1 89.4 109.7 88.8 108.4C88.1 107.1 87.9 105.3 86.8 102.5C85.8 99.6 83.9 95 82.5 91.4C81 87.7 78.5 83.3 78.2 80.6C77.8 77.9 78.1 76.6 80.5 75.3C82.8 74 89.6 72.4 92.2 72.7Z\"/><path d=\"M98.5 105.9C100 106.7 99.2 107.9 99 109.8C98.8 111.7 97.9 114 97.2 117.3C96.4 120.7 95.1 126.4 94.4 129.9C93.7 133.4 93.4 136.5 93 138.4C92.6 140.3 92.9 140.8 92 141.2C91.1 141.5 88.4 141.2 87.6 140.6C86.8 140.1 87.2 139 87.2 137.7C87.3 136.4 87.7 135.3 87.7 132.9C87.7 130.5 87.3 126.2 87.1 123.2C86.9 120.2 86.3 117.5 86.6 115.1C86.8 112.6 88.1 110.2 88.7 108.5C89.2 106.8 88.1 105.2 89.7 104.8C91.3 104.4 96.9 105 98.5 105.9Z\"/><circle cx=\"93.9\" cy=\"107.2\" r=\"5.4\"/><path d=\"M88.9 142.1L99.1 145.6A2.5 2.5 0 0 0 101.1 141.1L91.5 136.1A3.3 3.3 0 1 0 88.9 142.1Z\"/><path d=\"M87 145.5L106 145.3A1.7 1.7 0 0 0 106.2 141.9L87.3 139.7A2.9 2.9 0 1 0 87 145.5Z\"/><circle cx=\"87\" cy=\"142.6\" r=\"3\"/></g><g class=\"halo\"><path d=\"M90.4 36.2C92.2 36.6 92.2 37.9 92.4 39.3C92.6 40.7 91.6 42.5 91.6 44.4C91.5 46.4 92.2 48.7 92.2 50.8C92.3 53 91.8 55.5 91.7 57.1C91.6 58.7 91.8 59.6 91.6 60.6C91.4 61.6 91.3 62.5 90.4 63C89.5 63.5 87.1 63.7 86 63.4C85 63.1 84.6 62.7 84.1 61.2C83.6 59.7 83.4 56.8 82.9 54.4C82.5 52.1 81.9 49.4 81.4 47.2C80.8 44.9 79.6 42.6 79.6 40.9C79.6 39.2 79.6 37.8 81.4 37C83.2 36.2 88.5 35.9 90.4 36.2Z\"/><circle cx=\"88\" cy=\"60.9\" r=\"3.9\"/><path d=\"M85.3 58.3C85.2 57 86.4 57.1 87.4 56.5C88.5 55.9 89.7 55.3 91.6 54.7C93.6 54.1 97 53.6 99.2 53C101.3 52.5 103.5 51.7 104.7 51.5C105.9 51.2 105.8 51 106.4 51.5C106.9 52.1 107.7 54.1 107.7 54.9C107.7 55.6 107.8 55.3 106.6 56.1C105.3 56.9 102.2 58.2 100.1 59.5C98.1 60.7 95.7 62.6 94.1 63.4C92.6 64.2 91.7 64.3 90.7 64.5C89.6 64.7 88.8 65.6 87.9 64.6C87 63.6 85.4 59.7 85.3 58.3Z\"/><circle cx=\"108.8\" cy=\"52.5\" r=\"3.6\"/><path d=\"M106.4 56.4L111.6 54.7A3.1 3.1 0 1 0 109.3 49L104.4 51.4A2.7 2.7 0 0 0 106.4 56.4Z\"/></g><g class=\"b\"><path d=\"M90.4 36.2C92.2 36.6 92.2 37.9 92.4 39.3C92.6 40.7 91.6 42.5 91.6 44.4C91.5 46.4 92.2 48.7 92.2 50.8C92.3 53 91.8 55.5 91.7 57.1C91.6 58.7 91.8 59.6 91.6 60.6C91.4 61.6 91.3 62.5 90.4 63C89.5 63.5 87.1 63.7 86 63.4C85 63.1 84.6 62.7 84.1 61.2C83.6 59.7 83.4 56.8 82.9 54.4C82.5 52.1 81.9 49.4 81.4 47.2C80.8 44.9 79.6 42.6 79.6 40.9C79.6 39.2 79.6 37.8 81.4 37C83.2 36.2 88.5 35.9 90.4 36.2Z\"/><circle cx=\"88\" cy=\"60.9\" r=\"3.9\"/><path d=\"M85.3 58.3C85.2 57 86.4 57.1 87.4 56.5C88.5 55.9 89.7 55.3 91.6 54.7C93.6 54.1 97 53.6 99.2 53C101.3 52.5 103.5 51.7 104.7 51.5C105.9 51.2 105.8 51 106.4 51.5C106.9 52.1 107.7 54.1 107.7 54.9C107.7 55.6 107.8 55.3 106.6 56.1C105.3 56.9 102.2 58.2 100.1 59.5C98.1 60.7 95.7 62.6 94.1 63.4C92.6 64.2 91.7 64.3 90.7 64.5C89.6 64.7 88.8 65.6 87.9 64.6C87 63.6 85.4 59.7 85.3 58.3Z\"/><circle cx=\"108.8\" cy=\"52.5\" r=\"3.6\"/><path d=\"M106.4 56.4L111.6 54.7A3.1 3.1 0 1 0 109.3 49L104.4 51.4A2.7 2.7 0 0 0 106.4 56.4Z\"/></g><g clip-path=\"url(#curlzc3)\"><ellipse class=\"t\" cx=\"86.2\" cy=\"40.3\" rx=\"6\" ry=\"7\" transform=\"rotate(85 86.2 40.3)\"/></g><g clip-path=\"url(#curlzc4)\"><ellipse class=\"m\" cx=\"91.3\" cy=\"50.9\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(85 91.3 50.9)\"/></g><g clip-path=\"url(#curlzc6)\"><ellipse class=\"t\" cx=\"96.5\" cy=\"90.7\" rx=\"17.4\" ry=\"7.4\" transform=\"rotate(77.2 96.5 90.7)\"/></g><g clip-path=\"url(#curlzc7)\"><ellipse class=\"t\" cx=\"88.6\" cy=\"116.9\" rx=\"9.6\" ry=\"4.5\" transform=\"rotate(96.9 88.6 116.9)\"/></g><g clip-path=\"url(#curlzc1)\"><ellipse class=\"m\" cx=\"90.8\" cy=\"51.4\" rx=\"9.2\" ry=\"5\" transform=\"rotate(85 90.8 51.4)\"/></g><circle class=\"bar\" cx=\"108.8\" cy=\"52.5\" r=\"2.4\"/></svg>",
+  "Curl martillo": "<svg aria-hidden=\"true\" viewBox=\"0 0 200 160\"><defs><clipPath id=\"martilloc1\"><path d=\"M93.6 58.6C93.4 57.3 94.5 57.3 95.5 56.6C96.5 55.9 97.6 55.1 99.5 54.3C101.4 53.6 104.7 52.7 106.8 51.9C108.9 51.2 110.9 50.1 112.1 49.8C113.3 49.4 113.2 49.2 113.8 49.7C114.3 50.2 115.4 52.1 115.5 52.9C115.6 53.6 115.6 53.3 114.4 54.2C113.3 55.1 110.3 56.8 108.4 58.2C106.5 59.6 104.3 61.7 102.9 62.7C101.4 63.7 100.5 63.8 99.5 64.2C98.5 64.5 97.7 65.5 96.8 64.6C95.8 63.7 93.8 60 93.6 58.6Z\"/></clipPath><clipPath id=\"martilloc2\"><path d=\"M97.2 34.9C99.1 35.1 99.2 36.4 99.5 37.7C99.8 39.1 99 41 99.1 42.9C99.3 44.8 100.1 47.1 100.3 49.2C100.5 51.3 100.3 53.9 100.3 55.5C100.4 57.1 100.7 58 100.5 59C100.4 60 100.5 60.9 99.6 61.5C98.7 62 96.3 62.4 95.2 62.2C94.2 62 93.8 61.7 93.2 60.3C92.5 58.8 92 55.9 91.4 53.6C90.7 51.3 89.9 48.7 89.2 46.5C88.5 44.3 87 42.1 86.9 40.4C86.8 38.7 86.6 37.4 88.3 36.4C90 35.5 95.3 34.6 97.2 34.9Z\"/></clipPath><clipPath id=\"martilloc3\"><path d=\"M99.4 36.3C101.2 36.7 101.2 38.1 101.4 39.4C101.6 40.8 100.5 42.6 100.4 44.5C100.4 46.5 101 48.8 101 50.9C100.9 53.1 100.4 55.6 100.3 57.2C100.1 58.8 100.3 59.7 100.1 60.7C99.9 61.6 99.8 62.6 98.8 63C97.9 63.5 95.5 63.6 94.5 63.3C93.4 63 93.1 62.7 92.6 61.2C92.1 59.7 92 56.7 91.6 54.3C91.2 52 90.7 49.3 90.2 47.1C89.7 44.8 88.5 42.4 88.6 40.7C88.6 39 88.6 37.7 90.4 36.9C92.2 36.2 97.6 35.9 99.4 36.3Z\"/></clipPath><clipPath id=\"martilloc4\"><path d=\"M99.4 36.3C101.2 36.7 101.2 38.1 101.4 39.4C101.6 40.8 100.5 42.6 100.4 44.5C100.4 46.5 101 48.8 101 50.9C100.9 53.1 100.4 55.6 100.3 57.2C100.1 58.8 100.3 59.7 100.1 60.7C99.9 61.6 99.8 62.6 98.8 63C97.9 63.5 95.5 63.6 94.5 63.3C93.4 63 93.1 62.7 92.6 61.2C92.1 59.7 92 56.7 91.6 54.3C91.2 52 90.7 49.3 90.2 47.1C89.7 44.8 88.5 42.4 88.6 40.7C88.6 39 88.6 37.7 90.4 36.9C92.2 36.2 97.6 35.9 99.4 36.3Z\"/></clipPath><clipPath id=\"martilloc5\"><path d=\"M100 30.1C102.2 31 102.5 33.2 103.9 35.2C105.3 37.3 107.7 40 108.5 42.3C109.3 44.7 109.1 47.2 108.7 49.4C108.4 51.5 107 53 106.5 55.3C105.9 57.6 105.6 60.6 105.4 63.3C105.1 65.9 105.4 69 105.2 71.3C104.9 73.6 104.4 75.3 103.6 77.2C102.7 79.2 101.9 81.5 100 83.2C98.2 84.8 95.3 86.5 92.7 87C90.2 87.4 86.7 87.2 84.8 85.8C82.9 84.4 81.6 81.4 81.4 78.7C81.2 76 83.1 72.6 83.6 69.7C84 66.9 84.1 64.6 84 61.7C83.8 58.9 82.9 55.7 82.6 52.7C82.3 49.7 81.8 46.5 82.3 43.7C82.7 40.9 84 38.1 85.5 35.8C86.9 33.5 88.4 30.8 90.8 29.9C93.2 28.9 97.8 29.2 100 30.1Z\"/><path d=\"M99.3 33.3L101 26.1A4.8 4.8 0 0 0 92.1 22.7L88.6 29.2A5.8 5.8 0 1 0 99.3 33.3Z\"/></clipPath><clipPath id=\"martilloc6\"><path d=\"M99.1 72.6C101.6 72.8 101.8 74.1 102.7 76.5C103.7 78.9 104.4 83.5 104.9 87.1C105.4 90.7 105.6 95.2 105.9 98C106.1 100.9 106.5 102.6 106.4 104.3C106.3 106 106.7 107.4 105.3 108.4C104 109.4 99.8 110.1 98.3 110.1C96.8 110.1 96.9 109.6 96.3 108.4C95.6 107.1 95.3 105.3 94.2 102.5C93.1 99.7 91.2 95.1 89.7 91.4C88.2 87.8 85.6 83.4 85.2 80.7C84.9 78 85.1 76.8 87.4 75.4C89.8 74 96.6 72.4 99.1 72.6Z\"/></clipPath><clipPath id=\"martilloc7\"><path d=\"M106 106.1C107.5 107.1 106.6 108.2 106.2 110.1C105.9 112 104.8 114.1 103.8 117.4C102.8 120.7 101.1 126.3 100.1 129.7C99.2 133.2 98.6 136.3 98 138.1C97.5 140 97.7 140.5 96.8 140.8C95.9 141.1 93.2 140.6 92.5 139.9C91.7 139.3 92.2 138.3 92.3 137C92.5 135.7 93 134.7 93.2 132.3C93.4 129.8 93.3 125.5 93.3 122.5C93.4 119.5 93 116.8 93.4 114.4C93.9 111.9 95.4 109.7 96 108C96.7 106.4 95.7 104.7 97.4 104.4C99 104.1 104.5 105.2 106 106.1Z\"/><circle cx=\"101.3\" cy=\"107.1\" r=\"5.4\"/></clipPath><clipPath id=\"martilloc8\"><path d=\"M99.2 56.6C100.5 56.3 100.6 57.5 101.3 58.4C102 59.4 102.8 60.5 103.7 62.4C104.5 64.2 105.5 67.5 106.3 69.6C107.2 71.7 108.3 73.7 108.7 74.9C109.1 76 109.3 75.9 108.8 76.5C108.3 77.1 106.4 78.2 105.7 78.3C105 78.5 105.3 78.5 104.3 77.3C103.4 76.2 101.6 73.3 100.1 71.4C98.6 69.5 96.4 67.5 95.4 66C94.3 64.6 94.2 63.7 93.8 62.7C93.5 61.7 92.4 61 93.3 60C94.2 59 97.9 56.8 99.2 56.6Z\"/></clipPath></defs><line class=\"fl\" x1=\"12\" y1=\"146\" x2=\"188\" y2=\"146\"/><line class=\"barl\" x1=\"100.2\" y1=\"79\" x2=\"116.2\" y2=\"79\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><polygon class=\"pad\" points=\"97.7,73.8 102.3,73.8 102.3,84.3 97.7,84.3\" stroke-linejoin=\"round\" stroke-width=\"2.4\"/><polygon class=\"pad\" points=\"95.9,75.5 97.7,75.5 97.7,82.5 95.9,82.5\" stroke-linejoin=\"round\" stroke-width=\"1.6\"/><polygon class=\"pad\" points=\"114.1,73.8 118.7,73.8 118.7,84.3 114.1,84.3\" stroke-linejoin=\"round\" stroke-width=\"2.4\"/><polygon class=\"pad\" points=\"118.7,75.5 120.5,75.5 120.5,82.5 118.7,82.5\" stroke-linejoin=\"round\" stroke-width=\"1.6\"/><g class=\"bf\"><path d=\"M97.8 72.5C100.2 73.1 100.1 74.4 100.7 76.9C101.2 79.5 101.1 84.2 101.1 87.8C101 91.4 100.5 95.9 100.2 98.7C100 101.6 100 103.3 99.7 105C99.3 106.7 99.4 108.1 97.9 108.8C96.4 109.6 92.2 109.6 90.7 109.3C89.3 109.1 89.5 108.7 89 107.3C88.5 105.9 88.6 104.1 88 101.1C87.4 98.2 86.2 93.3 85.3 89.5C84.5 85.7 82.7 80.9 82.7 78.2C82.8 75.5 83.3 74.3 85.8 73.3C88.3 72.4 95.3 71.9 97.8 72.5Z\"/><path d=\"M98.8 105.7C100.3 106.6 99.5 107.8 99.2 109.7C98.9 111.6 98 113.8 97.1 117.1C96.2 120.4 94.7 126.1 93.8 129.6C93 133 92.5 136.2 92 138C91.5 139.9 91.8 140.4 90.9 140.8C89.9 141.1 87.3 140.6 86.5 140C85.8 139.4 86.2 138.4 86.3 137.1C86.4 135.8 86.9 134.7 87 132.3C87 129.9 86.8 125.5 86.8 122.6C86.7 119.6 86.2 116.9 86.6 114.4C86.9 112 88.3 109.7 88.9 108C89.5 106.3 88.5 104.7 90.2 104.3C91.8 103.9 97.3 104.8 98.8 105.7Z\"/><circle cx=\"94.2\" cy=\"106.9\" r=\"5.4\"/><path d=\"M87.8 141.6L98 145.6A2.5 2.5 0 0 0 100.2 141.1L90.6 135.6A3.3 3.3 0 1 0 87.8 141.6Z\"/><path d=\"M86 145.5L105 145.3A1.7 1.7 0 0 0 105.2 141.9L86.3 139.7A2.9 2.9 0 1 0 86 145.5Z\"/><circle cx=\"86\" cy=\"142.6\" r=\"3\"/></g><g class=\"bf\"><path d=\"M97.2 34.9C99.1 35.1 99.2 36.4 99.5 37.7C99.8 39.1 99 41 99.1 42.9C99.3 44.8 100.1 47.1 100.3 49.2C100.5 51.3 100.3 53.9 100.3 55.5C100.4 57.1 100.7 58 100.5 59C100.4 60 100.5 60.9 99.6 61.5C98.7 62 96.3 62.4 95.2 62.2C94.2 62 93.8 61.7 93.2 60.3C92.5 58.8 92 55.9 91.4 53.6C90.7 51.3 89.9 48.7 89.2 46.5C88.5 44.3 87 42.1 86.9 40.4C86.8 38.7 86.6 37.4 88.3 36.4C90 35.5 95.3 34.6 97.2 34.9Z\"/><circle cx=\"97\" cy=\"59.6\" r=\"3.9\"/><path d=\"M99.2 56.6C100.5 56.3 100.6 57.5 101.3 58.4C102 59.4 102.8 60.5 103.7 62.4C104.5 64.2 105.5 67.5 106.3 69.6C107.2 71.7 108.3 73.7 108.7 74.9C109.1 76 109.3 75.9 108.8 76.5C108.3 77.1 106.4 78.2 105.7 78.3C105 78.5 105.3 78.5 104.3 77.3C103.4 76.2 101.6 73.3 100.1 71.4C98.6 69.5 96.4 67.5 95.4 66C94.3 64.6 94.2 63.7 93.8 62.7C93.5 61.7 92.4 61 93.3 60C94.2 59 97.9 56.8 99.2 56.6Z\"/><circle cx=\"108.2\" cy=\"79\" r=\"3.6\"/><path d=\"M104.1 77.3L106.4 82.1A3.1 3.1 0 1 0 111.8 79L108.7 74.6A2.7 2.7 0 0 0 104.1 77.3Z\"/></g><g clip-path=\"url(#martilloc2)\"><ellipse class=\"mf\" cx=\"99.5\" cy=\"49.4\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(80 99.5 49.4)\"/></g><g clip-path=\"url(#martilloc8)\"><ellipse class=\"mf\" cx=\"101.4\" cy=\"64.1\" rx=\"6.9\" ry=\"4.4\" transform=\"rotate(60.1 101.4 64.1)\"/></g><g class=\"b\"><path d=\"M100 30.1C102.2 31 102.5 33.2 103.9 35.2C105.3 37.3 107.7 40 108.5 42.3C109.3 44.7 109.1 47.2 108.7 49.4C108.4 51.5 107 53 106.5 55.3C105.9 57.6 105.6 60.6 105.4 63.3C105.1 65.9 105.4 69 105.2 71.3C104.9 73.6 104.4 75.3 103.6 77.2C102.7 79.2 101.9 81.5 100 83.2C98.2 84.8 95.3 86.5 92.7 87C90.2 87.4 86.7 87.2 84.8 85.8C82.9 84.4 81.6 81.4 81.4 78.7C81.2 76 83.1 72.6 83.6 69.7C84 66.9 84.1 64.6 84 61.7C83.8 58.9 82.9 55.7 82.6 52.7C82.3 49.7 81.8 46.5 82.3 43.7C82.7 40.9 84 38.1 85.5 35.8C86.9 33.5 88.4 30.8 90.8 29.9C93.2 28.9 97.8 29.2 100 30.1Z\"/><path d=\"M99.3 33.3L101 26.1A4.8 4.8 0 0 0 92.1 22.7L88.6 29.2A5.8 5.8 0 1 0 99.3 33.3Z\"/><ellipse cx=\"97.5\" cy=\"18.1\" rx=\"7.4\" ry=\"8.6\" transform=\"rotate(1.5 97.5 18.1)\"/><path d=\"M98 25.6L102 27.2A2.6 2.6 0 0 0 105.5 24.7L105.3 20.4A5.4 5.4 0 1 0 98 25.6Z\"/><circle cx=\"104.7\" cy=\"18.4\" r=\"1.5\"/></g><g clip-path=\"url(#martilloc5)\"><ellipse class=\"t\" cx=\"104.3\" cy=\"46.2\" rx=\"7.8\" ry=\"8.6\" transform=\"rotate(1.5 104.3 46.2)\"/></g><g class=\"halo\"><path d=\"M99.1 72.6C101.6 72.8 101.8 74.1 102.7 76.5C103.7 78.9 104.4 83.5 104.9 87.1C105.4 90.7 105.6 95.2 105.9 98C106.1 100.9 106.5 102.6 106.4 104.3C106.3 106 106.7 107.4 105.3 108.4C104 109.4 99.8 110.1 98.3 110.1C96.8 110.1 96.9 109.6 96.3 108.4C95.6 107.1 95.3 105.3 94.2 102.5C93.1 99.7 91.2 95.1 89.7 91.4C88.2 87.8 85.6 83.4 85.2 80.7C84.9 78 85.1 76.8 87.4 75.4C89.8 74 96.6 72.4 99.1 72.6Z\"/><path d=\"M106 106.1C107.5 107.1 106.6 108.2 106.2 110.1C105.9 112 104.8 114.1 103.8 117.4C102.8 120.7 101.1 126.3 100.1 129.7C99.2 133.2 98.6 136.3 98 138.1C97.5 140 97.7 140.5 96.8 140.8C95.9 141.1 93.2 140.6 92.5 139.9C91.7 139.3 92.2 138.3 92.3 137C92.5 135.7 93 134.7 93.2 132.3C93.4 129.8 93.3 125.5 93.3 122.5C93.4 119.5 93 116.8 93.4 114.4C93.9 111.9 95.4 109.7 96 108C96.7 106.4 95.7 104.7 97.4 104.4C99 104.1 104.5 105.2 106 106.1Z\"/><circle cx=\"101.3\" cy=\"107.1\" r=\"5.4\"/><path d=\"M93.8 141.6L104 145.6A2.5 2.5 0 0 0 106.2 141.1L96.6 135.6A3.3 3.3 0 1 0 93.8 141.6Z\"/><path d=\"M92 145.5L111 145.3A1.7 1.7 0 0 0 111.2 141.9L92.3 139.7A2.9 2.9 0 1 0 92 145.5Z\"/><circle cx=\"92\" cy=\"142.6\" r=\"3\"/></g><g class=\"b\"><path d=\"M99.1 72.6C101.6 72.8 101.8 74.1 102.7 76.5C103.7 78.9 104.4 83.5 104.9 87.1C105.4 90.7 105.6 95.2 105.9 98C106.1 100.9 106.5 102.6 106.4 104.3C106.3 106 106.7 107.4 105.3 108.4C104 109.4 99.8 110.1 98.3 110.1C96.8 110.1 96.9 109.6 96.3 108.4C95.6 107.1 95.3 105.3 94.2 102.5C93.1 99.7 91.2 95.1 89.7 91.4C88.2 87.8 85.6 83.4 85.2 80.7C84.9 78 85.1 76.8 87.4 75.4C89.8 74 96.6 72.4 99.1 72.6Z\"/><path d=\"M106 106.1C107.5 107.1 106.6 108.2 106.2 110.1C105.9 112 104.8 114.1 103.8 117.4C102.8 120.7 101.1 126.3 100.1 129.7C99.2 133.2 98.6 136.3 98 138.1C97.5 140 97.7 140.5 96.8 140.8C95.9 141.1 93.2 140.6 92.5 139.9C91.7 139.3 92.2 138.3 92.3 137C92.5 135.7 93 134.7 93.2 132.3C93.4 129.8 93.3 125.5 93.3 122.5C93.4 119.5 93 116.8 93.4 114.4C93.9 111.9 95.4 109.7 96 108C96.7 106.4 95.7 104.7 97.4 104.4C99 104.1 104.5 105.2 106 106.1Z\"/><circle cx=\"101.3\" cy=\"107.1\" r=\"5.4\"/><path d=\"M93.8 141.6L104 145.6A2.5 2.5 0 0 0 106.2 141.1L96.6 135.6A3.3 3.3 0 1 0 93.8 141.6Z\"/><path d=\"M92 145.5L111 145.3A1.7 1.7 0 0 0 111.2 141.9L92.3 139.7A2.9 2.9 0 1 0 92 145.5Z\"/><circle cx=\"92\" cy=\"142.6\" r=\"3\"/></g><line class=\"barl\" x1=\"116.3\" y1=\"42.4\" x2=\"116.3\" y2=\"58.4\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><polygon class=\"pad\" points=\"121.5,39.9 121.5,44.5 111,44.5 111,39.9\" stroke-linejoin=\"round\" stroke-width=\"2.4\"/><polygon class=\"pad\" points=\"119.8,38.1 119.8,39.9 112.8,39.9 112.8,38.1\" stroke-linejoin=\"round\" stroke-width=\"1.6\"/><polygon class=\"pad\" points=\"121.5,56.3 121.5,60.9 111,60.9 111,56.3\" stroke-linejoin=\"round\" stroke-width=\"2.4\"/><polygon class=\"pad\" points=\"119.8,60.9 119.8,62.7 112.8,62.7 112.8,60.9\" stroke-linejoin=\"round\" stroke-width=\"1.6\"/><g class=\"halo\"><path d=\"M99.4 36.3C101.2 36.7 101.2 38.1 101.4 39.4C101.6 40.8 100.5 42.6 100.4 44.5C100.4 46.5 101 48.8 101 50.9C100.9 53.1 100.4 55.6 100.3 57.2C100.1 58.8 100.3 59.7 100.1 60.7C99.9 61.6 99.8 62.6 98.8 63C97.9 63.5 95.5 63.6 94.5 63.3C93.4 63 93.1 62.7 92.6 61.2C92.1 59.7 92 56.7 91.6 54.3C91.2 52 90.7 49.3 90.2 47.1C89.7 44.8 88.5 42.4 88.6 40.7C88.6 39 88.6 37.7 90.4 36.9C92.2 36.2 97.6 35.9 99.4 36.3Z\"/><circle cx=\"96.5\" cy=\"60.9\" r=\"3.9\"/><path d=\"M93.6 58.6C93.4 57.3 94.5 57.3 95.5 56.6C96.5 55.9 97.6 55.1 99.5 54.3C101.4 53.6 104.7 52.7 106.8 51.9C108.9 51.2 110.9 50.1 112.1 49.8C113.3 49.4 113.2 49.2 113.8 49.7C114.3 50.2 115.4 52.1 115.5 52.9C115.6 53.6 115.6 53.3 114.4 54.2C113.3 55.1 110.3 56.8 108.4 58.2C106.5 59.6 104.3 61.7 102.9 62.7C101.4 63.7 100.5 63.8 99.5 64.2C98.5 64.5 97.7 65.5 96.8 64.6C95.8 63.7 93.8 60 93.6 58.6Z\"/><circle cx=\"116.3\" cy=\"50.4\" r=\"3.6\"/><path d=\"M114.4 54.5L119.3 52.3A3.1 3.1 0 1 0 116.4 46.8L111.8 49.7A2.7 2.7 0 0 0 114.4 54.5Z\"/></g><g class=\"b\"><path d=\"M99.4 36.3C101.2 36.7 101.2 38.1 101.4 39.4C101.6 40.8 100.5 42.6 100.4 44.5C100.4 46.5 101 48.8 101 50.9C100.9 53.1 100.4 55.6 100.3 57.2C100.1 58.8 100.3 59.7 100.1 60.7C99.9 61.6 99.8 62.6 98.8 63C97.9 63.5 95.5 63.6 94.5 63.3C93.4 63 93.1 62.7 92.6 61.2C92.1 59.7 92 56.7 91.6 54.3C91.2 52 90.7 49.3 90.2 47.1C89.7 44.8 88.5 42.4 88.6 40.7C88.6 39 88.6 37.7 90.4 36.9C92.2 36.2 97.6 35.9 99.4 36.3Z\"/><circle cx=\"96.5\" cy=\"60.9\" r=\"3.9\"/><path d=\"M93.6 58.6C93.4 57.3 94.5 57.3 95.5 56.6C96.5 55.9 97.6 55.1 99.5 54.3C101.4 53.6 104.7 52.7 106.8 51.9C108.9 51.2 110.9 50.1 112.1 49.8C113.3 49.4 113.2 49.2 113.8 49.7C114.3 50.2 115.4 52.1 115.5 52.9C115.6 53.6 115.6 53.3 114.4 54.2C113.3 55.1 110.3 56.8 108.4 58.2C106.5 59.6 104.3 61.7 102.9 62.7C101.4 63.7 100.5 63.8 99.5 64.2C98.5 64.5 97.7 65.5 96.8 64.6C95.8 63.7 93.8 60 93.6 58.6Z\"/><circle cx=\"116.3\" cy=\"50.4\" r=\"3.6\"/><path d=\"M114.4 54.5L119.3 52.3A3.1 3.1 0 1 0 116.4 46.8L111.8 49.7A2.7 2.7 0 0 0 114.4 54.5Z\"/></g><g clip-path=\"url(#martilloc3)\"><ellipse class=\"t\" cx=\"95.2\" cy=\"40.3\" rx=\"6\" ry=\"7\" transform=\"rotate(86.3 95.2 40.3)\"/></g><g clip-path=\"url(#martilloc4)\"><ellipse class=\"m\" cx=\"100.1\" cy=\"51\" rx=\"8.3\" ry=\"4.4\" transform=\"rotate(86.3 100.1 51)\"/></g><g clip-path=\"url(#martilloc6)\"><ellipse class=\"t\" cx=\"103.7\" cy=\"90.6\" rx=\"17.4\" ry=\"7.4\" transform=\"rotate(76.4 103.7 90.6)\"/></g><g clip-path=\"url(#martilloc7)\"><ellipse class=\"t\" cx=\"95.4\" cy=\"116.4\" rx=\"9.6\" ry=\"4.5\" transform=\"rotate(101.4 95.4 116.4)\"/></g><g clip-path=\"url(#martilloc1)\"><ellipse class=\"m\" cx=\"101.1\" cy=\"56.6\" rx=\"6.8\" ry=\"4.4\" transform=\"rotate(-28 101.1 56.6)\"/></g></svg>",
+  "Crunch": "<svg aria-hidden=\"true\" viewBox=\"0 0 200 160\"><defs><clipPath id=\"crunchc1\"><path d=\"M61.1 119.3C59.3 119 59.1 117.7 58.8 116.4C58.5 115 59.4 113.1 59.3 111.2C59.2 109.3 58.3 106.9 58.1 104.8C58 102.7 58.2 100.2 58.2 98.5C58.2 96.9 57.9 96.1 58 95.1C58.2 94.1 58.1 93.1 59 92.6C59.9 92 62.3 91.6 63.4 91.8C64.4 92.1 64.8 92.4 65.4 93.8C66.1 95.3 66.5 98.2 67.2 100.5C67.8 102.8 68.5 105.4 69.2 107.7C70 109.9 71.4 112.1 71.5 113.8C71.6 115.5 71.7 116.9 70 117.8C68.3 118.7 63 119.5 61.1 119.3Z\"/></clipPath><clipPath id=\"crunchc2\"><path d=\"M59.5 109.9C61 108.1 63.2 108.6 65.5 107.9C67.9 107.2 71.3 105.8 73.8 105.8C76.2 105.7 78.5 106.8 80.5 107.8C82.4 108.8 83.4 110.5 85.4 111.8C87.4 113.1 90.1 114.3 92.6 115.4C95.1 116.4 98 117.1 100.1 118.1C102.2 119.1 103.7 120 105.3 121.5C106.9 122.9 108.8 124.5 109.8 126.7C110.7 129 111.5 132.3 111.1 134.9C110.7 137.4 109.3 140.7 107.4 142C105.5 143.4 102.2 143.7 99.6 143C97 142.4 94.3 139.4 91.8 138.1C89.3 136.8 87.1 135.9 84.3 135.1C81.6 134.4 78.3 134.3 75.3 133.6C72.4 132.9 69.2 132.4 66.7 131.1C64.2 129.7 61.9 127.6 60.2 125.5C58.5 123.4 56.4 121.2 56.3 118.6C56.2 116 57.9 111.7 59.5 109.9Z\"/><path d=\"M62.3 111.6L56 107.7A4.8 4.8 0 0 0 49.9 115L54.9 120.5A5.8 5.8 0 1 0 62.3 111.6Z\"/></clipPath><clipPath id=\"crunchc3\"><path d=\"M96 127.4C95.2 125 96.4 124.4 98.3 122.6C100.2 120.8 104.3 118.5 107.4 116.6C110.5 114.8 114.6 113 117.2 111.7C119.8 110.4 121.2 109.5 122.8 108.9C124.5 108.4 125.6 107.5 127 108.4C128.4 109.3 130.6 112.9 131.2 114.3C131.7 115.7 131.3 115.8 130.3 116.9C129.4 118 127.8 118.9 125.6 120.9C123.4 123 119.8 126.5 117 129.2C114.2 131.9 111 136 108.7 137.3C106.3 138.6 105 138.8 102.9 137.2C100.8 135.5 96.8 129.8 96 127.4Z\"/></clipPath><clipPath id=\"crunchc4\"><path d=\"M129.1 108.1C130.7 107.4 131.1 108.8 132.5 110.1C133.9 111.5 135.1 113.5 137.3 116.2C139.5 118.9 143.2 123.4 145.5 126.1C147.9 128.8 150.1 131 151.4 132.5C152.6 134 153.2 134.1 152.9 135C152.7 135.9 150.7 137.9 149.8 138.1C148.9 138.4 148.3 137.4 147.3 136.6C146.3 135.8 145.7 134.7 143.8 133.3C141.9 131.8 138.2 129.4 135.7 127.8C133.3 126.1 130.8 124.9 129 123.2C127.2 121.5 126.2 119 125.2 117.5C124.1 116.1 122.2 115.9 122.9 114.4C123.5 112.8 127.5 108.9 129.1 108.1Z\"/><circle cx=\"127.3\" cy=\"112.6\" r=\"5.4\"/></clipPath><clipPath id=\"crunchc5\"><path d=\"M59.5 109.9C61 108.1 63.2 108.6 65.5 107.9C67.9 107.2 71.3 105.8 73.8 105.8C76.2 105.7 78.5 106.8 80.5 107.8C82.4 108.8 83.4 110.5 85.4 111.8C87.4 113.1 90.1 114.3 92.6 115.4C95.1 116.4 98 117.1 100.1 118.1C102.2 119.1 103.7 120 105.3 121.5C106.9 122.9 108.8 124.5 109.8 126.7C110.7 129 111.5 132.3 111.1 134.9C110.7 137.4 109.3 140.7 107.4 142C105.5 143.4 102.2 143.7 99.6 143C97 142.4 94.3 139.4 91.8 138.1C89.3 136.8 87.1 135.9 84.3 135.1C81.6 134.4 78.3 134.3 75.3 133.6C72.4 132.9 69.2 132.4 66.7 131.1C64.2 129.7 61.9 127.6 60.2 125.5C58.5 123.4 56.4 121.2 56.3 118.6C56.2 116 57.9 111.7 59.5 109.9Z\"/><path d=\"M62.3 111.6L56 107.7A4.8 4.8 0 0 0 49.9 115L54.9 120.5A5.8 5.8 0 1 0 62.3 111.6Z\"/></clipPath></defs><line class=\"fl\" x1=\"12\" y1=\"146\" x2=\"188\" y2=\"146\"/><rect class=\"pad\" x=\"30\" y=\"142\" width=\"140\" height=\"4\" rx=\"2\"/><g class=\"bf\"><path d=\"M93.8 126.9C92.8 124.5 93.9 123.8 95.7 121.9C97.4 120 101.3 117.3 104.3 115.3C107.2 113.2 111.1 111 113.6 109.5C116.1 108 117.4 107 119 106.3C120.6 105.6 121.7 104.7 123.1 105.5C124.6 106.2 127.1 109.6 127.8 111C128.4 112.3 128 112.4 127.1 113.6C126.3 114.8 124.8 115.8 122.7 118C120.7 120.3 117.5 124 114.9 127C112.3 129.9 109.5 134.2 107.2 135.7C105 137.2 103.7 137.6 101.5 136.1C99.2 134.6 94.7 129.2 93.8 126.9Z\"/><path d=\"M126.1 105.4C127.8 105 128.1 106.4 129.3 107.9C130.4 109.4 131.4 111.6 133.1 114.6C134.9 117.5 137.9 122.5 139.9 125.5C141.8 128.6 143.7 131 144.7 132.7C145.7 134.3 146.3 134.5 145.9 135.4C145.5 136.3 143.4 137.9 142.4 138.1C141.4 138.2 141 137.1 140.1 136.2C139.2 135.2 138.8 134.1 137.1 132.4C135.4 130.7 132.1 127.8 129.9 125.8C127.7 123.8 125.4 122.2 123.9 120.3C122.4 118.4 121.7 115.7 120.9 114.2C120.1 112.6 118.2 112.2 119.1 110.7C120 109.3 124.5 105.9 126.1 105.4Z\"/><circle cx=\"123.8\" cy=\"109.6\" r=\"5.4\"/><path d=\"M141.9 138.3L152.1 141.8A2.5 2.5 0 0 0 154.1 137.3L144.5 132.3A3.3 3.3 0 1 0 141.9 138.3Z\"/><path d=\"M140 141.7L159 141.5A1.7 1.7 0 0 0 159.2 138.1L140.3 135.9A2.9 2.9 0 1 0 140 141.7Z\"/><circle cx=\"140\" cy=\"138.8\" r=\"3\"/></g><g class=\"bf\"><path d=\"M59.1 118.3C57.3 118 57.1 116.7 56.8 115.4C56.5 114 57.4 112.1 57.3 110.2C57.2 108.3 56.3 105.9 56.1 103.8C56 101.7 56.2 99.2 56.2 97.5C56.2 95.9 55.9 95.1 56 94.1C56.2 93.1 56.1 92.1 57 91.6C57.9 91 60.3 90.6 61.4 90.8C62.4 91.1 62.8 91.4 63.4 92.8C64.1 94.3 64.5 97.2 65.2 99.5C65.8 101.8 66.5 104.4 67.2 106.7C68 108.9 69.4 111.1 69.5 112.8C69.6 114.5 69.7 115.9 68 116.8C66.3 117.7 61 118.5 59.1 118.3Z\"/><circle cx=\"59.6\" cy=\"93.5\" r=\"3.9\"/><path d=\"M63.2 94.5C63.9 95.7 62.8 96.1 62.1 97.1C61.5 98.1 60.7 99.2 59.3 100.7C57.8 102.1 55.1 104.2 53.4 105.6C51.7 107.1 50.2 108.8 49.3 109.6C48.3 110.4 48.5 110.6 47.7 110.3C47 110.1 45.4 108.7 45 108C44.6 107.4 44.7 107.7 45.4 106.4C46.2 105.1 48.3 102.5 49.5 100.4C50.8 98.4 52 95.6 53 94.1C54 92.7 54.7 92.2 55.6 91.6C56.4 90.9 56.7 89.6 58 90.1C59.2 90.6 62.5 93.3 63.2 94.5Z\"/><circle cx=\"45.2\" cy=\"110.6\" r=\"3.6\"/><path d=\"M45.4 106.1L41.6 110A3.1 3.1 0 1 0 46.4 114L49.5 109.6A2.7 2.7 0 0 0 45.4 106.1Z\"/></g><g class=\"b\"><path d=\"M59.5 109.9C61 108.1 63.2 108.6 65.5 107.9C67.9 107.2 71.3 105.8 73.8 105.8C76.2 105.7 78.5 106.8 80.5 107.8C82.4 108.8 83.4 110.5 85.4 111.8C87.4 113.1 90.1 114.3 92.6 115.4C95.1 116.4 98 117.1 100.1 118.1C102.2 119.1 103.7 120 105.3 121.5C106.9 122.9 108.8 124.5 109.8 126.7C110.7 129 111.5 132.3 111.1 134.9C110.7 137.4 109.3 140.7 107.4 142C105.5 143.4 102.2 143.7 99.6 143C97 142.4 94.3 139.4 91.8 138.1C89.3 136.8 87.1 135.9 84.3 135.1C81.6 134.4 78.3 134.3 75.3 133.6C72.4 132.9 69.2 132.4 66.7 131.1C64.2 129.7 61.9 127.6 60.2 125.5C58.5 123.4 56.4 121.2 56.3 118.6C56.2 116 57.9 111.7 59.5 109.9Z\"/><path d=\"M62.3 111.6L56 107.7A4.8 4.8 0 0 0 49.9 115L54.9 120.5A5.8 5.8 0 1 0 62.3 111.6Z\"/><ellipse cx=\"47.2\" cy=\"108.4\" rx=\"7.4\" ry=\"8.6\" transform=\"rotate(-70 47.2 108.4)\"/><path d=\"M54.6 110.4L57.4 107.1A2.6 2.6 0 0 0 56.1 102.9L51.9 101.8A5.4 5.4 0 1 0 54.6 110.4Z\"/><circle cx=\"49.9\" cy=\"101.8\" r=\"1.5\"/></g><g clip-path=\"url(#crunchc5)\"><ellipse class=\"m\" cx=\"88.9\" cy=\"116.7\" rx=\"14.5\" ry=\"6.2\" transform=\"rotate(-160 88.9 116.7)\"/><path class=\"dl\" d=\"M93.1 122.8L95.6 115.9\"/><path class=\"dl\" d=\"M87.5 120.7L90 113.9\"/><path class=\"dl\" d=\"M81.8 118.7L84.3 111.8\"/><path class=\"dl\" d=\"M100.2 120.7L79 111.9\"/></g><g clip-path=\"url(#crunchc2)\"><ellipse class=\"t\" cx=\"76.1\" cy=\"111\" rx=\"7.8\" ry=\"8.6\" transform=\"rotate(-70 76.1 111)\"/></g><g class=\"halo\"><path d=\"M96 127.4C95.2 125 96.4 124.4 98.3 122.6C100.2 120.8 104.3 118.5 107.4 116.6C110.5 114.8 114.6 113 117.2 111.7C119.8 110.4 121.2 109.5 122.8 108.9C124.5 108.4 125.6 107.5 127 108.4C128.4 109.3 130.6 112.9 131.2 114.3C131.7 115.7 131.3 115.8 130.3 116.9C129.4 118 127.8 118.9 125.6 120.9C123.4 123 119.8 126.5 117 129.2C114.2 131.9 111 136 108.7 137.3C106.3 138.6 105 138.8 102.9 137.2C100.8 135.5 96.8 129.8 96 127.4Z\"/><path d=\"M129.1 108.1C130.7 107.4 131.1 108.8 132.5 110.1C133.9 111.5 135.1 113.5 137.3 116.2C139.5 118.9 143.2 123.4 145.5 126.1C147.9 128.8 150.1 131 151.4 132.5C152.6 134 153.2 134.1 152.9 135C152.7 135.9 150.7 137.9 149.8 138.1C148.9 138.4 148.3 137.4 147.3 136.6C146.3 135.8 145.7 134.7 143.8 133.3C141.9 131.8 138.2 129.4 135.7 127.8C133.3 126.1 130.8 124.9 129 123.2C127.2 121.5 126.2 119 125.2 117.5C124.1 116.1 122.2 115.9 122.9 114.4C123.5 112.8 127.5 108.9 129.1 108.1Z\"/><circle cx=\"127.3\" cy=\"112.6\" r=\"5.4\"/><path d=\"M148.9 138.3L159.1 141.8A2.5 2.5 0 0 0 161.1 137.3L151.5 132.3A3.3 3.3 0 1 0 148.9 138.3Z\"/><path d=\"M147 141.7L166 141.5A1.7 1.7 0 0 0 166.2 138.1L147.3 135.9A2.9 2.9 0 1 0 147 141.7Z\"/><circle cx=\"147\" cy=\"138.8\" r=\"3\"/></g><g class=\"b\"><path d=\"M96 127.4C95.2 125 96.4 124.4 98.3 122.6C100.2 120.8 104.3 118.5 107.4 116.6C110.5 114.8 114.6 113 117.2 111.7C119.8 110.4 121.2 109.5 122.8 108.9C124.5 108.4 125.6 107.5 127 108.4C128.4 109.3 130.6 112.9 131.2 114.3C131.7 115.7 131.3 115.8 130.3 116.9C129.4 118 127.8 118.9 125.6 120.9C123.4 123 119.8 126.5 117 129.2C114.2 131.9 111 136 108.7 137.3C106.3 138.6 105 138.8 102.9 137.2C100.8 135.5 96.8 129.8 96 127.4Z\"/><path d=\"M129.1 108.1C130.7 107.4 131.1 108.8 132.5 110.1C133.9 111.5 135.1 113.5 137.3 116.2C139.5 118.9 143.2 123.4 145.5 126.1C147.9 128.8 150.1 131 151.4 132.5C152.6 134 153.2 134.1 152.9 135C152.7 135.9 150.7 137.9 149.8 138.1C148.9 138.4 148.3 137.4 147.3 136.6C146.3 135.8 145.7 134.7 143.8 133.3C141.9 131.8 138.2 129.4 135.7 127.8C133.3 126.1 130.8 124.9 129 123.2C127.2 121.5 126.2 119 125.2 117.5C124.1 116.1 122.2 115.9 122.9 114.4C123.5 112.8 127.5 108.9 129.1 108.1Z\"/><circle cx=\"127.3\" cy=\"112.6\" r=\"5.4\"/><path d=\"M148.9 138.3L159.1 141.8A2.5 2.5 0 0 0 161.1 137.3L151.5 132.3A3.3 3.3 0 1 0 148.9 138.3Z\"/><path d=\"M147 141.7L166 141.5A1.7 1.7 0 0 0 166.2 138.1L147.3 135.9A2.9 2.9 0 1 0 147 141.7Z\"/><circle cx=\"147\" cy=\"138.8\" r=\"3\"/></g><g class=\"halo\"><path d=\"M61.1 119.3C59.3 119 59.1 117.7 58.8 116.4C58.5 115 59.4 113.1 59.3 111.2C59.2 109.3 58.3 106.9 58.1 104.8C58 102.7 58.2 100.2 58.2 98.5C58.2 96.9 57.9 96.1 58 95.1C58.2 94.1 58.1 93.1 59 92.6C59.9 92 62.3 91.6 63.4 91.8C64.4 92.1 64.8 92.4 65.4 93.8C66.1 95.3 66.5 98.2 67.2 100.5C67.8 102.8 68.5 105.4 69.2 107.7C70 109.9 71.4 112.1 71.5 113.8C71.6 115.5 71.7 116.9 70 117.8C68.3 118.7 63 119.5 61.1 119.3Z\"/><circle cx=\"61.6\" cy=\"94.5\" r=\"3.9\"/><path d=\"M65.2 95.5C65.9 96.7 64.8 97.1 64.1 98.1C63.5 99.1 62.7 100.2 61.3 101.7C59.8 103.1 57.1 105.2 55.4 106.6C53.7 108.1 52.2 109.8 51.3 110.6C50.3 111.4 50.5 111.6 49.7 111.3C49 111.1 47.4 109.7 47 109C46.6 108.4 46.7 108.7 47.4 107.4C48.2 106.1 50.3 103.5 51.5 101.4C52.8 99.4 54 96.6 55 95.1C56 93.7 56.7 93.2 57.6 92.6C58.4 91.9 58.7 90.6 60 91.1C61.2 91.6 64.5 94.3 65.2 95.5Z\"/><circle cx=\"47.2\" cy=\"111.6\" r=\"3.6\"/><path d=\"M47.4 107.1L43.6 111A3.1 3.1 0 1 0 48.4 115L51.5 110.6A2.7 2.7 0 0 0 47.4 107.1Z\"/></g><g class=\"b\"><path d=\"M61.1 119.3C59.3 119 59.1 117.7 58.8 116.4C58.5 115 59.4 113.1 59.3 111.2C59.2 109.3 58.3 106.9 58.1 104.8C58 102.7 58.2 100.2 58.2 98.5C58.2 96.9 57.9 96.1 58 95.1C58.2 94.1 58.1 93.1 59 92.6C59.9 92 62.3 91.6 63.4 91.8C64.4 92.1 64.8 92.4 65.4 93.8C66.1 95.3 66.5 98.2 67.2 100.5C67.8 102.8 68.5 105.4 69.2 107.7C70 109.9 71.4 112.1 71.5 113.8C71.6 115.5 71.7 116.9 70 117.8C68.3 118.7 63 119.5 61.1 119.3Z\"/><circle cx=\"61.6\" cy=\"94.5\" r=\"3.9\"/><path d=\"M65.2 95.5C65.9 96.7 64.8 97.1 64.1 98.1C63.5 99.1 62.7 100.2 61.3 101.7C59.8 103.1 57.1 105.2 55.4 106.6C53.7 108.1 52.2 109.8 51.3 110.6C50.3 111.4 50.5 111.6 49.7 111.3C49 111.1 47.4 109.7 47 109C46.6 108.4 46.7 108.7 47.4 107.4C48.2 106.1 50.3 103.5 51.5 101.4C52.8 99.4 54 96.6 55 95.1C56 93.7 56.7 93.2 57.6 92.6C58.4 91.9 58.7 90.6 60 91.1C61.2 91.6 64.5 94.3 65.2 95.5Z\"/><circle cx=\"47.2\" cy=\"111.6\" r=\"3.6\"/><path d=\"M47.4 107.1L43.6 111A3.1 3.1 0 1 0 48.4 115L51.5 110.6A2.7 2.7 0 0 0 47.4 107.1Z\"/></g><g clip-path=\"url(#crunchc1)\"><ellipse class=\"t\" cx=\"65\" cy=\"114.9\" rx=\"6\" ry=\"7\" transform=\"rotate(-99.4 65 114.9)\"/></g><g clip-path=\"url(#crunchc3)\"><ellipse class=\"t\" cx=\"111.1\" cy=\"116.5\" rx=\"17.4\" ry=\"7.4\" transform=\"rotate(-35.2 111.1 116.5)\"/></g><g clip-path=\"url(#crunchc4)\"><ellipse class=\"t\" cx=\"131.8\" cy=\"122.7\" rx=\"9.6\" ry=\"4.5\" transform=\"rotate(44.9 131.8 122.7)\"/></g></svg>",
+  "Crunch inverso": "<svg aria-hidden=\"true\" viewBox=\"0 0 200 160\"><defs><clipPath id=\"crunchinvc1\"><path d=\"M84.5 128.3C85.7 126.9 86.9 127.5 88.2 128C89.5 128.4 90.6 130.2 92.3 131.2C94 132.1 96.4 132.7 98.3 133.7C100.1 134.7 102.1 136.3 103.5 137.2C104.9 138 105.8 138.2 106.5 138.9C107.3 139.6 108.1 140.1 108.1 141.1C108 142.2 107.1 144.4 106.3 145.1C105.5 145.9 105.1 146 103.5 145.8C102 145.5 99.2 144.3 97 143.6C94.7 142.8 92.1 142 89.8 141.4C87.6 140.8 85 140.8 83.5 140C82 139.2 80.8 138.5 80.9 136.6C81.1 134.6 83.3 129.8 84.5 128.3Z\"/></clipPath><clipPath id=\"crunchinvc2\"><path d=\"M75 130.3C75.3 128 77.3 127.1 78.9 125.2C80.5 123.3 82.5 120.2 84.6 118.8C86.7 117.4 89.1 117 91.3 116.7C93.5 116.5 95.3 117.4 97.7 117.3C100.1 117.2 103.1 116.7 105.7 116.2C108.3 115.7 111.2 114.6 113.5 114.3C115.8 113.9 117.5 113.9 119.7 114.2C121.8 114.5 124.3 114.7 126.3 116C128.4 117.3 130.9 119.7 132 122C133.1 124.4 133.8 127.8 133 130C132.1 132.2 129.5 134.3 127 135.2C124.5 136.1 120.6 135.2 117.8 135.5C114.9 135.8 112.6 136.3 109.9 137.2C107.2 138.2 104.4 139.9 101.5 141C98.7 142.1 95.8 143.5 92.9 143.8C90 144.1 87 143.6 84.4 142.8C81.8 142 78.8 141.3 77.3 139.2C75.7 137.1 74.8 132.6 75 130.3Z\"/><path d=\"M78.3 130.1L71 130.4A4.8 4.8 0 0 0 70 139.9L77.2 141.6A5.8 5.8 0 1 0 78.3 130.1Z\"/></clipPath><clipPath id=\"crunchinvc3\"><path d=\"M117.1 128.1C114.5 128.1 114.4 126.8 113.3 124.4C112.2 122 111.4 117.4 110.7 113.8C110 110.3 109.6 105.8 109.2 103C108.9 100.1 108.5 98.5 108.5 96.7C108.5 95 108.1 93.6 109.4 92.6C110.7 91.6 114.8 90.7 116.3 90.6C117.8 90.6 117.7 91 118.5 92.3C119.2 93.5 119.5 95.3 120.7 98.1C122 100.8 124.1 105.3 125.7 108.9C127.4 112.4 130.1 116.8 130.6 119.4C131.1 122.1 130.9 123.4 128.6 124.8C126.4 126.3 119.6 128.2 117.1 128.1Z\"/></clipPath><clipPath id=\"crunchinvc4\"><path d=\"M112.5 89C113.5 87.5 114.6 88.4 116.5 88.8C118.3 89.2 120.5 90.2 123.8 91.3C127 92.3 132.6 94.1 136.1 95.1C139.5 96.1 142.6 96.7 144.4 97.3C146.3 97.9 146.8 97.7 147.1 98.6C147.4 99.5 146.8 102.2 146.2 102.9C145.5 103.6 144.5 103.1 143.2 103C141.9 102.9 140.9 102.3 138.5 102.1C136.1 101.9 131.7 101.9 128.7 101.9C125.8 101.8 123 102.1 120.6 101.7C118.2 101.2 115.9 99.7 114.3 99C112.6 98.3 111 99.3 110.7 97.6C110.4 95.9 111.5 90.5 112.5 89Z\"/><circle cx=\"113.5\" cy=\"93.7\" r=\"5.4\"/></clipPath><clipPath id=\"crunchinvc5\"><path d=\"M75 130.3C75.3 128 77.3 127.1 78.9 125.2C80.5 123.3 82.5 120.2 84.6 118.8C86.7 117.4 89.1 117 91.3 116.7C93.5 116.5 95.3 117.4 97.7 117.3C100.1 117.2 103.1 116.7 105.7 116.2C108.3 115.7 111.2 114.6 113.5 114.3C115.8 113.9 117.5 113.9 119.7 114.2C121.8 114.5 124.3 114.7 126.3 116C128.4 117.3 130.9 119.7 132 122C133.1 124.4 133.8 127.8 133 130C132.1 132.2 129.5 134.3 127 135.2C124.5 136.1 120.6 135.2 117.8 135.5C114.9 135.8 112.6 136.3 109.9 137.2C107.2 138.2 104.4 139.9 101.5 141C98.7 142.1 95.8 143.5 92.9 143.8C90 144.1 87 143.6 84.4 142.8C81.8 142 78.8 141.3 77.3 139.2C75.7 137.1 74.8 132.6 75 130.3Z\"/></clipPath></defs><line class=\"fl\" x1=\"12\" y1=\"146\" x2=\"188\" y2=\"146\"/><rect class=\"pad\" x=\"36\" y=\"142\" width=\"140\" height=\"4\" rx=\"2\"/><g class=\"bf\"><path d=\"M114.8 126.8C112.2 126.5 112.2 125.2 111.3 122.8C110.4 120.3 109.8 115.7 109.4 112.1C109 108.5 108.9 104 108.7 101.1C108.5 98.3 108.3 96.6 108.4 94.9C108.5 93.1 108.2 91.7 109.6 90.8C111 89.9 115.1 89.3 116.6 89.3C118.1 89.4 118 89.8 118.6 91.1C119.3 92.4 119.5 94.2 120.5 97C121.5 99.9 123.3 104.5 124.7 108.2C126.1 111.8 128.6 116.3 128.9 119C129.2 121.7 128.9 123 126.5 124.3C124.2 125.6 117.3 127 114.8 126.8Z\"/><path d=\"M112.9 87.4C114 86 115 87 116.9 87.5C118.7 88 120.8 89.2 124 90.5C127.2 91.8 132.6 93.9 136 95.2C139.4 96.4 142.4 97.2 144.2 97.9C146 98.7 146.5 98.5 146.8 99.4C147 100.4 146.3 103 145.6 103.6C144.9 104.3 143.9 103.7 142.6 103.5C141.3 103.3 140.3 102.7 138 102.3C135.6 101.9 131.2 101.7 128.2 101.4C125.3 101.1 122.5 101.3 120.1 100.6C117.8 100 115.6 98.3 114 97.5C112.4 96.7 110.7 97.6 110.5 95.9C110.3 94.2 111.9 88.8 112.9 87.4Z\"/><circle cx=\"113.6\" cy=\"92.2\" r=\"5.4\"/><path d=\"M144.8 104.3L154.2 102.8A2.5 2.5 0 0 0 153.9 97.8L144.4 97.7A3.3 3.3 0 1 0 144.8 104.3Z\"/><path d=\"M147.5 106.6L158.4 100A1.7 1.7 0 0 0 156.9 96.9L145 101.4A2.9 2.9 0 1 0 147.5 106.6Z\"/><circle cx=\"146\" cy=\"104.1\" r=\"3\"/></g><g class=\"bf\"><path d=\"M82.9 127.4C84.2 126 85.3 126.7 86.6 127.3C87.8 127.9 88.8 129.8 90.4 130.8C92 131.9 94.4 132.6 96.2 133.8C98 134.9 99.8 136.7 101.1 137.7C102.4 138.7 103.3 138.9 104 139.6C104.7 140.4 105.5 140.9 105.4 142C105.2 143 104.1 145.1 103.3 145.8C102.5 146.6 102 146.6 100.5 146.3C98.9 145.9 96.3 144.4 94.1 143.5C91.9 142.7 89.4 141.7 87.2 140.9C85 140.1 82.3 139.8 80.9 138.9C79.5 138 78.3 137.2 78.7 135.3C79 133.4 81.6 128.7 82.9 127.4Z\"/><circle cx=\"102.3\" cy=\"142.8\" r=\"3.9\"/><path d=\"M100.2 139.7C100.4 138.4 101.5 138.8 102.7 138.4C103.8 138 105.1 137.7 107.1 137.5C109.2 137.3 112.6 137.5 114.8 137.4C117.1 137.4 119.3 137 120.6 137C121.8 137 121.8 136.8 122.2 137.5C122.6 138.1 122.9 140.3 122.8 141C122.7 141.8 122.8 141.5 121.4 142C120 142.4 116.7 143.2 114.5 143.9C112.2 144.7 109.5 146 107.8 146.5C106.1 147 105.2 146.9 104.2 146.9C103.1 146.8 102.1 147.6 101.4 146.4C100.7 145.3 100 141.1 100.2 139.7Z\"/><circle cx=\"124.3\" cy=\"138.9\" r=\"3.6\"/><path d=\"M121.3 142.2L126.6 141.6A3.1 3.1 0 1 0 125.5 135.6L120.3 136.9A2.7 2.7 0 0 0 121.3 142.2Z\"/></g><g class=\"b\"><path d=\"M75 130.3C75.3 128 77.3 127.1 78.9 125.2C80.5 123.3 82.5 120.2 84.6 118.8C86.7 117.4 89.1 117 91.3 116.7C93.5 116.5 95.3 117.4 97.7 117.3C100.1 117.2 103.1 116.7 105.7 116.2C108.3 115.7 111.2 114.6 113.5 114.3C115.8 113.9 117.5 113.9 119.7 114.2C121.8 114.5 124.3 114.7 126.3 116C128.4 117.3 130.9 119.7 132 122C133.1 124.4 133.8 127.8 133 130C132.1 132.2 129.5 134.3 127 135.2C124.5 136.1 120.6 135.2 117.8 135.5C114.9 135.8 112.6 136.3 109.9 137.2C107.2 138.2 104.4 139.9 101.5 141C98.7 142.1 95.8 143.5 92.9 143.8C90 144.1 87 143.6 84.4 142.8C81.8 142 78.8 141.3 77.3 139.2C75.7 137.1 74.8 132.6 75 130.3Z\"/><path d=\"M78.3 130.1L71 130.4A4.8 4.8 0 0 0 70 139.9L77.2 141.6A5.8 5.8 0 1 0 78.3 130.1Z\"/><ellipse cx=\"64.8\" cy=\"138.8\" rx=\"7.4\" ry=\"8.6\" transform=\"rotate(-104 64.8 138.8)\"/><path d=\"M72 136.3L72.5 132.1A2.6 2.6 0 0 0 69.1 129.3L65 130.7A5.4 5.4 0 1 0 72 136.3Z\"/><circle cx=\"63.3\" cy=\"131.8\" r=\"1.5\"/></g><g clip-path=\"url(#crunchinvc5)\"><ellipse class=\"m\" cx=\"103.7\" cy=\"118.3\" rx=\"14.1\" ry=\"6.2\" transform=\"rotate(166 103.7 118.3)\"/><ellipse class=\"m\" cx=\"102.2\" cy=\"124.9\" rx=\"8.6\" ry=\"3.4\" transform=\"rotate(166 102.2 124.9)\"/><path class=\"dl\" d=\"M107.4 113.7L109.1 120.5\"/><path class=\"dl\" d=\"M101.4 115.3L103.1 122\"/><path class=\"dl\" d=\"M95.3 116.8L97 123.6\"/></g><g clip-path=\"url(#crunchinvc2)\"><ellipse class=\"t\" cx=\"89.5\" cy=\"121.8\" rx=\"7.8\" ry=\"8.6\" transform=\"rotate(-104 89.5 121.8)\"/></g><g class=\"halo\"><path d=\"M117.1 128.1C114.5 128.1 114.4 126.8 113.3 124.4C112.2 122 111.4 117.4 110.7 113.8C110 110.3 109.6 105.8 109.2 103C108.9 100.1 108.5 98.5 108.5 96.7C108.5 95 108.1 93.6 109.4 92.6C110.7 91.6 114.8 90.7 116.3 90.6C117.8 90.6 117.7 91 118.5 92.3C119.2 93.5 119.5 95.3 120.7 98.1C122 100.8 124.1 105.3 125.7 108.9C127.4 112.4 130.1 116.8 130.6 119.4C131.1 122.1 130.9 123.4 128.6 124.8C126.4 126.3 119.6 128.2 117.1 128.1Z\"/><path d=\"M112.5 89C113.5 87.5 114.6 88.4 116.5 88.8C118.3 89.2 120.5 90.2 123.8 91.3C127 92.3 132.6 94.1 136.1 95.1C139.5 96.1 142.6 96.7 144.4 97.3C146.3 97.9 146.8 97.7 147.1 98.6C147.4 99.5 146.8 102.2 146.2 102.9C145.5 103.6 144.5 103.1 143.2 103C141.9 102.9 140.9 102.3 138.5 102.1C136.1 101.9 131.7 101.9 128.7 101.9C125.8 101.8 123 102.1 120.6 101.7C118.2 101.2 115.9 99.7 114.3 99C112.6 98.3 111 99.3 110.7 97.6C110.4 95.9 111.5 90.5 112.5 89Z\"/><circle cx=\"113.5\" cy=\"93.7\" r=\"5.4\"/><path d=\"M145.5 103.6L154.8 101.4A2.5 2.5 0 0 0 154.1 96.5L144.6 97.1A3.3 3.3 0 1 0 145.5 103.6Z\"/><path d=\"M148.4 105.7L158.7 98.4A1.7 1.7 0 0 0 157 95.4L145.5 100.7A2.9 2.9 0 1 0 148.4 105.7Z\"/><circle cx=\"146.7\" cy=\"103.3\" r=\"3\"/></g><g class=\"b\"><path d=\"M117.1 128.1C114.5 128.1 114.4 126.8 113.3 124.4C112.2 122 111.4 117.4 110.7 113.8C110 110.3 109.6 105.8 109.2 103C108.9 100.1 108.5 98.5 108.5 96.7C108.5 95 108.1 93.6 109.4 92.6C110.7 91.6 114.8 90.7 116.3 90.6C117.8 90.6 117.7 91 118.5 92.3C119.2 93.5 119.5 95.3 120.7 98.1C122 100.8 124.1 105.3 125.7 108.9C127.4 112.4 130.1 116.8 130.6 119.4C131.1 122.1 130.9 123.4 128.6 124.8C126.4 126.3 119.6 128.2 117.1 128.1Z\"/><path d=\"M112.5 89C113.5 87.5 114.6 88.4 116.5 88.8C118.3 89.2 120.5 90.2 123.8 91.3C127 92.3 132.6 94.1 136.1 95.1C139.5 96.1 142.6 96.7 144.4 97.3C146.3 97.9 146.8 97.7 147.1 98.6C147.4 99.5 146.8 102.2 146.2 102.9C145.5 103.6 144.5 103.1 143.2 103C141.9 102.9 140.9 102.3 138.5 102.1C136.1 101.9 131.7 101.9 128.7 101.9C125.8 101.8 123 102.1 120.6 101.7C118.2 101.2 115.9 99.7 114.3 99C112.6 98.3 111 99.3 110.7 97.6C110.4 95.9 111.5 90.5 112.5 89Z\"/><circle cx=\"113.5\" cy=\"93.7\" r=\"5.4\"/><path d=\"M145.5 103.6L154.8 101.4A2.5 2.5 0 0 0 154.1 96.5L144.6 97.1A3.3 3.3 0 1 0 145.5 103.6Z\"/><path d=\"M148.4 105.7L158.7 98.4A1.7 1.7 0 0 0 157 95.4L145.5 100.7A2.9 2.9 0 1 0 148.4 105.7Z\"/><circle cx=\"146.7\" cy=\"103.3\" r=\"3\"/></g><g class=\"halo\"><path d=\"M84.5 128.3C85.7 126.9 86.9 127.5 88.2 128C89.5 128.4 90.6 130.2 92.3 131.2C94 132.1 96.4 132.7 98.3 133.7C100.1 134.7 102.1 136.3 103.5 137.2C104.9 138 105.8 138.2 106.5 138.9C107.3 139.6 108.1 140.1 108.1 141.1C108 142.2 107.1 144.4 106.3 145.1C105.5 145.9 105.1 146 103.5 145.8C102 145.5 99.2 144.3 97 143.6C94.7 142.8 92.1 142 89.8 141.4C87.6 140.8 85 140.8 83.5 140C82 139.2 80.8 138.5 80.9 136.6C81.1 134.6 83.3 129.8 84.5 128.3Z\"/><circle cx=\"105.1\" cy=\"142.2\" r=\"3.9\"/><path d=\"M103.3 139C103.6 137.6 104.6 138.1 105.8 137.8C107 137.5 108.3 137.3 110.4 137.3C112.4 137.3 115.8 137.8 118 137.9C120.3 138 122.6 137.9 123.8 138C125 138.1 125 137.9 125.4 138.6C125.7 139.3 125.9 141.4 125.7 142.2C125.5 142.9 125.7 142.6 124.2 143C122.8 143.4 119.4 143.8 117.1 144.3C114.8 144.9 112 146 110.2 146.4C108.5 146.7 107.7 146.5 106.6 146.4C105.5 146.3 104.4 147 103.9 145.7C103.3 144.5 102.9 140.3 103.3 139Z\"/><circle cx=\"127.4\" cy=\"140.2\" r=\"3.6\"/><path d=\"M124 143.2L129.4 143.1A3.1 3.1 0 1 0 128.9 137L123.6 137.8A2.7 2.7 0 0 0 124 143.2Z\"/></g><g class=\"b\"><path d=\"M84.5 128.3C85.7 126.9 86.9 127.5 88.2 128C89.5 128.4 90.6 130.2 92.3 131.2C94 132.1 96.4 132.7 98.3 133.7C100.1 134.7 102.1 136.3 103.5 137.2C104.9 138 105.8 138.2 106.5 138.9C107.3 139.6 108.1 140.1 108.1 141.1C108 142.2 107.1 144.4 106.3 145.1C105.5 145.9 105.1 146 103.5 145.8C102 145.5 99.2 144.3 97 143.6C94.7 142.8 92.1 142 89.8 141.4C87.6 140.8 85 140.8 83.5 140C82 139.2 80.8 138.5 80.9 136.6C81.1 134.6 83.3 129.8 84.5 128.3Z\"/><circle cx=\"105.1\" cy=\"142.2\" r=\"3.9\"/><path d=\"M103.3 139C103.6 137.6 104.6 138.1 105.8 137.8C107 137.5 108.3 137.3 110.4 137.3C112.4 137.3 115.8 137.8 118 137.9C120.3 138 122.6 137.9 123.8 138C125 138.1 125 137.9 125.4 138.6C125.7 139.3 125.9 141.4 125.7 142.2C125.5 142.9 125.7 142.6 124.2 143C122.8 143.4 119.4 143.8 117.1 144.3C114.8 144.9 112 146 110.2 146.4C108.5 146.7 107.7 146.5 106.6 146.4C105.5 146.3 104.4 147 103.9 145.7C103.3 144.5 102.9 140.3 103.3 139Z\"/><circle cx=\"127.4\" cy=\"140.2\" r=\"3.6\"/><path d=\"M124 143.2L129.4 143.1A3.1 3.1 0 1 0 128.9 137L123.6 137.8A2.7 2.7 0 0 0 124 143.2Z\"/></g><g clip-path=\"url(#crunchinvc1)\"><ellipse class=\"t\" cx=\"86.1\" cy=\"133.9\" rx=\"6\" ry=\"7\" transform=\"rotate(23.6 86.1 133.9)\"/></g><g clip-path=\"url(#crunchinvc3)\"><ellipse class=\"t\" cx=\"111.8\" cy=\"110.3\" rx=\"17.4\" ry=\"7.4\" transform=\"rotate(-106 111.8 110.3)\"/></g><g clip-path=\"url(#crunchinvc4)\"><ellipse class=\"t\" cx=\"122.6\" cy=\"99.7\" rx=\"9.6\" ry=\"4.5\" transform=\"rotate(12 122.6 99.7)\"/></g></svg>"
+};
+/* ILLU:fin */
+const exPic = (name, cls = "pic") => { const s = ILLU[exName(name)]; return s ? `<span class="${cls}">${s}</span>` : ""; };
 /* Constancia: promedio de cumplimiento de las 4 áreas, cada una con tope 1 */
 const dayScore = dt => { const p = dayStats(dt).pct; return (["food","act","bass","study"].reduce((a, k) => a + Math.min(1, p[k] || 0), 0)) / 4; };
 const anyLog = dt => { const s = dayStats(dt); return s.meals > 0 || s.actMin > 0 || s.bassMin > 0 || s.d.bass.logs.length > 0 || s.studyMin > 0 || s.d.act.sets.length > 0; };
@@ -1438,33 +1872,181 @@ function renderAct(){
     <dt>Le toca al siguiente día de gimnasio</dt><dd>${nextGym}</dd>
     <dt>Tenis</dt><dd>${fmt(ws.tennisMin)} min</dd>
     <dt>Series de gimnasio</dt><dd>${wSets.length}</dd>
-    <dt>Volumen levantado (kg × reps)</dt><dd>${fmt(sum(wSets, s => s.kg * s.reps))} kg</dd>
+    <dt>Volumen levantado (kg × reps)</dt><dd>${fmt(sum(wSets, volOf))} kg</dd>
   </dl></div>`);
-  renderSets();
+  renderMuscles(wkLabel(selWk[0], selWk[6]));
+  renderWorkout(); renderProgress(); renderSessions(); renderCatalog();
 }
-function renderSets(){
-  const sets = day(S.date).act.sets, {best, prIds} = liftStats();
+const TROPHY = `<svg class="ico" aria-hidden="true"><use href="#i-trophy"/></svg>`;
+const CHECK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+/* Checklist del día: ejercicios habituales del tipo de sesión, con la carga propuesta por la doble progresión */
+const W = {draft: {}, extra: {}, more: {}, hidden: {}, open: {}, focus: null};
+const wKey = (date, k, i) => i === undefined ? `${date}|${k}` : `${date}|${k}|${i}`;
+const HABIT_SESSIONS = 3, DEFAULT_SETS = 3;
+const DEFAULT_ROUTINE = {
+  push: ["Press banca", "Press inclinado con mancuernas", "Press militar", "Elevaciones laterales", "Extensión de tríceps"],
+  pull: ["Jalón al pecho", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo"],
+  legs: ["Sentadilla hack", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones", "Aductores en máquina", "Abductores en máquina"],
+  full: ["Sentadilla", "Press banca", "Remo en polea", "Press militar", "Curl femoral"]
+};
+/* Ejercicios habituales: los de las últimas 3 sesiones del tipo, ordenados por su posición promedio; sin historial, la rutina base del tipo */
+function habitual(type, date){
+  const dts = allDatesAsc().filter(dt => dt < date && day(dt).act.gym === type && day(dt).act.sets.length).slice(-HABIT_SESSIONS);
+  if (!dts.length) return {names: DEFAULT_ROUTINE[type] || [], from: null};
+  const pos = {};
+  dts.forEach(dt => { const gs = groupSets(day(dt).act.sets); gs.forEach((g, i) => { (pos[g.k] = pos[g.k] || {ex: g.ex, p: []}).p.push(i / Math.max(1, gs.length - 1)); }); });
+  return {names: Object.values(pos).sort((a, b) => sum(a.p, x => x) / a.p.length - sum(b.p, x => x) / b.p.length).map(x => x.ex), from: dts};
+}
+function workoutPlan(date){
+  const d = day(date), type = d.act.gym, hab = type ? habitual(type, date) : {names: [], from: null};
+  const done = groupSets(d.act.sets), extra = W.extra[date] || [], hidden = W.hidden[date] || [];
+  const keys = [], names = {};
+  [...hab.names, ...done.map(g => g.ex), ...extra].forEach(n => { const k = exKey(n); if (!keys.includes(k)){ keys.push(k); names[k] = exName(n); } });
+  const exs = keys.filter(k => !hidden.includes(k) || done.some(g => g.k === k)).map(k => {
+    const dg = done.find(g => g.k === k), name = dg ? dg.ex : names[k];
+    const prev = lastSession(name, date), pg = prev ? groupSets(prev.sets)[0] : null;
+    const step = pg ? nextStep(pg) : null;
+    let plan = pg ? pg.sets.map(s => ({kg: Number(s.kg) || 0, reps: s.reps, unit: s.unit || "", rest: s.rest || 0, warm: pg.warm.has(s.id)})) : Array.from({length: DEFAULT_SETS}, () => ({kg: 0, reps: 10, unit: "", rest: 0, warm: false}));
+    if (step && step.kind !== "keep") plan = plan.map(p => !p.warm && p.kg === step.top ? {...p, kg: step.kg, reps: step.reps} : p);
+    const sets = dg ? dg.sets : [], n = Math.max(sets.length, plan.length + (W.more[wKey(date, k)] || 0));
+    const rows = Array.from({length: n}, (_, i) => {
+      if (sets[i]) return {done: true, set: sets[i], warm: dg.warm.has(sets[i].id)};
+      const last = sets[sets.length - 1], tmpl = plan[i] || (last ? {kg: Number(last.kg) || 0, reps: last.reps, unit: last.unit || "", rest: last.rest || 0} : plan[plan.length - 1]);
+      return {done: false, ...tmpl, ...(plan[i] ? {} : {warm: false}), ...(W.draft[wKey(date, k, i)] || {})};
+    });
+    return {k, name, info: exInfo(name), step, rows};
+  });
+  return {type, from: hab.from, exs};
+}
+function wFocus(P){
+  const f = W.focus && W.focus.date === S.date ? W.focus : null;
+  const e = f && P.exs.find(x => x.k === f.k);
+  if (e && e.rows[f.i] && !e.rows[f.i].done) return f;
+  for (const x of P.exs){ const i = x.rows.findIndex(r => !r.done); if (i >= 0) return {date: S.date, k: x.k, i}; }
+  return null;
+}
+function wRow(k, i){ const e = workoutPlan(S.date).exs.find(x => x.k === k); return e && e.rows[i] ? {e, r: e.rows[i]} : null; }
+const numIn = v => String(Number(v) || 0).replace(".", ",");
+const unitLbl = u => u === "nivel" ? "nivel" : u === "lb" ? "lb" : "kg";
+function renderWorkout(){
+  const date = S.date, P = workoutPlan(date), {best, prIds} = liftStats(), f = wFocus(P);
+  const lastT = Math.max(0, ...day(today()).act.sets.map(s => s.t || 0));
+  if (!Rest.iv && lastT && lastT !== Rest.hidden && Date.now() - lastT < REST_RESUME) Rest.start(lastT);
+  $("#wkTitle").textContent = date === today() ? "Entrenar hoy" : `Entreno del ${fmtShort(date)}`;
+  setHTML($("#wkTypes"), ["push", "pull", "legs", "full"].map(t => `<button class="chip${P.type === t ? " sel" : ""}" data-action="wk-type" data-v="${t}" aria-pressed="${P.type === t}">${GYM_LABEL[t]}</button>`).join(""));
+  const stepper = (e, i, r, fld) => {
+    const a = `data-k="${esc(e.k)}" data-i="${i}" data-f="${fld}"`, kg = fld === "kg";
+    return `<span class="stepper"><button data-action="wk-step" ${a} data-v="-1" aria-label="${kg ? "Menos carga" : "Una rep menos"}">−</button><input class="wk-num" ${a} inputmode="${kg ? "decimal" : "numeric"}" value="${kg ? numIn(r.kg) : r.reps}" aria-label="${kg ? "Carga" : "Repeticiones"}"><button data-action="wk-step" ${a} data-v="1" aria-label="${kg ? "Más carga" : "Una rep más"}">+</button>${kg ? `<button class="wk-unit" data-action="wk-unit" data-k="${esc(e.k)}" data-i="${i}" title="Cambiar unidad">${unitLbl(r.unit)}</button>` : `<span class="wk-u">reps</span>`}</span>`;
+  };
+  const row = (e, r, i) => {
+    if (r.done){
+      const pr = prIds.has(r.set.id);
+      return `<li class="wk-row done"><span class="chk on" aria-hidden="true">${CHECK}</span><span class="wk-val">${esc(setTxt(r.set))}</span>${r.warm ? `<span class="wk-tag">aprox.</span>` : ""}${pr ? `<span class="badge">${TROPHY}récord</span>` : ""}<button class="wk-x" data-action="wk-undo" data-id="${r.set.id}" aria-label="Borrar serie ${esc(setTxt(r.set))}" title="Borrar serie">×</button></li>`;
+    }
+    const on = f && f.k === e.k && f.i === i, next = e.rows.findIndex(x => !x.done) === i, txt = r.kg ? `${wTxt(r.kg, r.unit)} × ${r.reps}` : `${r.reps} reps`;
+    return `<li class="wk-row${on ? " focus" : ""}">${next ? `<button class="chk" data-action="wk-done" data-k="${esc(e.k)}" data-i="${i}" aria-label="Marcar hecha: ${esc(txt)}">${CHECK}</button>` : `<span class="chk wait" aria-hidden="true"></span>`}${on ? `<span class="wk-edit">${stepper(e, i, r, "kg")}${stepper(e, i, r, "reps")}</span>` : `<button class="wk-val plain" data-action="wk-focus" data-k="${esc(e.k)}" data-i="${i}">${esc(txt)}</button>`}${r.warm ? `<span class="wk-tag">aprox.</span>` : ""}</li>`;
+  };
+  const card = e => {
+    const nd = e.rows.filter(r => r.done).length, hint = e.step && e.step.kind !== "keep" && !nd;
+    const rm = `<button class="wk-x" data-action="wk-hide" data-k="${esc(e.k)}" aria-label="Quitar ${esc(e.name)} de hoy" title="${nd ? "Quitar ejercicio y borrar sus series" : "Quitar ejercicio de hoy"}">×</button>`;
+    if (nd === e.rows.length && !W.open[wKey(date, e.k)]) return `<div class="wk-ex closed"><div class="wk-head">${exPic(e.name) || exFig(e.info)}<strong class="grow">${esc(e.name)}</strong><span class="wk-ok">${CHECK}${nd} ${nd === 1 ? "serie" : "series"}</span><button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button><button class="btn small ghost" data-action="wk-open" data-k="${esc(e.k)}">ver</button></div></div>`;
+    return `<div class="wk-ex"><div class="wk-head">${exPic(e.name) || exFig(e.info)}<span class="grow"><strong>${esc(e.name)}</strong><span class="mus" title="${esc(e.info ? e.info.tip : "")}">${esc(muDetail(e.info))}</span>${hint ? `<span class="wk-hint ${e.step.kind}">${e.step.kind === "up" ? "↑" : "↓"} ${esc(e.step.txt)}</span>` : ""}</span><span class="wk-count">${nd}/${e.rows.length}</span>${rm}</div>
+      <ol class="wk-rows">${e.rows.map((r, i) => row(e, r, i)).join("")}</ol>
+      <div class="wk-foot"><button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button>${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}</div></div>`;
+  };
+  setHTML($("#wkBody"), P.exs.length ? `${P.type && !day(date).act.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Toca el círculo al terminar cada serie; con × quitas lo que no corresponde.</p>` : ""}${P.exs.map(card).join("")}`
+    : `<p class="empty">${P.type ? `No hay una sesión anterior de ${GYM_LABEL[P.type]}. Agrega el primer ejercicio abajo.` : "Elige el tipo de sesión y se carga tu última rutina de ese tipo, con la carga propuesta para hoy."}</p>`);
   const names = [...new Set([...EXERCISES, ...Object.values(best).map(b => b.ex)])].sort((a, b) => a.localeCompare(b, "es"));
-  $("#exList").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
-  const groups = []; sets.forEach(s => { let g = groups.find(x => norm(x.ex) === norm(s.ex)); if (!g) groups.push(g = {ex: s.ex, sets: []}); g.sets.push(s); });
-  setHTML($("#setsToday"), groups.length ? groups.map(g => {
-    const vol = sum(g.sets, s => s.kg * s.reps), top = Math.max(...g.sets.map(e1rm)), prev = lastSession(g.ex, S.date);
-    return `<div class="ex-card"><div class="item-head"><strong>${esc(g.ex)}</strong><span class="small muted">volumen ${fmt(vol)} kg · 1RM est. ${fmt(top, 1)} kg</span></div>
-      <table><thead><tr><th>Serie</th><th>Anterior</th><th class="n">Kg</th><th class="n">Reps</th><th></th></tr></thead><tbody>
-      ${g.sets.map((s, i) => { const pr = prIds.has(s.id), p = prev && prev.sets[i];
-        return `<tr class="${pr ? "pr" : ""}"><td><span class="set-n">${i + 1}</span></td><td class="muted">${p ? `${fmt(p.kg, 1)} × ${p.reps}` : "—"}</td><td class="n">${fmt(s.kg, 1)}</td><td class="n">${s.reps}</td>
-          <td class="n">${pr ? `<span class="badge"><svg class="ico" aria-hidden="true"><use href="#i-trophy"/></svg>récord</span>` : ""}<button class="btn small ghost danger" data-action="set-del" data-id="${s.id}" aria-label="Borrar serie">×</button></td></tr>`; }).join("")}
-      </tbody></table></div>`;
-  }).join("") : `<p class="empty">Sin series registradas este día.</p>`);
-  const prs = Object.values(best).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
-  setHTML($("#prList"), prs.length ? `<table><thead><tr><th>Ejercicio</th><th class="n">Serie</th><th class="n">1RM est.</th><th class="n">Fecha</th></tr></thead><tbody>
-    ${prs.map(b => `<tr><td>${esc(b.ex)}</td><td class="n">${fmt(b.kg, 1)} × ${b.reps}</td><td class="n">${fmt(b.e1rm, 1)} kg</td><td class="n">${fmtShort(b.date)}</td></tr>`).join("")}</tbody></table>`
+  $("#exList").innerHTML = names.map(n => `<option value="${esc(n)}" label="${esc(muDetail(exInfo(n)))}">`).join("");
+  const prs = Object.values(best).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+  setHTML($("#prList"), prs.length ? `<table><thead><tr><th>Ejercicio</th><th class="n">Serie</th><th class="n">Fecha</th></tr></thead><tbody>
+    ${prs.map(b => `<tr><td>${esc(b.ex)}</td><td class="n">${esc(setTxt(b))}</td><td class="n">${fmtShort(b.date)}</td></tr>`).join("")}</tbody></table>`
     : `<p class="empty">Registra series para ver tus mejores marcas por ejercicio.</p>`);
-  updatePrev();
 }
-function updatePrev(){
-  const ex = $("#lEx").value.trim(), prev = lastSession(ex, S.date);
-  $("#lPrev").textContent = !ex ? "Escribe un ejercicio para ver qué hiciste la vez anterior." : prev ? `La vez anterior (${fmtShort(prev.date)}): ${prev.sets.map(s => `${fmt(s.kg, 1)} × ${s.reps}`).join(", ")}.` : "Primera vez que registras este ejercicio.";
+/* Descanso medido: intervalo entre dos series marcadas menos la duración estimada de una serie */
+const SET_SEC = 30, REST_MAX = 600, REST_RESUME = 30 * 60000;
+
+/* Mapa muscular de la semana seleccionada */
+const REGIONS = [["piernas", ["cuadriceps", "isquio", "gluteo", "gemelo", "aductor", "abductor"]], ["empuje", ["pecho", "hombro", "triceps"]], ["tirón", ["dorsal", "espalda", "hombroPost", "biceps", "trapecio"]], ["core", ["abdomen", "oblicuos", "lumbar"]]];
+const listEs = a => a.length > 1 ? a.slice(0, -1).join(", ") + " y " + a[a.length - 1] : a.join("");
+function renderMuscles(label){
+  const ds = weekDates(S.date).filter(x => x <= today()), ms = muscleSets(ds), [lo, hi] = MUSCLE_RANGE;
+  const lvl = v => !v ? "var(--line)" : v < 5 ? "color-mix(in srgb,var(--act) 30%,var(--line))" : v < lo ? "color-mix(in srgb,var(--act) 62%,var(--line))" : "var(--act)";
+  const fill = k => [lvl(ms[k] || 0), `${MUSCLES[k]}: ${fmt(ms[k] || 0, 1)} series efectivas`];
+  const done = Object.keys(MUSCLES).filter(k => ms[k] > 0).sort((a, b) => ms[b] - ms[a]);
+  const hit = REGIONS.filter(([, ks]) => ks.some(k => ms[k] > 0)).map(([n]) => n), miss = REGIONS.filter(([, ks]) => !ks.some(k => ms[k] > 0)).map(([n]) => n);
+  const ses = ds.filter(dt => day(dt).act.sets.length).length;
+  $("#muscleSub").textContent = label;
+  const legend = [["sin series", lvl(0)], ["poco", lvl(1)], ["medio", lvl(5)], ["en rango", lvl(lo)]];
+  setHTML($("#muscleMap"), `<div class="body-map">
+    <div>
+      <div class="figs"><figure>${bodyFig("front", fill, "fig", "Músculos trabajados, vista de frente")}<figcaption>Frente</figcaption></figure><figure>${bodyFig("back", fill, "fig", "Músculos trabajados, vista de espalda")}<figcaption>Espalda</figcaption></figure></div>
+      <div class="mu-legend">${legend.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join("")}</div>
+    </div>
+    <div class="mu-side">
+      ${ses ? `<p class="mu-sum">${hit.length ? `Esta semana trabajaste ${listEs(hit)}.` : "Esta semana no hay series con músculos asignados."}${miss.length ? ` <span class="muted">Falta ${listEs(miss)}.</span>` : ""}</p>
+      <div class="mu-chips">${done.map(k => `<span class="mu-chip"><i style="background:${lvl(ms[k])}"></i>${MUSCLES[k]}</span>`).join("")}</div>` : `<p class="empty">Sin series registradas esta semana.</p>`}
+      <details class="manual mt"><summary>Cómo se calcula</summary><p class="small muted" style="margin:10px 0 0">Cada serie suma 1 al músculo principal del ejercicio y 0,5 a los secundarios. No cuentan las de aproximación: las primeras series con menos del 75% de la carga más alta del ejercicio ese día. "En rango" es desde ${lo} series por músculo a la semana (referencia de ${lo} a ${hi}); "medio", de 5 a ${lo - 1}; "poco", menos de 5. Pasa el cursor por un músculo para ver su número.</p></details>
+    </div>
+  </div>`);
+}
+const trend = d => d === null || !isFinite(d) ? "" : Math.abs(d) < .5 ? `<span class="trend eq" title="Igual que la sesión anterior">=</span>` : `<span class="trend ${d > 0 ? "up" : "down"}" title="${d > 0 ? "Subió" : "Bajó"} ${fmt(Math.abs(d), 1)}% frente a la sesión anterior">${d > 0 ? "↑" : "↓"}</span>`;
+const progTop = (h, s) => h.bw ? `${fmt(s.metric)} reps` : wTxt(s.top.kg, s.top.unit);
+/* Progreso por ejercicio: gráfico del seleccionado y una tarjeta por ejercicio */
+function renderProgress(){
+  const hs = exHistory().sort((a, b) => b.ses[b.ses.length - 1].date.localeCompare(a.ses[a.ses.length - 1].date) || a.ord - b.ord);
+  if (!hs.length){ setHTML($("#progDetail"), `<p class="empty">Cuando registres series, aquí ves cómo avanza cada ejercicio.</p>`); setHTML($("#progCards"), ""); return; }
+  if (!S.exPick || !hs.some(h => h.k === S.exSel)) S.exSel = hs[0].k;
+  const dOf = h => { const l = h.ses[h.ses.length - 1], p = h.ses[h.ses.length - 2]; return p && p.metric ? (l.metric - p.metric) / p.metric * 100 : null; };
+  const h = hs.find(x => x.k === S.exSel), last = h.ses[h.ses.length - 1];
+  setHTML($("#progDetail"), `<div class="ex-head">${exPic(h.ex, "pic big")}${exFig(h.info)}<div class="grow"><strong class="ex-title">${esc(h.ex)}</strong><div class="mus">${esc(muDetail(h.info))}</div></div><div class="prog-now"><span class="big-n">${esc(progTop(h, last))}</span>${trend(dOf(h))}</div></div>
+    <div class="wchart">${progChart(h, $("#progDetail").clientWidth || 640)}</div>`);
+  setHTML($("#progCards"), hs.map(x => { const l = x.ses[x.ses.length - 1];
+    return `<button class="prog" data-action="ex-sel" data-k="${esc(x.k)}" aria-pressed="${x.k === S.exSel}">
+      <span class="top">${exFig(x.info)}<strong class="grow">${esc(x.ex)}</strong></span>
+      <span class="mid"><span class="big-n">${esc(progTop(x, l))}</span>${trend(dOf(x))}${x.ses.length > 1 ? sparkline(x.ses.slice(-12).map(s => s.metric), "var(--act)") : ""}</span>
+    </button>`; }).join(""));
+}
+/* Gráfico de progreso: línea del 1RM estimado de la mejor serie por sesión */
+function progChart(h, width){
+  const W2 = Math.round(clamp(width, 300, 1100)), H = W2 < 480 ? 170 : 200, L = 14, R = 30, T = 26, B = 28;
+  const ses = h.ses.slice(-16), n = ses.length, u = ses[n - 1].top.unit, vals = ses.map(s => s.metric);
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || Math.max(1, hi * .1), mn = lo - span * .25, mx = hi + span * .25;
+  const x = i => L + (W2 - L - R) * (n === 1 ? .5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - (v - mn) / (mx - mn));
+  const lbl = p => h.bw ? `${fmt(p.metric)} reps` : setTxt(p.top);
+  let s = `<svg viewBox="0 0 ${W2} ${H}" role="img" aria-label="Progreso de ${esc(h.ex)}" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  s += `<line x1="${L}" x2="${W2 - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>`;
+  const every = Math.max(1, Math.ceil(n * 60 / (W2 - L - R)));
+  ses.forEach((p, i) => { if ((n - 1 - i) % every === 0) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtShort(p.date).replace(".", ""))}</text>`; });
+  if (n > 1) s += `<polyline points="${ses.map((p, i) => `${x(i).toFixed(1)},${y(p.metric).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--act)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  ses.forEach((p, i) => { s += `<g class="pt" data-action="day-open" data-d="${p.date}"><title>${esc(fmtLong(p.date))}: ${esc(lbl(p))}${h.bw ? "" : `, 1RM estimado ${esc(e1Txt(p.metric, u))}`}</title><circle cx="${x(i)}" cy="${y(p.metric)}" r="11" fill="transparent"/><circle class="dot" cx="${x(i)}" cy="${y(p.metric)}" r="${i === n - 1 ? 5.5 : 4}" fill="${i === n - 1 ? "var(--act)" : "var(--surface)"}" stroke="var(--act)" stroke-width="2"/></g>`; });
+  const tag = (i, anchor) => `<text x="${x(i)}" y="${y(ses[i].metric) - 12}" text-anchor="${anchor}" font-size="12" font-weight="650" fill="var(--ink)">${esc(lbl(ses[i]))}</text>`;
+  s += tag(n - 1, n === 1 ? "middle" : "end");
+  if (n > 2) s += tag(0, "start");
+  return s + "</svg>";
+}
+/* Catálogo de ejercicios por grupo, con búsqueda por nombre, alias o músculo */
+function renderCatalog(){
+  if (!$("#catBox").open) return;
+  const g = S.catG || "", q = norm($("#catQ").value), todayKeys = workoutPlan(S.date).exs.map(e => e.k);
+  setHTML($("#catChips"), [["", "Todos"], ...EX_GROUPS.map(([k, l]) => [k, l])].map(([k, l]) => `<button class="chip${g === k ? " sel" : ""}" data-action="cat-g" data-v="${k}">${l}</button>`).join(""));
+  const list = EX_CAT.filter(e => (!g || exGroup(e) === g) && (!q || norm([e.name, ...e.al, muDetail(e)].join(" ")).includes(q)));
+  setHTML($("#catList"), list.length ? list.map(e => { const k = exKey(e.name), on = todayKeys.includes(k);
+    return `<li>${exPic(e.name, "pic big")}${exFig(e)}<div class="grow"><strong>${esc(e.name)}</strong><span class="mus">${esc(muDetail(e))}</span>${e.tip ? `<span class="cat-tip">${esc(e.tip)}</span>` : ""}</div>${on ? `<span class="wk-ok">${CHECK}en el día</span>` : `<button class="btn small" data-action="wk-ex-add" data-name="${esc(e.name)}">Agregar al día</button>`}</li>`; }).join("")
+    : `<li class="empty">Sin resultados.</li>`);
+}
+/* Historial de sesiones de gimnasio con los músculos trabajados */
+function renderSessions(){
+  const {prIds} = liftStats(), dts = allDatesAsc().filter(dt => day(dt).act.sets.length).reverse().slice(0, 12);
+  setHTML($("#sessList"), dts.length ? `<ul class="sess-list">${dts.map(dt => {
+    const a = day(dt).act, gs = groupSets(a.sets), ms = muscleSets([dt]), work = sum(gs, g => g.work.length), prs = a.sets.filter(s => prIds.has(s.id)).length, D = parseYmd(dt);
+    const fill = k => [!ms[k] ? "var(--line)" : ms[k] >= 3 ? "var(--act)" : MU_SEC];
+    return `<li><button class="sess${dt === S.date ? " sel" : ""}" data-action="day-open" data-d="${dt}">
+      <span class="sess-date"><span>${esc(D.toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))}</span><strong>${D.getDate()}</strong><span>${esc(D.toLocaleDateString("es-CL", {month: "short"}).replace(".", ""))}</span></span>
+      <span class="sess-figs">${bodyFig("front", fill, "fig mini")}${bodyFig("back", fill, "fig mini")}</span>
+      <span class="sess-main"><span class="sess-title"><strong>${esc(a.gym ? GYM_LABEL[a.gym] || a.gym : "Gimnasio")}</strong>${prs ? `<span class="badge">${TROPHY}${prs} ${prs === 1 ? "récord" : "récords"}</span>` : ""}</span><span class="small muted">${gs.map(g => esc(g.ex)).join(" · ")}</span></span>
+      <span class="sess-stats">${work} series${a.gym && a.gymMin ? ` · ${fmtDur(a.gymMin)}` : ""}</span>
+    </button></li>`; }).join("")}</ul>` : `<p class="empty">Todavía no hay sesiones con series registradas.</p>`);
 }
 
 function renderBass(){
@@ -1954,6 +2536,106 @@ Responde solo con este JSON: {"name": string (nombre del producto y marca si se 
   $("#labelPhoto").value = "";
 }
 
+/* ---------- rutina desde notas ----------
+   Formato por línea:
+   1. Fecha "dd/mm" (o "dd/mm/aaaa"), seguida opcionalmente del tipo de sesión o del primer ejercicio.
+   2. Nombre del ejercicio; "a/b" son dos ejercicios en paralelo.
+   3. Serie "kg x reps", "N7x12" o "nivel 7x12" (máquina por nivel), "50 lb x 8" o "12 reps" sin carga; "a/b" reparte entre los ejercicios en paralelo.
+   4. Descanso después de la serie: "2min", "2min30s", "90s" o "1:30".
+   Sin fecha, las series van al día seleccionado. */
+const RT_SET_MIN = .75;
+const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full"};
+const RT_DATE = /^(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?(?:\s+(.+))?$/;
+const RT_REST = /^(?:descanso\s*)?(?:(\d+)\s*(?:min|mins|minutos?|m|')\s*(?:(\d+)\s*(?:s|seg|segundos?|")?)?|(\d+)\s*(?:s|seg|segundos?)|(\d+):(\d{2}))$/;
+function rtSet(part){
+  const p = norm(part);
+  let m = p.match(/^(n|nivel)?\s*(\d+(?:[.,]\d+)?)\s*(kg|kgs|lb|lbs|libras)?\s*[x×*]\s*(\d+)\s*(?:reps?)?$/);
+  if (m) return {kg: num(m[2]), reps: +m[4], unit: m[1] ? "nivel" : /^l/.test(m[3] || "") ? "lb" : ""};
+  m = p.match(/^(\d+)\s*(?:reps?|repeticiones)?$/);
+  return m && +m[1] > 0 ? {kg: 0, reps: +m[1], unit: ""} : null;
+}
+function rtRest(line){
+  const m = norm(line).match(RT_REST);
+  return !m ? null : m[1] !== undefined ? +m[1] * 60 + (+m[2] || 0) : m[3] !== undefined ? +m[3] : +m[4] * 60 + +m[5];
+}
+function rtDate(d, m, y){
+  const t = today(), yy = y ? (+y < 100 ? 2000 + +y : +y) : +t.slice(0, 4);
+  if (d < 1 || d > 31 || m < 1 || m > 12) return null;
+  let s = `${yy}-${pad(m)}-${pad(d)}`;
+  if (ymd(parseYmd(s)) !== s) return null;
+  if (!y && s > t) s = `${yy - 1}-${pad(m)}-${pad(d)}`;
+  return s;
+}
+function inferGym(exs){
+  const c = {}; exs.forEach(e => { const t = e.info && e.info.t; if (t) c[t] = (c[t] || 0) + e.sets.length; });
+  const tot = sum(Object.values(c), x => x), top = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
+  return !top ? "" : top[1] >= .7 * tot ? top[0] : "full";
+}
+/* Fecha ambigua con reps ("15/10"): cuenta como fecha si es posterior a la sesión en curso y de los últimos 60 días */
+const RT_DATE_DAYS = 60;
+const RT_NAME_SET = /^(.*?[^\d\s/].*?)\s+((?:n|nivel)?\s*\d+(?:[.,]\d+)?\s*(?:kg|kgs|lb|lbs|libras)?\s*[x×*]\s*\d+.*)$/i;
+function parseRoutine(text){
+  const sessions = [], bad = [];
+  let ses = null, cur = null;
+  const newSession = date => { ses = sessions.find(s => s.date === date) || null; if (!ses) sessions.push(ses = {date, type: "", exs: [], lines: 0, rest: 0}); cur = null; };
+  const item = raw => {
+    const key = exKey(raw); let e = ses.exs.find(x => x.k === key);
+    if (!e) ses.exs.push(e = {k: key, raw, name: exName(raw), info: exInfo(raw), sets: []});
+    return e;
+  };
+  const startEx = raw => { if (!ses) newSession(S.date); cur = {raw: raw.trim(), names: raw.replace(/\([^)]*\)/g, " ").split("/").map(x => x.trim()).filter(Boolean), last: []}; };
+  const addSets = (line, sets) => {
+    if (sets.length !== cur.names.length && sets.length !== 1){ bad.push(`${line}: no coincide con los ejercicios de "${cur.raw}"`); return; }
+    if (sets.length === 1 && cur.names.length > 1){ bad.push(`${line}: "${cur.raw}" son ${cur.names.length} ejercicios; escribe una serie por ejercicio separadas por "/"`); return; }
+    cur.last = sets.map((s, i) => { const x = {...s}; item(cur.names[i]).sets.push(x); return x; });
+    ses.lines++;
+  };
+  const setsOf = line => { const sets = line.split("/").map(rtSet); return sets.every(Boolean) ? sets : null; };
+  for (const line of String(text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean)){
+    const sets = setsOf(line), dm = line.match(RT_DATE), date = dm && rtDate(+dm[1], +dm[2], dm[3]);
+    const plausible = date && (!ses || date > ses.date) && date >= addDays(today(), -RT_DATE_DAYS);
+    if (date && (!sets || plausible)){
+      newSession(date);
+      const rem = (dm[4] || "").trim(), g = GYM_WORDS[exClean(rem)];
+      if (g) ses.type = g; else if (rem) startEx(rem);
+      continue;
+    }
+    if (sets){ if (cur) addSets(line, sets); else bad.push(`${line}: serie sin ejercicio antes`); continue; }
+    const rest = rtRest(line);
+    if (rest !== null){ if (cur && cur.last.length){ cur.last.forEach(s => { s.rest = rest; }); ses.rest += rest; } else bad.push(`${line}: descanso sin una serie antes`); continue; }
+    const ns = line.match(RT_NAME_SET), nsSets = ns && setsOf(ns[2]);
+    if (nsSets){ startEx(ns[1]); addSets(line, nsSets); continue; }
+    if (/\d\s*[x×*]\s*\d/i.test(line)){ bad.push(`${line}: no reconozco el formato de la serie`); continue; }
+    startEx(line);
+  }
+  sessions.forEach(s => {
+    s.exs = s.exs.filter(e => e.sets.length);
+    s.exs.forEach(e => { e.unit = e.sets.some(x => x.unit === "nivel") ? "nivel" : e.sets.some(x => x.unit === "lb") ? "lb" : e.sets.every(x => !x.kg) ? "pc" : "kg"; });
+    s.type = s.type || inferGym(s.exs);
+    s.min = Math.max(10, Math.round((s.rest / 60 + s.lines * RT_SET_MIN) / 5) * 5);
+  });
+  return {sessions: sessions.filter(s => s.exs.length).sort((a, b) => a.date.localeCompare(b.date)), bad};
+}
+function renderRoutine(){
+  const r = S.rt;
+  if (!r){ setHTML($("#rtPreview"), ""); return; }
+  const t = today(), ok = r.sessions.filter(s => s.date <= t);
+  const unitSel = (e, i, j) => e.unit === "pc" ? `<span class="tag">sin carga</span>` : `<select class="mini-sel" data-rt="unit" data-i="${i}" data-j="${j}" aria-label="Unidad de ${esc(e.name)}">${[["kg", "kg"], ["lb", "lb"], ["nivel", "nivel"]].map(([v, l]) => `<option value="${v}"${v === e.unit ? " selected" : ""}>${l}</option>`).join("")}</select>`;
+  setHTML($("#rtPreview"), `<div class="preview">
+    ${r.sessions.map((s, i) => { const prev = day(s.date).act.sets.length, fut = s.date > t;
+      return `<div class="rt-ses">
+        <div class="row" style="align-items:center"><strong class="rt-date">${esc(capFirst(fmtLong(s.date)))}${s.date.slice(0, 4) !== today().slice(0, 4) ? ` de ${s.date.slice(0, 4)}` : ""}</strong>
+          <select class="mini-sel" data-rt="type" data-i="${i}" aria-label="Tipo de sesión"${fut ? " disabled" : ""}>${[["", "sin tipo"], ...Object.entries(GYM_LABEL)].map(([v, l]) => `<option value="${v}"${v === s.type ? " selected" : ""}>${l}</option>`).join("")}</select>
+          <label class="small muted">duración <input class="mini-in" data-rt="min" data-i="${i}" inputmode="numeric" value="${prev && day(s.date).act.gymMin ? day(s.date).act.gymMin : s.min}"> min</label></div>
+        ${fut ? `<p class="small" style="color:var(--danger);margin:6px 0 0">Es una fecha futura: no se guarda.</p>` : prev ? `<p class="small muted" style="margin:6px 0 0">Ese día ya tiene ${prev} ${prev === 1 ? "serie" : "series"}: se reemplazan por estas.</p>` : ""}
+        <ul class="rt-list">${s.exs.map((e, j) => `<li>${exFig(e.info)}<div class="grow"><div><strong>${esc(e.name)}</strong>${norm(e.raw) !== norm(e.name) ? ` <span class="small muted">desde "${esc(e.raw)}"</span>` : ""}${e.info ? "" : ` <span class="tag">no está en el catálogo: no suma al mapa muscular</span>`}</div>
+          <div class="pills">${e.sets.map(x => `<span class="pill">${x.kg ? `${fmt(x.kg, 1)} × ${x.reps}` : `${x.reps} reps`}${x.rest ? `<small>${mmss(x.rest)}</small>` : ""}</span>`).join("")}</div></div>${unitSel(e, i, j)}</li>`).join("")}</ul>
+      </div>`; }).join("")}
+    ${r.bad.length ? `<p class="small" style="margin:10px 0 0"><strong>No entendí estas líneas:</strong></p><ul class="small muted">${r.bad.map(b => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+    ${r.sessions.length ? `<div class="row mt"><button class="btn primary" data-action="rt-save"${ok.length ? "" : " disabled"}>Guardar ${ok.length} ${ok.length === 1 ? "sesión" : "sesiones"}</button><button class="btn ghost" data-action="rt-clear">Descartar</button></div>` : `<p class="empty">No encontré series en el texto.</p>`}
+  </div>`);
+}
+
 /* ---------- markdown mínimo ---------- */
 function md(src){
   const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>").replace(/`([^`]+)`/g, "<code>$1</code>");
@@ -2118,21 +2800,80 @@ const actions = {
     saveDay(S.date, d => { Object.assign(d.act, {gym, gymMin: gym ? (num($("#aGymMin").value) || 40) : 0, tennisMin: num($("#aTennis").value) || 0, bikeMin: num($("#aBike").value) || 0, bikeKm: num($("#aBikeKm").value) || 0}); });
     document.activeElement && document.activeElement.blur(); toast("Actividad guardada.");
   },
-  "set-add": () => {
-    const typed = $("#lEx").value.trim(), known = [...Object.values(liftStats().best).map(b => b.ex), ...EXERCISES].find(n => norm(n) === norm(typed));
-    const ex = known || typed, kg = num($("#lKg").value), reps = Math.round(num($("#lReps").value) || 0);
-    if (!ex){ toast("Escribe el ejercicio."); return; }
-    if (kg === null || kg < 0 || !reps){ toast("Indica kg y repeticiones (0 kg si es con peso corporal)."); return; }
-    const s = {id: uid(), ex, kg, reps}, before = liftStats().best[norm(ex)];
-    saveDay(S.date, d => d.act.sets.push(s));
-    $("#lReps").value = ""; $("#lReps").focus();
-    if (before && e1rm(s) > before.e1rm + 1e-9) toast(`Récord en ${ex}: 1RM estimado de ${fmt(e1rm(s), 1)} kg.`);
-    if ($("#restAuto").checked){ Rest.set(Rest.total); Rest.start(); }
+  "wk-type": el => saveDay(S.date, d => { d.act.gym = d.act.gym === el.dataset.v ? "" : el.dataset.v; }),
+  "wk-focus": el => { W.focus = {date: S.date, k: el.dataset.k, i: +el.dataset.i}; renderWorkout(); },
+  "wk-step": el => {
+    const i = +el.dataset.i, w = wRow(el.dataset.k, i); if (!w) return;
+    const f = el.dataset.f, dir = Number(el.dataset.v), key = wKey(S.date, w.e.k, i), r = w.r;
+    const v = f === "kg" ? Math.max(0, Math.round((r.kg + dir * kgStep(r.kg - (dir < 0 ? .001 : 0), r.unit)) * 100) / 100) : Math.max(1, r.reps + dir);
+    W.draft[key] = {...(W.draft[key] || {}), [f]: v}; W.focus = {date: S.date, k: w.e.k, i}; renderWorkout();
   },
-  "set-del": el => saveDay(S.date, d => { d.act.sets = d.act.sets.filter(s => s.id !== el.dataset.id); }),
-  "rest-set": el => { Rest.set(Number(el.dataset.v)); document.querySelectorAll("#restChips .chip").forEach(c => c.classList.toggle("sel", c === el)); },
-  "rest-toggle": () => Rest.running ? Rest.stop() : Rest.start(),
-  "rest-add": el => Rest.add(Number(el.dataset.v)),
+  "wk-unit": el => {
+    const i = +el.dataset.i, w = wRow(el.dataset.k, i); if (!w) return;
+    const key = wKey(S.date, w.e.k, i), order = ["", "lb", "nivel"];
+    W.draft[key] = {...(W.draft[key] || {}), unit: order[(order.indexOf(w.r.unit || "") + 1) % order.length]}; renderWorkout();
+  },
+  "wk-done": el => {
+    const i = +el.dataset.i, w = wRow(el.dataset.k, i); if (!w) return;
+    const {e, r} = w, k = e.k, now = Date.now();
+    if (!(r.reps > 0)){ toast("Indica las repeticiones."); return; }
+    const s = {id: uid(), ex: e.name, kg: Number(r.kg) || 0, reps: r.reps, ...(r.kg && (r.unit === "lb" || r.unit === "nivel") ? {unit: r.unit} : {}), t: now};
+    const before = liftStats(S.date).best[k], todayTop = Math.max(0, ...day(S.date).act.sets.filter(x => exKey(x.ex) === k).map(e1rm));
+    saveDay(S.date, d => {
+      const prev = d.act.sets.filter(x => x.t).sort((a, b) => b.t - a.t)[0];
+      if (prev && !prev.rest){ const gap = Math.round((now - prev.t) / 1000) - SET_SEC; if (gap > 0 && gap <= REST_MAX) prev.rest = gap; }
+      d.act.sets.push(s);
+      const t0 = Math.min(...d.act.sets.map(x => x.t || now));
+      if (now > t0) d.act.gymMin = Math.max(d.act.gymMin || 0, Math.round((now - t0) / 60000));
+    });
+    delete W.draft[wKey(S.date, k, i)]; W.focus = null;
+    if (before && e1rm(s) > before.e1rm + 1e-9 && e1rm(s) > todayTop + 1e-9) toast(`Récord en ${e.name}: ${setTxt(s)}.`);
+    Rest.start(now);
+  },
+  "wk-undo": el => saveDay(S.date, d => { d.act.sets = d.act.sets.filter(s => s.id !== el.dataset.id); }),
+  "wk-less": el => { const key = wKey(S.date, el.dataset.k); W.more[key] = (W.more[key] || 0) - 1; W.focus = null; renderWorkout(); },
+  "wk-open": el => { W.open[wKey(S.date, el.dataset.k)] = true; renderWorkout(); },
+  "wk-hide": el => {
+    const k = el.dataset.k, hide = () => { (W.hidden[S.date] = W.hidden[S.date] || []).push(k); W.extra[S.date] = (W.extra[S.date] || []).filter(x => exKey(x) !== k); W.focus = null; };
+    if (!day(S.date).act.sets.some(s => exKey(s.ex) === k)){ hide(); renderWorkout(); return; }
+    confirmClick(el, () => { hide(); saveDay(S.date, d => { d.act.sets = d.act.sets.filter(s => exKey(s.ex) !== k); }); });
+  },
+  "wk-more": el => { const key = wKey(S.date, el.dataset.k); W.more[key] = (W.more[key] || 0) + 1; W.focus = null; renderWorkout(); },
+  "cat-g": el => { S.catG = el.dataset.v; renderCatalog(); },
+  "wk-ex-add": el => {
+    const typed = (el && el.dataset.name) || $("#wkEx").value.trim(); if (!typed){ toast("Escribe el ejercicio."); return; }
+    const known = exHistory().map(h => h.ex).find(n => norm(n) === norm(typed)), name = exInfo(typed) ? exName(typed) : known || capFirst(typed);
+    (W.extra[S.date] = W.extra[S.date] || []).push(name); W.hidden[S.date] = (W.hidden[S.date] || []).filter(k => k !== exKey(name));
+    if (!el || !el.dataset.name){ $("#wkEx").value = ""; $("#wkEx").blur(); } W.focus = null; renderWorkout(); renderCatalog();
+    if (el && el.dataset.name) toast(`${name} agregado al día.`);
+  },
+  "ex-sel": el => { S.exSel = el.dataset.k; S.exPick = true; renderProgress(); },
+  "rt-parse": () => {
+    S.rt = parseRoutine($("#rtText").value);
+    renderRoutine();
+    if (!S.rt.sessions.length) toast("No encontré series en el texto.");
+  },
+  "rt-clear": () => { S.rt = null; renderRoutine(); },
+  "rt-save": () => {
+    const r = S.rt, t = today(); if (!r) return;
+    const field = (k, i, j) => $(`#rtPreview [data-rt="${k}"][data-i="${i}"]${j === undefined ? "" : `[data-j="${j}"]`}`);
+    const saved = [];
+    r.sessions.forEach((s, i) => {
+      if (s.date > t) return;
+      const type = field("type", i).value, min = Math.round(num(field("min", i).value) || s.min);
+      const sets = s.exs.flatMap((e, j) => {
+        const u = e.unit === "pc" ? "" : field("unit", i, j).value;
+        return e.sets.map(x => ({id: uid(), ex: e.name, kg: x.kg, reps: x.reps, ...(Number(x.kg) && (u === "lb" || u === "nivel") ? {unit: u} : {}), ...(x.rest ? {rest: x.rest} : {})}));
+      });
+      saveDay(s.date, d => { d.act.sets = sets; if (type){ d.act.gym = type; d.act.gymMin = min; } });
+      saved.push(s.date);
+    });
+    S.rt = null; $("#rtText").value = ""; $("#rtBox").open = false;
+    if (saved.length) setDate(saved.sort().pop());
+    renderRoutine();
+    toast(saved.length === 1 ? "Sesión guardada." : `${saved.length} sesiones guardadas.`);
+  },
+  "rest-toggle": () => Rest.stop(),
 
   "metro-toggle": () => Metro.toggle(),
   "beat-acc": el => { const i = +el.dataset.i; Metro.acc[i] = ((Metro.acc[i] ?? 1) + 2) % 3; Metro.drawBeats(); },
@@ -2445,7 +3186,7 @@ function contextData(){
   for (let i = 13; i >= 0; i--){
     const dt = addDays(t, -i), s = dayStats(dt), d = s.d;
     dias.push({fecha: dt, dia: parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}), kcal: Math.round(s.kcal), prot_g: Math.round(s.p), fibra_g: Math.round(s.fib), comidas: d.meals.map(m => m.desc), peso: d.weight, agua: d.water,
-      gimnasio: d.act.gym || null, series: d.act.sets.map(x => `${x.ex} ${x.kg}x${x.reps}`), tenis_min: d.act.tennisMin, bici_km: d.act.bikeKm,
+      gimnasio: d.act.gym || null, series: d.act.sets.map(x => `${exName(x.ex)} ${setTxt(x)}${x.rest ? `, descanso ${mmss(x.rest)}` : ""}`), tenis_min: d.act.tennisMin, bici_km: d.act.bikeKm,
       bajo_min: s.bassMin, tecnicas: d.bass.logs.map(l => ({t: (S.lib.techniques.find(x => x.id === l.techId) || {}).name, bpm: l.bpm, limpio: l.clean})),
       canciones: d.bass.songs.map(id => (S.lib.songs.find(x => x.id === id) || {}).title).filter(Boolean),
       estudio_min: s.studyMin, estudio: d.study.map(x => ({item: (S.lib.books.find(b => b.id === x.itemId) || {}).title, avance: x.amount}))});
@@ -2644,7 +3385,7 @@ const Metro = {
 /* ---------- temporizadores: descanso entre series y sesiones de foco ---------- */
 const mmss = s => `${Math.floor(s / 60)}:${pad(Math.max(0, Math.ceil(s) % 60))}`;
 function chime(){ if (!Metro.ensure()) return; const t = Metro.ctx.currentTime + .03; [0, .22, .44].forEach((d, i) => Metro.voice("triangulo", t + d, i === 2 ? 0 : 1)); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch {} }
-function makeTimer({el, btn, labels, onDone}){
+function makeTimer({el, btn, labels, onDone, onDraw}){
   return {
     total: 0, left: 0, end: 0, iv: null, running: false,
     set(s){ this.stop(); this.total = this.left = s; this.draw(); },
@@ -2652,10 +3393,15 @@ function makeTimer({el, btn, labels, onDone}){
     start(){ if (this.left <= 0) this.left = this.total; this.running = true; this.end = performance.now() + this.left * 1000; clearInterval(this.iv); this.iv = setInterval(() => this.tick(), 250); Metro.ensure(); this.draw(); },
     stop(){ this.running = false; clearInterval(this.iv); this.draw(); },
     tick(){ this.left = (this.end - performance.now()) / 1000; if (this.left <= 0){ this.left = 0; this.stop(); chime(); onDone && onDone(); } this.draw(); },
-    draw(){ $(el).textContent = mmss(this.left); $(el).classList.toggle("done", !this.running && this.left === 0); $(btn).textContent = this.running ? labels[1] : labels[0](this); }
+    draw(){ $(el).textContent = mmss(this.left); $(el).classList.toggle("done", !this.running && this.left === 0); $(btn).textContent = this.running ? labels[1] : labels[0](this); onDraw && onDraw(this); }
   };
 }
-const Rest = makeTimer({el: "#restTime", btn: "#restBtn", labels: [() => "Iniciar descanso", "Detener"], onDone: () => toast("Descanso terminado: a la siguiente serie.")});
+/* Cronómetro desde la última serie marcada, sin límite ni alarma */
+const Rest = {t0: 0, iv: null, hidden: 0,
+  start(t){ this.t0 = t || Date.now(); clearInterval(this.iv); this.iv = setInterval(() => this.draw(), 1000); this.draw(); },
+  stop(){ clearInterval(this.iv); this.iv = null; this.hidden = this.t0; this.draw(); },
+  draw(){ const on = !!this.iv; $("#restBar").hidden = !on; if (on) $("#restTime").textContent = mmss((Date.now() - this.t0) / 1000); }
+};
 const Pomo = Object.assign(makeTimer({el: "#pomoTime", btn: "#pomoBtn", labels: [t => t.left > 0 && t.left < t.total ? "Seguir" : t.mode === "foco" ? "Iniciar foco" : "Iniciar descanso", "Pausar"],
   onDone: () => Pomo.finish()}), {
   len: 25, mode: "foco", done: 0,
@@ -2692,6 +3438,7 @@ function wireUI(){
     document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + S.tab));
     if (S.tab === "metricas") loadMetrics();
     if (S.tab === "nutricion") renderPlan();
+    if (S.tab === "entreno") renderProgress();
   }));
   $("#planPanel").addEventListener("toggle", renderPlan);
   $("#weightPanel").addEventListener("toggle", renderWeight);
@@ -2702,9 +3449,12 @@ function wireUI(){
   $("#mDrums").innerHTML += Object.entries(GROOVES).map(([k, g]) => `<option value="${k}">${esc(g.name)}</option>`).join("");
   $("#mSound").addEventListener("change", e => { if (!Metro.playing) Metro.preview(e.target.value); });
   $("#mDrums").addEventListener("change", e => { $("#mSub").disabled = !!e.target.value; Metro.previewGroove(e.target.value); });
-  $("#lEx").addEventListener("input", updatePrev);
-  ["#lKg", "#lReps"].forEach(s => $(s).addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); actions["set-add"](); } }));
-  Rest.set(90); Pomo.reset();
+  $("#wkEx").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); actions["wk-ex-add"](); } });
+  $("#catQ").addEventListener("input", renderCatalog);
+  $("#catBox").addEventListener("toggle", renderCatalog);
+  $("#workout").addEventListener("change", e => { const t = e.target; if (!t.classList.contains("wk-num")) return; const v = num(t.value); if (v === null || v < 0) return; const key = wKey(S.date, t.dataset.k, +t.dataset.i); W.draft[key] = {...(W.draft[key] || {}), [t.dataset.f]: t.dataset.f === "reps" ? Math.max(1, Math.round(v)) : v}; });
+  $("#workout").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("wk-num")){ e.preventDefault(); e.target.blur(); renderWorkout(); } });
+  Pomo.reset();
   $("#mSub").addEventListener("change", e => { Metro.sub = +e.target.value; Metro.subIdx = 0; });
   $("#mVol").addEventListener("input", e => { if (Metro.gain) Metro.gain.gain.value = (e.target.value / 100) ** 2; });
   $("#sItem").addEventListener("change", () => renderStudy());
@@ -2721,7 +3471,7 @@ function wireUI(){
     const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT|BUTTON/.test(a.tagName)) return;
     e.preventDefault(); Metro.toggle();
   });
-  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); }, 150); });
+  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); renderProgress(); }, 150); });
   Metro.drawBeats(); Metro.setBpm(80);
 }
 init();
