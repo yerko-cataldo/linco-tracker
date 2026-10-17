@@ -1952,7 +1952,7 @@ function renderWorkout(){
     if (nd === e.rows.length && !W.open[wKey(date, e.k)]) return `<div class="wk-ex closed"><div class="wk-head">${exPic(e.name) || exFig(e.info)}<strong class="grow">${esc(e.name)}</strong><span class="wk-ok">${CHECK}${nd} ${nd === 1 ? "serie" : "series"}</span><button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button><button class="btn small ghost" data-action="wk-open" data-k="${esc(e.k)}">ver</button></div></div>`;
     return `<div class="wk-ex"><div class="wk-head">${exPic(e.name) || exFig(e.info)}<span class="grow"><strong>${esc(e.name)}</strong><span class="mus" title="${esc(e.info ? e.info.tip : "")}">${esc(muDetail(e.info))}</span>${hint ? `<span class="wk-hint ${e.step.kind}">${e.step.kind === "up" ? "↑" : "↓"} ${esc(e.step.txt)}</span>` : ""}</span><span class="wk-count">${nd}/${e.rows.length}</span>${rm}</div>
       <ol class="wk-rows">${e.rows.map((r, i) => row(e, r, i)).join("")}</ol>
-      <div class="wk-foot"><button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button>${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}</div></div>`;
+      <div class="wk-foot"><button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button>${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}${nd && e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-finish" data-k="${esc(e.k)}">Terminar ejercicio</button>` : ""}${nd === e.rows.length ? `<button class="btn small ghost" data-action="wk-close" data-k="${esc(e.k)}">Cerrar</button>` : ""}</div></div>`;
   };
   setHTML($("#wkBody"), P.exs.length ? `${P.type && !day(date).act.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Toca el círculo al terminar cada serie; con × quitas lo que no corresponde.</p>` : ""}${P.exs.map(card).join("")}`
     : `<p class="empty">${P.type ? `No hay una sesión anterior de ${GYM_LABEL[P.type]}. Agrega el primer ejercicio abajo.` : "Elige el tipo de sesión y se carga tu última rutina de ese tipo, con la carga propuesta para hoy."}</p>`);
@@ -2833,6 +2833,12 @@ const actions = {
   "wk-undo": el => saveDay(S.date, d => { d.act.sets = d.act.sets.filter(s => s.id !== el.dataset.id); }),
   "wk-less": el => { const key = wKey(S.date, el.dataset.k); W.more[key] = (W.more[key] || 0) - 1; W.focus = null; renderWorkout(); },
   "wk-open": el => { W.open[wKey(S.date, el.dataset.k)] = true; renderWorkout(); },
+  "wk-close": el => { W.open[wKey(S.date, el.dataset.k)] = false; renderWorkout(); },
+  "wk-finish": el => {
+    const e = workoutPlan(S.date).exs.find(x => x.k === el.dataset.k); if (!e) return;
+    const key = wKey(S.date, e.k), left = e.rows.filter(r => !r.done).length;
+    W.more[key] = (W.more[key] || 0) - left; W.open[key] = false; W.focus = null; renderWorkout();
+  },
   "wk-hide": el => {
     const k = el.dataset.k, hide = () => { (W.hidden[S.date] = W.hidden[S.date] || []).push(k); W.extra[S.date] = (W.extra[S.date] || []).filter(x => exKey(x) !== k); W.focus = null; };
     if (!day(S.date).act.sets.some(s => exKey(s.ex) === k)){ hide(); renderWorkout(); return; }
