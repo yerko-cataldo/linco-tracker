@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-22
+- Entreno: botón "Terminar entreno". Guarda la marca de cierre, detiene el cronómetro, quita los ejercicios que no se hicieron y deja un resumen (ejercicios, series, duración, récords). "Retomar entreno" lo reabre. Los días anteriores con series se muestran cerrados.
+- Entreno: los ejercicios pendientes se reordenan arrastrando el ícono ⠿ (o con las flechas del teclado). Los ejercicios con series suben y quedan en el orden en que se hicieron.
+
 ## 2026-10-16
 - Entreno: checklist "Entrenar hoy". Al elegir Push, Pull, Legs o Full body carga los ejercicios habituales con la carga propuesta (doble progresión). Se marca cada serie con un toque, se ajusta con − / +, se pueden quitar series y ejercicios, y "Terminar ejercicio" lo cierra sin hacer todas las series.
 - Entreno: cronómetro desde la última serie, sin límite ni alarma. El descanso y la duración de la sesión se calculan solos.

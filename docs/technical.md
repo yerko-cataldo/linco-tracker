@@ -9,7 +9,9 @@ El contexto general del proyecto (stack, modelo de datos, API y principios) est�
 - Cada ejercicio parte con las series de su última sesión. Si en todas las series a la carga más alta hubo 12 reps o más, la carga sube (2,5 kg bajo 40 kg, 5 kg desde 40 kg, 5 o 10 lb, o un nivel) y las reps bajan a 8. Si ninguna llegó a 6, la carga baja cerca de un 10% (`nextStep()`).
 - Al marcar una serie se guarda con `t` (marca de tiempo). El descanso de la serie anterior se calcula como el intervalo entre ambas marcas menos 30 s (`SET_SEC`), con tope de 10 min. La duración de la sesión es el tiempo entre la primera y la última serie marcada.
 - El cronómetro cuenta desde la última serie marcada, sin límite, sonido ni vibración. Al recargar la página dentro de 30 min, retoma desde esa serie.
-- Lo que no se guarda (ediciones de carga sin marcar, series agregadas o quitadas, ejercicios ocultos) vive en el objeto `W` y se pierde al recargar.
+- Orden de la lista: primero los ejercicios con series, en el orden en que se hicieron; después los pendientes, en el orden habitual o en el que se eligió arrastrando el ícono ⠿ (o con las flechas del teclado sobre él). Como `habitual()` lee el orden de ejecución, el orden en que entrenas hoy es el que se propone la próxima vez.
+- "Terminar entreno" guarda `act.end` (marca de tiempo) y detiene el cronómetro. Un entreno cerrado (`wEnded()`: con series y `act.end`, o de un día anterior) muestra solo los ejercicios hechos y un resumen; "Retomar entreno" borra `act.end` y vuelve a cargar los pendientes.
+- Lo que no se guarda (ediciones de carga sin marcar, series agregadas o quitadas, ejercicios ocultos, el orden de los pendientes y "Retomar entreno" en un día anterior) vive en el objeto `W` y se pierde al recargar.
 
 ### Lectura de notas (`parseRoutine()`)
 - Una fecha ambigua con reps ("15/10") cuenta como fecha solo si es posterior a la sesión en curso y de los últimos 60 días. Si no, se lee como reps.

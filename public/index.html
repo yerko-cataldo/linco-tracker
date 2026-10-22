@@ -392,6 +392,17 @@ button.wk-val.plain:hover{color:var(--act)}
 .wk-x:hover{background:var(--sunken);color:var(--danger)}
 .wk-head .wk-x{margin-left:0}
 .wk-add{margin-top:14px}
+.wk-add[hidden]{display:none}
+.wk-sum,.wk-end{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.wk-sum{margin:-4px 0 12px}
+.wk-end{margin-top:14px;padding:12px 14px;border:1px dashed var(--line-strong);border-radius:var(--r-sm)}
+.wk-grip{flex:none;width:28px;height:40px;margin-left:-8px;border:0;border-radius:8px;background:none;color:var(--muted);display:grid;place-items:center;padding:0;cursor:grab;touch-action:none}
+.wk-grip svg{width:20px;height:20px}
+.wk-grip:hover,.wk-grip:focus-visible{background:var(--sunken);color:var(--ink)}
+.wk-ex.drag{border-color:var(--act);box-shadow:0 6px 18px rgba(0,0,0,.14);position:relative;z-index:2}
+.wk-ex.drag .wk-grip{cursor:grabbing}
+#wkBody.sorting .wk-ex.pend .wk-rows,#wkBody.sorting .wk-ex.pend .wk-foot,#wkBody.sorting .wk-ex.pend .wk-hint{display:none}
+#wkBody.sorting .wk-ex.pend{padding-bottom:12px}
 /* Pictogramas de ejercicios */
 .pic{display:block;flex:none;width:72px;aspect-ratio:200/160;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .pic svg{display:block;width:100%;height:100%}
@@ -1878,11 +1889,14 @@ function renderAct(){
   renderWorkout(); renderProgress(); renderSessions(); renderCatalog();
 }
 const TROPHY = `<svg class="ico" aria-hidden="true"><use href="#i-trophy"/></svg>`;
+const GRIP = `<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></g></svg>`;
 const CHECK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 /* Checklist del día: ejercicios habituales del tipo de sesión, con la carga propuesta por la doble progresión */
-const W = {draft: {}, extra: {}, more: {}, hidden: {}, open: {}, focus: null};
+const W = {draft: {}, extra: {}, more: {}, hidden: {}, open: {}, order: {}, resume: {}, focus: null};
 const wKey = (date, k, i) => i === undefined ? `${date}|${k}` : `${date}|${k}|${i}`;
 const HABIT_SESSIONS = 3, DEFAULT_SETS = 3;
+/* Entreno cerrado: con series y marcado como terminado, o de un día anterior; "Retomar entreno" lo reabre */
+const wEnded = date => { const a = day(date).act; return a.sets.length > 0 && !W.resume[date] && (!!a.end || date < today()); };
 const DEFAULT_ROUTINE = {
   push: ["Press banca", "Press inclinado con mancuernas", "Press militar", "Elevaciones laterales", "Extensión de tríceps"],
   pull: ["Jalón al pecho", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo"],
@@ -1898,17 +1912,19 @@ function habitual(type, date){
   return {names: Object.values(pos).sort((a, b) => sum(a.p, x => x) / a.p.length - sum(b.p, x => x) / b.p.length).map(x => x.ex), from: dts};
 }
 function workoutPlan(date){
-  const d = day(date), type = d.act.gym, hab = type ? habitual(type, date) : {names: [], from: null};
-  const done = groupSets(d.act.sets), extra = W.extra[date] || [], hidden = W.hidden[date] || [];
+  const d = day(date), type = d.act.gym, ended = wEnded(date), hab = type && !ended ? habitual(type, date) : {names: [], from: null};
+  const done = groupSets(d.act.sets), extra = ended ? [] : W.extra[date] || [], hidden = W.hidden[date] || [], order = W.order[date] || [];
   const keys = [], names = {};
-  [...hab.names, ...done.map(g => g.ex), ...extra].forEach(n => { const k = exKey(n); if (!keys.includes(k)){ keys.push(k); names[k] = exName(n); } });
-  const exs = keys.filter(k => !hidden.includes(k) || done.some(g => g.k === k)).map(k => {
+  [...done.map(g => g.ex), ...hab.names, ...extra].forEach(n => { const k = exKey(n); if (!keys.includes(k)){ keys.push(k); names[k] = exName(n); } });
+  const pend = keys.filter(k => !done.some(g => g.k === k) && !hidden.includes(k)), base = [...pend];
+  const rank = k => order.includes(k) ? order.indexOf(k) : order.length + base.indexOf(k);
+  const exs = [...done.map(g => g.k), ...pend.sort((a, b) => rank(a) - rank(b))].map(k => {
     const dg = done.find(g => g.k === k), name = dg ? dg.ex : names[k];
     const prev = lastSession(name, date), pg = prev ? groupSets(prev.sets)[0] : null;
     const step = pg ? nextStep(pg) : null;
     let plan = pg ? pg.sets.map(s => ({kg: Number(s.kg) || 0, reps: s.reps, unit: s.unit || "", rest: s.rest || 0, warm: pg.warm.has(s.id)})) : Array.from({length: DEFAULT_SETS}, () => ({kg: 0, reps: 10, unit: "", rest: 0, warm: false}));
     if (step && step.kind !== "keep") plan = plan.map(p => !p.warm && p.kg === step.top ? {...p, kg: step.kg, reps: step.reps} : p);
-    const sets = dg ? dg.sets : [], n = Math.max(sets.length, plan.length + (W.more[wKey(date, k)] || 0));
+    const sets = dg ? dg.sets : [], n = ended ? sets.length : Math.max(sets.length, plan.length + (W.more[wKey(date, k)] || 0));
     const rows = Array.from({length: n}, (_, i) => {
       if (sets[i]) return {done: true, set: sets[i], warm: dg.warm.has(sets[i].id)};
       const last = sets[sets.length - 1], tmpl = plan[i] || (last ? {kg: Number(last.kg) || 0, reps: last.reps, unit: last.unit || "", rest: last.rest || 0} : plan[plan.length - 1]);
@@ -1916,7 +1932,7 @@ function workoutPlan(date){
     });
     return {k, name, info: exInfo(name), step, rows};
   });
-  return {type, from: hab.from, exs};
+  return {type, from: hab.from, exs, ended};
 }
 function wFocus(P){
   const f = W.focus && W.focus.date === S.date ? W.focus : null;
@@ -1931,7 +1947,7 @@ const unitLbl = u => u === "nivel" ? "nivel" : u === "lb" ? "lb" : "kg";
 function renderWorkout(){
   const date = S.date, P = workoutPlan(date), {best, prIds} = liftStats(), f = wFocus(P);
   const lastT = Math.max(0, ...day(today()).act.sets.map(s => s.t || 0));
-  if (!Rest.iv && lastT && lastT !== Rest.hidden && Date.now() - lastT < REST_RESUME) Rest.start(lastT);
+  if (!Rest.iv && lastT && lastT !== Rest.hidden && !wEnded(today()) && Date.now() - lastT < REST_RESUME) Rest.start(lastT);
   $("#wkTitle").textContent = date === today() ? "Entrenar hoy" : `Entreno del ${fmtShort(date)}`;
   setHTML($("#wkTypes"), ["push", "pull", "legs", "full"].map(t => `<button class="chip${P.type === t ? " sel" : ""}" data-action="wk-type" data-v="${t}" aria-pressed="${P.type === t}">${GYM_LABEL[t]}</button>`).join(""));
   const stepper = (e, i, r, fld) => {
@@ -1947,14 +1963,21 @@ function renderWorkout(){
     return `<li class="wk-row${on ? " focus" : ""}">${next ? `<button class="chk" data-action="wk-done" data-k="${esc(e.k)}" data-i="${i}" aria-label="Marcar hecha: ${esc(txt)}">${CHECK}</button>` : `<span class="chk wait" aria-hidden="true"></span>`}${on ? `<span class="wk-edit">${stepper(e, i, r, "kg")}${stepper(e, i, r, "reps")}</span>` : `<button class="wk-val plain" data-action="wk-focus" data-k="${esc(e.k)}" data-i="${i}">${esc(txt)}</button>`}${r.warm ? `<span class="wk-tag">aprox.</span>` : ""}</li>`;
   };
   const card = e => {
-    const nd = e.rows.filter(r => r.done).length, hint = e.step && e.step.kind !== "keep" && !nd;
-    const rm = `<button class="wk-x" data-action="wk-hide" data-k="${esc(e.k)}" aria-label="Quitar ${esc(e.name)} de hoy" title="${nd ? "Quitar ejercicio y borrar sus series" : "Quitar ejercicio de hoy"}">×</button>`;
-    if (nd === e.rows.length && !W.open[wKey(date, e.k)]) return `<div class="wk-ex closed"><div class="wk-head">${exPic(e.name) || exFig(e.info)}<strong class="grow">${esc(e.name)}</strong><span class="wk-ok">${CHECK}${nd} ${nd === 1 ? "serie" : "series"}</span><button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button><button class="btn small ghost" data-action="wk-open" data-k="${esc(e.k)}">ver</button></div></div>`;
-    return `<div class="wk-ex"><div class="wk-head">${exPic(e.name) || exFig(e.info)}<span class="grow"><strong>${esc(e.name)}</strong><span class="mus" title="${esc(e.info ? e.info.tip : "")}">${esc(muDetail(e.info))}</span>${hint ? `<span class="wk-hint ${e.step.kind}">${e.step.kind === "up" ? "↑" : "↓"} ${esc(e.step.txt)}</span>` : ""}</span><span class="wk-count">${nd}/${e.rows.length}</span>${rm}</div>
+    const nd = e.rows.filter(r => r.done).length, hint = e.step && e.step.kind !== "keep" && !nd, live = !P.ended, pend = live && !nd;
+    const rm = live ? `<button class="wk-x" data-action="wk-hide" data-k="${esc(e.k)}" aria-label="Quitar ${esc(e.name)} de hoy" title="${nd ? "Quitar ejercicio y borrar sus series" : "Quitar ejercicio de hoy"}">×</button>` : "";
+    const more = live ? `<button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button>` : "";
+    const grip = pend ? `<button class="wk-grip" data-k="${esc(e.k)}" aria-label="Mover ${esc(e.name)}: arrastra o usa las flechas" title="Arrastra para cambiar el orden">${GRIP}</button>` : "";
+    if (nd === e.rows.length && !W.open[wKey(date, e.k)]) return `<div class="wk-ex closed"><div class="wk-head">${exPic(e.name) || exFig(e.info)}<strong class="grow">${esc(e.name)}</strong><span class="wk-ok">${CHECK}${nd} ${nd === 1 ? "serie" : "series"}</span>${more}<button class="btn small ghost" data-action="wk-open" data-k="${esc(e.k)}">ver</button></div></div>`;
+    return `<div class="wk-ex${pend ? " pend" : ""}" data-k="${esc(e.k)}"><div class="wk-head">${grip}${exPic(e.name) || exFig(e.info)}<span class="grow"><strong>${esc(e.name)}</strong><span class="mus" title="${esc(e.info ? e.info.tip : "")}">${esc(muDetail(e.info))}</span>${hint ? `<span class="wk-hint ${e.step.kind}">${e.step.kind === "up" ? "↑" : "↓"} ${esc(e.step.txt)}</span>` : ""}</span><span class="wk-count">${nd}/${e.rows.length}</span>${rm}</div>
       <ol class="wk-rows">${e.rows.map((r, i) => row(e, r, i)).join("")}</ol>
-      <div class="wk-foot"><button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button>${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}${nd && e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-finish" data-k="${esc(e.k)}">Terminar ejercicio</button>` : ""}${nd === e.rows.length ? `<button class="btn small ghost" data-action="wk-close" data-k="${esc(e.k)}">Cerrar</button>` : ""}</div></div>`;
+      <div class="wk-foot">${more}${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}${nd && e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-finish" data-k="${esc(e.k)}">Terminar ejercicio</button>` : ""}${nd === e.rows.length ? `<button class="btn small ghost" data-action="wk-close" data-k="${esc(e.k)}">Cerrar</button>` : ""}</div></div>`;
   };
-  setHTML($("#wkBody"), P.exs.length ? `${P.type && !day(date).act.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Toca el círculo al terminar cada serie; con × quitas lo que no corresponde.</p>` : ""}${P.exs.map(card).join("")}`
+  const a = day(date).act, gs = groupSets(a.sets), nPr = a.sets.filter(s => prIds.has(s.id)).length, nWork = sum(gs, g => g.work.length);
+  const head = P.ended ? `<div class="wk-sum"><span class="wk-ok">${CHECK}Entreno guardado</span><span class="small muted grow">${gs.length} ${gs.length === 1 ? "ejercicio" : "ejercicios"} · ${nWork} ${nWork === 1 ? "serie" : "series"}${a.gymMin ? ` · ${fmtDur(a.gymMin)}` : ""}${nPr ? ` · ${nPr} ${nPr === 1 ? "récord" : "récords"}` : ""}</span><button class="btn small ghost" data-action="wk-resume">Retomar entreno</button></div>`
+    : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde.</p>` : "";
+  const foot = !P.ended && a.sets.length ? `<div class="wk-end"><span class="small muted grow">Cada serie queda guardada al marcarla. Al terminar el entreno se quitan los ejercicios que no hiciste y se detiene el cronómetro.</span><button class="btn primary" data-action="wk-end">Terminar entreno</button></div>` : "";
+  $("#workout .wk-add").hidden = P.ended;
+  setHTML($("#wkBody"), P.exs.length ? `${head}${P.exs.map(card).join("")}${foot}`
     : `<p class="empty">${P.type ? `No hay una sesión anterior de ${GYM_LABEL[P.type]}. Agrega el primer ejercicio abajo.` : "Elige el tipo de sesión y se carga tu última rutina de ese tipo, con la carga propuesta para hoy."}</p>`);
   const names = [...new Set([...EXERCISES, ...Object.values(best).map(b => b.ex)])].sort((a, b) => a.localeCompare(b, "es"));
   $("#exList").innerHTML = names.map(n => `<option value="${esc(n)}" label="${esc(muDetail(exInfo(n)))}">`).join("");
@@ -1962,6 +1985,39 @@ function renderWorkout(){
   setHTML($("#prList"), prs.length ? `<table><thead><tr><th>Ejercicio</th><th class="n">Serie</th><th class="n">Fecha</th></tr></thead><tbody>
     ${prs.map(b => `<tr><td>${esc(b.ex)}</td><td class="n">${esc(setTxt(b))}</td><td class="n">${fmtShort(b.date)}</td></tr>`).join("")}</tbody></table>`
     : `<p class="empty">Registra series para ver tus mejores marcas por ejercicio.</p>`);
+}
+/* Orden de los ejercicios pendientes: arrastre desde el ícono ⠿ o flechas del teclado */
+const wPend = () => [...$("#wkBody").querySelectorAll(".wk-ex.pend")];
+function wOrderSave(k){
+  W.order[S.date] = wPend().map(x => x.dataset.k); W.focus = null; renderWorkout();
+  if (k){ const g = [...$("#wkBody").querySelectorAll(".wk-grip")].find(x => x.dataset.k === k); if (g) g.focus(); }
+}
+function wDragStart(e){
+  const g = e.target.closest(".wk-grip"); if (!g || e.button > 0) return;
+  e.preventDefault();
+  const body = $("#wkBody"), card = g.closest(".wk-ex"), top0 = card.getBoundingClientRect().top;
+  body.classList.add("sorting"); card.classList.add("drag");
+  window.scrollBy(0, card.getBoundingClientRect().top - top0);
+  const move = ev => {
+    const sibs = wPend().filter(x => x !== card);
+    const after = sibs.find(x => { const r = x.getBoundingClientRect(); return ev.clientY < r.top + r.height / 2; });
+    if (after){ if (card.nextElementSibling !== after) after.before(card); }
+    else if (sibs.length && sibs[sibs.length - 1].nextElementSibling !== card) sibs[sibs.length - 1].after(card);
+    if (ev.clientY < 70) window.scrollBy(0, -14); else if (ev.clientY > innerHeight - 70) window.scrollBy(0, 14);
+  };
+  const end = () => {
+    document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", end); document.removeEventListener("pointercancel", end);
+    body.classList.remove("sorting"); card.classList.remove("drag"); wOrderSave();
+  };
+  document.addEventListener("pointermove", move); document.addEventListener("pointerup", end); document.addEventListener("pointercancel", end);
+}
+function wGripKey(e){
+  const g = e.target.closest(".wk-grip"); if (!g || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+  e.preventDefault();
+  const card = g.closest(".wk-ex"), list = wPend(), i = list.indexOf(card), j = i + (e.key === "ArrowUp" ? -1 : 1);
+  if (j < 0 || j >= list.length) return;
+  if (j < i) list[j].before(card); else list[j].after(card);
+  wOrderSave(g.dataset.k);
 }
 /* Descanso medido: intervalo entre dos series marcadas menos la duración estimada de una serie */
 const SET_SEC = 30, REST_MAX = 600, REST_RESUME = 30 * 60000;
@@ -2844,6 +2900,14 @@ const actions = {
     if (!day(S.date).act.sets.some(s => exKey(s.ex) === k)){ hide(); renderWorkout(); return; }
     confirmClick(el, () => { hide(); saveDay(S.date, d => { d.act.sets = d.act.sets.filter(s => exKey(s.ex) !== k); }); });
   },
+  "wk-end": () => {
+    const date = S.date, a = day(date).act, work = sum(groupSets(a.sets), g => g.work.length);
+    delete W.resume[date]; W.focus = null;
+    if (date === today()) Rest.stop();
+    saveDay(date, d => { d.act.end = Date.now(); });
+    toast(`Entreno guardado: ${work} ${work === 1 ? "serie" : "series"}${a.gymMin ? ` en ${fmtDur(a.gymMin)}` : ""}.`);
+  },
+  "wk-resume": () => { W.resume[S.date] = true; saveDay(S.date, d => { delete d.act.end; }); },
   "wk-more": el => { const key = wKey(S.date, el.dataset.k); W.more[key] = (W.more[key] || 0) + 1; W.focus = null; renderWorkout(); },
   "cat-g": el => { S.catG = el.dataset.v; renderCatalog(); },
   "wk-ex-add": el => {
@@ -3460,6 +3524,8 @@ function wireUI(){
   $("#catBox").addEventListener("toggle", renderCatalog);
   $("#workout").addEventListener("change", e => { const t = e.target; if (!t.classList.contains("wk-num")) return; const v = num(t.value); if (v === null || v < 0) return; const key = wKey(S.date, t.dataset.k, +t.dataset.i); W.draft[key] = {...(W.draft[key] || {}), [t.dataset.f]: t.dataset.f === "reps" ? Math.max(1, Math.round(v)) : v}; });
   $("#workout").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("wk-num")){ e.preventDefault(); e.target.blur(); renderWorkout(); } });
+  $("#wkBody").addEventListener("pointerdown", wDragStart);
+  $("#wkBody").addEventListener("keydown", wGripKey);
   Pomo.reset();
   $("#mSub").addEventListener("change", e => { Metro.sub = +e.target.value; Metro.subIdx = 0; });
   $("#mVol").addEventListener("input", e => { if (Metro.gain) Metro.gain.gain.value = (e.target.value / 100) ** 2; });
