@@ -737,6 +737,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option></select></div>
           <div class="field w5">Minutos<input id="aGymMin" inputmode="numeric" placeholder="40"></div>
         </div>
+        <p class="small muted" id="aGymNote" style="margin:0" hidden>Con series registradas, los minutos de gimnasio se estiman: 15 s de preparación más 3 s por repetición en cada serie (en la plancha, 1 s por repetición), y entre series el descanso medido acotado a 2–3 min, o 2 min 30 s si no se midió.</p>
         <div class="row">
           <div class="field w5">Tenis min<input id="aTennis" inputmode="numeric"></div>
           <div class="field w5">Bici min<input id="aBike" inputmode="numeric"></div>
@@ -1162,7 +1163,7 @@ function kcalScore(kcal, g){ const tolAbs = g.kcal * g.tol / 100, dev = Math.abs
 function dayStats(date){
   const d = day(date), g = goals(), a = d.act;
   const kcal = sum(d.meals, m => m.kcal), p = sum(d.meals, m => m.p), c = sum(d.meals, m => m.c), f = sum(d.meals, m => m.f), fib = sum(d.meals, m => m.fib);
-  const actMin = walkOf(date) + (a.gym ? (a.gymMin || 40) : 0) + (a.tennisMin || 0) + (a.bikeMin || 0);
+  const actMin = walkOf(date) + (a.gym ? gymDur(a) : 0) + (a.tennisMin || 0) + (a.bikeMin || 0);
   const studyMin = sum(d.study, s => s.minutes), bassMin = d.bass.minutes || 0;
   const pct = {
     food: d.meals.length ? .5 * Math.min(1, p / g.protein) + .5 * kcalScore(kcal, g) : null,
@@ -1857,7 +1858,7 @@ function renderNutDash(){
 function renderAct(){
   const g = goals(), d = day(S.date), st = dayStats(S.date), ws = weekStats(S.date), a = d.act;
   $("#actLede").textContent = `${fmtLong(S.date)}. Meta: ${g.activeMin} min activos al día (incluye ${WALK_DAILY_MIN} min de paseo con el galgo) y ${g.gymWeek} sesiones de gimnasio por semana.`;
-  setVal("#aGym", a.gym); setVal("#aGymMin", a.gymMin || ""); setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
+  setVal("#aGym", a.gym); setVal("#aGymMin", a.sets.length ? gymDur(a) : a.gymMin || ""); $("#aGymMin").disabled = a.sets.length > 0; $("#aGymNote").hidden = !a.sets.length; setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
   const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
   const selWk = weekDates(S.date), tdy = today();
   const wk0 = weekDates(tdy)[0], WD = ["L","Ma","Mi","J","V","S","D"];
@@ -1865,10 +1866,10 @@ function renderAct(){
   const wkRows = wkIdx.map(i => {
     const ds = weekDates(addDays(wk0, -7 * i)), all = ds.map(x => day(x).act), acts = all.filter(x => x.gym), bikes = all.filter(x => x.bikeMin || x.bikeKm);
     const cells = ds.map((x, j) => { const a = all[j], bike = a.bikeMin || a.bikeKm;
-      const gymTxt = a.gym ? `<div class="gw-gym"><strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><small>${fmtDur(a.gymMin || 40)}</small></div>` : "";
+      const gymTxt = a.gym ? `<div class="gw-gym"><strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><small>${fmtDur(gymDur(a))}</small></div>` : "";
       const bikeTxt = bike ? `<div class="gw-bike"><strong>${a.bikeKm ? fmt(a.bikeKm, 1) + " km" : "Bici"}</strong>${a.bikeMin ? `<small>${fmtDur(a.bikeMin)}</small>` : ""}</div>` : "";
       return `<td class="gw${x === tdy ? " today" : ""}${x === S.date ? " sel" : ""}${x > tdy ? " fut" : ""}"${x > tdy ? "" : ` data-action="day-open" data-d="${x}"`}>${gymTxt}${bikeTxt}</td>`; }).join("");
-    const gymTot = acts.length ? fmtDur(sum(acts, x => x.gymMin || 40)) : "–", bikeKm = sum(bikes, x => x.bikeKm);
+    const gymTot = acts.length ? fmtDur(sum(acts, gymDur)) : "–", bikeKm = sum(bikes, x => x.bikeKm);
     return `<tr${ds[0] === selWk[0] ? ' class="selwk"' : ""}><td>${wkLabel(ds[0], ds[6])}</td>${cells}<td class="tot${acts.length >= g.gymWeek ? " met" : ""}"><b>${acts.length}/${g.gymWeek}</b> gym · ${gymTot}${bikes.length ? `<br><b>${bikes.length}</b> bici${bikeKm ? " · " + fmt(bikeKm, 1) + " km" : ""}` : ""}</td></tr>`;
   }).join("");
   setHTML($("#gymWeeks"), `<div class="gw-legend"><span><i style="background:var(--act)"></i>Gimnasio</span><span><i style="background:var(--study)"></i>Bici</span><span><i style="outline:1.5px dashed var(--act);outline-offset:-1px"></i>Hoy</span></div><div class="gw-scroll"><table class="gwt"><thead><tr><th>Semana</th>${WD.map(x => `<th>${x}</th>`).join("")}<th>Total semana</th></tr></thead><tbody>${wkRows}</tbody></table></div>`);
@@ -1973,7 +1974,7 @@ function renderWorkout(){
       <div class="wk-foot">${more}${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}${nd && e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-finish" data-k="${esc(e.k)}">Terminar ejercicio</button>` : ""}${nd === e.rows.length ? `<button class="btn small ghost" data-action="wk-close" data-k="${esc(e.k)}">Cerrar</button>` : ""}</div></div>`;
   };
   const a = day(date).act, gs = groupSets(a.sets), nPr = a.sets.filter(s => prIds.has(s.id)).length, nWork = sum(gs, g => g.work.length);
-  const head = P.ended ? `<div class="wk-sum"><span class="wk-ok">${CHECK}Entreno guardado</span><span class="small muted grow">${gs.length} ${gs.length === 1 ? "ejercicio" : "ejercicios"} · ${nWork} ${nWork === 1 ? "serie" : "series"}${a.gymMin ? ` · ${fmtDur(a.gymMin)}` : ""}${nPr ? ` · ${nPr} ${nPr === 1 ? "récord" : "récords"}` : ""}</span><button class="btn small ghost" data-action="wk-resume">Retomar entreno</button></div>`
+  const head = P.ended ? `<div class="wk-sum"><span class="wk-ok">${CHECK}Entreno guardado</span><span class="small muted grow">${gs.length} ${gs.length === 1 ? "ejercicio" : "ejercicios"} · ${nWork} ${nWork === 1 ? "serie" : "series"} · ${fmtDur(gymDur(a))}${nPr ? ` · ${nPr} ${nPr === 1 ? "récord" : "récords"}` : ""}</span><button class="btn small ghost" data-action="wk-resume">Retomar entreno</button></div>`
     : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde.</p>` : "";
   const foot = !P.ended && a.sets.length ? `<div class="wk-end"><span class="small muted grow">Cada serie queda guardada al marcarla. Al terminar el entreno se quitan los ejercicios que no hiciste y se detiene el cronómetro.</span><button class="btn primary" data-action="wk-end">Terminar entreno</button></div>` : "";
   $("#workout .wk-add").hidden = P.ended;
@@ -2021,6 +2022,15 @@ function wGripKey(e){
 }
 /* Descanso medido: intervalo entre dos series marcadas menos la duración estimada de una serie */
 const SET_SEC = 30, REST_MAX = 600, REST_RESUME = 30 * 60000;
+/* Duración estimada de la sesión: ejecución de cada serie más el descanso entre series, acotado a 2–3 min */
+const REP_SEC = 3, SET_PREP_SEC = 15, REST_LO = 120, REST_HI = 180, ISO_EX = ["Plancha"];
+function sessionMin(sets){
+  const iso = ISO_EX.map(exKey);
+  const exec = sum(sets, x => SET_PREP_SEC + (Number(x.reps) || 0) * (iso.includes(exKey(x.ex)) ? 1 : REP_SEC));
+  const rest = sum(sets.slice(0, -1), x => clamp(x.rest || (REST_LO + REST_HI) / 2, REST_LO, REST_HI));
+  return Math.max(1, Math.round((exec + rest) / 60));
+}
+const gymDur = a => a.sets.length ? sessionMin(a.sets) : a.gymMin || 40;
 
 /* Mapa muscular de la semana seleccionada */
 const REGIONS = [["piernas", ["cuadriceps", "isquio", "gluteo", "gemelo", "aductor", "abductor"]], ["empuje", ["pecho", "hombro", "triceps"]], ["tirón", ["dorsal", "espalda", "hombroPost", "biceps", "trapecio"]], ["core", ["abdomen", "oblicuos", "lumbar"]]];
@@ -2101,7 +2111,7 @@ function renderSessions(){
       <span class="sess-date"><span>${esc(D.toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))}</span><strong>${D.getDate()}</strong><span>${esc(D.toLocaleDateString("es-CL", {month: "short"}).replace(".", ""))}</span></span>
       <span class="sess-figs">${bodyFig("front", fill, "fig mini")}${bodyFig("back", fill, "fig mini")}</span>
       <span class="sess-main"><span class="sess-title"><strong>${esc(a.gym ? GYM_LABEL[a.gym] || a.gym : "Gimnasio")}</strong>${prs ? `<span class="badge">${TROPHY}${prs} ${prs === 1 ? "récord" : "récords"}</span>` : ""}</span><span class="small muted">${gs.map(g => esc(g.ex)).join(" · ")}</span></span>
-      <span class="sess-stats">${work} series${a.gym && a.gymMin ? ` · ${fmtDur(a.gymMin)}` : ""}</span>
+      <span class="sess-stats">${work} series${a.gym ? ` · ${fmtDur(gymDur(a))}` : ""}</span>
     </button></li>`; }).join("")}</ul>` : `<p class="empty">Todavía no hay sesiones con series registradas.</p>`);
 }
 
@@ -2599,7 +2609,6 @@ Responde solo con este JSON: {"name": string (nombre del producto y marca si se 
    3. Serie "kg x reps", "N7x12" o "nivel 7x12" (máquina por nivel), "50 lb x 8" o "12 reps" sin carga; "a/b" reparte entre los ejercicios en paralelo.
    4. Descanso después de la serie: "2min", "2min30s", "90s" o "1:30".
    Sin fecha, las series van al día seleccionado. */
-const RT_SET_MIN = .75;
 const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full"};
 const RT_DATE = /^(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?(?:\s+(.+))?$/;
 const RT_REST = /^(?:descanso\s*)?(?:(\d+)\s*(?:min|mins|minutos?|m|')\s*(?:(\d+)\s*(?:s|seg|segundos?|")?)?|(\d+)\s*(?:s|seg|segundos?)|(\d+):(\d{2}))$/;
@@ -2633,7 +2642,7 @@ const RT_NAME_SET = /^(.*?[^\d\s/].*?)\s+((?:n|nivel)?\s*\d+(?:[.,]\d+)?\s*(?:kg
 function parseRoutine(text){
   const sessions = [], bad = [];
   let ses = null, cur = null;
-  const newSession = date => { ses = sessions.find(s => s.date === date) || null; if (!ses) sessions.push(ses = {date, type: "", exs: [], lines: 0, rest: 0}); cur = null; };
+  const newSession = date => { ses = sessions.find(s => s.date === date) || null; if (!ses) sessions.push(ses = {date, type: "", exs: []}); cur = null; };
   const item = raw => {
     const key = exKey(raw); let e = ses.exs.find(x => x.k === key);
     if (!e) ses.exs.push(e = {k: key, raw, name: exName(raw), info: exInfo(raw), sets: []});
@@ -2644,7 +2653,6 @@ function parseRoutine(text){
     if (sets.length !== cur.names.length && sets.length !== 1){ bad.push(`${line}: no coincide con los ejercicios de "${cur.raw}"`); return; }
     if (sets.length === 1 && cur.names.length > 1){ bad.push(`${line}: "${cur.raw}" son ${cur.names.length} ejercicios; escribe una serie por ejercicio separadas por "/"`); return; }
     cur.last = sets.map((s, i) => { const x = {...s}; item(cur.names[i]).sets.push(x); return x; });
-    ses.lines++;
   };
   const setsOf = line => { const sets = line.split("/").map(rtSet); return sets.every(Boolean) ? sets : null; };
   for (const line of String(text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean)){
@@ -2658,7 +2666,7 @@ function parseRoutine(text){
     }
     if (sets){ if (cur) addSets(line, sets); else bad.push(`${line}: serie sin ejercicio antes`); continue; }
     const rest = rtRest(line);
-    if (rest !== null){ if (cur && cur.last.length){ cur.last.forEach(s => { s.rest = rest; }); ses.rest += rest; } else bad.push(`${line}: descanso sin una serie antes`); continue; }
+    if (rest !== null){ if (cur && cur.last.length){ cur.last.forEach(s => { s.rest = rest; }); } else bad.push(`${line}: descanso sin una serie antes`); continue; }
     const ns = line.match(RT_NAME_SET), nsSets = ns && setsOf(ns[2]);
     if (nsSets){ startEx(ns[1]); addSets(line, nsSets); continue; }
     if (/\d\s*[x×*]\s*\d/i.test(line)){ bad.push(`${line}: no reconozco el formato de la serie`); continue; }
@@ -2668,7 +2676,7 @@ function parseRoutine(text){
     s.exs = s.exs.filter(e => e.sets.length);
     s.exs.forEach(e => { e.unit = e.sets.some(x => x.unit === "nivel") ? "nivel" : e.sets.some(x => x.unit === "lb") ? "lb" : e.sets.every(x => !x.kg) ? "pc" : "kg"; });
     s.type = s.type || inferGym(s.exs);
-    s.min = Math.max(10, Math.round((s.rest / 60 + s.lines * RT_SET_MIN) / 5) * 5);
+    s.min = sessionMin(s.exs.flatMap(e => e.sets.map(x => ({...x, ex: e.name}))));
   });
   return {sessions: sessions.filter(s => s.exs.length).sort((a, b) => a.date.localeCompare(b.date)), bad};
 }
@@ -2682,7 +2690,7 @@ function renderRoutine(){
       return `<div class="rt-ses">
         <div class="row" style="align-items:center"><strong class="rt-date">${esc(capFirst(fmtLong(s.date)))}${s.date.slice(0, 4) !== today().slice(0, 4) ? ` de ${s.date.slice(0, 4)}` : ""}</strong>
           <select class="mini-sel" data-rt="type" data-i="${i}" aria-label="Tipo de sesión"${fut ? " disabled" : ""}>${[["", "sin tipo"], ...Object.entries(GYM_LABEL)].map(([v, l]) => `<option value="${v}"${v === s.type ? " selected" : ""}>${l}</option>`).join("")}</select>
-          <label class="small muted">duración <input class="mini-in" data-rt="min" data-i="${i}" inputmode="numeric" value="${prev && day(s.date).act.gymMin ? day(s.date).act.gymMin : s.min}"> min</label></div>
+          <span class="small muted">duración estimada ${fmtDur(s.min)}</span></div>
         ${fut ? `<p class="small" style="color:var(--danger);margin:6px 0 0">Es una fecha futura: no se guarda.</p>` : prev ? `<p class="small muted" style="margin:6px 0 0">Ese día ya tiene ${prev} ${prev === 1 ? "serie" : "series"}: se reemplazan por estas.</p>` : ""}
         <ul class="rt-list">${s.exs.map((e, j) => `<li>${exFig(e.info)}<div class="grow"><div><strong>${esc(e.name)}</strong>${norm(e.raw) !== norm(e.name) ? ` <span class="small muted">desde "${esc(e.raw)}"</span>` : ""}${e.info ? "" : ` <span class="tag">no está en el catálogo: no suma al mapa muscular</span>`}</div>
           <div class="pills">${e.sets.map(x => `<span class="pill">${x.kg ? `${fmt(x.kg, 1)} × ${x.reps}` : `${x.reps} reps`}${x.rest ? `<small>${mmss(x.rest)}</small>` : ""}</span>`).join("")}</div></div>${unitSel(e, i, j)}</li>`).join("")}</ul>
@@ -2853,7 +2861,7 @@ const actions = {
 
   "act-save": () => {
     const gym = $("#aGym").value;
-    saveDay(S.date, d => { Object.assign(d.act, {gym, gymMin: gym ? (num($("#aGymMin").value) || 40) : 0, tennisMin: num($("#aTennis").value) || 0, bikeMin: num($("#aBike").value) || 0, bikeKm: num($("#aBikeKm").value) || 0}); });
+    saveDay(S.date, d => { Object.assign(d.act, {gym, gymMin: gym ? (d.act.sets.length ? d.act.gymMin : num($("#aGymMin").value) || 40) : 0, tennisMin: num($("#aTennis").value) || 0, bikeMin: num($("#aBike").value) || 0, bikeKm: num($("#aBikeKm").value) || 0}); });
     document.activeElement && document.activeElement.blur(); toast("Actividad guardada.");
   },
   "wk-type": el => saveDay(S.date, d => { d.act.gym = d.act.gym === el.dataset.v ? "" : el.dataset.v; }),
@@ -2879,8 +2887,6 @@ const actions = {
       const prev = d.act.sets.filter(x => x.t).sort((a, b) => b.t - a.t)[0];
       if (prev && !prev.rest){ const gap = Math.round((now - prev.t) / 1000) - SET_SEC; if (gap > 0 && gap <= REST_MAX) prev.rest = gap; }
       d.act.sets.push(s);
-      const t0 = Math.min(...d.act.sets.map(x => x.t || now));
-      if (now > t0) d.act.gymMin = Math.max(d.act.gymMin || 0, Math.round((now - t0) / 60000));
     });
     delete W.draft[wKey(S.date, k, i)]; W.focus = null;
     if (before && e1rm(s) > before.e1rm + 1e-9 && e1rm(s) > todayTop + 1e-9) toast(`Récord en ${e.name}: ${setTxt(s)}.`);
@@ -2905,7 +2911,7 @@ const actions = {
     delete W.resume[date]; W.focus = null;
     if (date === today()) Rest.stop();
     saveDay(date, d => { d.act.end = Date.now(); });
-    toast(`Entreno guardado: ${work} ${work === 1 ? "serie" : "series"}${a.gymMin ? ` en ${fmtDur(a.gymMin)}` : ""}.`);
+    toast(`Entreno guardado: ${work} ${work === 1 ? "serie" : "series"} en ${fmtDur(gymDur(a))}.`);
   },
   "wk-resume": () => { W.resume[S.date] = true; saveDay(S.date, d => { delete d.act.end; }); },
   "wk-more": el => { const key = wKey(S.date, el.dataset.k); W.more[key] = (W.more[key] || 0) + 1; W.focus = null; renderWorkout(); },
@@ -2930,12 +2936,12 @@ const actions = {
     const saved = [];
     r.sessions.forEach((s, i) => {
       if (s.date > t) return;
-      const type = field("type", i).value, min = Math.round(num(field("min", i).value) || s.min);
+      const type = field("type", i).value;
       const sets = s.exs.flatMap((e, j) => {
         const u = e.unit === "pc" ? "" : field("unit", i, j).value;
         return e.sets.map(x => ({id: uid(), ex: e.name, kg: x.kg, reps: x.reps, ...(Number(x.kg) && (u === "lb" || u === "nivel") ? {unit: u} : {}), ...(x.rest ? {rest: x.rest} : {})}));
       });
-      saveDay(s.date, d => { d.act.sets = sets; if (type){ d.act.gym = type; d.act.gymMin = min; } });
+      saveDay(s.date, d => { d.act.sets = sets; if (type) d.act.gym = type; });
       saved.push(s.date);
     });
     S.rt = null; $("#rtText").value = ""; $("#rtBox").open = false;
