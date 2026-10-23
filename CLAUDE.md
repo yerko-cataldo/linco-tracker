@@ -34,7 +34,7 @@ Ambas tablas guardan un documento JSON por fila.
   "weight": null,
   "water": 0,
   "creatine": false,
-  "act": {"gym": "push|pull|legs|full|", "gymMin", "tennisMin", "bikeMin", "bikeKm", "sets": [{"id", "ex", "kg", "reps", "unit", "rest"}]},
+  "act": {"gym": "push|pull|legs|full|", "gymMin", "gymMinManual", "tennisMin", "bikeMin", "bikeKm", "sets": [{"id", "ex", "kg", "reps", "unit", "rest"}]},
   "bass": {"minutes", "logs": [{"id", "techId", "bpm", "clean"}], "songs": [songId]},
   "study": [{"id", "itemId", "amount", "minutes"}]
 }
@@ -48,7 +48,7 @@ Ambas tablas guardan un documento JSON por fila.
 | `techniques`, `songs`, `books`, `foods`, `combos` | `{list: [...]}` |
 | `coach` | `{reviews: [...]}` |
 
-En `act.sets`, `unit` es opcional (`"lb"` o `"nivel"`; sin él, kg) `rest` son los segundos de descanso después de la serie (en el checklist se mide como el intervalo entre dos series marcadas menos 30 s) y `t` es la marca de tiempo al marcarla. `act.end` (opcional) es la marca de tiempo de "Terminar entreno". En días con series, la duración del gimnasio se estima desde las series con `gymDur()` (ejecución más descansos de 2–3 min) y `act.gymMin` se ignora. Los nombres se normalizan al catálogo `EX_CAT` (~95 ejercicios con alias en inglés y español, músculos principales y secundarios, tipo de sesión y una nota de enfoque); un nombre con palabras extra solo coincide si esas palabras están en `EX_DESC` ("máquina", "polea", "con"…).
+En `act.sets`, `unit` es opcional (`"lb"` o `"nivel"`; sin él, kg) `rest` son los segundos de descanso después de la serie (en el checklist se mide como el intervalo entre dos series marcadas menos 30 s) y `t` es la marca de tiempo al marcarla. `act.end` (opcional) es la marca de tiempo de "Terminar entreno". En días con series, la duración del gimnasio se estima desde las series con `gymDur()` (ejecución más descansos de 2–3 min) y `act.gymMin` se ignora; si escribes los minutos a mano, quedan en `act.gymMinManual` y reemplazan al estimado. Los nombres se normalizan al catálogo `EX_CAT` (~95 ejercicios con alias en inglés y español, músculos principales y secundarios, tipo de sesión y una nota de enfoque); un nombre con palabras extra solo coincide si esas palabras están en `EX_DESC` ("máquina", "polea", "con"…).
 
 Campos opcionales: `goals.wDate`, `goals.wFat` y `goals.wLean` (meta de peso: fecha, % de grasa meta y masa libre de grasa en kg); `profile.officeDays` y `profile.cookDays` (días de la semana como `getDay()`, 0 = domingo); `profile.inbody` (historial de exámenes); `combos[].day` (`"tele"` u `"ofi"`) y `combos[].time` (`"HH:MM"`), que forman el plan de cada tipo de día.
 

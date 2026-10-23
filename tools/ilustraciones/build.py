@@ -18,7 +18,7 @@ import pose_crunch, pose_crunchinv, pose_curlz, pose_facepull, pose_martillo, po
 
 INDEX = HERE.parent.parent / "public" / "index.html"
 EXERCISES = {
-    "Jalón al pecho": lib.pulldown,
+    "Jalón al pecho con polea": lib.pulldown,
     "Remo en máquina": pose_remo.draw,
     "Face pull": pose_facepull.draw,
     "Curl con barra Z": pose_curlz.draw,
