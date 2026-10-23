@@ -356,6 +356,7 @@ button.link{background:none;border:0;padding:0;color:inherit;font:inherit;text-d
 .wk-src{margin:-4px 0 12px}
 .wk-warm{margin:0 0 12px;border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;font-size:13px}
 .wk-warm summary{cursor:pointer;color:var(--muted);font-weight:600}
+.wk-warm p{margin:8px 0 0}
 .wk-warm ol{margin:8px 0 2px;padding-left:20px}
 .wk-warm li{margin:3px 0}
 .wk-ex{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px 8px;background:var(--bg)}
@@ -1930,12 +1931,13 @@ const CHECK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 
 /* Checklist del día: ejercicios habituales del tipo de sesión, con la carga propuesta por la doble progresión */
 const W = {draft: {}, extra: {}, more: {}, hidden: {}, open: {}, order: {}, resume: {}, focus: null, warmOpen: false};
 /* Calentamiento sugerido por tipo de sesión; se muestra plegado antes de la primera serie */
-const APPROACH = "Series de aproximación del primer ejercicio: 10 reps con ~50% de tu carga y 5 con ~75% (márcalas como aprox.)";
+/* Calentamiento sugerido por tipo de sesión; se muestra plegado antes de la primera serie. Las sesiones de gimnasio
+   asumen que llegas en bici (cuerpo ya caliente): solo movilidad dinámica y series de aproximación, sin estiramiento estático. */
 const WARMUP = {
-  push: {min: 7, steps: ["5 min de bici o elíptica suave", "Rotaciones de hombros y brazos: 10 hacia adelante y 10 hacia atrás", "Face pull o rotación externa en polea liviana: 15 reps", APPROACH]},
-  pull: {min: 7, steps: ["5 min de bici o remo ergómetro suave", "Colgarte de la barra: 20–30 s", "Jalón con agarre ancho muy liviano: 15 reps, apretando las escápulas abajo", APPROACH]},
-  legs: {min: 8, steps: ["5 min de bici suave", "Sentadilla con peso corporal: 10 reps lentas", "Puente de glúteos: 12 reps", "Balanceo de piernas adelante-atrás y de lado: 10 por pierna", APPROACH]},
-  full: {min: 8, steps: ["5 min de bici o elíptica suave", "Sentadilla con peso corporal: 10 reps", "Flexiones apoyando las rodillas: 10 reps", "Puente de glúteos: 12 reps", APPROACH]},
+  push: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Flexiones apoyando las rodillas: 8 reps", "Face pull o rotación externa en polea liviana: 15 reps", APPROACH]},
+  pull: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Colgarte de la barra: 20–30 s", "Jalón con agarre ancho muy liviano: 15 reps, apretando las escápulas abajo", APPROACH]},
+  legs: {min: 4, bike: true, steps: ["Sentadilla con peso corporal: 10 reps lentas", "Puente de glúteos: 12 reps", "Balanceo de piernas adelante-atrás y de lado: 10 por pierna", APPROACH]},
+  full: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Sentadilla con peso corporal: 10 reps", "Flexiones apoyando las rodillas: 8 reps", APPROACH]},
   core: {min: 4, steps: ["Gato-camello en cuatro apoyos: 8 reps lentas", "Bicho muerto lento: 5 por lado", "Puente de glúteos: 10 reps", "Plancha suave: 20 s"]}
 };
 const wKey = (date, k, i) => i === undefined ? `${date}|${k}` : `${date}|${k}|${i}`;
@@ -2036,7 +2038,7 @@ function renderWorkout(){
   const a = day(date).act, gs = groupSets(a.sets), nPr = a.sets.filter(s => prIds.has(s.id)).length, nWork = sum(gs, g => g.work.length);
   const head = P.ended ? `<div class="wk-sum"><span class="wk-ok">${CHECK}Entreno guardado</span><span class="small muted grow">${gs.length} ${gs.length === 1 ? "ejercicio" : "ejercicios"} · ${nWork} ${nWork === 1 ? "serie" : "series"} · ${fmtDur(gymDur(a))}${nPr ? ` · ${nPr} ${nPr === 1 ? "récord" : "récords"}` : ""}</span><button class="btn small ghost" data-action="wk-resume">Retomar entreno</button></div>`
     : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Van en orden ideal: primero los multiarticulares, después el aislamiento de músculos grandes, luego el de músculos chicos y el core al final; dentro de cada grupo, en tu orden habitual. Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde.</p>` : "";
-  const warm = P.type && !P.ended && !a.sets.length && WARMUP[P.type] ? `<details class="wk-warm"${W.warmOpen ? " open" : ""}><summary>Calentamiento · ~${WARMUP[P.type].min} min</summary><ol>${WARMUP[P.type].steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></details>` : "";
+  const warm = P.type && !P.ended && !a.sets.length && WARMUP[P.type] ? `<details class="wk-warm"${W.warmOpen ? " open" : ""}><summary>Calentamiento · ~${WARMUP[P.type].min} min</summary>${WARMUP[P.type].bike ? `<p class="muted">Llegas en bici, así que ya vienes con el cuerpo caliente; esto prepara las articulaciones de la sesión. Si pasan más de 15 min antes de empezar, suma 5 min de bici o elíptica suave.</p>` : ""}<ol>${WARMUP[P.type].steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></details>` : "";
   const foot = !P.ended && a.sets.length ? `<div class="wk-end"><span class="small muted grow">Cada serie queda guardada al marcarla. Al terminar el entreno se quitan los ejercicios que no hiciste y se detiene el cronómetro.</span><button class="btn primary" data-action="wk-end">Terminar entreno</button></div>` : "";
   $("#workout .wk-add").hidden = P.ended;
   setHTML($("#wkBody"), P.exs.length ? `${head}${warm}${P.exs.map(card).join("")}${foot}`
