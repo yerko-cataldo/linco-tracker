@@ -734,10 +734,10 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="panel stack">
         <h3>Actividad del día</h3>
         <div class="row">
-          <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option></select></div>
+          <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option><option value="core">Core</option></select></div>
           <div class="field w5">Minutos<input id="aGymMin" inputmode="numeric" placeholder="40"></div>
         </div>
-        <p class="small muted" id="aGymNote" style="margin:0" hidden>Con series registradas, los minutos de gimnasio se estiman: 15 s de preparación más 3 s por repetición en cada serie (en la plancha, 1 s por repetición), y entre series el descanso medido acotado a 2–3 min, o 2 min 30 s si no se midió. Si escribes otro número, ese reemplaza al estimado; bórralo para volver al estimado.</p>
+        <p class="small muted" id="aGymNote" style="margin:0" hidden>Con series registradas, los minutos de gimnasio se estiman: 15 s de preparación más 3 s por repetición en cada serie (en las planchas, 1 s por repetición), y entre series el descanso medido acotado a 2–3 min, o 2 min 30 s si no se midió (en los ejercicios de core, 60–90 s, o 75 s). Si escribes otro número, ese reemplaza al estimado; bórralo para volver al estimado.</p>
         <div class="row">
           <div class="field w5">Tenis min<input id="aTennis" inputmode="numeric"></div>
           <div class="field w5">Bici min<input id="aBike" inputmode="numeric"></div>
@@ -1044,7 +1044,7 @@ const SONG_STATES = ["por aprender","aprendiendo","tocándola","dominada"];
 const DATA_START = "2026-09-28", WALK_DAILY_MIN = 60;
 const walkOf = date => date >= DATA_START && date <= today() ? WALK_DAILY_MIN : 0;
 const fmtDur = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`; };
-const GYM_LABEL ={push:"Push", pull:"Pull", legs:"Legs", full:"Full body"};
+const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body", core:"Core"};
 // Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
 // los marcados "revisar" dependen de la marca o del corte y conviene corregirlos con la etiqueta.
 const FOOD_SEED = [
@@ -1177,7 +1177,7 @@ function weekStats(date){
   const t = today(), dates = weekDates(date).filter(x => x <= t), st = dates.map(dayStats), g = goals();
   const logged = st.filter(s => s.meals > 0), n = dates.length || 1;
   const plants = new Set(); st.forEach(s => s.d.meals.forEach(m => (m.plants || []).forEach(x => plants.add(String(x).toLowerCase()))));
-  const gym = {push:0, pull:0, legs:0, full:0}; st.forEach(s => { if (s.d.act.gym) gym[s.d.act.gym] = (gym[s.d.act.gym] || 0) + 1; });
+  const gym = {push:0, pull:0, legs:0, full:0, core:0}; st.forEach(s => { if (s.d.act.gym) gym[s.d.act.gym] = (gym[s.d.act.gym] || 0) + 1; });
   const w = {
     dates, st, n,
     kcalAvg: logged.length ? sum(logged, s => s.kcal) / logged.length : null,
@@ -1295,18 +1295,18 @@ const EX_CAT = [
   ["Elevación de talones sentado", "gemelo", "", "legs", "seated calf raise, gemelo sentado, soleo", "Sóleo: la rodilla doblada saca de juego al gemelo."],
   ["Gemelos en prensa", "gemelo", "", "legs", "calf press, leg press calf raise, pantorrillas en prensa", "Gemelos con las piernas estiradas en la prensa."],
   // Core
-  ["Plancha", "abdomen", "oblicuos hombro", "", "plank, plancha frontal", "Core en isometría; la duración va en reps como segundos."],
-  ["Plancha lateral", "oblicuos", "abdomen abductor", "", "side plank", "Oblicuos y glúteo medio en isometría."],
-  ["Crunch", "abdomen", "", "", "crunch abdominal, abdominales, encogimiento abdominal", "Recto abdominal, parte alta."],
-  ["Crunch inverso", "abdomen", "oblicuos", "", "reverse crunch", "Recto abdominal, énfasis bajo."],
-  ["Crunch en polea", "abdomen", "", "", "cable crunch, crunch con cuerda, crunch en polea alta", "Recto abdominal con carga progresiva."],
-  ["Crunch en máquina", "abdomen", "", "", "ab crunch machine, abdominal en maquina", "Recto abdominal con carga guiada."],
-  ["Elevación de piernas", "abdomen", "oblicuos", "", "leg raise, leg raises, hanging leg raise, elevacion de piernas colgado, elevaciones de piernas", "Abdomen bajo y flexores de cadera."],
-  ["Rueda abdominal", "abdomen", "dorsal hombro", "", "ab wheel, ab rollout, rueda", "Core en anti-extensión; muy exigente."],
-  ["Giros rusos", "oblicuos", "abdomen", "", "russian twist, russian twists", "Oblicuos en rotación."],
-  ["Pallof press", "oblicuos abdomen", "", "", "pallof, press pallof", "Core en anti-rotación con polea."],
-  ["Bicho muerto", "abdomen", "oblicuos", "", "dead bug, dead bugs", "Control del core con la lumbar pegada al suelo."],
-  ["Leñador en polea", "oblicuos", "abdomen hombro", "", "woodchopper, cable woodchop, lenador", "Oblicuos en rotación con polea."],
+  ["Plancha", "abdomen", "oblicuos hombro", "core", "plank, plancha frontal", "Core en isometría; la duración va en reps como segundos."],
+  ["Plancha lateral", "oblicuos", "abdomen abductor", "core", "side plank", "Oblicuos y glúteo medio en isometría."],
+  ["Crunch", "abdomen", "", "core", "crunch abdominal, abdominales, encogimiento abdominal", "Recto abdominal, parte alta."],
+  ["Crunch inverso", "abdomen", "oblicuos", "core", "reverse crunch", "Recto abdominal, énfasis bajo."],
+  ["Crunch en polea", "abdomen", "", "core", "cable crunch, crunch con cuerda, crunch en polea alta", "Recto abdominal con carga progresiva."],
+  ["Crunch en máquina", "abdomen", "", "core", "ab crunch machine, abdominal en maquina", "Recto abdominal con carga guiada."],
+  ["Elevación de piernas", "abdomen", "oblicuos", "core", "leg raise, leg raises, hanging leg raise, elevacion de piernas colgado, elevaciones de piernas", "Abdomen bajo y flexores de cadera."],
+  ["Rueda abdominal", "abdomen", "dorsal hombro", "core", "ab wheel, ab rollout, rueda", "Core en anti-extensión; muy exigente."],
+  ["Giros rusos", "oblicuos", "abdomen", "core", "russian twist, russian twists", "Oblicuos en rotación."],
+  ["Pallof press", "oblicuos abdomen", "", "core", "pallof, press pallof", "Core en anti-rotación con polea."],
+  ["Bicho muerto", "abdomen", "oblicuos", "core", "dead bug, dead bugs", "Control del core con la lumbar pegada al suelo."],
+  ["Leñador en polea", "oblicuos", "abdomen hombro", "core", "woodchopper, cable woodchop, lenador", "Oblicuos en rotación con polea."],
   // Cuerpo completo y cardio
   ["Kettlebell swing", "gluteo isquio", "lumbar hombro antebrazo", "full", "kb swing, swing con pesa rusa, swings", "Cadena posterior explosiva; la cadera hace el trabajo."],
   ["Thruster", "cuadriceps hombro", "gluteo triceps", "full", "thrusters", "Sentadilla frontal más press: piernas y hombros."],
@@ -1912,7 +1912,8 @@ const DEFAULT_ROUTINE = {
   push: ["Press banca", "Press inclinado con mancuernas", "Press militar", "Elevaciones laterales", "Extensión de tríceps"],
   pull: ["Jalón al pecho con polea", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo"],
   legs: ["Sentadilla hack", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones", "Aductores en máquina", "Abductores en máquina"],
-  full: ["Sentadilla", "Press banca", "Remo en polea", "Press militar", "Curl femoral"]
+  full: ["Sentadilla", "Press banca", "Remo en polea", "Press militar", "Curl femoral"],
+  core: ["Crunch inverso", "Elevación de piernas", "Rueda abdominal", "Plancha lateral", "Bicho muerto"]
 };
 /* Ejercicios habituales: los de las últimas 3 sesiones del tipo, ordenados por su posición promedio; sin historial, la rutina base del tipo */
 function habitual(type, date){
@@ -1960,7 +1961,7 @@ function renderWorkout(){
   const lastT = Math.max(0, ...day(today()).act.sets.map(s => s.t || 0));
   if (!Rest.iv && lastT && lastT !== Rest.hidden && !wEnded(today()) && Date.now() - lastT < REST_RESUME) Rest.start(lastT);
   $("#wkTitle").textContent = date === today() ? "Entrenar hoy" : `Entreno del ${fmtShort(date)}`;
-  setHTML($("#wkTypes"), ["push", "pull", "legs", "full"].map(t => `<button class="chip${P.type === t ? " sel" : ""}" data-action="wk-type" data-v="${t}" aria-pressed="${P.type === t}">${GYM_LABEL[t]}</button>`).join(""));
+  setHTML($("#wkTypes"), Object.keys(GYM_LABEL).map(t => `<button class="chip${P.type === t ? " sel" : ""}" data-action="wk-type" data-v="${t}" aria-pressed="${P.type === t}">${GYM_LABEL[t]}</button>`).join(""));
   const stepper = (e, i, r, fld) => {
     const a = `data-k="${esc(e.k)}" data-i="${i}" data-f="${fld}"`, kg = fld === "kg";
     return `<span class="stepper"><button data-action="wk-step" ${a} data-v="-1" aria-label="${kg ? "Menos carga" : "Una rep menos"}">−</button><input class="wk-num" ${a} inputmode="${kg ? "decimal" : "numeric"}" value="${kg ? numIn(r.kg) : r.reps}" aria-label="${kg ? "Carga" : "Repeticiones"}"><button data-action="wk-step" ${a} data-v="1" aria-label="${kg ? "Más carga" : "Una rep más"}">+</button>${kg ? `<button class="wk-unit" data-action="wk-unit" data-k="${esc(e.k)}" data-i="${i}" title="Cambiar unidad">${unitLbl(r.unit)}</button>` : `<span class="wk-u">reps</span>`}</span>`;
@@ -2037,12 +2038,14 @@ function wGripKey(e){
 }
 /* Descanso medido: intervalo entre dos series marcadas menos la duración estimada de una serie */
 const SET_SEC = 30, REST_MAX = 600, REST_RESUME = 30 * 60000;
-/* Duración estimada de la sesión: ejecución de cada serie más el descanso entre series, acotado a 2–3 min */
-const REP_SEC = 3, SET_PREP_SEC = 15, REST_LO = 120, REST_HI = 180, ISO_EX = ["Plancha"];
+/* Duración estimada de la sesión: ejecución de cada serie más el descanso entre series, acotado a 2–3 min (60–90 s en core) */
+const REP_SEC = 3, SET_PREP_SEC = 15, REST_LO = 120, REST_HI = 180, ISO_EX = ["Plancha", "Plancha lateral"];
+/* Los ejercicios de core usan descansos más cortos: 60–90 s */
+const CORE_REST_LO = 60, CORE_REST_HI = 90;
 function sessionMin(sets){
-  const iso = ISO_EX.map(exKey);
+  const iso = ISO_EX.map(exKey), isCore = x => (exInfo(x.ex) || {}).t === "core";
   const exec = sum(sets, x => SET_PREP_SEC + (Number(x.reps) || 0) * (iso.includes(exKey(x.ex)) ? 1 : REP_SEC));
-  const rest = sum(sets.slice(0, -1), x => clamp(x.rest || (REST_LO + REST_HI) / 2, REST_LO, REST_HI));
+  const rest = sum(sets.slice(0, -1), x => { const [lo, hi] = isCore(x) ? [CORE_REST_LO, CORE_REST_HI] : [REST_LO, REST_HI]; return clamp(x.rest || (lo + hi) / 2, lo, hi); });
   return Math.max(1, Math.round((exec + rest) / 60));
 }
 const gymDur = a => a.sets.length ? a.gymMinManual || sessionMin(a.sets) : a.gymMin || 40;
@@ -2624,7 +2627,7 @@ Responde solo con este JSON: {"name": string (nombre del producto y marca si se 
    3. Serie "kg x reps", "N7x12" o "nivel 7x12" (máquina por nivel), "50 lb x 8" o "12 reps" sin carga; "a/b" reparte entre los ejercicios en paralelo.
    4. Descanso después de la serie: "2min", "2min30s", "90s" o "1:30".
    Sin fecha, las series van al día seleccionado. */
-const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full"};
+const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full", core: "core", abs: "core"};
 const RT_DATE = /^(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?(?:\s+(.+))?$/;
 const RT_REST = /^(?:descanso\s*)?(?:(\d+)\s*(?:min|mins|minutos?|m|')\s*(?:(\d+)\s*(?:s|seg|segundos?|")?)?|(\d+)\s*(?:s|seg|segundos?)|(\d+):(\d{2}))$/;
 function rtSet(part){
@@ -2646,8 +2649,10 @@ function rtDate(d, m, y){
   if (!y && s > t) s = `${yy - 1}-${pad(m)}-${pad(d)}`;
   return s;
 }
+/* Los abdominales al final de otra sesión no cambian su tipo: solo es Core si no hay otra cosa */
 function inferGym(exs){
   const c = {}; exs.forEach(e => { const t = e.info && e.info.t; if (t) c[t] = (c[t] || 0) + e.sets.length; });
+  if (c.core && Object.keys(c).length > 1) delete c.core;
   const tot = sum(Object.values(c), x => x), top = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
   return !top ? "" : top[1] >= .7 * tot ? top[0] : "full";
 }
@@ -3213,7 +3218,7 @@ Otras reglas: El paseo diario con el galgo no se registra. Si una técnica no ex
 Texto: """${text}"""
 Responde solo con este JSON:
 {"meals":[{"time":"HH:MM" o null,"desc":string,"items":${ITEMS_SCHEMA}}],
- "act":{"gym":"push"|"pull"|"legs"|"full"|null,"gymMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
+ "act":{"gym":"push"|"pull"|"legs"|"full"|"core"|null,"gymMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
  "bassMinutes": number o null,
  "bassLogs":[{"techId":string o null,"techName":string o null,"bpm":number,"clean":boolean}],
  "songsPracticed":[songId],

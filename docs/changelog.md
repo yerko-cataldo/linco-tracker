@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-10-23
+- Entreno: nuevo tipo de sesión "Core" (abdominales). Rutina base para hacer en casa: crunch inverso, elevación de piernas, rueda abdominal, plancha lateral y bicho muerto. Los ejercicios de abdomen y oblicuos quedan como Core en el catálogo, su descanso estimado es de 60–90 s y la plancha lateral cuenta sus reps como segundos. "Pegar rutina" reconoce "core" o "abs" después de la fecha, y los abdominales al final de otra sesión no cambian su tipo.
 - Entreno: los ejercicios terminados también se reordenan con el ícono ⠿ (o las flechas), entre sí, incluso con el entreno cerrado o en días anteriores. El orden queda guardado y es el que se propone la próxima vez.
 - Entreno: el campo Minutos vuelve a ser editable en días con series. Si escribes los minutos, reemplazan al estimado; si lo borras, vuelve al estimado. La actividad del día se guarda al cambiar un campo o con Enter, sin depender del botón.
 - Catálogo: "Jalón al pecho" se separa en "Jalón al pecho en máquina" y "Jalón al pecho con polea". Las series anteriores registradas como "Jalón al pecho" quedan como máquina; la ilustración y la rutina habitual de Pull pasan a la de polea.
