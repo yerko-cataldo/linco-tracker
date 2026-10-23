@@ -1934,8 +1934,22 @@ const DEFAULT_ROUTINE = {
   pull: ["Jalón al pecho con polea", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo"],
   legs: ["Sentadilla hack", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones", "Aductores en máquina", "Abductores en máquina"],
   full: ["Sentadilla", "Press banca", "Remo en polea", "Press militar", "Curl femoral"],
-  core: ["Crunch inverso", "Elevación de piernas", "Rueda abdominal", "Plancha lateral", "Bicho muerto"]
+  core: ["Elevación de piernas", "Crunch inverso", "Plancha", "Plancha lateral", "Bicho muerto"]
 };
+/* Orden ideal de los pendientes: 0 multiarticulares, 1 aislamiento de músculos grandes, 2 de músculos chicos, 3 core.
+   Multiarticular: involucra al menos dos de cuádriceps, glúteo e isquios, o un músculo del tronco junto con bíceps o tríceps. */
+const EX_LEGS = ["cuadriceps", "gluteo", "isquio"], EX_TRUNK = ["pecho", "hombro", "dorsal", "espalda"], EX_ARM = ["biceps", "triceps"];
+const EX_BIG = [...EX_LEGS, ...EX_TRUNK, "lumbar"];
+/* Mueven una sola articulación aunque sus músculos sugieran otra cosa */
+const EX_ISO = ["Pullover en polea", "Patada de glúteo", "Hiperextensiones"];
+function exTier(name){
+  const e = exInfo(name); if (!e) return 1;
+  if (e.t === "core") return 3;
+  if (EX_ISO.includes(e.name)) return 1;
+  const all = [...e.m, ...e.m2];
+  const multi = (all.filter(x => EX_LEGS.includes(x)).length >= 2 && e.m.some(x => EX_LEGS.includes(x))) || (all.some(x => EX_TRUNK.includes(x)) && all.some(x => EX_ARM.includes(x)));
+  return multi ? 0 : e.m.some(x => EX_BIG.includes(x)) ? 1 : 2;
+}
 /* Ejercicios habituales: los de las últimas 3 sesiones del tipo, ordenados por su posición promedio; sin historial, la rutina base del tipo */
 function habitual(type, date){
   const dts = allDatesAsc().filter(dt => dt < date && day(dt).act.gym === type && day(dt).act.sets.length).slice(-HABIT_SESSIONS);
@@ -1949,7 +1963,7 @@ function workoutPlan(date){
   const done = groupSets(d.act.sets), extra = ended ? [] : W.extra[date] || [], hidden = W.hidden[date] || [], order = W.order[date] || [];
   const keys = [], names = {};
   [...done.map(g => g.ex), ...hab.names, ...extra].forEach(n => { const k = exKey(n); if (!keys.includes(k)){ keys.push(k); names[k] = exName(n); } });
-  const pend = keys.filter(k => !done.some(g => g.k === k) && !hidden.includes(k)), base = [...pend];
+  const pend = keys.filter(k => !done.some(g => g.k === k) && !hidden.includes(k)), base = [...pend].sort((a, b) => exTier(names[a]) - exTier(names[b]));
   const rank = k => order.includes(k) ? order.indexOf(k) : order.length + base.indexOf(k);
   const exs = [...done.map(g => g.k), ...pend.sort((a, b) => rank(a) - rank(b))].map(k => {
     const dg = done.find(g => g.k === k), name = dg ? dg.ex : names[k];
@@ -2008,7 +2022,7 @@ function renderWorkout(){
   };
   const a = day(date).act, gs = groupSets(a.sets), nPr = a.sets.filter(s => prIds.has(s.id)).length, nWork = sum(gs, g => g.work.length);
   const head = P.ended ? `<div class="wk-sum"><span class="wk-ok">${CHECK}Entreno guardado</span><span class="small muted grow">${gs.length} ${gs.length === 1 ? "ejercicio" : "ejercicios"} · ${nWork} ${nWork === 1 ? "serie" : "series"} · ${fmtDur(gymDur(a))}${nPr ? ` · ${nPr} ${nPr === 1 ? "récord" : "récords"}` : ""}</span><button class="btn small ghost" data-action="wk-resume">Retomar entreno</button></div>`
-    : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde.</p>` : "";
+    : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Van en orden ideal: primero los multiarticulares, después el aislamiento de músculos grandes, luego el de músculos chicos y el core al final; dentro de cada grupo, en tu orden habitual. Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde.</p>` : "";
   const foot = !P.ended && a.sets.length ? `<div class="wk-end"><span class="small muted grow">Cada serie queda guardada al marcarla. Al terminar el entreno se quitan los ejercicios que no hiciste y se detiene el cronómetro.</span><button class="btn primary" data-action="wk-end">Terminar entreno</button></div>` : "";
   $("#workout .wk-add").hidden = P.ended;
   setHTML($("#wkBody"), P.exs.length ? `${head}${P.exs.map(card).join("")}${foot}`
