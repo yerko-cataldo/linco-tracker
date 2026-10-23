@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2026-10-23
+- Entreno: ilustraciones para 28 ejercicios, antes 7. Cubren las rutinas base de Push, Pull, Legs, Full body y Core: press banca, press inclinado con mancuernas, press militar, elevaciones laterales, extensión de tríceps, jalón en máquina, remo en polea, sentadilla, sentadilla hack, extensión de cuádriceps, peso muerto rumano, curl femoral (acostado y sentado), elevación de talones, aductores, abductores, elevación de piernas, rueda abdominal, plancha, plancha lateral y bicho muerto.
+- Entreno: los ejercicios de tiempo (plancha, plancha lateral) parten en 30 s en vez de 10 la primera vez.
 - Entreno: nuevo tipo de sesión "Core" (abdominales). Rutina base para hacer en casa: crunch inverso, elevación de piernas, rueda abdominal, plancha lateral y bicho muerto. Los ejercicios de abdomen y oblicuos quedan como Core en el catálogo, su descanso estimado es de 60–90 s y la plancha lateral cuenta sus reps como segundos. "Pegar rutina" reconoce "core" o "abs" después de la fecha, y los abdominales al final de otra sesión no cambian su tipo.
 - Entreno: los ejercicios terminados también se reordenan con el ícono ⠿ (o las flechas), entre sí, incluso con el entreno cerrado o en días anteriores. El orden queda guardado y es el que se propone la próxima vez.
 - Entreno: el campo Minutos vuelve a ser editable en días con series. Si escribes los minutos, reemplazan al estimado; si lo borras, vuelve al estimado. La actividad del día se guarda al cambiar un campo o con Enter, sin depender del botón.

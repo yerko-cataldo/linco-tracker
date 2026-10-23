@@ -113,4 +113,4 @@ El body de `/api/ai` es `{messages, images, tier, json, stream}`.
 - Adaptar el benchmark para evaluar el desglose en ingredientes con la base, en vez de totales.
 - Completar la fibra de la hallulla; verificar leche sin lactosa, palta y queso rallado contra sus etiquetas.
 - Probar la estimación por foto con Llama 4 Scout usando fotos reales.
-- Ilustraciones en silueta para el resto del catálogo de ejercicios: hoy solo tienen las de Pull habituales (jalón, remo en máquina, face pull, curl Z, curl martillo, crunch y crunch inverso). Siguientes: Legs habituales y Push base.
+- Ilustraciones en silueta para el resto del catálogo: hoy hay 28 (los ejercicios de las rutinas base de Push, Pull, Legs, Full body y Core, más algunos habituales); faltan los demás.

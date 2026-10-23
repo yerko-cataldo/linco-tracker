@@ -25,5 +25,7 @@ El contexto general del proyecto (stack, modelo de datos, API y principios) est�
 ## Ilustraciones de ejercicios
 - Estilo silueta: figura plana de perfil armada desde articulaciones (hombro, codo, muñeca, cadera, rodilla, tobillo), con cinemática inversa para codo y rodilla, volumen por formas redondeadas y el músculo trabajado en `--act`.
 - Fuente: `tools/ilustraciones/silueta_lib.py` (figura, aparatos y colores) y un `pose_*.py` por ejercicio.
+- Vistas: casi todas de perfil. Las que no se leen de perfil (elevaciones laterales, aductores, abductores y plancha lateral) van de frente y arman la figura en su propio `pose_*.py` con las mismas primitivas y clases. Algunas reutilizan piezas de otras: `dumbbell` de `pose_martillo.py`, `abs_overlay` de `pose_crunchinv.py` y `front_seated` de `pose_aductores.py`.
+- Para revisar un dibujo, cada `pose_*.py` tiene `draw()`; renderiza el SVG en un HTML con el `CSS` de `silueta_lib.py` y míralo también a 72 px, que es su tamaño en la app.
 - Para regenerar: `py tools/ilustraciones/build.py`. El script reemplaza el objeto `ILLU` de `public/index.html` entre `/* ILLU:inicio */` y `/* ILLU:fin */`.
 - Los colores son clases (`.b`, `.m`, `.mk`…) definidas en el CSS de la app con sus tokens, así que funcionan en modo claro y oscuro.
