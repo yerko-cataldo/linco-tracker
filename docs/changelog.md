@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-10-23
+- Entreno: calentamiento sugerido para cada tipo de sesión, en una línea plegable que aparece antes de la primera serie. Son 4 a 8 minutos de movilidad y activación y, en las sesiones de gimnasio, series de aproximación del primer ejercicio.
 - Entreno: los ejercicios pendientes se proponen en orden ideal: multiarticulares, aislamiento de músculos grandes, aislamiento de músculos chicos y core al final. Dentro de cada grupo se mantiene el orden habitual, y arrastrar sigue mandando.
 - Core: la rutina base es solo con colchoneta: elevación de piernas, crunch inverso, plancha, plancha lateral y bicho muerto. Sale la rueda abdominal.
 - Entreno: ilustraciones para 28 ejercicios, antes 7. Cubren las rutinas base de Push, Pull, Legs, Full body y Core: press banca, press inclinado con mancuernas, press militar, elevaciones laterales, extensión de tríceps, jalón en máquina, remo en polea, sentadilla, sentadilla hack, extensión de cuádriceps, peso muerto rumano, curl femoral (acostado y sentado), elevación de talones, aductores, abductores, elevación de piernas, rueda abdominal, plancha, plancha lateral y bicho muerto.
