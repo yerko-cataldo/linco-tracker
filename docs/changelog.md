@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-10-23
+- Entreno: los ejercicios terminados también se reordenan con el ícono ⠿ (o las flechas), entre sí, incluso con el entreno cerrado o en días anteriores. El orden queda guardado y es el que se propone la próxima vez.
 - Entreno: el campo Minutos vuelve a ser editable en días con series. Si escribes los minutos, reemplazan al estimado; si lo borras, vuelve al estimado. La actividad del día se guarda al cambiar un campo o con Enter, sin depender del botón.
 - Catálogo: "Jalón al pecho" se separa en "Jalón al pecho en máquina" y "Jalón al pecho con polea". Las series anteriores registradas como "Jalón al pecho" quedan como máquina; la ilustración y la rutina habitual de Pull pasan a la de polea.
 
