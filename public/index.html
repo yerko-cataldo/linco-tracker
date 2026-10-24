@@ -354,6 +354,9 @@ button.link{background:none;border:0;padding:0;color:inherit;font:inherit;text-d
 /* Checklist del entreno */
 .wk-panel .wk-types{margin-left:auto}
 .wk-src{margin:-4px 0 12px}
+/* Vista compartida: sin edición ni secciones privadas; solo quedan las acciones de navegación */
+body.share .no-share,body.share nav.tabs button[hidden],body.share main > section[hidden]{display:none!important}
+body.share [data-action]:not([data-action="day-prev"]):not([data-action="day-next"]):not([data-action="day-today"]):not([data-action="day-open"]):not([data-action="pick-date"]):not([data-action="theme-toggle"]):not([data-action="cat-g"]):not([data-action="ex-sel"]):not([data-action="week-shift"]):not([data-action="wk-open"]){display:none!important}
 .wk-warm{margin:0 0 12px;border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;font-size:13px}
 .wk-warm summary{cursor:pointer;color:var(--muted);font-weight:600}
 .wk-warm p{margin:8px 0 0}
@@ -572,7 +575,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     <div class="panel mt">
       <div class="item-head"><h3>Constancia</h3><span class="small muted" id="heatInfo"></span></div>
       <div class="scroll heat" id="heat"></div>
-      <p class="small muted" style="margin:8px 0 0">Cada cuadro es un día. Mientras más intenso, más metas cumpliste: es el promedio del cumplimiento de las cuatro áreas, con tope de 100% por área. Toca un día para abrirlo.</p>
+      <p class="small muted" id="heatNote" style="margin:8px 0 0">Cada cuadro es un día. Mientras más intenso, más metas cumpliste: es el promedio del cumplimiento de las cuatro áreas, con tope de 100% por área. Toca un día para abrirlo.</p>
     </div>
   </section>
 
@@ -585,13 +588,13 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div id="nutRings"></div>
         <div id="nutMeters"></div>
         <div id="macroSplit"></div>
-        <div class="macro" id="bodyBox"></div>
+        <div class="macro no-share" id="bodyBox"></div>
         <div class="ai-only row mt" hidden>
           <button class="btn primary" data-action="nut-analyze">Qué me falta y qué comer ahora</button>
           <span class="small muted" id="nutAiStatus"></span>
         </div>
       </div>
-      <div class="panel stack">
+      <div class="panel stack no-share">
         <h3>Agregar comida</h3>
         <div class="row">
           <div class="field w5">Hora<input id="mTime" type="time"></div>
@@ -641,11 +644,11 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="scroll" id="mealsTable"></div>
     </div>
     <div class="panel mt" id="nutDash" hidden></div>
-    <details class="panel sec mt" id="weightPanel">
+    <details class="panel sec mt no-share" id="weightPanel">
       <summary><h3>Peso</h3><span class="hint" id="weightSum"></span></summary>
       <div class="sec-body" id="weightBox"></div>
     </details>
-    <details class="panel sec mt" id="planPanel">
+    <details class="panel sec mt no-share" id="planPanel">
       <summary><h3>Propuesta para completar el día</h3><span class="hint" id="planSum"></span></summary>
       <div class="sec-body">
         <div class="chips" id="planChips" style="margin-bottom:12px"></div>
@@ -664,14 +667,14 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div id="nutWeek"></div>
       </div>
     </details>
-    <details class="panel sec mt">
+    <details class="panel sec mt no-share">
       <summary><h3>Compras y cocina</h3><span class="hint" id="weekSum"></span></summary>
       <div class="sec-body">
         <div class="row" style="margin-bottom:12px"><button class="btn small" data-action="week-shift" data-v="-7">Semana anterior</button><button class="btn small" data-action="week-shift" data-v="7">Semana siguiente</button><button class="btn small primary" data-action="week-copy">Copiar lista de compras</button></div>
         <div id="weekBox"></div>
       </div>
     </details>
-    <details class="panel sec mt">
+    <details class="panel sec mt no-share">
       <summary><h3>Mis alimentos y comidas frecuentes</h3><span class="hint" id="foodSum"></span></summary>
       <div class="sec-body">
         <div class="row" style="margin-bottom:12px">
@@ -692,7 +695,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
     <div class="panel"><h3>Gimnasio y bici por semana</h3><div id="gymWeeks"></div></div>
-    <div class="panel wk-panel mt" id="workout">
+    <div class="panel wk-panel mt no-share" id="workout">
       <div class="item-head" style="margin-bottom:14px"><h3 id="wkTitle">Entrenar hoy</h3><div class="chips wk-types" id="wkTypes"></div></div>
       <div id="wkBody"></div>
       <div class="row wk-add">
@@ -736,7 +739,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
     </details>
     <div class="grid g2 mt">
-      <div class="panel stack">
+      <div class="panel stack no-share">
         <h3>Actividad del día</h3>
         <div class="row">
           <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option><option value="core">Core</option></select></div>
@@ -769,7 +772,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <!-- BAJO -->
   <section class="tab" id="tab-bajo">
     <div class="page-head c-bass"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-bass"/></svg></span><div><h2>Bajo</h2><p class="lede" id="bassLede"></p></div></div>
-    <div class="panel metro">
+    <div class="panel metro no-share">
       <div class="metro-main">
         <div class="dial">
           <div class="pulse" id="dialPulse"></div>
@@ -827,7 +830,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
     </div>
     <div class="grid g2 mt">
-      <div class="panel stack">
+      <div class="panel stack no-share">
         <h3>Registrar práctica</h3>
         <div class="row">
           <div class="field grow">Técnica<select id="bTech"></select></div>
@@ -860,7 +863,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <ul class="list" id="bookList"></ul>
     </div>
     <div class="grid g2 mt">
-      <div class="panel stack">
+      <div class="panel stack no-share">
         <h3>Registrar avance</h3>
         <div class="row"><div class="field grow">Libro o curso<select id="sItem"></select></div></div>
         <div class="row">
@@ -872,7 +875,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
       <div class="panel"><h3>Minutos de estudio en la semana</h3><div id="studyChart"></div></div>
     </div>
-    <div class="panel mt focus">
+    <div class="panel mt focus no-share">
       <div>
         <h3>Sesión de foco</h3>
         <p class="small muted" style="margin:0 0 12px">Bloques de concentración con descanso entre medio, como la técnica Pomodoro. Al terminar un bloque, sus minutos quedan listos en "Registrar avance".</p>
@@ -1003,6 +1006,11 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           </div>
           <p class="small muted" id="importStatus"></p>
         </div>
+        <div class="panel stack">
+          <h3>Compartir con amigos</h3>
+          <p class="small muted" style="margin:0">Un link de solo lectura que no pide login. Muestra solo las áreas que marques; tu peso, tu perfil, el InBody y el coach nunca se comparten. Si el link se filtra, cámbialo y el anterior deja de funcionar.</p>
+          <div id="shareBox"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -1084,12 +1092,20 @@ const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[\u030
 const r1 = x => Math.round((Number(x) || 0) * 10) / 10;
 const S = {
   date: today(), tab: "hoy", days: {},
-  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: []},
+  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: [], share: {}},
   build: [],
   weekFrom: null,
   mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planNote: ""
 };
-const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list"};
+const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list", share:"values"};
+/* Vista compartida (/s/<código>): solo lectura, sin login, con las áreas que elegiste en "Compartir con amigos".
+   El Worker filtra los datos; acá solo se ocultan la edición y las secciones no compartidas. */
+const SHARE = (location.pathname.match(/^\/s\/([A-Za-z0-9_-]{20,64})\/?$/) || [])[1] || null;
+const SHARE_AREAS = [["act", "Entreno", "entreno"], ["bass", "Bajo", "bajo"], ["study", "Estudio", "estudio"], ["food", "Nutrición", "nutricion"]];
+const SHARE_DEFAULT = ["act", "bass", "study"];
+const SHARE_ACTIONS = new Set(["day-prev", "day-next", "day-today", "day-open", "pick-date", "theme-toggle", "cat-g", "ex-sel", "week-shift", "wk-open"]);
+/* Áreas que cuentan en la constancia y el rango: las cuatro, o solo las compartidas en la vista compartida */
+let AREAS = ["food", "act", "bass", "study"];
 
 function emptyDay(date){ return {date, meals:[], weight:null, water:0, creatine:false, act:{gym:"", gymMin:0, tennisMin:0, bikeMin:0, bikeKm:0, sets:[]}, bass:{minutes:0, logs:[], songs:[]}, study:[]}; }
 function normDay(d, date){
@@ -1108,6 +1124,7 @@ const profile = () => Object.assign({}, DEFAULT_PROFILE, S.lib.profile || {});
 const Store = {
   chains: {}, pending: {},
   write(path, data){
+    if (SHARE) return;
     if (S.readOnly){ toast("Sin conexión con tus datos: recarga la página antes de editar."); return; }
     this.pending[path] = (this.pending[path] || 0) + 1;
     const run = async () => {
@@ -1131,16 +1148,31 @@ function saveLib(key, mut){
 function applyLib(id, data){ if (!(id in LIBKEYS) || !data) return; const v = data[LIBKEYS[id]]; if (v !== undefined) S.lib[id] = clone(v); }
 
 async function loadState(){
-  const r = await fetch("/api/state", {headers: {accept: "application/json"}, credentials: "same-origin"});
+  const r = await fetch(SHARE ? `/s/${SHARE}/data` : "/api/state", {headers: {accept: "application/json"}, credentials: "same-origin"});
   if (!r.ok) throw new Error(String(r.status));
   const st = await r.json();
+  if (SHARE) AREAS = AREAS.filter(k => (st.areas || []).includes(k));
   const next = {};
   for (const k of Object.keys(S.days)) if (Store.pending["days/" + k] > 0) next[k] = S.days[k];
   for (const [k, v] of Object.entries(st.days || {})) if (!(Store.pending["days/" + k] > 0)) next[k] = v;
   S.days = next;
   for (const [k, v] of Object.entries(st.lib || {})) if (!(Store.pending["lib/" + k] > 0)) applyLib(k, v);
 }
+async function initShare(){
+  document.body.classList.add("share"); S.readOnly = true;
+  document.querySelector('meta[name="robots"]') || document.head.insertAdjacentHTML("beforeend", '<meta name="robots" content="noindex, nofollow">');
+  wireUI();
+  setNotice("Cargando…");
+  try { await loadState(); S.mode = "api"; }
+  catch { setNotice("Este link ya no está disponible."); document.querySelectorAll("nav.tabs, main > section").forEach(el => el.hidden = true); return; }
+  const tabs = ["hoy", ...SHARE_AREAS.filter(([k]) => AREAS.includes(k)).map(x => x[2])];
+  document.querySelectorAll("nav.tabs button").forEach(b => b.hidden = !tabs.includes(b.dataset.tab));
+  setNotice("Vista de solo lectura: muestra solo lo que se eligió compartir.");
+  $("#heatNote").textContent = `Cada cuadro es un día. Mientras más intenso, más metas se cumplieron: es el promedio del cumplimiento de las áreas compartidas (${SHARE_AREAS.filter(([k]) => AREAS.includes(k)).map(x => x[1].toLowerCase()).join(", ")}), con tope de 100% por área.`;
+  renderAll();
+}
 async function init(){
+  if (SHARE) return initShare();
   wireUI(); renderAll();
   S.sample = makeAI(); S.imagesOk = true;
   S.downloads = {save: async ({filename, data}) => {
@@ -1199,8 +1231,8 @@ function weekStats(date){
   const actScore = Math.min(1, w.actMin / (g.activeMin * n));
   const bassScore = Math.min(1, w.bassMin / (g.bassMin * g.bassDays * n / 7));
   const studyScore = Math.min(1, w.studyMin / (g.studyMin * n));
-  w.score = Math.round(100 * (foodScore + actScore + bassScore + studyScore) / 4);
   w.parts = {food: foodScore, act: actScore, bass: bassScore, study: studyScore};
+  w.score = Math.round(100 * sum(AREAS, k => w.parts[k]) / AREAS.length);
   return w;
 }
 const TIERS = [[0,"Hierro"],[20,"Bronce"],[35,"Plata"],[50,"Oro"],[65,"Platino"],[80,"Diamante"],[92,"Leyenda"]];
@@ -1519,7 +1551,7 @@ const ILLU = {
 /* ILLU:fin */
 const exPic = (name, cls = "pic") => { const s = ILLU[exName(name)]; return s ? `<span class="${cls}">${s}</span>` : ""; };
 /* Constancia: promedio de cumplimiento de las 4 áreas, cada una con tope 1 */
-const dayScore = dt => { const p = dayStats(dt).pct; return (["food","act","bass","study"].reduce((a, k) => a + Math.min(1, p[k] || 0), 0)) / 4; };
+const dayScore = dt => { const p = dayStats(dt).pct; return AREAS.reduce((a, k) => a + Math.min(1, p[k] || 0), 0) / AREAS.length; };
 const anyLog = dt => { const s = dayStats(dt); return s.meals > 0 || s.actMin > 0 || s.bassMin > 0 || s.d.bass.logs.length > 0 || s.studyMin > 0 || s.d.act.sets.length > 0; };
 function bookRate(id, days = 14){ let tot = 0; const t = today(); for (let i = 0; i < days; i++) tot += sum(day(addDays(t, -i)).study.filter(s => s.itemId === id), s => s.amount); return tot / days; }
 function linreg(pts){ const n = pts.length; if (n < 3) return null; const mx = sum(pts, p => p[0]) / n, my = sum(pts, p => p[1]) / n; let sxy = 0, sxx = 0; for (const [x, y] of pts){ sxy += (x-mx)*(y-my); sxx += (x-mx)**2; } return sxx ? sxy / sxx : null; }
@@ -1668,7 +1700,7 @@ function renderAll(){
 /* Tablatura semanal: 4 cuerdas, traste 12 = meta */
 function renderStaff(){
   const dates = weekDates(S.date), t = today();
-  const strings = [["G","Estudio","study","var(--study)"],["D","Bajo","bass","var(--bass)"],["A","Nutrición","food","var(--food)"],["E","Entreno","act","var(--act)"]];
+  const strings = [["G","Estudio","study","var(--study)"],["D","Bajo","bass","var(--bass)"],["A","Nutrición","food","var(--food)"],["E","Entreno","act","var(--act)"]].map(r => AREAS.includes(r[2]) ? r : [r[0], "", r[2], r[3]]);
   const narrow = window.innerWidth < 640, W = narrow ? 360 : 760, L = narrow ? 90 : 128, colW = (W - L - 6) / 7, fs = narrow ? 13 : 14;
   const y0 = 58, gap = narrow ? 30 : 32, ys = strings.map((_, i) => y0 + i * gap), H = ys[3] + 26;
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Avance de la semana como tablatura de bajo" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
@@ -1683,7 +1715,7 @@ function renderStaff(){
     s += `<g class="col" data-action="pick-date" data-date="${dt}" opacity="${future ? .35 : 1}"><rect class="hit" x="${cx - colW/2 + 2}" y="4" width="${colW - 4}" height="${H - 8}" rx="8" fill="${sel ? "var(--hl)" : "transparent"}"/>`;
     s += `<text x="${cx}" y="22" text-anchor="middle" font-size="${fs-2}" fill="var(--muted)">${DOW[j]}</text><text x="${cx}" y="${22+fs+2}" text-anchor="middle" font-size="${fs}" font-weight="${dt === t ? 700 : 500}" fill="var(--ink)">${parseYmd(dt).getDate()}</text>`;
     strings.forEach((r, i) => {
-      const p = st.pct[r[2]]; if (p === null) return;
+      const p = st.pct[r[2]]; if (p === null || !AREAS.includes(r[2])) return;
       const fret = Math.round(12 * Math.min(1, p)), full = fret === 12;
       const w = String(fret).length * (fs * .62) + 8;
       s += `<rect x="${cx - w/2}" y="${ys[i] - fs/2 - 2}" width="${w}" height="${fs + 4}" rx="4" fill="${sel ? "var(--hl)" : "var(--surface)"}"/>`;
@@ -1693,7 +1725,7 @@ function renderStaff(){
   });
   s += "</svg>";
   setHTML($("#staff"), `<div class="item-head"><h3>Semana del ${fmtShort(dates[0])} al ${fmtShort(dates[6])}</h3></div>${s}
-    <p class="small muted" style="margin:6px 0 0">Cada número es un traste: 12 es la octava, meta cumplida. Toca un día para editarlo.</p>`);
+    <p class="small muted" style="margin:6px 0 0">Cada número es un traste: 12 es la octava, meta cumplida. Toca un día para ${SHARE ? "verlo" : "editarlo"}.</p>`);
 }
 function renderRank(){
   const w = weekStats(S.date), tr = tierOf(w.score);
@@ -1706,8 +1738,8 @@ function renderRank(){
       <svg viewBox="0 0 84 84" aria-hidden="true"><polygon points="${pts}" fill="none" stroke="var(--bass)" stroke-width="3"/><polygon points="${pts}" fill="var(--bass)" opacity="${.12 + tr.i * .06}" transform="translate(42 42) scale(.62) translate(-42 -42)"/></svg>
       <div><div class="tier">${tr.name}</div><div class="pts">${w.score} pts</div><div class="small muted">${toNext}</div></div>
     </div>
-    ${part("Nutrición", w.parts.food, "var(--food)")}${part("Entreno", w.parts.act, "var(--act)")}${part("Bajo", w.parts.bass, "var(--bass)")}${part("Estudio", w.parts.study, "var(--study)")}
-    <p class="small muted" style="margin:8px 0 0">Promedio del cumplimiento de las cuatro áreas, prorrateado a los días transcurridos.</p>`);
+    ${[["food", "Nutrición"], ["act", "Entreno"], ["bass", "Bajo"], ["study", "Estudio"]].filter(([k]) => AREAS.includes(k)).map(([k, l]) => part(l, w.parts[k], `var(--${k})`)).join("")}
+    <p class="small muted" style="margin:8px 0 0">Promedio del cumplimiento de ${AREAS.length === 4 ? "las cuatro áreas" : "las áreas compartidas"}, prorrateado a los días transcurridos.</p>`);
 }
 // Anillo de progreso: pct en 0..1 (se recorta), con texto opcional al centro
 function ring(pct, color, size = 56, sw = 6, label = null, sub = null){
@@ -1730,20 +1762,21 @@ function renderKpis(){
   const g = goals(), st = dayStats(S.date), ws = weekStats(S.date), lbl = S.date === today() ? "hoy" : fmtShort(S.date);
   const lastTech = (() => { for (const dt of allDatesAsc().reverse()){ const l = day(dt).bass.logs.filter(x => x.clean); if (l.length){ const x = l[l.length-1]; const t = S.lib.techniques.find(t => t.id === x.techId); return t ? `${t.name} ${x.bpm}` : null; } } return null; })();
   const topBook = S.lib.books.filter(b => !b.archived).sort((a,b) => (b.current/b.total||0)-(a.current/a.total||0))[0];
-  $("#hoyLede").textContent = `${fmtLong(S.date)}. Esta semana vas en rango ${tierOf(ws.score).name} con ${ws.score} pts.`;
-  setHTML($("#kpis"),
-    kpiBlock("c-food", `Nutrición ${lbl}`, fmt(st.kcal), fmt(g.kcal), "kcal", st.kcal / g.kcal * 100, [
+  $("#hoyLede").textContent = `${fmtLong(S.date)}. ${SHARE ? "Rango de esta semana:" : "Esta semana vas en rango"} ${tierOf(ws.score).name} con ${ws.score} pts.`;
+  const blocks = {
+    food: () => kpiBlock("c-food", `Nutrición ${lbl}`, fmt(st.kcal), fmt(g.kcal), "kcal", st.kcal / g.kcal * 100, [
       ["Proteína", `${fmt(st.p)} / ${fmt(g.protein)} g`], ["Fibra", `${fmt(st.fib)} / ${fmt(g.fiber)} g`],
-      ["Plantas distintas (sem)", `${ws.plants} / ${g.plantsWeek}`], ["Días en meta", `${ws.foodOk} de ${ws.foodLogged}`]]) +
-    kpiBlock("c-act", `Entreno ${lbl}`, fmt(st.actMin), fmt(g.activeMin), "min", st.actMin / g.activeMin * 100, [
-      ["Gimnasio (sem)", `${ws.gymCount} / ${g.gymWeek}`], ["Bici (sem)", `${fmt(ws.bikeKm, 1)} km`], ["Tenis (sem)", `${fmt(ws.tennisMin)} min`]]) +
-    kpiBlock("c-bass", `Bajo ${lbl}`, fmt(st.bassMin), fmt(g.bassMin), "min", st.bassMin / g.bassMin * 100, [
+      ["Plantas distintas (sem)", `${ws.plants} / ${g.plantsWeek}`], ["Días en meta", `${ws.foodOk} de ${ws.foodLogged}`]]),
+    act: () => kpiBlock("c-act", `Entreno ${lbl}`, fmt(st.actMin), fmt(g.activeMin), "min", st.actMin / g.activeMin * 100, [
+      ["Gimnasio (sem)", `${ws.gymCount} / ${g.gymWeek}`], ["Bici (sem)", `${fmt(ws.bikeKm, 1)} km`], ["Tenis (sem)", `${fmt(ws.tennisMin)} min`]]),
+    bass: () => kpiBlock("c-bass", `Bajo ${lbl}`, fmt(st.bassMin), fmt(g.bassMin), "min", st.bassMin / g.bassMin * 100, [
       ["Semana", `${fmt(ws.bassMin)} / ${fmt(g.bassMin * g.bassDays)} min`], ["Días practicados", `${ws.bassDays} de ${g.bassDays}`],
-      ["Racha", days_(bassStreak())], ["Último limpio", lastTech ? esc(lastTech) + " bpm" : "—"]]) +
-    kpiBlock("c-study", `Estudio ${lbl}`, fmt(st.studyMin), fmt(g.studyMin), "min", st.studyMin / g.studyMin * 100, [
+      ["Racha", days_(bassStreak())], ["Último limpio", lastTech ? esc(lastTech) + " bpm" : "—"]]),
+    study: () => kpiBlock("c-study", `Estudio ${lbl}`, fmt(st.studyMin), fmt(g.studyMin), "min", st.studyMin / g.studyMin * 100, [
       ["Semana", `${fmt(ws.studyMin)} / ${fmt(g.studyMin * 7)} min`], ["Días con estudio", `${ws.studyDays} de ${ws.n}`],
       ["Más avanzado", topBook ? `${esc(topBook.title)} ${fmt((topBook.current||0)/topBook.total*100)}%` : "—"]])
-  );
+  };
+  setHTML($("#kpis"), ["food", "act", "bass", "study"].filter(k => AREAS.includes(k)).map(k => blocks[k]()).join(""));
 }
 
 function renderHeat(){
@@ -2280,7 +2313,18 @@ function renderCoach(){
   setHTML($("#chatLog"), S.chat.map(m => `<div class="msg ${m.role === "user" ? "u" : "a"}">${m.role === "user" ? esc(m.content) : `<div class="md">${md(m.content)}</div>`}</div>`).join(""));
 }
 
+/* Compartir con amigos: lib.share = {token, areas}; el Worker sirve /s/<token> solo con esas áreas */
+const shareCfg = () => Object.assign({token: "", areas: SHARE_DEFAULT}, S.lib.share || {});
+const newShareToken = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+function renderShare(){
+  const c = shareCfg(), url = c.token ? `${location.origin}/s/${c.token}` : "";
+  setHTML($("#shareBox"), `<div class="row">${SHARE_AREAS.map(([k, l]) => `<label class="small"><input type="checkbox" data-share-area="${k}"${c.areas.includes(k) ? " checked" : ""}> ${l}</label>`).join("")}</div>
+    ${url ? `<div class="row" style="margin-top:10px"><div class="field grow"><span class="sr">Link para compartir</span><input id="shareUrl" readonly value="${esc(url)}"></div></div>
+      <div class="row"><button class="btn primary" data-action="share-copy">Copiar link</button><button class="btn" data-action="share-new">Cambiar link</button><button class="btn ghost danger" data-action="share-off">Desactivar link</button></div>`
+    : `<div class="row" style="margin-top:10px"><button class="btn primary" data-action="share-create">Crear link</button></div>`}`);
+}
 function renderProfile(){
+  renderShare();
   const p = profile(), g = goals();
   setVal("#pSex", p.sex); setVal("#pAge", p.age); setVal("#pHeight", p.height); setVal("#pWeight", p.weight);
   setVal("#pAbout", p.about); setVal("#pGoal", p.goal); setVal("#pActivity", p.activity); setVal("#pFoods", p.foods); setVal("#pNotes", p.notes);
@@ -2826,6 +2870,10 @@ const BOOK_FIELDS = b => [
 const MEAL_FIELDS = m => [{name:"time",label:"Hora",value:m.time},{name:"desc",label:"Descripción",value:m.desc,required:true},{name:"kcal",label:"kcal",value:m.kcal,num:true},{name:"p",label:"Proteína g",value:m.p,num:true},{name:"c",label:"Carbohidratos g",value:m.c,num:true},{name:"f",label:"Grasa g",value:m.f,num:true},{name:"fib",label:"Fibra g",value:m.fib,num:true},{name:"plants",label:"Plantas (separadas por coma)",value:(m.plants||[]).join(", ")}];
 
 const actions = {
+  "share-create": () => { saveLib("share", () => ({...shareCfg(), token: newShareToken()})); toast("Link creado. Cópialo y compártelo."); },
+  "share-new": () => { if (!confirm("El link actual dejará de funcionar. ¿Crear uno nuevo?")) return; saveLib("share", () => ({...shareCfg(), token: newShareToken()})); toast("Link cambiado: el anterior ya no funciona."); },
+  "share-off": () => { if (!confirm("El link dejará de funcionar. ¿Desactivarlo?")) return; saveLib("share", () => ({...shareCfg(), token: ""})); toast("Link desactivado."); },
+  "share-copy": () => navigator.clipboard.writeText($("#shareUrl").value).then(() => toast("Link copiado."), () => toast("No se pudo copiar.")),
   "day-prev": () => setDate(addDays(S.date, -1)),
   "day-next": () => setDate(addDays(S.date, 1)),
   "day-today": () => setDate(today()),
@@ -3574,7 +3622,7 @@ function syncThemeBtn(){
 /* ---------- cableado ---------- */
 function wireUI(){
   syncThemeBtn(); darkMQ.addEventListener("change", syncThemeBtn);
-  document.addEventListener("click", e => { const el = e.target.closest("[data-action]"); if (!el) return; const fn = actions[el.dataset.action]; if (fn){ e.preventDefault(); fn(el); } });
+  document.addEventListener("click", e => { const el = e.target.closest("[data-action]"); if (!el || (SHARE && !SHARE_ACTIONS.has(el.dataset.action))) return; const fn = actions[el.dataset.action]; if (fn){ e.preventDefault(); fn(el); } });
   document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => {
     S.tab = b.dataset.tab;
     document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
@@ -3596,6 +3644,10 @@ function wireUI(){
   $("#catQ").addEventListener("input", renderCatalog);
   $("#catBox").addEventListener("toggle", renderCatalog);
   $("#wkBody").addEventListener("toggle", e => { if (e.target.classList.contains("wk-warm")) W.warmOpen = e.target.open; }, true);
+  $("#shareBox").addEventListener("change", e => {
+    const k = e.target.dataset.shareArea; if (!k) return;
+    saveLib("share", () => { const c = shareCfg(); return {...c, areas: e.target.checked ? [...new Set([...c.areas, k])] : c.areas.filter(x => x !== k)}; });
+  });
   $("#workout").addEventListener("change", e => { const t = e.target; if (!t.classList.contains("wk-num")) return; const v = num(t.value); if (v === null || v < 0) return; const key = wKey(S.date, t.dataset.k, +t.dataset.i); W.draft[key] = {...(W.draft[key] || {}), [t.dataset.f]: t.dataset.f === "reps" ? Math.max(1, Math.round(v)) : v}; });
   $("#workout").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("wk-num")){ e.preventDefault(); e.target.blur(); renderWorkout(); } });
   $("#wkBody").addEventListener("pointerdown", wDragStart);

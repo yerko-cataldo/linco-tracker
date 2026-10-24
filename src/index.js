@@ -1,7 +1,7 @@
 // Lincoyán: Worker que protege el sitio, guarda tus datos en D1 y hace de proxy al modelo.
 import { jwtVerify, createRemoteJWKSet } from "jose";
 
-const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos"]);
+const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DOC_BYTES = 256 * 1024;
 const MAX_IMAGES = 3;
@@ -11,10 +11,20 @@ let JWKS = null;
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+    // Vista compartida: sin login (Access tiene una excepción para /s/*), solo lectura y con datos filtrados
+    if (url.pathname.startsWith("/s/")) {
+      try {
+        return await share(request, env, url);
+      } catch (err) {
+        console.error(err);
+        return new Response("Error", { status: 500, headers: SHARE_HEADERS });
+      }
+    }
+
     const user = await authorize(request, env);
     if (!user) return new Response("No autorizado", { status: 403 });
 
-    const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
 
     try {
@@ -40,6 +50,65 @@ async function authorize(request, env) {
   } catch {
     return null;
   }
+}
+
+/* ---------- vista compartida ---------- */
+// Solo sale lo que está en estas listas. Nunca: peso, perfil, InBody, metas de peso, coach ni comidas frecuentes.
+const SHARE_RE = /^\/s\/([A-Za-z0-9_-]{20,64})(\/data)?\/?$/;
+const SHARE_AREAS = ["act", "bass", "study", "food"];
+const SHARE_HEADERS = { "x-robots-tag": "noindex, nofollow", "referrer-policy": "no-referrer", "cache-control": "no-store" };
+const SHARE_GOALS = {
+  act: ["activeMin", "gymWeek"],
+  bass: ["bassMin", "bassDays"],
+  study: ["studyMin"],
+  food: ["kcal", "protein", "carbs", "fat", "fiber", "tol", "plantsWeek", "water"],
+};
+const SHARE_LIBS = { bass: ["techniques", "songs"], study: ["books"], food: ["foods"] };
+
+function sameToken(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function share(request, env, url) {
+  const m = url.pathname.match(SHARE_RE);
+  const gone = () => new Response("Este link ya no está disponible.", { status: 404, headers: { ...SHARE_HEADERS, "content-type": "text/plain; charset=utf-8" } });
+  if (!m || request.method !== "GET") return gone();
+  const row = await env.DB.prepare("SELECT data FROM lib WHERE key = 'share'").first();
+  const cfg = row ? JSON.parse(row.data).values || {} : {};
+  if (typeof cfg.token !== "string" || !sameToken(cfg.token, m[1])) return gone();
+  const areas = SHARE_AREAS.filter((a) => (cfg.areas || []).includes(a));
+
+  if (!m[2]) {
+    const page = await env.ASSETS.fetch(new Request(new URL("/", url), request));
+    const res = new Response(page.body, page);
+    for (const [k, v] of Object.entries(SHARE_HEADERS)) res.headers.set(k, v);
+    return res;
+  }
+
+  const [days, lib] = await env.DB.batch([
+    env.DB.prepare("SELECT date, data FROM days ORDER BY date DESC LIMIT 400"),
+    env.DB.prepare("SELECT key, data FROM lib"),
+  ]);
+  const libs = Object.fromEntries(lib.results.map((r) => [r.key, JSON.parse(r.data)]));
+  const g = libs.goals?.values || {}, goals = {};
+  for (const a of areas) for (const k of SHARE_GOALS[a]) if (k in g) goals[k] = g[k];
+  const outLib = { goals: { values: goals } };
+  for (const a of areas) for (const k of SHARE_LIBS[a] || []) if (libs[k]) outLib[k] = libs[k];
+  const outDays = {};
+  for (const r of days.results) {
+    const d = JSON.parse(r.data), o = { date: r.date };
+    if (areas.includes("act") && d.act) o.act = d.act;
+    if (areas.includes("bass") && d.bass) o.bass = d.bass;
+    if (areas.includes("study") && d.study) o.study = d.study;
+    if (areas.includes("food")) { o.meals = d.meals || []; o.water = d.water || 0; }
+    outDays[r.date] = o;
+  }
+  const res = json({ areas, days: outDays, lib: outLib });
+  for (const [k, v] of Object.entries(SHARE_HEADERS)) res.headers.set(k, v);
+  return res;
 }
 
 /* ---------- API ---------- */

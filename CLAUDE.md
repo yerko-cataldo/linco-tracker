@@ -8,7 +8,7 @@ Tracker personal de un solo usuario: nutrición, entreno, bajo eléctrico y estu
 - **Front** (`public/index.html`): un solo archivo con HTML, CSS y JS vanilla. No hay build, framework ni dependencias.
 - **D1 (SQLite)**: tablas `days`, `lib` y `ai_usage`. El esquema está en `migrations/`.
 - **Workers AI**: modelo por defecto `@cf/meta/llama-4-scout-17b-16e-instruct`, dentro del tier gratis de 10.000 neurons diarios. Anthropic es opcional, por variable.
-- **Cloudflare Access**: login por código al correo. El Worker valida el JWT (`cf-access-jwt-assertion`) con `jose` en cada request. `workers_dev` y `preview_urls` están desactivados.
+- **Cloudflare Access**: login por código al correo. El Worker valida el JWT (`cf-access-jwt-assertion`) con `jose` en cada request, salvo en `/s/*` (vista compartida), que tiene una excepción Bypass en Access. `workers_dev` y `preview_urls` están desactivados.
 
 ## Comandos
 
@@ -44,7 +44,7 @@ Ambas tablas guardan un documento JSON por fila.
 
 | Colección | Envoltura |
 |---|---|
-| `goals`, `profile` | `{values: {...}}` |
+| `goals`, `profile`, `share` | `{values: {...}}` |
 | `techniques`, `songs`, `books`, `foods`, `combos` | `{list: [...]}` |
 | `coach` | `{reviews: [...]}` |
 
@@ -65,6 +65,10 @@ Campos opcionales: `goals.wDate`, `goals.wFat` y `goals.wLean` (meta de peso: fe
 | `GET /api/usage` | Uso diario del modelo |
 | `GET /api/metrics` | Uso frente a los límites gratis de Cloudflare (GraphQL Analytics), uso del modelo y vencimiento del dominio |
 | `POST /api/ai` | Proxy al modelo |
+| `GET /s/:token` | Vista compartida sin login: la misma app en solo lectura |
+| `GET /s/:token/data` | Datos filtrados para la vista compartida |
+
+**Vista compartida.** `lib.share = {token, areas}`, se administra en Perfil → "Compartir con amigos". El Worker (`share()`) compara el token y solo entrega los días con las áreas elegidas (`act`, `bass`, `study`, `food`), las metas de esas áreas (`SHARE_GOALS`) y sus colecciones (`SHARE_LIBS`). Nunca entrega peso, perfil, InBody, metas de peso, coach ni comidas frecuentes. El front detecta `/s/<token>` (`SHARE`), oculta las pestañas no compartidas y la edición (`.no-share` y las acciones fuera de `SHARE_ACTIONS`), y calcula la constancia y el rango solo con las áreas compartidas (`AREAS`). Si agregas un dato privado nuevo, no lo sumes a esas listas.
 
 El body de `/api/ai` es `{messages, images, tier, json, stream}`.
 

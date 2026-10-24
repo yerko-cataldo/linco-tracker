@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-10-23
+- Compartir con amigos: link de solo lectura sin login (`/s/<código>`), que se crea, cambia y desactiva en Perfil. Muestra solo las áreas marcadas (por defecto entreno, bajo y estudio; nutrición es opcional) y nunca peso, perfil, InBody ni coach. La constancia y el rango se calculan con las áreas compartidas. El Worker filtra los datos y la página va con `noindex`. Requiere una excepción Bypass en Cloudflare Access para `/s`.
 - Entreno: los calentamientos de gimnasio asumen que llegas en bici. Sale el cardio de 5 min y quedan movilidad dinámica y series de aproximación (~4 min), con una nota para sumar cardio si demoras más de 15 min en empezar.
 - Entreno: calentamiento sugerido para cada tipo de sesión, en una línea plegable que aparece antes de la primera serie. Son 4 a 8 minutos de movilidad y activación y, en las sesiones de gimnasio, series de aproximación del primer ejercicio.
 - Entreno: los ejercicios pendientes se proponen en orden ideal: multiarticulares, aislamiento de músculos grandes, aislamiento de músculos chicos y core al final. Dentro de cada grupo se mantiene el orden habitual, y arrastrar sigue mandando.
