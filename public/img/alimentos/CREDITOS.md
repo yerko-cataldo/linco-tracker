@@ -1,0 +1,47 @@
+# Créditos de las fotos de alimentos
+
+Fotos de Wikimedia Commons, recortadas en cuadrado y reducidas a 128 px. Cada una mantiene su licencia original.
+
+- `aceite.webp`: [Bottle of olive oil.jpg](https://commons.wikimedia.org/wiki/File:Bottle_of_olive_oil.jpg), de margenauer from Pixabay. Licencia CC0.
+- `almendras.webp`: [Almonds - in shell, shell cracked open, shelled, blanched.jpg](https://commons.wikimedia.org/wiki/File:Almonds_-_in_shell,_shell_cracked_open,_shelled,_blanched.jpg), de Ivar Leidus. Licencia CC BY-SA 4.0.
+- `arandanos.webp`: [Dish of blueberries.jpg](https://commons.wikimedia.org/wiki/File:Dish_of_blueberries.jpg), de Petar Milošević. Licencia CC BY-SA 4.0.
+- `arroz.webp`: [JP 日本 Japan 沖繩 OKINAWA 那霸 Naha 魚屋海鮮 Izakaya 居酒屋食堂 Japanese seafood restaurant soup white rice bowl February 2026 N13P 01.jpg](https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E6%B2%96%E7%B9%A9_OKINAWA_%E9%82%A3%E9%9C%B8_Naha_%E9%AD%9A%E5%B1%8B%E6%B5%B7%E9%AE%AE_Izakaya_%E5%B1%85%E9%85%92%E5%B1%8B%E9%A3%9F%E5%A0%82_Japanese_seafood_restaurant_soup_white_rice_bowl_February_2026_N13P_01.jpg), de NORTLAUKAU 26088 JP. Licencia CC0.
+- `avena.webp`: [Rolled oats 2.jpg](https://commons.wikimedia.org/wiki/File:Rolled_oats_2.jpg), de Yonygg. Licencia CC BY-SA 4.0.
+- `bourguignon.webp`: [Bœuf bourguignon.JPG](https://commons.wikimedia.org/wiki/File:B%C5%93uf_bourguignon.JPG), de Arnaud 25. Licencia CC BY-SA 3.0.
+- `brocoli.webp`: [Liat Portal for Foodie Disorder - Steamed Broccoli.jpg](https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Steamed_Broccoli.jpg), de HaJunkiyada. Licencia CC BY-SA 4.0.
+- `carne.webp`: [Grilled flank steak.jpg](https://commons.wikimedia.org/wiki/File:Grilled_flank_steak.jpg), de Wikiuser100. Licencia CC BY-SA 4.0.
+- `cerdo.webp`: [Red braised pork belly.jpg](https://commons.wikimedia.org/wiki/File:Red_braised_pork_belly.jpg), de lazy fri13th. Licencia CC BY 2.0.
+- `chuleta.webp`: [Pork chops served.jpg](https://commons.wikimedia.org/wiki/File:Pork_chops_served.jpg), de autor desconocido. Licencia CC BY-SA 2.0.
+- `fideos.webp`: [Pasta carbonara.jpg](https://commons.wikimedia.org/wiki/File:Pasta_carbonara.jpg), de Dandy1022. Licencia CC BY-SA 3.0.
+- `frutos-secos.webp`: [Mixed Nuts (Alabama Extension).jpg](https://commons.wikimedia.org/wiki/File:Mixed_Nuts_(Alabama_Extension).jpg), de Alabama Extension. Licencia CC0.
+- `garbanzos.webp`: [Chickpeas - The Coconut Island 2025-10-05.jpg](https://commons.wikimedia.org/wiki/File:Chickpeas_-_The_Coconut_Island_2025-10-05.jpg), de Andy Li. Licencia CC0.
+- `hallulla.webp`: [Hallulla.jpg](https://commons.wikimedia.org/wiki/File:Hallulla.jpg), de User:Man77. Licencia CC BY-SA 3.0.
+- `huevo-duro.webp`: [Boiled Egg - Crossection.jpg](https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg), de Ramesh NG. Licencia CC BY-SA 2.0.
+- `huevo-revuelto.webp`: [Scrambled Eggs at Cracker Barrel.jpg](https://commons.wikimedia.org/wiki/File:Scrambled_Eggs_at_Cracker_Barrel.jpg), de Studio Sarah Lou. Licencia CC BY 2.0.
+- `jamon.webp`: [Glazed and sliced ham.jpg](https://commons.wikimedia.org/wiki/File:Glazed_and_sliced_ham.jpg), de Michael Coté from Austin, Texas, Texas. Licencia CC BY 2.0.
+- `lasana.webp`: [Slice of Lasagna.jpg](https://commons.wikimedia.org/wiki/File:Slice_of_Lasagna.jpg), de Roundhere44. Licencia CC0.
+- `leche.webp`: [Glass of Milk (33657535532).jpg](https://commons.wikimedia.org/wiki/File:Glass_of_Milk_(33657535532).jpg), de NIAID. Licencia CC BY 2.0.
+- `lechuga.webp`: [Romaine lettuce.jpg](https://commons.wikimedia.org/wiki/File:Romaine_lettuce.jpg), de Rainer Zenz. Licencia CC BY-SA 3.0.
+- `lentejas.webp`: [Quick Lentils with Chorizo (7017166123).jpg](https://commons.wikimedia.org/wiki/File:Quick_Lentils_with_Chorizo_(7017166123).jpg), de Jonathan Pincas from Leon, Spain. Licencia CC BY 2.0.
+- `longaniza.webp`: [Ahumando longaniza.jpg](https://commons.wikimedia.org/wiki/File:Ahumando_longaniza.jpg), de Koffermejia. Licencia CC BY-SA 4.0.
+- `mani.webp`: [Peanut butter glass 3.jpg](https://commons.wikimedia.org/wiki/File:Peanut_butter_glass_3.jpg), de Shisma. Licencia CC BY 4.0.
+- `mantequilla.webp`: [Butter block.JPG](https://commons.wikimedia.org/wiki/File:Butter_block.JPG), de Meanos. Licencia Public domain.
+- `manzana.webp`: [Red Apple.jpg](https://commons.wikimedia.org/wiki/File:Red_Apple.jpg), de Abhijit Tembhekar from Mumbai, India. Licencia CC BY 2.0.
+- `marraqueta.webp`: [Marraqueta paceña.jpg](https://commons.wikimedia.org/wiki/File:Marraqueta_pace%C3%B1a.jpg), de Meibit. Licencia CC BY-SA 3.0.
+- `mechada.webp`: [Carne Mechada (11351611734).jpg](https://commons.wikimedia.org/wiki/File:Carne_Mechada_(11351611734).jpg), de Brian Child. Licencia CC BY-SA 2.0.
+- `miel.webp`: [Dipper stick and honey in a jar.jpg](https://commons.wikimedia.org/wiki/File:Dipper_stick_and_honey_in_a_jar.jpg), de Shixart1985. Licencia CC BY 2.0.
+- `palta.webp`: [Avocado Hass - single and halved.jpg](https://commons.wikimedia.org/wiki/File:Avocado_Hass_-_single_and_halved.jpg), de Ivar Leidus. Licencia CC BY-SA 4.0.
+- `papa.webp`: [Boiled, floury potatoes (5299865427).jpg](https://commons.wikimedia.org/wiki/File:Boiled,_floury_potatoes_(5299865427).jpg), de benjgibbs. Licencia CC BY 2.0.
+- `pizza.webp`: [All Good pizza (38501728345).jpg](https://commons.wikimedia.org/wiki/File:All_Good_pizza_(38501728345).jpg), de Dale Cruse from San Francisco, CA, USA. Licencia CC BY 2.0.
+- `platano.webp`: [Bananas on black background 02.jpg](https://commons.wikimedia.org/wiki/File:Bananas_on_black_background_02.jpg), de Krzysztof Golik. Licencia CC BY-SA 4.0.
+- `pollo.webp`: [Grilled Chicken Breasts (28905381261).jpg](https://commons.wikimedia.org/wiki/File:Grilled_Chicken_Breasts_(28905381261).jpg), de Sharon Chen from Austin, United States. Licencia CC BY 2.0.
+- `pollo-mostaza.webp`: [-2019-03-06 Creamy mustard chicken with broccoli.JPG](https://commons.wikimedia.org/wiki/File:-2019-03-06_Creamy_mustard_chicken_with_broccoli.JPG), de Kolforn (Kolforn) I'd appreciate if you could mail me (Kolforn@gmail.com) if you want to use this picture out of the Wik. Licencia CC BY-SA 4.0.
+- `porotos.webp`: [Porotos con riendas (con carne).jpg](https://commons.wikimedia.org/wiki/File:Porotos_con_riendas_(con_carne).jpg), de E4024. Licencia CC BY-SA 4.0.
+- `proteina.webp`: [Protein shake.jpg](https://commons.wikimedia.org/wiki/File:Protein_shake.jpg), de Sandstein. Licencia CC BY 3.0.
+- `pulled-pork.webp`: [Pulled pork 007.jpg](https://commons.wikimedia.org/wiki/File:Pulled_pork_007.jpg), de Christian Geischeder. Licencia CC BY 3.0.
+- `queso-rallado.webp`: [Grated cheese Annie Mole.jpg](https://commons.wikimedia.org/wiki/File:Grated_cheese_Annie_Mole.jpg), de Annie Mole. Licencia CC BY 2.0.
+- `salmon.webp`: [DFC 1189 Pan-seared salmon fillet served with creamy mashed potatoes a lime wedge and a side of sauce.jpg](https://commons.wikimedia.org/wiki/File:DFC_1189_Pan-seared_salmon_fillet_served_with_creamy_mashed_potatoes_a_lime_wedge_and_a_side_of_sauce.jpg), de PattayaPatrol. Licencia CC BY-SA 4.0.
+- `salsa-tomate.webp`: [Fresh Tomato Sauce (Unsplash).jpg](https://commons.wikimedia.org/wiki/File:Fresh_Tomato_Sauce_(Unsplash).jpg), de Dennis Klein klein2. Licencia CC0.
+- `strogonoff.webp`: [Hamburger Helper Beef Stroganoff.jpg](https://commons.wikimedia.org/wiki/File:Hamburger_Helper_Beef_Stroganoff.jpg), de Di (they-them). Licencia CC0.
+- `tomate.webp`: [Tomato je.jpg](https://commons.wikimedia.org/wiki/File:Tomato_je.jpg), de Softeis. Licencia CC BY-SA 3.0.
+- `yogur.webp`: [Plain Yogurt.jpg](https://commons.wikimedia.org/wiki/File:Plain_Yogurt.jpg), de Alabama Extension. Licencia CC0.

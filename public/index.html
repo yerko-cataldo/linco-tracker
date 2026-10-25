@@ -14,6 +14,7 @@
   --bg:#F5F1EA; --surface:#FFFDF9; --sunken:#EEE8DE; --ink:#1D1B18; --muted:#6B645A; --line:#E4DDD1; --line-strong:#CFC6B7; --hl:#EEE8DE;
   --food:#B44D08; --bass:#B4235A; --study:#1F6F8B; --act:#4A55C9; --danger:#B3261E; --ok:#2F7D4F;
   --r:14px; --r-sm:10px;
+  --fg-prot:#2a78d6; --fg-carb:#eb6834; --fg-veg:#1baf7a; --fg-fat:#eda100; --fg-fruit:#e87ba4; --fg-leg:#008300; --fg-lact:#6250d6; --fg-dish:#e34948;
   --shadow:0 1px 2px rgba(40,30,15,.04),0 2px 10px rgba(40,30,15,.04);
   --display:"Archivo","Hanken Grotesk",system-ui,sans-serif;
   color-scheme:light; box-sizing:border-box;
@@ -23,12 +24,14 @@
   :root:not([data-theme="light"]){
     --bg:#22272E; --surface:#2D333B; --sunken:#1C2128; --ink:#E6EDF3; --muted:#A3AEBB; --line:#373E47; --line-strong:#4A525D; --hl:#3A424C;
     --food:#F0904F; --bass:#F2689C; --study:#5DB9D7; --act:#9098F4; --danger:#FF8A80; --ok:#6CCB8F;
+    --fg-prot:#3987e5; --fg-carb:#d95926; --fg-veg:#199e70; --fg-fat:#c98500; --fg-fruit:#d55181; --fg-leg:#008300; --fg-lact:#9085e9; --fg-dish:#e66767;
     --shadow:0 1px 2px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14); color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#22272E; --surface:#2D333B; --sunken:#1C2128; --ink:#E6EDF3; --muted:#A3AEBB; --line:#373E47; --line-strong:#4A525D; --hl:#3A424C;
   --food:#F0904F; --bass:#F2689C; --study:#5DB9D7; --act:#9098F4; --danger:#FF8A80; --ok:#6CCB8F;
+  --fg-prot:#3987e5; --fg-carb:#d95926; --fg-veg:#199e70; --fg-fat:#c98500; --fg-fruit:#d55181; --fg-leg:#008300; --fg-lact:#9085e9; --fg-dish:#e66767;
   --shadow:0 1px 2px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14); color-scheme:dark;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -197,6 +200,126 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 .micro{display:flex;gap:9px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:.93rem}
 .dot{width:9px;height:9px;border-radius:50%;flex:none;transform:translateY(1px)}
 .opt{border:1px solid var(--line);background:var(--bg);padding:13px 15px;margin-top:10px;border-radius:var(--r-sm)}
+/* optimizador de porciones */
+.opt-w{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 24px;margin-top:10px}
+@media (max-width:760px){.opt-w{grid-template-columns:1fr}}
+.opt-sl{display:grid;grid-template-columns:10.5em minmax(0,1fr) 2.6em;align-items:center;gap:10px;font-size:.88rem}
+.opt-sl output{text-align:right;color:var(--muted)}
+.opt-sl input[type=range]{accent-color:var(--food)}
+.opt-h{font-family:var(--display);font-stretch:112%;font-size:.9rem;font-weight:650;margin:16px 0 6px}
+.opt-cmp{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:12px}
+.opt-cmp th,.opt-cmp td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.opt-cmp th{font-weight:600;color:var(--muted);font-size:.78rem}
+.opt-cmp .n{text-align:right;white-space:nowrap}
+.fg-dot{display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--c);margin-right:6px}
+/* dibujos de alimentos: ícono de línea sobre una ficha con el color de su grupo */
+.fi{display:inline-grid;place-items:center;flex:none;width:26px;height:26px;border-radius:8px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--surface))}
+.fi svg{width:17px;height:17px}
+.fi.lg{width:38px;height:38px;border-radius:10px}
+.fi.lg svg{width:22px;height:22px}
+/* fotos de alimentos: miniatura cuadrada con esquinas redondeadas */
+.fpic{display:block;flex:none;width:24px;height:24px;border-radius:7px;object-fit:cover;background:var(--sunken)}
+.fpic.lg{width:38px;height:38px;border-radius:10px}
+/* opciones */
+.opt-cards{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:12px}
+.opt-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;box-sizing:border-box;min-width:0;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-sm);padding:8px 12px;cursor:pointer;color:inherit}
+.opt-card:hover{border-color:var(--line-strong)}
+.opt-card[aria-pressed="true"]{border-color:var(--food);box-shadow:inset 0 0 0 1px var(--food)}
+.opt-card .num{font-family:var(--display);font-weight:700;font-size:1.05rem;color:var(--muted);width:1em;text-align:center}
+.opt-card[aria-pressed="true"] .num{color:var(--food)}
+.opt-meals{display:flex;flex-wrap:wrap;gap:4px 0}
+.opt-seg{display:flex;flex-direction:column;gap:3px;padding:0 10px;border-left:1px solid var(--line)}
+.opt-seg:first-child{border-left:0;padding-left:0}
+.opt-seg b{font-size:.66rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.opt-seg .ics{display:flex;gap:2px}
+.opt-card .tot{text-align:right;font-size:.74rem;color:var(--muted);white-space:nowrap;line-height:1.3}
+.opt-card .tot strong{font-family:var(--display);font-size:.95rem;color:var(--ink)}
+@media (max-width:640px){.opt-card{grid-template-columns:auto minmax(0,1fr)}.opt-card .tot{grid-column:2;text-align:left}.opt-card .tot br{display:none}}
+/* cierre del día */
+.day-rings{display:flex;flex-wrap:wrap;gap:6px 16px}
+.day-rings figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72rem;color:var(--muted)}
+.day-rings figcaption span{font-weight:650;color:var(--ink)}
+.day-rings figcaption span.bad{color:var(--danger)}
+/* comidas */
+.opt-hint{font-size:.76rem;color:var(--muted);margin:-2px 0 0}
+.opt-hint svg{width:13px;height:13px;vertical-align:-2px}
+.opt-note{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 0;padding:5px 6px 5px 10px;border-radius:var(--r-sm);background:var(--hl);font-size:.8rem}
+.plate-act{display:flex;gap:4px}
+.plate-act .btn{padding:2px 10px;min-height:0;font-size:.78rem;line-height:1.5}
+.plates{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:10px;margin-top:10px}
+@media (max-width:520px){.plates{grid-template-columns:minmax(0,1fr)}}
+.plate{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);overflow:hidden;align-self:start}
+.plate-h{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:7px 8px 7px 12px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--food) 5%,var(--surface))}
+.plate-h .ico{width:18px;height:18px;color:var(--food);flex:none}
+.plate-h h4{margin:0;font-family:var(--display);font-stretch:112%;font-size:.92rem;white-space:nowrap}
+.plate-h .time{font-size:.74rem;color:var(--muted)}
+.plate-h .kc{margin-left:auto;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.plate-h .kc b{color:var(--ink)}
+.plate-h .btn{padding:3px 9px}
+.plate-src{margin:0;padding:5px 12px 0;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.food{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:2px 10px;align-items:center;padding:6px 8px 6px 12px}
+.food+.food{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.food .nm{display:flex;align-items:baseline;gap:6px;min-width:0;font-size:.86rem;font-weight:600;line-height:1.25}
+.food .nm>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:4.5em;flex:0 1 auto}
+.food .nm small,.food .nm em{flex:none}
+.food .nm small{font-weight:400;font-size:.72rem;color:var(--muted);white-space:nowrap}
+.food .why{font-size:.72rem;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.food em{font-style:normal;font-size:.66rem;font-weight:700;white-space:nowrap}
+.food .mine{color:var(--food)}
+.food .delta{padding:0 6px;border-radius:999px;background:color-mix(in srgb,var(--food) 16%,var(--surface));color:var(--ink)}
+.step{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:999px;background:var(--bg)}
+.step button{border:0;background:none;width:26px;height:26px;border-radius:999px;cursor:pointer;font-size:.95rem;line-height:1;color:var(--ink)}
+.step button:hover{background:var(--sunken)}
+.step button.g{width:auto;min-width:50px;padding:0 2px;border-radius:6px;font-size:.8rem;font-weight:700}
+.swap-btn{display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:8px;background:none;color:var(--muted);cursor:pointer}
+.swap-btn:hover,.swap-btn[aria-expanded="true"]{background:var(--sunken);color:var(--ink)}
+.swap-btn svg{width:17px;height:17px}
+.food.changed{animation:opt-flash 1.8s ease-out}
+@keyframes opt-flash{from{background:color-mix(in srgb,var(--food) 18%,transparent)}to{background:transparent}}
+@media (prefers-reduced-motion:reduce){.food.changed{animation:none}}
+.swap{grid-column:1/-1;margin:4px 0 2px;padding:8px;border-radius:var(--r-sm);background:var(--bg);border:1px solid var(--line)}
+.swap-alts{display:flex;flex-wrap:wrap;gap:5px}
+.swap-alts .chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 3px;font-size:.78rem}
+.swap-alts .chip .fpic,.swap-alts .chip .fi{width:22px;height:22px;border-radius:999px}
+.swap-alts .chip .fi svg{width:13px;height:13px}
+.swap-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px}
+.swap-row select{flex:1 1 180px;min-width:0;font-size:.8rem;padding:4px 8px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface)}
+.swap-alts:empty{display:none}
+@media (max-width:560px){
+  .food{grid-template-columns:auto minmax(0,1fr) auto;row-gap:4px}
+  .food>.fpic.lg,.food>.fi.lg{grid-row:span 2;align-self:start}
+  .food>.txt{grid-column:2}
+  .food>.step{grid-column:2;grid-row:2;justify-self:start}
+  .food>.swap-btn{grid-column:3;grid-row:1/span 2}
+  .plate-act{margin-left:auto}
+  .plate-h .kc{order:3;flex-basis:100%;margin-left:26px}
+  .day-rings{gap:4px 6px}
+  .day-rings figure{font-size:.66rem}
+}
+.credits{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.fx-h{font-family:var(--display);font-stretch:112%;font-size:.84rem;font-weight:650;margin:18px 0 4px}
+.fx-total{margin:8px 0 0;font-size:.86rem;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.fx-slot{margin-top:8px;font-size:.82rem}
+.opt-cmp tr.sel td{background:var(--hl);font-weight:600}
+.pareto{width:100%;max-width:520px;height:auto;display:block}
+.pareto text{font-size:10px;fill:var(--muted)}
+.pareto .ttl{font-size:11px}
+.pareto .lbl{font-size:10.5px;fill:var(--ink)}
+.pareto .grid{stroke:var(--line);stroke-width:1}
+.pareto .axis{stroke:var(--line-strong);stroke-width:1}
+.pareto .line{fill:none;stroke:var(--food);stroke-width:2}
+.pareto .pt{fill:var(--food);stroke:var(--surface);stroke-width:2}
+.pareto .cur{fill:var(--surface);stroke:var(--food);stroke-width:3}
+.pareto .hit{fill:transparent}
+.credits li{display:flex;align-items:center;gap:8px;font-size:.74rem}
+.credits a{color:inherit}
+.cost{display:grid;grid-template-columns:11em minmax(0,1fr) auto;gap:8px 12px;align-items:center;font-size:.86rem;margin-top:12px}
+.cost .bar{height:10px}
+.cost .bar>i{background:var(--food);border-radius:4px}
+.cost-v{text-align:right;color:var(--muted);white-space:nowrap}
+pre.formula{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.8rem;line-height:1.6;background:var(--sunken);padding:10px 12px;border-radius:var(--r-sm);overflow-x:auto;margin:8px 0}
+.opt-how{margin:8px 0 0;padding-left:18px}
+.opt-how li{margin:4px 0}
 .opt strong{font-family:var(--display);font-stretch:108%}
 /* Metrónomo */
 .metro{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start}
@@ -522,6 +645,42 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <symbol id="i-metricas" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></g></symbol>
   <symbol id="i-perfil" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></g></symbol>
   <symbol id="i-trophy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.5 3.5M16 6h2.5A2.5 2.5 0 0 1 16 9.5M12 13v3.5M9 20h6M10 16.5h4"/></g></symbol>
+  <!-- comidas del día y alimentos (optimizador de porciones) -->
+  <symbol id="i-s-sunrise" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18.5h18M6.5 18.5a5.5 5.5 0 0 1 11 0M12 5.5V8.5M5.3 9.8l1.8 1.8M18.7 9.8l-1.8 1.8M2.5 14.5h2M19.5 14.5h2"/></g></symbol>
+  <symbol id="i-s-cup" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h12v4.5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z"/><path d="M16.5 11h1.3a2.5 2.5 0 0 1 0 5h-1.6M8.5 3.5c-.7 1 .7 2 0 3M12.5 3.5c-.7 1 .7 2 0 3"/></g></symbol>
+  <symbol id="i-s-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></g></symbol>
+  <symbol id="i-s-tea" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8.5h11.5v3.5a5.75 5.75 0 0 1-11.5 0Z"/><path d="M16.5 9.5h1.2a2.4 2.4 0 0 1 0 4.8h-1.9M3 20h15.5M9.5 3.5c-.6.9.6 1.8 0 2.8"/></g></symbol>
+  <symbol id="i-s-moon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.8A8 8 0 0 1 9.2 4.5a8 8 0 1 0 10.3 10.3Z"/><path d="M16 4.5v3M14.5 6h3"/></g></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14M15 5l3 3-3 3M20 16H6M9 13l-3 3 3 3"/></g></symbol>
+  <symbol id="i-f-egg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3.3 0 6.2 4.9 6.2 9.2a6.2 6.2 0 0 1-12.4 0C5.8 8.4 8.7 3.5 12 3.5Z"/><circle cx="12" cy="14" r="2.7"/></g></symbol>
+  <symbol id="i-f-bread" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16c0-4.7 3.8-8.5 8.5-8.5s8.5 3.8 8.5 8.5v.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/><path d="M8.5 11l1.3 2.2M12 10l1.3 2.2M15.5 11l1.3 2.2"/></g></symbol>
+  <symbol id="i-f-oats" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0Z"/><path d="M7.5 8.5 8.5 7M12 7.5V5.5M16.5 8.5 15.5 7M9 14.5h.01M12.5 15.5h.01M15 13.5h.01"/></g></symbol>
+  <symbol id="i-f-yogurt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 8h13l-1.6 10.8a2 2 0 0 1-2 1.7H9.1a2 2 0 0 1-2-1.7Z"/><rect x="4.5" y="4.5" width="15" height="3.5" rx="1"/><path d="M7 12.5h10"/></g></symbol>
+  <symbol id="i-f-milk" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3.5h7v2.5l2.5 4v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V10l2.5-4Z"/><path d="M6 10.5h12M8.5 6h7"/><path d="M9.5 14.5c1.5-.8 3.5.8 5 0"/></g></symbol>
+  <symbol id="i-f-shake" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 8h9l-1.1 11.9a1.5 1.5 0 0 1-1.5 1.4h-3.8a1.5 1.5 0 0 1-1.5-1.4Z"/><path d="M8.5 8V5.5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V8M11 4.5v-2h2v2M8 12.5h8"/></g></symbol>
+  <symbol id="i-f-chicken" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 4.6c2 2 1.6 5.7-.9 8.2s-6 2.8-7.9.9-1.6-5.6.9-8.1 5.9-3 7.9-1Z"/><path d="M10.6 13.4 7.2 16.8"/><circle cx="5.7" cy="16.5" r="1.7"/><circle cx="7.5" cy="18.3" r="1.7"/></g></symbol>
+  <symbol id="i-f-steak" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5c0-5 4-8.5 9-8.5 4.1 0 7 2.5 7 6 0 2.6-1.8 4-3.8 5-1.4.7-2.2 1.8-2.9 3-.8 1.4-2 2.5-3.8 2.5C6.4 20.5 4 17.3 4 12.5Z"/><circle cx="14" cy="10" r="2.2"/></g></symbol>
+  <symbol id="i-f-fish" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12c-2.2 3.4-5 5-8 5-3.2 0-5.7-1.9-7.5-5 1.8-3.1 4.3-5 7.5-5 3 0 5.8 1.6 8 5Z"/><path d="M5 12 2.5 8.5v7Z"/><circle cx="16" cy="11" r=".9" fill="currentColor" stroke="none"/><path d="M11 9.5c.8 1.6.8 3.4 0 5"/></g></symbol>
+  <symbol id="i-f-ham" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6.5" width="17" height="11" rx="5.5"/><path d="M7 12.5c1.7-1.4 3.4-1.4 5 0s3.3 1.4 5 0"/></g></symbol>
+  <symbol id="i-f-rice" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.5h17a8.5 8.5 0 0 1-17 0Z"/><path d="M6.5 12.5c.6-3 2.8-5 5.5-5s4.9 2 5.5 5M10 9.5h.01M13.5 9h.01M12 11h.01"/></g></symbol>
+  <symbol id="i-f-pasta" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.5h17a8.5 8.5 0 0 1-17 0Z"/><path d="M6.5 12.5c0-2.5 2-2.5 2-5M10.5 12.5c0-2.5 2-2.5 2-5.5M14.5 12.5c0-2.5 2-2.5 2-5"/></g></symbol>
+  <symbol id="i-f-potato" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 7.2c2.6-3 8.6-3.6 11.5-.8 3 2.9 2.6 8.6-.4 11.4s-9 3.2-11.4.4-2.3-8 .3-11Z"/><circle cx="9.5" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="14.5" cy="12.5" r=".9" fill="currentColor" stroke="none"/><circle cx="11" cy="15.5" r=".9" fill="currentColor" stroke="none"/></g></symbol>
+  <symbol id="i-f-broccoli" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 13a3.5 3.5 0 0 1 .4-7 4 4 0 0 1 7.6-.4A3.5 3.5 0 0 1 16.5 13Z"/><path d="M10 13l.8 7.5h2.4L14 13M12 16.5l1.5-2"/></g></symbol>
+  <symbol id="i-f-tomato" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c4.1 0 7.5 2.9 7.5 6.5S16.1 20.5 12 20.5 4.5 17.6 4.5 14 7.9 7.5 12 7.5Z"/><path d="M12 7.5V4.5M8.8 7.2 12 9l3.2-1.8"/></g></symbol>
+  <symbol id="i-f-leaf" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14.5-14.5C19 14 13.5 19 5 19Z"/><path d="M5 19 13 11M9.5 14.5H13M11 12.5V9.5"/></g></symbol>
+  <symbol id="i-f-banana" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 5.5c-.5 7.5 4 13 10.5 13 1.9 0 3.4-.6 4.5-1.6-6 .2-10.3-4.4-11-11.4Z"/><path d="M5.5 5.5 5 3.5h3.5l1 2"/></g></symbol>
+  <symbol id="i-f-apple" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c-2-1.6-6.2-1.4-7.2 2.3-1 3.7 1.4 9.6 4.4 10.4 1 .3 1.8-.3 2.8-.3s1.8.6 2.8.3c3-.8 5.4-6.7 4.4-10.4-1-3.7-5.2-3.9-7.2-2.3Z"/><path d="M12 7.5c0-2 1-3.6 3-4.3"/></g></symbol>
+  <symbol id="i-f-berries" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14.5" r="3.5"/><circle cx="16" cy="14.5" r="3.5"/><circle cx="12" cy="8.5" r="3.5"/><path d="M11 8h2M7 14h2M15 14h2"/></g></symbol>
+  <symbol id="i-f-avocado" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-2.6 0-4.1 2.6-4.7 5.4-.5 2.3-2.3 3.6-2.3 6.1a7 7 0 0 0 14 0c0-2.5-1.8-3.8-2.3-6.1C16.1 6.1 14.6 3.5 12 3.5Z"/><circle cx="12" cy="15" r="2.8"/></g></symbol>
+  <symbol id="i-f-oil" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5h4v3l2.2 2.6v10.4a1.5 1.5 0 0 1-1.5 1.5H9.3a1.5 1.5 0 0 1-1.5-1.5V9.1L10 6.5Z"/><path d="M12 12.5c-1.2 1.5-1.8 2.4-1.8 3.2a1.8 1.8 0 0 0 3.6 0c0-.8-.6-1.7-1.8-3.2Z"/></g></symbol>
+  <symbol id="i-f-nut" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3.6 2.6 5.5 6.5 5.5 10.2a5.5 5.5 0 0 1-11 0C6.5 10 8.4 6.1 12 3.5Z"/><path d="M12 7.5c-1 2.7-1 6.3 0 9"/></g></symbol>
+  <symbol id="i-f-butter" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12 8.5 8h12v5.5l-5 4h-12Z"/><path d="M3.5 12h12v5.5M15.5 12l5-4"/></g></symbol>
+  <symbol id="i-f-beans" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 6.5c1.8-1.5 4.6-.6 4.6 1.8 0 1.4-1.3 1.8-1.3 3s1.5 1.6.7 3c-1 1.8-4.2 1.6-5.3-.6-1.2-2.4-.5-5.7 1.3-7.2Z"/><path d="M14.8 10.5c2.3-.8 4.9.9 4.6 3.2-.2 1.4-1.6 1.5-2 2.6s.8 1.9-.4 3c-1.6 1.4-4.6.3-5-2.2-.5-2.6.6-5.7 2.8-6.6Z"/></g></symbol>
+  <symbol id="i-f-cheese" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 17.5v-5.5L17 6.5l3.5 5.5v5.5Z"/><path d="M3.5 12h17"/><circle cx="8.5" cy="15" r="1.1"/><circle cx="15" cy="14.5" r=".9"/></g></symbol>
+  <symbol id="i-f-honey" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9h10v9.5a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2Z"/><rect x="6.5" y="5.5" width="11" height="3.5" rx="1"/><path d="M7 13.5h10"/></g></symbol>
+  <symbol id="i-f-dish" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9.5" width="17" height="9" rx="2.2"/><path d="M2.5 9.5h19M7 9.5V7.2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2.3M7.5 13.5c1.5 1.2 3 1.2 4.5 0s3-1.2 4.5 0"/></g></symbol>
+  <symbol id="i-f-pizza" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 3.8 6.5a16 16 0 0 1 16.4 0Z"/><path d="M5 8.6a13.5 13.5 0 0 1 14 0"/><circle cx="10.5" cy="11.5" r="1.1"/><circle cx="13.5" cy="15.5" r="1.1"/></g></symbol>
+  <symbol id="i-f-plate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/></g></symbol>
   <symbol id="ico-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
   <symbol id="ico-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></symbol>
 </svg>
@@ -598,6 +757,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <h3>Agregar comida</h3>
         <div class="row">
           <div class="field w5">Hora<input id="mTime" type="time"></div>
+          <div class="field w7">Comida<select id="mSlot"><option value="">Según la hora</option></select></div>
           <div class="field grow">Descripción (opcional)<input id="mDesc" type="text" placeholder="Se arma sola con los ingredientes"></div>
         </div>
         <div class="ai-only stack" hidden>
@@ -657,6 +817,52 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="field grow">Comenta o pide un cambio<input id="planNote" type="text" placeholder="Ej: repártelo en una once y una cena, sin arroz, algo rápido de preparar"></div>
           <button class="btn" data-action="plan-ai">Ajustar con IA</button>
         </div>
+      </div>
+    </details>
+    <details class="panel sec mt no-share" id="optPanel">
+      <summary><h3>Optimizador de porciones</h3><span class="hint" id="optSum"></span></summary>
+      <div class="sec-body">
+        <p class="small muted" style="margin:0 0 10px">Arma opciones para lo que te falta sin usar IA: elige alimentos de tu base para cada comida según sus grupos y calcula los gramos que mejor cuadran con tus metas. Cada opción muestra por qué quedó así.</p>
+        <div class="chips" id="optSlots"></div>
+        <details class="manual mt" id="optTune">
+          <summary>Prioridades</summary>
+          <p class="small muted" style="margin:10px 0 0">Cuánto pesa cada parte del costo: w de cada macro, λ de las porciones y π de la costumbre. 0 la ignora; 1 es lo normal; 4, cuatro veces más. Las calorías no tienen control propio: salen de proteína, carbohidratos y grasa. Los cambios se guardan al soltar el control.</p>
+          <div class="opt-w" id="optW">
+            <label class="opt-sl"><span>Proteína</span><input type="range" min="0" max="4" step="0.25" data-w="p"><output data-o="p"></output></label>
+            <label class="opt-sl"><span>Carbohidratos</span><input type="range" min="0" max="4" step="0.25" data-w="c"><output data-o="c"></output></label>
+            <label class="opt-sl"><span>Grasa</span><input type="range" min="0" max="4" step="0.25" data-w="f"><output data-o="f"></output></label>
+            <label class="opt-sl"><span>Fibra</span><input type="range" min="0" max="4" step="0.25" data-w="fib"><output data-o="fib"></output></label>
+            <label class="opt-sl"><span>Porciones habituales</span><input type="range" min="0" max="4" step="0.25" data-w="lam"><output data-o="lam"></output></label>
+            <label class="opt-sl"><span>Costumbre</span><input type="range" min="0" max="4" step="0.25" data-w="pref"><output data-o="pref"></output></label>
+          </div>
+          <div class="row mt"><button class="btn small ghost" data-action="opt-w-reset">Volver a las prioridades por defecto</button></div>
+        </details>
+        <div id="optBox"></div>
+        <details class="manual mt">
+          <summary>Comidas del día y sus grupos</summary>
+          <div id="optCfgBox"></div>
+        </details>
+        <details class="manual mt">
+          <summary>Cómo decide</summary>
+          <div class="small" style="margin-top:10px">
+            <p style="margin:0">Todo el costo es un −log posterior: cuánto se alejan las metas, cuánto se alejan tus porciones y qué tan raro es el plato para ti. Menor es mejor.</p>
+            <pre class="formula">J = Σ macros   w · a(r) · r²            r = (logrado − falta) / σ
+  + λ · Σ alimentos  u²               u = (g − g habitual) / s
+  + π · Σ comidas  −log p(plato | comida)</pre>
+            <ul class="opt-how">
+              <li><strong>Metas (verosimilitud).</strong> Proteína, carbohidratos, grasa y fibra. σ es tu tolerancia diaria (±<span id="optTol">10</span>% de cada meta): 1 punto de costo es desviarse una tolerancia completa. w es la prioridad de cada macro. Cada meta tiene un tipo: la proteína y la fibra son mínimos (pasarse pesa κ = 0,25), la grasa es un máximo (quedar corto pesa κ) y los carbohidratos son un objetivo (igual hacia los dos lados). Las calorías no entran por separado: salen de 4·P + 4·C + 9·G, así no se cuenta dos veces lo mismo.</li>
+              <li><strong>Porciones (prior gaussiano).</strong> g habitual es la mediana de lo que registraste de ese alimento en 60 días (más tu plan base); s es su dispersión, 1,4826·MAD, nunca menos de 25% de lo habitual. λ es la prioridad "Porciones habituales". Las cotas son solo físicas: al menos una porción si el alimento está en el plato, y un tope de seguridad de 5 veces lo habitual que el prior hace inalcanzable.</li>
+              <li><strong>Costumbre (prior de platos).</strong> p(plato | comida) sale de tu historial con suavizado de Laplace: (veces + 1) / (comidas + platos distintos). Una variación (un alimento cambiado por otro del mismo rol) vale p del plato base × α (0,2) × p(alimento nuevo | rol); un plato de otra franja, × γ (0,1); una combinación nueva, ε (0,05) × Π p(alimento | rol). Repetir un alimento multiplica p por δ (0,5). π es la prioridad "Costumbre".</li>
+              <li><strong>Tus cambios.</strong> Si cambias un alimento, el nuevo toma su lugar en esa comida y no paga costumbre. Si fijas sus gramos, su rango se cierra en ese valor. Los demás alimentos se mantienen y sus gramos se vuelven a optimizar; con "Buscar otras combinaciones con mis cambios" vuelve a elegir alimentos respetando lo que elegiste.</li>
+            </ul>
+            <p style="margin:8px 0 0"><strong>Qué propone.</strong> Tus platos de esa hora en 60 días y tus comidas frecuentes, más variaciones con un alimento del mismo rol (una carne por otra, arroz por fideos, un yogur por otro). Almuerzo y cena llevan platos de fondo; desayuno, media mañana y colación, livianos. Solo si una comida tiene menos de 3 platos arma combinaciones nuevas, y únicamente si todos sus alimentos caben en un mismo tipo de comida: desayuno dulce, desayuno salado o sándwich, o plato.</p>
+            <p style="margin:8px 0 0"><strong>Cómo busca.</strong> 1) Con los platos fijos, J es convexo en los gramos: se resuelve por descenso por coordenadas (cada gramaje con un paso de Newton acotado; el costo nunca sube) y se certifica con las condiciones de KKT. 2) Cada comida ordena sus candidatos contra su parte de lo que falta, según su %. 3) Una búsqueda en haz de 40 caminos combina los 6 mejores de cada comida y optimiza el día completo. 4) Redondea a porciones comibles (unidades enteras, medias unidades o pasos de 5 a 10 g) y mejora el redondeo de a un paso. 5) Muestra opciones que compartan menos del 60% de los alimentos. Los pasos 2 y 3 son aproximados: no garantizan el mejor plato posible, solo uno muy bueno. En "Traza del cálculo" ves cada número, el certificado y qué se evaluó.</p>
+          </div>
+        </details>
+        <details class="manual mt" id="optCreditsBox">
+          <summary>Créditos de las fotos</summary>
+          <div id="optCredits" class="small muted"></div>
+        </details>
       </div>
     </details>
     <details class="panel sec mt">
@@ -1092,12 +1298,13 @@ const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[\u030
 const r1 = x => Math.round((Number(x) || 0) * 10) / 10;
 const S = {
   date: today(), tab: "hoy", days: {},
-  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: [], share: {}},
+  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: [], share: {}, optim: {}},
   build: [],
   weekFrom: null,
-  mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planNote: ""
+  mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planNote: "",
+  opt: {skip: [], pin: {}, fix: {}, no: {}, keep: null, open: null, prev: null, sel: 0, page: 0} // optimizador: tus cambios de esta sesión
 };
-const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list", share:"values"};
+const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list", share:"values", optim:"values"};
 /* Vista compartida (/s/<código>): solo lectura, sin login, con las áreas que elegiste en "Compartir con amigos".
    El Worker filtra los datos; acá solo se ocultan la edición y las secciones no compartidas. */
 const SHARE = (location.pathname.match(/^\/s\/([A-Za-z0-9_-]{20,64})\/?$/) || [])[1] || null;
@@ -1827,8 +2034,11 @@ function renderNutrition(){
       <button class="btn small ${d.creatine ? "" : "primary"}" data-action="creatine">${d.creatine ? "Deshacer creatina" : "Tomé la creatina"}</button>
     </div>`);
   const meals = [...d.meals].sort((a,b) => (a.time||"").localeCompare(b.time||""));
+  const sl = optCfg().slots;
+  if (document.activeElement !== $("#mSlot")) fillSelect($("#mSlot"), sl.map(s => ({v: s.name, t: s.name})), "Según la hora");
+  const slotTag = m => { const i = mealSlotIdx(sl, m, d.meals); return i < 0 ? "" : `<div class="small${m.slot ? "" : " muted"}">${esc(sl[i].name.toLowerCase())}</div>`; };
   setHTML($("#mealsTable"), meals.length ? `<table><thead><tr><th>Hora</th><th>Comida</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
-    ${meals.map(m => `<tr><td>${esc(m.time||"")}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.items||[]).length ? `<div class="small muted">${esc(m.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))}</div>` : (m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td>
+    ${meals.map(m => `<tr><td>${esc(m.time||"")}${slotTag(m)}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.items||[]).length ? `<div class="small muted">${esc(m.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))}</div>` : (m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td>
       <td class="n"><button class="btn small ghost" data-action="meal-edit" data-id="${m.id}">Editar</button><button class="btn small ghost danger" data-action="meal-del" data-id="${m.id}">Borrar</button></td></tr>`).join("")}
     </tbody><tfoot><tr><td></td><td>Total</td><td class="n">${fmt(st.kcal)}</td><td class="n">${fmt(st.p)}</td><td class="n">${fmt(st.c)}</td><td class="n">${fmt(st.f)}</td><td class="n">${fmt(st.fib)}</td><td></td></tr></tfoot></table>`
     : `<p class="empty">Sin comidas registradas este día. Agrega la primera arriba o usa el registro rápido del resumen.</p>`);
@@ -1859,7 +2069,7 @@ function renderNutrition(){
     <dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>
   </dl></div><p class="small muted" style="margin:10px 0 0">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara esa pendiente con el ritmo de tu fase (7.700 kcal ≈ 1 kg), con tope de ±250 kcal. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
   $("#nutWeekSum").textContent = `${ws.foodOk} de ${ws.n} días en meta · ${wt ? `peso ${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "tendencia de peso sin datos"}`;
-  renderPlan(); renderWeight(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
+  renderPlan(); renderOpt(); renderWeight(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
 }
 function renderWeight(){
   const ser = weightSeries(), lw = lastWeight(), wt = weightTrend(), box = $("#weightBox");
@@ -2403,8 +2613,8 @@ function renderBuild(){
 function renderFoods(){
   const q = norm($("#foodFilter").value), list = foods().filter(f => !q || norm(f.name).includes(q) || (f.aliases || []).some(a => norm(a).includes(q))).sort((a, b) => a.name.localeCompare(b.name, "es"));
   $("#foodList").innerHTML = foods().map(f => `<option value="${esc(f.name)}">`).join("");
-  setHTML($("#foodTable"), list.length ? `<table><thead><tr><th>Alimento (por 100 g)</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th>Porción</th><th>Fuente</th><th></th></tr></thead><tbody>
-    ${list.map(f => `<tr><td>${esc(f.name)}</td><td class="n">${fmt(f.kcal)}</td><td class="n">${fmt(f.p, 1)}</td><td class="n">${fmt(f.c, 1)}</td><td class="n">${fmt(f.f, 1)}</td><td class="n">${fmt(f.fib, 1)}</td>
+  setHTML($("#foodTable"), list.length ? `<table><thead><tr><th>Alimento (por 100 g)</th><th>Grupo</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th>Porción</th><th>Fuente</th><th></th></tr></thead><tbody>
+    ${list.map(f => `<tr><td>${esc(f.name)}</td><td class="small"><span class="fg-dot" style="--c:var(--fg-${groupOf(f)})"></span>${esc(FG_LABEL[groupOf(f)])}${f.group ? "" : ` <span class="muted">(auto)</span>`}</td><td class="n">${fmt(f.kcal)}</td><td class="n">${fmt(f.p, 1)}</td><td class="n">${fmt(f.c, 1)}</td><td class="n">${fmt(f.f, 1)}</td><td class="n">${fmt(f.fib, 1)}</td>
       <td class="small">${f.unit ? `1 ${esc(f.unit)} = ${fmt(f.unitG)} g` : "—"}</td><td><span class="tag" style="${/revisar/.test(f.source || "") ? "border-color:var(--food);color:var(--food)" : ""}">${esc(f.source || "")}</span></td>
       <td class="n"><button class="btn small ghost" data-action="food-edit" data-id="${f.id}">Editar</button><button class="btn small ghost danger" data-action="food-del" data-id="${f.id}">Borrar</button></td></tr>`).join("")}</tbody></table>`
     : `<p class="empty">No hay alimentos que coincidan. Agrega uno o lee una etiqueta.</p>`);
@@ -2701,8 +2911,9 @@ const FOOD_FIELDS = f => [
   {name: "f", label: "Grasa g por 100 g", value: f.f, num: true}, {name: "fib", label: "Fibra g por 100 g", value: f.fib, num: true},
   {name: "unit", label: "Nombre de la porción (opcional, ej. pote, lámina, unidad)", value: f.unit}, {name: "unitG", label: "Gramos de esa porción", value: f.unitG, num: true},
   {name: "plant", label: "¿Cuenta como planta para la microbiota?", type: "select", options: ["no", "sí"], value: f.plant ? "sí" : "no"},
+  {name: "group", label: "Grupo para el optimizador", type: "select", options: ["automático", ...FG.map(x => x[1])], value: f.group && FG_LABEL[f.group] ? FG_LABEL[f.group] : "automático"},
   {name: "source", label: "Fuente", value: f.source || "etiqueta", list: ["etiqueta", "USDA aprox.", "pesado por mí", "aprox., revisar"]}];
-const foodFromForm = v => ({name: v.name, aliases: splitList(v.aliases), kcal: v.kcal || 0, p: v.p || 0, c: v.c || 0, f: v.f || 0, fib: v.fib || 0, unit: v.unit || null, unitG: v.unit ? (v.unitG || null) : null, plant: v.plant === "sí", source: v.source || ""});
+const foodFromForm = v => ({name: v.name, aliases: splitList(v.aliases), kcal: v.kcal || 0, p: v.p || 0, c: v.c || 0, f: v.f || 0, fib: v.fib || 0, unit: v.unit || null, unitG: v.unit ? (v.unitG || null) : null, plant: v.plant === "sí", group: (FG.find(x => x[1] === v.group) || [])[0], source: v.source || ""});
 async function readLabel(file){
   if (!file) return;
   const st = $("#labelStatus"); st.innerHTML = `<span class="spin"></span> Leyendo la etiqueta…`;
@@ -2713,6 +2924,663 @@ Responde solo con este JSON: {"name": string (nombre del producto y marca si se 
     openDialog("Nuevo alimento desde etiqueta (revisa los valores)", FOOD_FIELDS({...r, plant: false, source: "etiqueta"}), v => saveLib("foods", l => { l.push({id: "f-" + uid(), ...foodFromForm(v)}); }));
   } catch (e) { st.textContent = aiErr(e); }
   $("#labelPhoto").value = "";
+}
+
+/* ---------- optimizador de porciones ----------
+   Arma opciones para lo que falta del día sin IA. Todo el costo es un −log posterior (menor es mejor):
+
+     J = Σ_m w_m · a_m(r_m) · r_m²          r_m = (Σ_i A[m][i]·x_i − b_m) / σ_m     metas de P, C, G y fibra (verosimilitud)
+       + λ · Σ_i ((x_i − x0_i) / s_i)²                                            porciones habituales (prior gaussiano)
+       + π · Σ_comidas −log p(plato | comida)                                     costumbre (prior de platos)
+
+   x_i = gramos/100 del alimento i, A[m][i] su macro m por 100 g, b_m lo que falta y σ_m = tolerancia × meta diaria.
+   Las kcal no entran: salen de P, C y G (4·P + 4·C + 9·G). a_m pesa los lados del desvío según el tipo de meta: en un mínimo
+   (proteína, fibra) pasarse pesa κ; en un máximo (grasa), quedar corto pesa κ; en un objetivo (carbohidratos), igual.
+   x0_i y s_i son la mediana y la dispersión (1,4826·MAD, mínimo 25% de x0) de tus registros. Las cotas son solo físicas.
+   p(plato | comida) sale de tu historial con suavizado de Laplace; variaciones, platos de otra franja y combinaciones nuevas
+   llevan los factores α, γ y ε (ver optCandidates). Repetir un alimento multiplica p por δ.
+   Con los platos fijos, J es convexo en x: descenso por coordenadas con mayorización (el costo nunca sube), redondeo a pasos
+   comibles y búsqueda local. Elegir platos es discreto: candidatos por comida, preorden contra la parte proporcional de lo que
+   falta y búsqueda en haz sobre el día completo (aproximada: no garantiza el óptimo global). */
+const FG = [["prot", "Proteína"], ["carb", "Carbohidrato"], ["veg", "Verdura"], ["fat", "Grasa"], ["fruit", "Fruta"], ["leg", "Legumbre"], ["lact", "Lácteo"], ["dish", "Plato preparado"]];
+const FG_LABEL = Object.fromEntries(FG), FG_ORDER = Object.fromEntries(FG.map(([k], i) => [k, i]));
+const FG_G = {prot: 150, carb: 150, veg: 120, fat: 12, fruit: 130, leg: 150, lact: 200, dish: 300}; // porción base sin historial ni unidad
+const FG_RX = [
+  ["dish", /ecook|lasana|cazuela|charquican|pastel de|empanada|sandwich|completo|pizza|preparad/],
+  ["leg", /lenteja|garbanzo|poroto|arveja|hummus|edamame/],
+  ["lact", /leche|yogu|kefir|quesillo|queso|lacteo/],
+  ["prot", /pollo|pavo|cerdo|chuleta|lomo|posta|asiento|carne|vacuno|huevo|atun|jurel|salmon|merluza|reineta|pescado|jamon|proteina|whey|tofu|camaron|pechuga/],
+  ["fat", /aceite|mantequilla|palta|almendra|nuez|nueces|mani|semilla|chia|linaza|crema|mayonesa/],
+  ["fruit", /platano|manzana|naranja|pera|kiwi|uva|frutilla|arandano|mandarina|durazno|mango|pina|sandia|melon|fruta/],
+  ["veg", /tomate|brocoli|lechuga|zanahoria|pepino|espinaca|zapallo|pimenton|cebolla|coliflor|ensalada|verdura|acelga|repollo|champi|betarraga|apio/],
+  ["carb", /arroz|fideo|pasta|tallarin|papa|\bpan\b|hallulla|marraqueta|avena|quinoa|tortilla|galleta|cereal|choclo|camote|granola|cuscus/]];
+// Grupo del alimento: el que elegiste en su ficha o, si no, por el nombre y luego por su perfil de macros.
+function groupOf(fd){
+  if (fd.group && FG_LABEL[fd.group]) return fd.group;
+  for (const s of [fd.name, (fd.aliases || []).join(" ")]){ const n = norm(s), m = FG_RX.find(([, rx]) => rx.test(n)); if (m) return m[0]; }
+  const k = fd.kcal || 1, pe = 4 * (fd.p || 0) / k, fe = 9 * (fd.f || 0) / k, ce = 4 * (fd.c || 0) / k;
+  return pe >= .4 ? "prot" : fe >= .6 ? "fat" : fd.plant && k < 60 ? "veg" : ce >= .6 ? "carb" : "dish";
+}
+const FG_WORDS = [["prot", /^prote/], ["carb", /^(carbo|cereal|hidrato)/], ["veg", /^(verdura|vegetal|hortaliza)/], ["fat", /^gras/], ["fruit", /^fruta/], ["leg", /^legum/], ["lact", /^lact/], ["dish", /^(plato|preparad)/]];
+// "pan/avena, proteína/lácteo, fruta?" → componentes. Cada componente lleva un alimento de alguno de sus grupos o cuyo nombre
+// contenga alguna de sus palabras (pan, avena, huevo…); "?" lo hace opcional.
+function parseComps(txt){
+  return String(txt || "").split(/[,+]/).map(s => s.trim()).filter(Boolean).map(s => {
+    const opt = /\?$/.test(s), groups = [], toks = [];
+    s.replace(/\?$/, "").split(/\s*\/\s*|\s+o\s+/).map(w => w.trim()).filter(Boolean).forEach(w => { const g = FG_WORDS.find(([, rx]) => rx.test(norm(w))); if (g) groups.push(g[0]); else toks.push(w); });
+    return groups.length || toks.length ? {groups: [...new Set(groups)], toks, opt} : null;
+  }).filter(Boolean);
+}
+// Un nombre coincide con la primera palabra del alimento o de un alias ("aceite" → Aceite de oliva, no Huevo revuelto con aceite).
+const foodTok = (fd, tok) => { const t = norm(tok); return [fd.name, ...(fd.aliases || [])].map(norm).some(n => { const w = n.split(/[\s(),]+/)[0]; return n === t || w === t || w === t + "s" || w === t + "es"; }); };
+const inComp = (c, fd) => c.groups.includes(groupOf(fd)) || c.toks.some(t => foodTok(fd, t));
+const compText = c => [...c.groups.map(g => FG_LABEL[g].toLowerCase()), ...c.toks.map(t => t.toLowerCase())].join(" o ") + (c.opt ? " (opcional)" : "");
+const OPT_SLOTS = [
+  {name: "Desayuno", time: "08:00", share: 22, comps: "pan/avena, lácteo?, proteína?, fruta?, palta/mantequilla?"},
+  {name: "Media mañana", time: "11:00", share: 8, comps: "lácteo/fruta, fruta?, almendra/nuez/frutos?"},
+  {name: "Almuerzo", time: "13:30", share: 30, comps: "proteína/plato, carbohidrato/legumbre, verdura, aceite?"},
+  {name: "Once", time: "17:30", share: 15, comps: "pan/avena, lácteo?, proteína?, palta/mantequilla?"},
+  {name: "Cena", time: "20:30", share: 25, comps: "proteína/plato, carbohidrato?, verdura, aceite?"}];
+const OPT_W = {p: 2, c: 1, f: 1, fib: .5, lam: 1, pref: 1}; // w por macro, λ (porciones) y π (costumbre)
+const OPT_KEYS = ["kcal", "p", "c", "f", "fib"];
+const OPT_ML = {kcal: ["Calorías", "kcal"], p: ["Proteína", "g"], c: ["Carbohidratos", "g"], f: ["Grasa", "g"], fib: ["Fibra", "g"]};
+const OPT_TYPE = {kcal: "deriv", p: "min", c: "obj", f: "max", fib: "min"}; // kcal: no entra al costo, sale de P, C y G
+const OPT_TYPE_LABEL = {deriv: "sale de P, C y G", min: "mínimo", max: "máximo", obj: "objetivo"};
+// Constantes del modelo, todas interpretables: κ asimetría de las metas; α, γ, ε, δ probabilidades del prior de platos;
+// SPREAD dispersión mínima de una porción (fracción de lo habitual); CAP tope de seguridad (veces lo habitual), que el prior hace inalcanzable.
+const OPT_KAPPA = .25, OPT_ALPHA = .2, OPT_GAMMA = .1, OPT_EPS = .05, OPT_DELTA = .5, OPT_SPREAD = .25, OPT_CAP = 5;
+const OPT_SIDE = Object.fromEntries(Object.entries(OPT_TYPE).map(([k, ty]) => [k, ty === "min" ? [1, OPT_KAPPA] : ty === "max" ? [OPT_KAPPA, 1] : [1, 1]])); // peso de [quedar corto, pasarse]
+const OPT_CANDS = 6, OPT_COMBOS = 1000, OPT_K = 6, OPT_BEAM = 40, OPT_REP = Math.log(1 / OPT_DELTA), OPT_SIM = .6, OPT_SHOW = 3; // búsqueda: candidatos, haz, similitud
+function optCfg(){
+  const o = S.lib.optim || {}, slots = (o.slots && o.slots.length ? o.slots : OPT_SLOTS).slice().sort((a, b) => a.time.localeCompare(b.time));
+  return {slots, w: {...OPT_W, ...(o.w || {})}};
+}
+const hm = t => { const m = /^(\d{1,2}):(\d{2})/.exec(t || ""); return m ? +m[1] * 60 + +m[2] : null; };
+const median = a => { const s = [...a].sort((x, y) => x - y), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; };
+// Comida configurada más cercana a una hora: cada comida cubre hasta la mitad del tiempo que la separa de la siguiente.
+function optSlotIdx(slots, t){
+  const x = hm(t); if (x === null) return -1;
+  let best = 0; slots.forEach((s, i) => { if (Math.abs(hm(s.time) - x) < Math.abs(hm(slots[best].time) - x)) best = i; });
+  return best;
+}
+// A qué comida corresponde un registro: la que elegiste al registrarlo (m.slot). Si no elegiste, la primera comida del día que cae
+// entre el desayuno y el almuerzo cuenta como desayuno (a veces se desayuna tarde); el resto va a la comida más cercana a su hora.
+function mealSlotIdx(slots, m, meals){
+  if (m.slot){ const i = slots.findIndex(s => norm(s.name) === norm(m.slot)); if (i >= 0) return i; }
+  const i = optSlotIdx(slots, m.time); if (i < 0) return i;
+  const bi = slots.findIndex(s => /desayuno/.test(norm(s.name))), li = slots.findIndex(s => /almuerzo/.test(norm(s.name)));
+  if (bi >= 0 && i > bi && (li < 0 || i < li)){
+    const first = meals.filter(x => x.time).sort((a, b) => a.time.localeCompare(b.time))[0];
+    if (first === m && !meals.some(x => x.slot && norm(x.slot) === norm(slots[bi].name))) return bi;
+  }
+  return i;
+}
+function optSlotStatus(date, slots){
+  const ms = day(date).meals, covered = new Set(ms.map(m => mealSlotIdx(slots, m, ms))), now = date === today() ? hm(nowHM()) : -1;
+  return slots.map((s, i) => {
+    const end = i < slots.length - 1 ? (hm(s.time) + hm(slots[i + 1].time)) / 2 : 24 * 60;
+    return {...s, i, fi: i, st: covered.has(i) ? "hecha" : now >= end ? "pasó" : S.opt.skip.includes(s.name) ? "omitida" : "va"};
+  });
+}
+// Historial de 60 días: gramos de cada alimento (porción habitual), veces que aparece en cada comida y en total (costumbre),
+// y los platos: la combinación de alimentos de cada comida registrada, con cuántas veces la comiste en cada franja.
+// Las comidas frecuentes también son platos (las del plan base del tipo de día cuentan doble); las que no tienen hora quedan libres.
+function optHistory(date, slots){
+  const grams = new Map(), freq = slots.map(() => new Map()), fall = new Map(), tpl = slots.map(() => new Map()), free = new Map();
+  const add = (it, s, n) => {
+    if (!it.foodId || !(it.g > 0)) return;
+    if (!grams.has(it.foodId)) grams.set(it.foodId, []);
+    for (let k = 0; k < n; k++) grams.get(it.foodId).push(it.g);
+    if (s >= 0) freq[s].set(it.foodId, (freq[s].get(it.foodId) || 0) + n);
+    fall.set(it.foodId, (fall.get(it.foodId) || 0) + n);
+  };
+  const addTpl = (map, items, n, name, combo) => {
+    const ids = [];
+    for (const it of items || []){
+      const fd = it.foodId && foods().find(f => f.id === it.foodId); if (!fd || !(it.g > 0) || !(fd.kcal > 0)) continue;
+      const use = optCooked(fd); if (!use) return; // carne cruda sin versión cocida: el plato no sirve
+      if (!ids.includes(use.id)) ids.push(use.id);
+    }
+    if (!ids.length) return;
+    const key = [...ids].sort().join("|"), e = map.get(key);
+    if (e){ e.n += n; if (combo){ e.name = name; e.combo = true; } } else map.set(key, {ids, n, name, combo});
+  };
+  for (let i = 1; i <= PLAN_DAYS; i++){
+    const d = S.days[addDays(date, -i)]; if (!d) continue;
+    for (const m of d.meals || []){
+      const s = mealSlotIdx(slots, m, d.meals || []), its = m.items || [];
+      its.forEach(it => add(it, s, 1));
+      // Plato solo si al menos 70% de sus kcal son de alimentos de tu base (lo demás lo estimó la IA)
+      const known = sum(its.filter(it => it.foodId && foods().some(f => f.id === it.foodId)), it => it.kcal);
+      if (s >= 0 && its.length && (!(m.kcal > 0) || known >= .7 * m.kcal)) addTpl(tpl[s], its, 1, m.desc, false);
+    }
+  }
+  const base = templateOf(dayKind(date));
+  for (const c of S.lib.combos || []){
+    const s = c.time ? optSlotIdx(slots, c.time) : -1, inBase = base.includes(c);
+    if (inBase) (c.items || []).forEach(it => add(it, s, 2));
+    addTpl(s >= 0 ? tpl[s] : free, c.items, inBase ? 2 : 1, c.name, true);
+  }
+  return {grams, freq, fall, tpl, free};
+}
+// Un alimento crudo se reemplaza por su versión cocida ("Asiento (crudo)" → "Asiento cocido"); si no existe, no sirve.
+function optCooked(fd){
+  if (!/\(crud[oa]s?\)/i.test(fd.name)) return fd;
+  const base = norm(fd.name).replace(/\s*\(crud[oa]s?\)/, "");
+  return foods().find(f => f.kcal > 0 && norm(f.name).startsWith(base) && /cocid/.test(norm(f.name))) || null;
+}
+// Paso de redondeo: unidades enteras (huevo, pote, lámina…), medias unidades (pan, fruta, palta) o 5–10 g.
+function optStep(fd){
+  const u = norm(fd.unit), g = fd.unitG;
+  if (!u || !g || /^(taza|porcion|vaso|g|ml|gramos)$/.test(u)) return groupOf(fd) === "fat" ? 5 : 10;
+  return /huevo|pote|envase|lamina|scoop|cucharad|punado|unidad|rebanada|sobre|barra/.test(u) || g < 60 ? g : g / 2;
+}
+// Porción habitual x0 = mediana de tus registros (o la porción del alimento); dispersión s = 1,4826·MAD con 3 o más registros,
+// nunca menos de SPREAD·x0. Cotas solo físicas: al menos un paso (si está en el plato, se come) y el tope de seguridad CAP·x0.
+function optPortion(fd, list){
+  const xs = list || [], step = optStep(fd), x0 = xs.length ? median(xs) : fd.unit && fd.unitG ? fd.unitG : FG_G[groupOf(fd)];
+  const sd = Math.max(OPT_SPREAD * x0, xs.length >= 3 ? 1.4826 * median(xs.map(v => Math.abs(v - x0))) : 0);
+  const loG = step, hiG = Math.max(loG, Math.ceil(OPT_CAP * x0 / step) * step);
+  return {x0, sd, loG, hiG, step, n: xs.length};
+}
+function optItem(ctx, fd, s, pick){
+  if (!ctx.por.has(fd.id)) ctx.por.set(fd.id, optPortion(fd, ctx.hist.grams.get(fd.id)));
+  const P = {...ctx.por.get(fd.id)}, p = pick || {};
+  if (p.fix) P.loG = P.hiG = p.fix; // gramos que elegiste: la cota se cierra en ese valor
+  return {fd, a: OPT_KEYS.map(k => +fd[k] || 0), z0: P.x0 / 100, sz: P.sd / 100, lo: P.loG / 100, hi: P.hiG / 100, ...P, s,
+    pref: p.pref || 0, rep: p.rep || 0, freq: p.n || 0, ci: p.ci ?? -1, alts: p.alts || [], mine: !!p.mine, fixed: !!p.fix};
+}
+// Descenso por coordenadas: para cada x_i, paso de Newton con la curvatura máxima (mayorización) y proyección a [lo, hi].
+function optSolve(items, P){
+  const M = OPT_KEYS.length, x = items.map(it => clamp(it.z0, it.lo, it.hi)), tot = Array(M).fill(0), sk = P.T.map(() => 0);
+  items.forEach((it, i) => { for (let m = 0; m < M; m++) tot[m] += it.a[m] * x[i]; sk[it.s] += it.a[0] * x[i]; });
+  for (let sweep = 0; sweep < 400; sweep++){
+    let moved = 0;
+    items.forEach((it, i) => {
+      let g = 0, H = 0;
+      for (let m = 0; m < M; m++){
+        if (!P.w[m] || !it.a[m]) continue;
+        const r = (tot[m] - P.b[m]) / P.sig[m], sd = P.side[m];
+        g += 2 * P.w[m] * sd[r < 0 ? 0 : 1] * r * it.a[m] / P.sig[m];
+        H += 2 * P.w[m] * Math.max(sd[0], sd[1]) * (it.a[m] / P.sig[m]) ** 2;
+      }
+      if (P.beta){ const q = (sk[it.s] - P.T[it.s]) / P.tau[it.s]; g += 2 * P.beta * q * it.a[0] / P.tau[it.s]; H += 2 * P.beta * (it.a[0] / P.tau[it.s]) ** 2; }
+      g += 2 * P.lam * (x[i] - it.z0) / it.sz ** 2; H += 2 * P.lam / it.sz ** 2;
+      if (!H) return;
+      const d = clamp(x[i] - g / H, it.lo, it.hi) - x[i]; if (!d) return;
+      x[i] += d; moved = Math.max(moved, Math.abs(d));
+      for (let m = 0; m < M; m++) tot[m] += it.a[m] * d; sk[it.s] += it.a[0] * d;
+    });
+    if (moved < (P.tol || 1e-7)){ x.sweeps = sweep + 1; break; } // 1e-7 en 100 g: certificable con KKT
+  }
+  x.sweeps = x.sweeps || 400;
+  return x;
+}
+function optCost(items, x, P){
+  const M = OPT_KEYS.length, tot = Array(M).fill(0), sk = P.T.map(() => 0);
+  items.forEach((it, i) => { for (let m = 0; m < M; m++) tot[m] += it.a[m] * x[i]; sk[it.s] += it.a[0] * x[i]; });
+  const fit = tot.map((t, m) => { const r = (t - P.b[m]) / P.sig[m]; return {r, c: P.w[m] * P.side[m][r < 0 ? 0 : 1] * r * r}; });
+  const bal = sk.map((k, s) => ({k, c: P.beta * ((k - P.T[s]) / P.tau[s]) ** 2}));
+  const por = items.map((it, i) => P.lam * ((x[i] - it.z0) / it.sz) ** 2);
+  return {tot, fit, bal, por, J: sum(fit, f => f.c) + sum(bal, b => b.c) + sum(por, v => v)};
+}
+// Redondeo a la grilla de cada alimento y búsqueda local: mueve un paso arriba o abajo mientras baje el costo.
+function optRound(items, x, P){
+  const g = items.map((it, i) => clamp(Math.round(x[i] * 100 / it.step) * it.step, it.loG, it.hiG)), z = () => g.map(v => v / 100);
+  let best = optCost(items, z(), P).J;
+  for (let pass = 0; pass < 40; pass++){
+    let imp = false;
+    items.forEach((it, i) => [-1, 1].forEach(d => {
+      const v = g[i] + d * it.step, old = g[i]; if (v < it.loG - 1e-9 || v > it.hiG + 1e-9) return;
+      g[i] = v; const J = optCost(items, z(), P).J;
+      if (J < best - 1e-9){ best = J; imp = true; } else g[i] = old;
+    }));
+    if (!imp) break;
+  }
+  return g;
+}
+function optContext(date){
+  const cfg = optCfg(), g = goals(), st = dayStats(date), stat = optSlotStatus(date, cfg.slots), w = cfg.w;
+  let rem = stat.filter(s => s.st === "va");
+  if (!rem.length && !stat.some(s => s.st === "omitida")) rem = [{name: "Colación", time: nowHM(), share: 10, comps: "lácteo/fruta/proteína, grasa?", i: -1, fi: optSlotIdx(cfg.slots, nowHM())}];
+  const need = {kcal: g.kcal - st.kcal, p: g.protein - st.p, c: g.carbs - st.c, f: g.fat - st.f, fib: g.fiber - st.fib};
+  const goalV = {kcal: g.kcal, p: g.protein, c: g.carbs, f: g.fat, fib: g.fiber}, W = sum(rem, s => s.share) || 1;
+  const P = {b: OPT_KEYS.map(k => Math.max(0, need[k])), sig: OPT_KEYS.map(k => Math.max(1, goalV[k] * g.tol / 100)), w: OPT_KEYS.map(k => OPT_TYPE[k] === "deriv" ? 0 : w[k]),
+    side: OPT_KEYS.map(k => OPT_SIDE[k]), T: rem.map(s => Math.max(0, need.kcal) * s.share / W), beta: 0, lam: w.lam};
+  P.tau = P.T.map(t => Math.max(60, .2 * t));
+  const eaten = new Set(st.d.meals.flatMap(m => (m.items || []).map(it => it.foodId).filter(Boolean)));
+  return {date, cfg, g, st, stat, rem, need, P, W, w, eaten, hist: optHistory(date, cfg.slots), por: new Map(), done: need.kcal <= g.kcal * g.tol / 100};
+}
+const optPool = () => foods().filter(fd => fd.kcal > 0 && !/\(crud[oa]s?\)/i.test(fd.name));
+/* Roles culinarios y tipos de comida. Una combinación tiene sentido si todos sus alimentos caben en un mismo tipo:
+   desayuno dulce (avena, yogur, leche, fruta, batido), desayuno salado o sándwich (pan, huevo, jamón, queso, palta, carne)
+   o plato (carne, preparado, arroz/fideos/papa, legumbres, verdura, aceite). Así no salen cosas como avena con pollo. */
+const ROLES = [
+  ["completo", /pizza|hamburguesa|sushi|completo italiano/],
+  ["plato", /ecook|lasagna|lasana|strogonoff|mechada|bourguignon|pulled|al jugo|preparad|cazuela|charquican|pastel de/],
+  ["polvo", /proteina en polvo|whey/], ["huevo", /huevo/], ["queso", /queso/], ["fiambre", /jamon/],
+  ["carne", /pollo|pavo|pechuga|posta|lomo|asiento|carne|vacuno|cerdo|chuleta|salmon|atun|jurel|merluza|reineta|pescado|longaniza/],
+  ["yogur", /yogu/], ["leche", /leche|kefir/], ["cereal", /avena|granola|cereal/], ["pan", /hallulla|marraqueta|\bpan\b|tostada/],
+  ["acomp", /arroz|fideo|pasta|tallarin|papa|quinoa|cuscus|camote|choclo/], ["legumbre", /lenteja|garbanzo|poroto|arveja/],
+  ["verdura", /brocoli|tomate|lechuga|ensalada|espinaca|zanahoria|pepino|zapallo|coliflor|acelga|repollo/],
+  ["fruta", /platano|manzana|naranja|pera\b|kiwi|uva|frutilla|arandano|mandarina|durazno|mango|pina|sandia|melon/],
+  ["untable", /palta|mantequilla|mermelada|manjar/], ["seco", /almendra|nuez|nueces|frutos secos|\bmani\b|semilla/],
+  ["aceite", /aceite/], ["dulce", /miel|azucar/]];
+const ROLE_FG = {prot: "carne", carb: "acomp", veg: "verdura", fat: "untable", fruit: "fruta", leg: "legumbre", lact: "yogur", dish: "plato"};
+const roleOf = fd => (ROLES.find(([, rx]) => rx.test(norm(fd.name))) || [])[0] || ROLE_FG[groupOf(fd)];
+const MEAL_CTX = {
+  dulce: new Set(["cereal", "yogur", "leche", "fruta", "polvo", "seco", "dulce", "untable"]),
+  salado: new Set(["pan", "huevo", "fiambre", "queso", "carne", "untable", "verdura", "leche", "fruta", "dulce"]),
+  plato: new Set(["carne", "plato", "acomp", "legumbre", "verdura", "aceite", "huevo", "queso", "untable"]),
+  completo: new Set(["completo"])}; // pizza y similares: se comen solos
+const coherent = fds => Object.values(MEAL_CTX).some(c => fds.every(fd => c.has(roleOf(fd))));
+// Tipo de plato: liviano si lleva pan, cereal, lácteo o batido; si no, plato de fondo si lleva carne, preparado, acompañamiento o legumbre.
+function tplKind(fds){
+  const R = new Set(fds.map(roleOf));
+  return ["pan", "cereal", "yogur", "leche", "polvo"].some(r => R.has(r)) ? "liviana" : ["carne", "plato", "acomp", "legumbre", "completo"].some(r => R.has(r)) ? "plato" : "liviana";
+}
+// Qué tipo de plato va en cada comida: almuerzo y cena, de fondo; desayuno, media mañana y colación, livianos; el resto, cualquiera.
+const slotKinds = sl => { const n = norm(sl.name); return /almuerzo|cena/.test(n) ? ["plato"] : /desayuno|media|colacion/.test(n) ? ["liviana"] : ["plato", "liviana"]; };
+// Nombre de un plato por sus ingredientes: "arroz blanco cocido, palta y pollo a la mostaza".
+const dishName = fds => { const n = fds.map(f => f.name.replace(/\s*\(.*$/, "").toLowerCase()); return n.length > 1 ? n.slice(0, -1).join(", ") + " y " + n[n.length - 1] : n[0] || ""; };
+// Alternativas de un alimento para cambiarlo: primero las del mismo rol (las que más comes primero) y, entre carnes y preparados, el otro rol.
+function roleAlts(ctx, fd, pool){
+  const ck = ctx.alts || (ctx.alts = new Map()); if (ck.has(fd.id)) return ck.get(fd.id);
+  const r = roleOf(fd), cross = {carne: "plato", plato: "carne"}[r], n = f => ctx.hist.fall.get(f.id) || 0;
+  const by = l => l.sort((a, b) => n(b) - n(a) || a.name.localeCompare(b.name, "es"));
+  const l = [...by(pool.filter(f => f.id !== fd.id && roleOf(f) === r)), ...(cross ? by(pool.filter(f => roleOf(f) === cross)) : [])];
+  ck.set(fd.id, l); return l;
+}
+// Platos candidatos de una comida, cada uno con su costo de costumbre pref = −log p(plato | comida), con suavizado de Laplace:
+//  · tus platos de esa franja: p = (veces + 1) / (comidas de la franja + platos distintos);
+//  · platos libres o de otra franja del mismo tipo: p = γ · (veces + 1) / (todas las comidas + todos los platos);
+//  · variaciones con un alimento cambiado por otro del mismo rol: p = p(plato base) · α · p(nuevo | rol); si cambia de rol, otra vez α;
+//  · si quedan menos de 3 platos, combinaciones nuevas de los componentes de la comida que tengan sentido: p = ε · Π p(alimento | rol).
+// p(alimento | rol) = (veces que lo comes + 1) / (veces que comes ese rol + alimentos del rol).
+function optCandidates(ctx, sl, pool){
+  const H = ctx.hist, byId = new Map(pool.map(f => [f.id, f])), kinds = slotKinds(sl), out = new Map(), nl = p => -Math.log(p);
+  const stats = {hist: 0, combo: 0, other: 0, var: 0, idea: 0, incoherent: 0, kind: 0};
+  const toFoods = t => t.ids.map(id => byId.get(id)).filter(Boolean);
+  const add = (fds, pref, src) => { if (!fds.length) return; const key = fds.map(f => f.id).sort().join("|"), e = out.get(key); if (!e || pref < e.pref) out.set(key, {foods: fds, pref, src}); };
+  const pRole = fd => { const ck = ctx.prole || (ctx.prole = new Map()); if (!ck.has(fd.id)){ const r = roleOf(fd), l = pool.filter(f => roleOf(f) === r); ck.set(fd.id, ((H.fall.get(fd.id) || 0) + 1) / (sum(l, f => H.fall.get(f.id) || 0) + l.length)); } return ck.get(fd.id); };
+  const mine = [...(H.tpl[sl.fi] || new Map()).values()].map(t => ({...t, foods: toFoods(t)})).filter(t => t.foods.length);
+  const own = mine.filter(t => kinds.includes(tplKind(t.foods))); stats.kind += mine.length - own.length;
+  const N = sum(own, t => t.n), M = own.length, label = t => t.combo ? t.name : dishName(t.foods);
+  own.forEach(t => { stats[t.combo ? "combo" : "hist"]++; add(t.foods, nl((t.n + 1) / (N + M)), {kind: t.combo ? "combo" : "hist", name: label(t), n: t.n, p: (t.n + 1) / (N + M)}); });
+  const allT = H.tpl.flatMap(m => [...m.values()]).concat([...H.free.values()]), NA = sum(allT, t => t.n), MA = allT.length || 1;
+  const other = [...H.free.values()].map(t => ({...t, where: null}))
+    .concat(own.length < 3 ? H.tpl.flatMap((m, j) => j === sl.fi ? [] : [...m.values()].map(t => ({...t, where: ctx.cfg.slots[j].name}))) : []);
+  other.map(t => ({...t, foods: toFoods(t)})).filter(t => t.foods.length && kinds.includes(tplKind(t.foods)))
+    .forEach(t => { stats.other++; const p = OPT_GAMMA * (t.n + 1) / (NA + MA); add(t.foods, nl(p), {kind: "other", name: label(t), n: t.n, where: t.where, p}); });
+  const seeds = [...out.values()];
+  for (const e of seeds) e.foods.forEach((fd, j) => {
+    roleAlts(ctx, fd, pool).filter(b => !e.foods.some(f => f.id === b.id)).slice(0, 4).forEach(b => {
+      const fds = e.foods.map((f, k) => k === j ? b : f); if (!coherent(fds)){ stats.incoherent++; return; }
+      stats.var++; const p = e.src.p * OPT_ALPHA * pRole(b) * (roleOf(b) !== roleOf(fd) ? OPT_ALPHA : 1);
+      add(fds, nl(p), {kind: "var", name: e.src.name, n: e.src.n, from: shortName(fd), to: shortName(b), p});
+    });
+  });
+  let missing = [];
+  if (seeds.length < 3){
+    const g = optFromComps(ctx, sl, pool); missing = g.missing; stats.incoherent += g.incoherent;
+    g.combos.forEach(fds => { stats.idea++; const p = OPT_EPS * fds.reduce((a, f) => a * pRole(f), 1); add(fds, nl(p), {kind: "idea", p}); });
+  }
+  return {cands: [...out.values()], missing, stats};
+}
+// Combinaciones nuevas desde los componentes de la comida (pan/avena, lácteo?, …), solo las que tienen sentido.
+function optFromComps(ctx, sl, pool){
+  const freq = ctx.hist.freq[sl.fi] || new Map(), n = fd => freq.get(fd.id) || 0;
+  const comps = parseComps(sl.comps).map(c => ({c, list: pool.filter(fd => inComp(c, fd)).sort((a, b) => n(b) - n(a) || a.name.localeCompare(b.name, "es"))}));
+  let cut = OPT_CANDS;
+  const size = () => comps.reduce((p, x) => p * Math.max(1, Math.min(cut, x.list.length) + (x.c.opt ? 1 : 0)), 1);
+  while (cut > 2 && size() > OPT_COMBOS) cut--;
+  let combos = [[]];
+  for (const x of comps){
+    const opts = x.list.slice(0, cut); if (!opts.length) continue;
+    if (x.c.opt) opts.unshift(null);
+    combos = combos.flatMap(cb => opts.filter(o => !o || !cb.some(y => y.id === o.id)).map(o => o ? [...cb, o] : cb));
+  }
+  const ok = combos.filter(cb => cb.length && coherent(cb));
+  return {combos: ok, incoherent: combos.filter(cb => cb.length).length - ok.length, missing: comps.filter(x => !x.list.length && !x.c.opt).map(x => x.c)};
+}
+// Tus cambios sobre los candidatos. keep: la composición de la opción que veías, en orden; pin = [{id, ci, role}]: con keep va en la
+// posición ci, si no reemplaza al alimento de ese rol (o se agrega); no = alimentos quitados de esa comida.
+function optApplyEdits(sl, cands, pool){
+  const keep = S.opt.keep && S.opt.keep[sl.name], pins = S.opt.pin[sl.name] || [], no = new Set(S.opt.no[sl.name] || []), byId = new Map(pool.map(f => [f.id, f]));
+  const fin = fds => { const seen = new Set(); return fds.filter(f => f && !no.has(f.id) && !seen.has(f.id) && seen.add(f.id)); };
+  if (keep){
+    const fds = keep.ids.map(id => byId.get(id));
+    pins.forEach(p => { const fd = byId.get(p.id); if (!fd || fds.some(f => f && f.id === fd.id)) return; if (p.ci >= 0 && p.ci < fds.length) fds[p.ci] = fd; else fds.push(fd); });
+    const f = fin(fds); return f.length ? [{foods: f, pref: keep.pref || 0, src: keep.src}] : [];
+  }
+  const out = new Map();
+  for (const c of cands){
+    const fds = [...c.foods];
+    pins.forEach(p => { const fd = byId.get(p.id); if (!fd || fds.some(f => f.id === fd.id)) return; const j = fds.findIndex(f => roleOf(f) === p.role || roleOf(f) === roleOf(fd)); if (j >= 0) fds[j] = fd; else fds.push(fd); });
+    const f = fin(fds), key = f.map(x => x.id).sort().join("|"); if (!f.length) continue;
+    if (!out.has(key) || c.pref < out.get(key).pref) out.set(key, {...c, foods: f});
+  }
+  return [...out.values()];
+}
+// Etapa 1: cada plato candidato de una comida con sus gramos óptimos contra su parte de lo que falta.
+// La tolerancia de la comida es σ·√(su fracción): las varianzas de comidas independientes se suman.
+function optSlot(ctx, sl, si, pool){
+  const {cands, missing, stats} = optCandidates(ctx, sl, pool), list = optApplyEdits(sl, cands, pool);
+  const freq = ctx.hist.freq[sl.fi] || new Map(), mine = new Set((S.opt.pin[sl.name] || []).map(p => p.id)), fix = S.opt.fix[sl.name] || {};
+  const share = sl.share / ctx.W, P = {...ctx.P, b: ctx.P.b.map(v => v * share), sig: ctx.P.sig.map(v => v * Math.sqrt(share)), T: [0], tau: [1], beta: 0, tol: 1e-5}; // preorden: basta una tolerancia holgada
+  const out = list.map(c => {
+    const picks = c.foods.map((fd, ci) => ({fd, ci, n: freq.get(fd.id) || 0, pref: c.pref / c.foods.length, alts: roleAlts(ctx, fd, pool),
+      mine: mine.has(fd.id), fix: fix[fd.id], rep: !mine.has(fd.id) && ctx.eaten.has(fd.id) && groupOf(fd) !== "fat" ? OPT_REP : 0}));
+    const items = picks.map(o => optItem(ctx, o.fd, 0, o)), cost = optCost(items, optSolve(items, P), P);
+    const prior = ctx.w.pref * (c.pref + sum(picks, o => o.rep));
+    return {si, picks, src: c.src, pref: c.pref, fit: cost.J, prior, score: cost.J + prior};
+  }).sort((a, b) => a.score - b.score);
+  out.forEach((o, i) => o.rank = i + 1);
+  return {sl, si, n: out.length, top: out.slice(0, OPT_K), missing, stats};
+}
+const jacc = (a, b) => { let i = 0; a.forEach(x => { if (b.has(x)) i++; }); return i / (a.size + b.size - i || 1); };
+// Etapa 2: búsqueda en haz sobre las mejores combinaciones de cada comida; cada camino final se optimiza como día completo.
+function optimize(ctx){
+  const t0 = performance.now(), pool = optPool(), slots = ctx.rem.map((sl, si) => optSlot(ctx, sl, si, pool));
+  const ids = parts => parts.flatMap(p => p.picks.filter(o => groupOf(o.fd) !== "fat").map(o => o.fd.id));
+  let beam = [{parts: [], score: 0}];
+  for (const s of slots.filter(s => s.top.length)){
+    beam = beam.flatMap(b => { const used = ids(b.parts); return s.top.map(c => ({parts: [...b.parts, c], score: b.score + c.score + ctx.w.pref * OPT_REP * ids([c]).filter(id => used.includes(id)).length})); })
+      .sort((a, b) => a.score - b.score).slice(0, OPT_BEAM);
+  }
+  const res = beam.filter(b => b.parts.length).map(b => {
+    const items = b.parts.flatMap(p => p.picks.map(o => optItem(ctx, o.fd, p.si, o)));
+    const all = ids(b.parts), cross = all.length - new Set(all).size;
+    const x = optSolve(items, ctx.P), cont = optCost(items, x, ctx.P).J, g = optRound(items, x, ctx.P), c = optCost(items, g.map(v => v / 100), ctx.P);
+    const pref = ctx.w.pref * sum(items, it => it.pref), rep = ctx.w.pref * (sum(items, it => it.rep) + OPT_REP * cross);
+    return {items, g, x, beam: b.score, parts: b.parts, cost: {...c, pref, rep, cont, round: c.J - cont, total: c.J + pref + rep}};
+  }).sort((a, b) => a.cost.total - b.cost.total);
+  const opts = [];
+  for (const r of res){ const set = new Set(r.items.map(it => it.fd.id)); if (opts.every(o => jacc(set, o.set) < OPT_SIM)) opts.push({...r, set}); }
+  return {slots, opts, paths: res.length, space: slots.filter(s => s.top.length).reduce((p, s) => p * s.top.length, 1), evaluated: sum(slots, s => s.n), ms: performance.now() - t0};
+}
+// Resultado en caché: se recalcula si cambian el día, sus comidas, la configuración, las metas, los alimentos o la media hora.
+function optResult(){
+  const date = S.date, key = JSON.stringify([date, mealsSig(date), dayKind(date), S.lib.optim, S.opt.skip, S.opt.pin, S.opt.fix, S.opt.no, S.opt.keep, S.lib.goals, date === today() ? Math.floor(hm(nowHM()) / 30) : 0]);
+  if (S.opt.res && S.opt.key === key && S.opt.foods === S.lib.foods && S.opt.combos === S.lib.combos) return S.opt.res;
+  if (S.opt.date !== date) Object.assign(S.opt, {date, hist: [], pin: {}, fix: {}, no: {}, keep: null, prev: null, open: null, sel: 0, page: 0}); // tus cambios son de un día
+  const ctx = optContext(date), res = ctx.done || !ctx.rem.length ? {ctx, opts: [], slots: []} : {ctx, ...optimize(ctx)};
+  Object.assign(S.opt, {key, res, foods: S.lib.foods, combos: S.lib.combos});
+  return res;
+}
+// Dibujo de cada alimento: por nombre y, si no calza, por grupo.
+const FOOD_ICON = [
+  [/ecook|lasagna|lasana|strogonoff|mechada|bourguignon|pulled|al jugo|preparad|cazuela|charquican|pastel de/, "dish"], [/pizza/, "pizza"],
+  [/huevo/, "egg"], [/hallulla|marraqueta|\bpan\b|tostada|sandwich/, "bread"], [/avena|granola|cereal/, "oats"], [/yogu/, "yogurt"],
+  [/leche|kefir/, "milk"], [/proteina en polvo|whey|batido/, "shake"], [/salmon|atun|jurel|merluza|reineta|pescado/, "fish"],
+  [/jamon/, "ham"], [/pollo|pavo|pechuga/, "chicken"], [/posta|lomo|asiento|carne|vacuno|cerdo|chuleta|longaniza/, "steak"],
+  [/arroz|quinoa|cuscus/, "rice"], [/fideo|pasta|tallarin/, "pasta"], [/papa|camote/, "potato"], [/brocoli|coliflor/, "broccoli"],
+  [/tomate/, "tomato"], [/lechuga|espinaca|ensalada|acelga|repollo|verdura|pepino/, "leaf"], [/platano/, "banana"], [/manzana|pera\b/, "apple"],
+  [/arandano|frutilla|uva|frambuesa|mora/, "berries"], [/palta/, "avocado"], [/aceite/, "oil"], [/mantequilla de mani|\bmani\b|almendra|nuez|nueces|frutos secos|semilla/, "nut"],
+  [/mantequilla/, "butter"], [/lenteja|garbanzo|poroto|arveja/, "beans"], [/queso/, "cheese"], [/miel|mermelada|azucar|manjar/, "honey"]];
+const FG_ICON = {prot: "steak", carb: "rice", veg: "leaf", fat: "nut", fruit: "apple", leg: "beans", lact: "milk", dish: "dish"};
+const foodIcon = fd => "i-f-" + ((FOOD_ICON.find(([rx]) => rx.test(norm(fd.name))) || [])[1] || FG_ICON[groupOf(fd)] || "plate");
+const fIco = (fd, cls = "") => `<span class="fi${cls ? " " + cls : ""}" style="--c:var(--fg-${groupOf(fd)})" title="${esc(fd.name)}"><svg aria-hidden="true"><use href="#${foodIcon(fd)}"/></svg></span>`;
+// Fotos reales de Wikimedia Commons (créditos en PHOTO_CREDITS y en el panel), por nombre del alimento; sin foto, el dibujo de línea.
+const FOOD_PHOTO = [
+  [/strogonoff/, "strogonoff"], [/bourguignon/, "bourguignon"], [/lasagna|lasana/, "lasana"], [/mechada/, "mechada"], [/pulled/, "pulled-pork"],
+  [/salmon/, "salmon"], [/cerdo al jugo/, "cerdo"], [/mostaza/, "pollo-mostaza"], [/porotos/, "porotos"], [/lenteja/, "lentejas"], [/pizza/, "pizza"],
+  [/huevo duro|huevos duros/, "huevo-duro"], [/huevo/, "huevo-revuelto"], [/pechuga|pollo/, "pollo"], [/chuleta|cerdo/, "chuleta"],
+  [/posta|lomo|asiento|vacuno|carne/, "carne"], [/jamon/, "jamon"], [/proteina en polvo|whey/, "proteina"], [/arroz/, "arroz"], [/fideo|pasta|tallarin/, "fideos"],
+  [/avena/, "avena"], [/hallulla/, "hallulla"], [/marraqueta|\bpan\b/, "marraqueta"], [/miel/, "miel"], [/papa/, "papa"], [/brocoli/, "brocoli"],
+  [/salsa de tomate/, "salsa-tomate"], [/tomate/, "tomate"], [/lechuga/, "lechuga"], [/palta/, "palta"], [/frutos secos/, "frutos-secos"], [/aceite/, "aceite"],
+  [/mantequilla de mani|\bmani\b/, "mani"], [/almendra/, "almendras"], [/mantequilla/, "mantequilla"], [/yogu/, "yogur"], [/leche/, "leche"], [/queso/, "queso-rallado"],
+  [/platano/, "platano"], [/arandano/, "arandanos"], [/manzana/, "manzana"], [/garbanzo/, "garbanzos"], [/longaniza/, "longaniza"]];
+const PHOTO_CREDITS = {"huevo-duro":["Boiled Egg - Crossection.jpg","Ramesh NG","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg"],"huevo-revuelto":["Scrambled Eggs at Cracker Barrel.jpg","Studio Sarah Lou","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Scrambled_Eggs_at_Cracker_Barrel.jpg"],"pollo":["Grilled Chicken Breasts (28905381261).jpg","Sharon Chen from Austin, United States","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Grilled_Chicken_Breasts_(28905381261).jpg"],"chuleta":["Pork chops served.jpg","autor desconocido","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File:Pork_chops_served.jpg"],"carne":["Grilled flank steak.jpg","Wikiuser100","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Grilled_flank_steak.jpg"],"jamon":["Glazed and sliced ham.jpg","Michael Coté from Austin, Texas, Texas","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Glazed_and_sliced_ham.jpg"],"proteina":["Protein shake.jpg","Sandstein","CC BY 3.0","https://commons.wikimedia.org/wiki/File:Protein_shake.jpg"],"arroz":["JP 日本 Japan 沖繩 OKINAWA 那霸 Naha 魚屋海鮮 Izakaya 居酒屋食堂 Japanese seafood restaurant soup white rice bowl February 2026 N13P 01.jpg","NORTLAUKAU 26088 JP","CC0","https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E6%B2%96%E7%B9%A9_OKINAWA_%E9%82%A3%E9%9C%B8_Naha_%E9%AD%9A%E5%B1%8B%E6%B5%B7%E9%AE%AE_Izakaya_%E5%B1%85%E9%85%92%E5%B1%8B%E9%A3%9F%E5%A0%82_Japanese_seafood_restaurant_soup_white_rice_bowl_February_2026_N13P_01.jpg"],"fideos":["Pasta carbonara.jpg","Dandy1022","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Pasta_carbonara.jpg"],"avena":["Rolled oats 2.jpg","Yonygg","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Rolled_oats_2.jpg"],"hallulla":["Hallulla.jpg","User:Man77","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Hallulla.jpg"],"marraqueta":["Marraqueta paceña.jpg","Meibit","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Marraqueta_pace%C3%B1a.jpg"],"miel":["Dipper stick and honey in a jar.jpg","Shixart1985","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Dipper_stick_and_honey_in_a_jar.jpg"],"papa":["Boiled, floury potatoes (5299865427).jpg","benjgibbs","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Boiled,_floury_potatoes_(5299865427).jpg"],"brocoli":["Liat Portal for Foodie Disorder - Steamed Broccoli.jpg","HaJunkiyada","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Steamed_Broccoli.jpg"],"tomate":["Tomato je.jpg","Softeis","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Tomato_je.jpg"],"lechuga":["Romaine lettuce.jpg","Rainer Zenz","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Romaine_lettuce.jpg"],"salsa-tomate":["Fresh Tomato Sauce (Unsplash).jpg","Dennis Klein klein2","CC0","https://commons.wikimedia.org/wiki/File:Fresh_Tomato_Sauce_(Unsplash).jpg"],"palta":["Avocado Hass - single and halved.jpg","Ivar Leidus","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Avocado_Hass_-_single_and_halved.jpg"],"frutos-secos":["Mixed Nuts (Alabama Extension).jpg","Alabama Extension","CC0","https://commons.wikimedia.org/wiki/File:Mixed_Nuts_(Alabama_Extension).jpg"],"aceite":["Bottle of olive oil.jpg","margenauer from Pixabay","CC0","https://commons.wikimedia.org/wiki/File:Bottle_of_olive_oil.jpg"],"mani":["Peanut butter glass 3.jpg","Shisma","CC BY 4.0","https://commons.wikimedia.org/wiki/File:Peanut_butter_glass_3.jpg"],"almendras":["Almonds - in shell, shell cracked open, shelled, blanched.jpg","Ivar Leidus","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Almonds_-_in_shell,_shell_cracked_open,_shelled,_blanched.jpg"],"mantequilla":["Butter block.JPG","Meanos","Public domain","https://commons.wikimedia.org/wiki/File:Butter_block.JPG"],"yogur":["Plain Yogurt.jpg","Alabama Extension","CC0","https://commons.wikimedia.org/wiki/File:Plain_Yogurt.jpg"],"leche":["Glass of Milk (33657535532).jpg","NIAID","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Glass_of_Milk_(33657535532).jpg"],"queso-rallado":["Grated cheese Annie Mole.jpg","Annie Mole","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Grated_cheese_Annie_Mole.jpg"],"platano":["Bananas on black background 02.jpg","Krzysztof Golik","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Bananas_on_black_background_02.jpg"],"arandanos":["Dish of blueberries.jpg","Petar Milošević","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Dish_of_blueberries.jpg"],"manzana":["Red Apple.jpg","Abhijit Tembhekar from Mumbai, India","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Red_Apple.jpg"],"lentejas":["Quick Lentils with Chorizo (7017166123).jpg","Jonathan Pincas from Leon, Spain","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Quick_Lentils_with_Chorizo_(7017166123).jpg"],"garbanzos":["Chickpeas - The Coconut Island 2025-10-05.jpg","Andy Li","CC0","https://commons.wikimedia.org/wiki/File:Chickpeas_-_The_Coconut_Island_2025-10-05.jpg"],"porotos":["Porotos con riendas (con carne).jpg","E4024","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Porotos_con_riendas_(con_carne).jpg"],"lasana":["Slice of Lasagna.jpg","Roundhere44","CC0","https://commons.wikimedia.org/wiki/File:Slice_of_Lasagna.jpg"],"strogonoff":["Hamburger Helper Beef Stroganoff.jpg","Di (they-them)","CC0","https://commons.wikimedia.org/wiki/File:Hamburger_Helper_Beef_Stroganoff.jpg"],"bourguignon":["Bœuf bourguignon.JPG","Arnaud 25","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:B%C5%93uf_bourguignon.JPG"],"cerdo":["Red braised pork belly.jpg","lazy fri13th","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Red_braised_pork_belly.jpg"],"mechada":["Carne Mechada (11351611734).jpg","Brian Child","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File:Carne_Mechada_(11351611734).jpg"],"pulled-pork":["Pulled pork 007.jpg","Christian Geischeder","CC BY 3.0","https://commons.wikimedia.org/wiki/File:Pulled_pork_007.jpg"],"salmon":["DFC 1189 Pan-seared salmon fillet served with creamy mashed potatoes a lime wedge and a side of sauce.jpg","PattayaPatrol","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:DFC_1189_Pan-seared_salmon_fillet_served_with_creamy_mashed_potatoes_a_lime_wedge_and_a_side_of_sauce.jpg"],"pizza":["All Good pizza (38501728345).jpg","Dale Cruse from San Francisco, CA, USA","CC BY 2.0","https://commons.wikimedia.org/wiki/File:All_Good_pizza_(38501728345).jpg"],"pollo-mostaza":["-2019-03-06 Creamy mustard chicken with broccoli.JPG","Kolforn (Kolforn) I'd appreciate if you could mail me (Kolforn@gmail.com) if you want to use this picture out of the Wik","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:-2019-03-06_Creamy_mustard_chicken_with_broccoli.JPG"],"longaniza":["Ahumando longaniza.jpg","Koffermejia","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Ahumando_longaniza.jpg"]}; // FOTOS:créditos
+const fPic = (fd, cls = "") => { const k = (FOOD_PHOTO.find(([rx]) => rx.test(norm(fd.name))) || [])[1];
+  return k && PHOTO_CREDITS[k] ? `<img class="fpic${cls ? " " + cls : ""}" src="/img/alimentos/${k}.webp" alt="" loading="lazy" decoding="async">` : fIco(fd, cls); };
+const slotIcon = sl => { const n = norm(sl.name); return "i-s-" + (/desayuno/.test(n) ? "sunrise" : /almuerzo/.test(n) ? "sun" : /once|merienda/.test(n) ? "tea" : /cena/.test(n) ? "moon" : "cup"); };
+const optUnits = (fd, g) => fd.unit && fd.unitG && !/^\d/.test(fd.unit) ? `${fmt(g / fd.unitG, 1)} ${plural(g / fd.unitG, fd.unit)}` : "";
+// Por qué un gramaje quedó así. El "tirón" de cada macro sobre el alimento i es −∂J/∂x_i = −2·w·a(r)·r·A[m][i]/σ, con el r final:
+// positivo si la meta pide más de ese alimento. Si subió, se nombra el macro que más tira hacia arriba; si bajó, el que más tira hacia abajo.
+function optWhy(it, g, o, ctx){
+  const d = g / it.x0 - 1, lbl = m => OPT_ML[OPT_KEYS[m]][0].toLowerCase();
+  if (it.fixed) return "gramos que elegiste";
+  if (it.loG === it.hiG) return "porción única para este alimento";
+  if (Math.abs(d) < .1) return it.n >= 3 ? "tu porción habitual" : "porción base del alimento";
+  const pull = OPT_KEYS.map((k, m) => { const r = o.cost.fit[m].r; return -ctx.P.w[m] * ctx.P.side[m][r < 0 ? 0 : 1] * r * it.a[m] / ctx.P.sig[m]; });
+  const up = pull.reduce((a, v, m) => v > pull[a] ? m : a, 0), dn = pull.reduce((a, v, m) => v < pull[a] ? m : a, 0);
+  if (d > 0) return (g >= it.hiG ? "en el tope de seguridad " : `+${fmt(d * 100)}% sobre lo habitual `) + (pull[up] > 0 ? `para sumar ${lbl(up)}` : "para acercar la comida a su parte de las kcal");
+  return (g <= it.loG ? "en el mínimo (una porción) " : `−${fmt(-d * 100)}% bajo lo habitual `) + (pull[dn] < 0 ? `para no pasarse de ${lbl(dn)}` : "para acercar la comida a su parte de las kcal");
+}
+const optKeyOf = (ctx, it) => `${ctx.rem[it.s].name}|${it.fd.id}`;
+// Opciones en tarjetas compactas: las fotos de cada comida, separadas por comida, y el total.
+function optCards(view, ctx){
+  return `<div class="opt-cards">${view.map((v, i) => `<button class="opt-card" data-action="opt-sel" data-i="${i}" aria-pressed="${i === S.opt.sel}" aria-label="Opción ${S.opt.page * OPT_SHOW + i + 1}">
+    <span class="num">${S.opt.page * OPT_SHOW + i + 1}</span>
+    <span class="opt-meals">${ctx.rem.map((sl, si) => { const its = v.items.filter(it => it.s === si); return its.length ? `<span class="opt-seg" title="${esc(`${sl.name}: ${its.map(it => it.fd.name).join(", ")}`)}"><b>${esc(sl.name)}</b><span class="ics">${its.map(it => fPic(it.fd)).join("")}</span></span>` : ""; }).join("")}</span>
+    <span class="tot"><strong>${fmt(v.cost.tot[0])}</strong> kcal<br>${fmt(v.cost.tot[1])} g prot.</span></button>`).join("")}</div>`;
+}
+// Cómo cerrarías el día: lo que ya comiste más la opción, contra cada meta (la meta y el detalle van en el título).
+function optRings(o, ctx){
+  const g = ctx.g, goal = [g.kcal, g.protein, g.carbs, g.fat, g.fiber], eaten = [ctx.st.kcal, ctx.st.p, ctx.st.c, ctx.st.f, ctx.st.fib];
+  return `<div class="day-rings">${OPT_KEYS.map((k, m) => {
+    const v = eaten[m] + o.cost.tot[m], d = v - goal[m], tol = goal[m] * g.tol / 100, bad = d < -tol || (d > tol && (k === "kcal" || k === "f"));
+    return `<figure title="${esc(`${OPT_ML[k][0]}: ${fmt(v)} de ${fmt(goal[m])} ${OPT_ML[k][1]}`)}">${ring(v / goal[m], "var(--food)", 54, 5, fmt(v))}<figcaption>${k === "c" ? "Carbos" : OPT_ML[k][0]} <span${bad ? ' class="bad"' : ""}>${Math.abs(d) < .5 ? "justo" : `${d > 0 ? "+" : "−"}${fmt(Math.abs(d))}`}</span></figcaption></figure>`;
+  }).join("")}</div>`;
+}
+function optSwap(it, sl, ctx){
+  const ds = `data-s="${esc(sl.name)}" data-id="${esc(it.fd.id)}" data-ci="${it.ci}"`;
+  const alts = it.alts.filter(fd => fd.id !== it.fd.id).slice(0, 8), all = optPool().filter(fd => fd.id !== it.fd.id);
+  return `<div class="swap">${alts.length ? `<div class="swap-alts">${alts.map(fd => `<button class="chip" data-action="opt-swap" ${ds} data-to="${esc(fd.id)}" title="${esc(fd.name)}">${fPic(fd)}<span>${esc(shortName(fd))}</span></button>`).join("")}</div>` : ""}
+    <div class="swap-row"><select data-swap ${ds} aria-label="Cambiar por otro alimento"><option value="">Otro alimento…</option>${FG.map(([k, l]) => { const gl = all.filter(fd => groupOf(fd) === k); return gl.length ? `<optgroup label="${l}">${gl.map(fd => `<option value="${esc(fd.id)}">${esc(fd.name)}</option>`).join("")}</optgroup>` : ""; }).join("")}</select>
+      ${it.fixed ? `<button class="btn small ghost" data-action="opt-unfix" ${ds}>Calcular gramos</button>` : ""}<button class="btn small ghost danger" data-action="opt-drop" ${ds}>Quitar</button></div></div>`;
+}
+// Un alimento por línea: foto, nombre y unidades, gramos con − y +, y el botón para cambiarlo. El motivo solo si no es la porción habitual.
+function optFood(it, g, sl, o, ctx){
+  const key = optKeyOf(ctx, it), prev = S.opt.prev, was = prev ? prev.g[key] : undefined, open = S.opt.open === key;
+  const delta = !prev || prev.key === key ? "" : was === undefined ? "nuevo" : Math.abs(g - was) >= 1 ? `${g > was ? "+" : "−"}${fmt(Math.abs(g - was))} g` : "";
+  const ds = `data-s="${esc(sl.name)}" data-id="${esc(it.fd.id)}" data-ci="${it.ci}"`, u = optUnits(it.fd, g), why = optWhy(it, g, o, ctx);
+  const plain = ["tu porción habitual", "porción base del alimento", "porción única para este alimento", "gramos que elegiste"].includes(why);
+  return `<div class="food${delta ? " changed" : ""}${open ? " open" : ""}" title="${esc(it.fd.name)}">${fPic(it.fd, "lg")}
+    <div class="txt"><div class="nm"><span>${esc(shortName(it.fd))}</span>${u ? `<small>${esc(u)}</small>` : ""}${it.mine ? `<em class="mine">${it.fixed ? "tus gramos" : "elegido"}</em>` : ""}${delta ? `<em class="delta">${delta}</em>` : ""}</div>${plain ? "" : `<div class="why">${esc(why)}</div>`}</div>
+    <span class="step"><button data-action="opt-step" ${ds} data-d="-1" aria-label="Menos ${esc(it.fd.name)}">−</button><button class="g" data-action="opt-grams" ${ds} title="Escribir los gramos">${fmt(g)} g</button><button data-action="opt-step" ${ds} data-d="1" aria-label="Más ${esc(it.fd.name)}">+</button></span>
+    <button class="swap-btn" data-action="opt-open" ${ds} aria-expanded="${open}" aria-label="Cambiar ${esc(it.fd.name)}" title="Cambiar por otro alimento"><svg aria-hidden="true"><use href="#i-swap"/></svg></button>
+    ${open ? optSwap(it, sl, ctx) : ""}</div>`;
+}
+const shortName = fd => fd.name.replace(/\s*\(.*$/, "");
+// De dónde sale cada plato propuesto.
+function optSrcTxt(src){
+  if (!src) return "";
+  const veces = n => `${fmt(n)} ${n === 1 ? "vez" : "veces"}`, q = s => `«${String(s || "").replace(/\s+/g, " ").trim()}»`;
+  return src.kind === "hist" ? `Lo comiste ${veces(src.n)} a esta hora`
+    : src.kind === "combo" ? `Tu comida frecuente ${q(src.name)}`
+    : src.kind === "other" ? (src.where ? `Lo sueles comer en ${src.where.toLowerCase()}` : `Tu comida frecuente ${q(src.name)}`)
+    : src.kind === "var" ? `Variación: ${src.to.toLowerCase()} en vez de ${src.from.toLowerCase()}`
+    : src.kind === "idea" ? "Combinación nueva, no está en tu historial" : "";
+}
+// Cada comida en una tarjeta: encabezado de una línea y un alimento por línea.
+function optPlates(o, ctx, r){
+  return `<div class="plates">${ctx.rem.map((sl, si) => {
+    const its = o.items.map((it, i) => ({it, g: o.g[i]})).filter(x => x.it.s === si); if (!its.length) return "";
+    const tot = mealFromItems(its.map(x => itemFromFood(x.it.fd, x.g))), T = ctx.P.T[si], part = o.parts.find(p => p.si === si), n = (r.slots.find(s => s.si === si) || {}).n || 0;
+    return `<section class="plate"><header class="plate-h"><svg class="ico" aria-hidden="true"><use href="#${slotIcon(sl)}"/></svg><h4>${esc(sl.name)}</h4><span class="time">${esc(sl.time)}</span>
+      <span class="kc" title="${esc(`Meta de esta comida: ${fmt(T)} kcal. Carbohidratos ${fmt(tot.c)} g, grasa ${fmt(tot.f)} g, fibra ${fmt(tot.fib)} g.`)}"><b>${fmt(tot.kcal)}</b>/${fmt(T)} kcal · ${fmt(tot.p)} g prot.</span>
+      <span class="plate-act"><button class="btn small ghost" data-action="opt-load" data-m="${si}" title="Llevar esta comida al formulario para editarla antes de guardarla">Editar</button><button class="btn small primary" data-action="opt-log" data-m="${si}" title="Guardar esta comida tal cual en el registro del día">Registrar</button></span></header>
+      ${part && part.src ? `<p class="plate-src"${n > 1 ? ` title="Quedó n.º ${part.rank} de ${fmt(n)} platos posibles para esta comida."` : ""}>${esc(optSrcTxt(part.src))}</p>` : ""}
+      ${its.map(({it, g}) => optFood(it, g, sl, o, ctx)).join("")}</section>`;
+  }).join("")}</div>`;
+}
+/* ---------- traza del cálculo: cada número del costo, el certificado de optimalidad y cómo se eligieron los platos ---------- */
+// Gradiente de J respecto de cada x_i (en 100 g): ∂J/∂x_i = Σ_m 2·w_m·a_m(r_m)·r_m·A[m][i]/σ_m + 2·λ·(x_i − x0_i)/s_i².
+function optGrad(items, x, P){
+  const M = OPT_KEYS.length, tot = Array(M).fill(0);
+  items.forEach((it, i) => { for (let m = 0; m < M; m++) tot[m] += it.a[m] * x[i]; });
+  const r = tot.map((v, m) => (v - P.b[m]) / P.sig[m]);
+  return items.map((it, i) => OPT_KEYS.reduce((acc, k, m) => acc + 2 * P.w[m] * P.side[m][r[m] < 0 ? 0 : 1] * r[m] * it.a[m] / P.sig[m], 0) + 2 * P.lam * (x[i] - it.z0) / it.sz ** 2);
+}
+// Certificado KKT del problema con cotas: en el interior el gradiente debe ser 0; en la cota inferior, ≥ 0; en la superior, ≤ 0.
+// El residuo es el gradiente proyectado; en una cota activa, |gradiente| es su multiplicador de Lagrange μ (cuánto bajaría J por 100 g
+// si la cota se relajara).
+function optKKT(items, x, P){
+  const g = optGrad(items, x, P), tol = 1e-6;
+  const st = items.map((it, i) => {
+    const atLo = x[i] <= it.lo + tol, atHi = x[i] >= it.hi - tol, res = it.hi - it.lo < 1e-9 ? 0 : atLo ? Math.max(0, -g[i]) : atHi ? Math.max(0, g[i]) : Math.abs(g[i]);
+    return {it, g: g[i], res, bound: atLo && atHi ? "fijo" : atLo ? "mín" : atHi ? "máx" : "", mu: atLo || atHi ? Math.abs(g[i]) : 0};
+  });
+  return {st, max: Math.max(0, ...st.map(s => s.res))};
+}
+// Curva de λ: para los mismos alimentos, cuánto error de metas queda y cuánto se alejan las porciones de lo habitual con cada λ.
+function optPareto(o, ctx){
+  const lams = [...new Set([0, .1, .25, .5, 1, 2, 4, 8, 16, ctx.P.lam])].sort((a, b) => a - b);
+  const pts = lams.map(l => { const x = optSolve(o.items, {...ctx.P, lam: l}), c = optCost(o.items, x, {...ctx.P, lam: 1}); return {l, fit: sum(c.fit, f => f.c), dev: sum(c.por, v => v)}; });
+  const W = 440, H = 210, L = 46, B = 34, T = 10, R = 12, mx = Math.max(...pts.map(p => p.dev), .01) * 1.08, my = Math.max(...pts.map(p => p.fit), .01) * 1.08;
+  const X = v => L + v / mx * (W - L - R), Y = v => H - B - v / my * (H - B - T), cur = pts.find(p => p.l === ctx.P.lam);
+  const ticks = (m, n) => Array.from({length: n + 1}, (_, k) => m / 1.08 * k / n);
+  return `<svg class="pareto" viewBox="0 0 ${W} ${H}" role="img" aria-label="Error de metas frente a desvío de porciones para distintos valores de lambda">
+    ${ticks(my, 3).map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" class="grid"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, 1)}</text>`).join("")}
+    ${ticks(mx, 4).map(v => `<text x="${X(v)}" y="${H - B + 16}" text-anchor="middle">${fmt(v, 1)}</text>`).join("")}
+    <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" class="axis"/>
+    <polyline points="${pts.map(p => `${X(p.dev)},${Y(p.fit)}`).join(" ")}" class="line"/>
+    ${pts.map(p => `<g><circle cx="${X(p.dev)}" cy="${Y(p.fit)}" r="${p === cur ? 6 : 4}" class="${p === cur ? "cur" : "pt"}"/><circle cx="${X(p.dev)}" cy="${Y(p.fit)}" r="12" class="hit"><title>λ = ${fmt(p.l, 2)}: error de metas ${fmt(p.fit, 2)}, desvío de porciones ${fmt(p.dev, 2)}</title></circle></g>`).join("")}
+    ${pts.filter(p => p === cur || p.l === 0 || p.l === 16).map(p => `<text x="${X(p.dev) + 8}" y="${Y(p.fit) - 8}" class="lbl">λ = ${fmt(p.l, 2)}${p === cur ? " (actual)" : ""}</text>`).join("")}
+    <text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" class="ttl">desvío de tus porciones, Σ u²</text>
+    <text x="12" y="${(T + H - B) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(T + H - B) / 2})" class="ttl">error de metas</text></svg>`;
+}
+function optWhyBox(o, ctx, r){
+  if (!S.opt.why) return "";
+  const P = ctx.P, n2 = v => fmt(v, 2), sg = v => (v > 0 ? "+" : "") + n2(v);
+  const fitS = sum(o.cost.fit, f => f.c), porS = sum(o.cost.por, v => v);
+  const parts = [["Metas (verosimilitud)", fitS], ["Porciones habituales (prior)", porS], ["Costumbre (prior de platos)", o.cost.pref], ["Repetir alimentos", o.cost.rep]];
+  const cmax = Math.max(...parts.map(p => p[1]), .01);
+  const slotOf = it => ctx.rem[it.s].name;
+  // 1. metas
+  const macro = OPT_KEYS.map((k, m) => {
+    const f = o.cost.fit[m], d = o.cost.tot[m] - P.b[m], ty = OPT_TYPE[k];
+    return ty === "deriv"
+      ? `<tr class="muted"><td>${OPT_ML[k][0]}</td><td>${OPT_TYPE_LABEL[ty]}</td><td class="n">${fmt(P.b[m])}</td><td class="n">${fmt(o.cost.tot[m])}</td><td class="n" colspan="5">no entra al costo (4·P + 4·C + 9·G = ${fmt(4 * o.cost.tot[1] + 4 * o.cost.tot[2] + 9 * o.cost.tot[3])} kcal)</td></tr>`
+      : `<tr><td>${OPT_ML[k][0]}</td><td>${OPT_TYPE_LABEL[ty]}</td><td class="n">${fmt(P.b[m])}</td><td class="n">${fmt(o.cost.tot[m])}</td><td class="n">${fmt(P.sig[m], 1)}</td><td class="n">${sg(f.r)}</td><td class="n">${n2(P.w[m])}</td><td class="n">${n2(P.side[m][f.r < 0 ? 0 : 1])}</td><td class="n"><b>${n2(f.c)}</b></td></tr>`;
+  }).join("");
+  // 2. porciones
+  const por = o.items.map((it, i) => { const u = (o.g[i] / 100 - it.z0) / it.sz; return `<tr><td>${esc(slotOf(it))}</td><td>${esc(shortName(it.fd))}</td><td class="n">${fmt(o.g[i])}</td><td class="n">${fmt(it.x0)}</td><td class="n">${fmt(it.sd)}</td><td class="n">${sg(u)}</td><td class="n"><b>${n2(o.cost.por[i])}</b></td></tr>`; }).join("");
+  // 3. costumbre
+  const pri = o.parts.map(p => { const s = p.src || {}, pr = p.pref; return `<tr><td>${esc(ctx.rem[p.si].name)}</td><td>${esc(optSrcTxt(s) || "—")}</td><td class="n">${s.p ? (s.p < .001 ? s.p.toExponential(1) : fmt(s.p, 3)) : "—"}</td><td class="n">${n2(pr)}</td><td class="n"><b>${n2(ctx.w.pref * pr)}</b></td></tr>`; }).join("");
+  // 4. certificado
+  const kkt = optKKT(o.items, o.x, P), act = kkt.st.filter(s => s.bound && s.bound !== "fijo");
+  const ok = kkt.max < 1e-3;
+  const cert = `<p style="margin:0">Solución continua tras <b>${fmt(o.x.sweeps)}</b> barridas del descenso por coordenadas. Máximo gradiente proyectado: <b>${kkt.max.toExponential(1)}</b> ${ok ? "≈ 0: cumple las condiciones de KKT, es el óptimo de J para estos alimentos (J es convexo)." : "(todavía no es 0: el óptimo es aproximado)."}</p>
+    ${act.length ? `<p style="margin:6px 0 0">Cotas activas y su multiplicador de Lagrange μ (cuánto bajaría J por cada 100 g si la cota se relajara): ${act.map(s => `${esc(shortName(s.it.fd))} en su ${s.bound === "mín" ? "mínimo (una porción)" : "tope de seguridad"}, μ = ${n2(s.mu)}`).join("; ")}.</p>` : `<p style="margin:6px 0 0">Ninguna cota está activa: todas las porciones quedaron donde las ponen las metas y tu costumbre, no un límite.</p>`}
+    <div class="scroll"><table class="opt-cmp"><thead><tr><th>Comida</th><th>Alimento</th><th class="n">Continuo</th><th class="n">Redondeado</th><th class="n">Paso</th><th class="n">∂J/∂x (por 100 g)</th></tr></thead><tbody>
+    ${o.items.map((it, i) => `<tr><td>${esc(slotOf(it))}</td><td>${esc(shortName(it.fd))}${it.fixed ? ' <span class="muted">(tus gramos)</span>' : ""}</td><td class="n">${fmt(o.x[i] * 100, 1)} g</td><td class="n">${fmt(o.g[i])} g</td><td class="n">${fmt(it.step)} g</td><td class="n">${kkt.st[i].bound ? `${sg(kkt.st[i].g)} (${kkt.st[i].bound})` : sg(kkt.st[i].g)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <p style="margin:6px 0 0">J continuo = ${n2(o.cost.cont)}; con porciones comibles = ${n2(o.cost.J)} (el redondeo sumó ${n2(o.cost.round)}). La elección de platos no tiene certificado: es una búsqueda aproximada (abajo).</p>`;
+  // 5. búsqueda
+  const search = r.slots.map(sl => {
+    const s = sl.stats || {}, chosen = o.parts.find(p => p.si === sl.si), key = p => p.picks.map(x => x.fd.id).sort().join("|");
+    return `<div class="fx-slot"><b>${esc(sl.sl.name)}</b>: ${s.hist + s.combo} platos tuyos${s.other ? `, ${s.other} de otra franja` : ""}, ${s.var} variaciones${s.idea ? `, ${s.idea} combinaciones nuevas` : ""}${s.incoherent ? `; ${s.incoherent} descartadas por no tener sentido` : ""}${s.kind ? `; ${s.kind} platos de otro tipo excluidos` : ""}. Evaluados: ${fmt(sl.n)}.
+      <div class="scroll"><table class="opt-cmp"><thead><tr><th class="n">#</th><th>Plato</th><th class="n">Metas</th><th class="n">Costumbre</th><th class="n">Total</th></tr></thead><tbody>
+      ${sl.top.map(c => `<tr${chosen && key(c) === key(chosen) ? ' class="sel"' : ""}><td class="n">${c.rank}</td><td>${esc(c.picks.map(x => shortName(x.fd)).join(" + "))}</td><td class="n">${n2(c.fit)}</td><td class="n">${n2(c.prior)}</td><td class="n">${n2(c.score)}</td></tr>`).join("")}
+      </tbody></table></div></div>`;
+  }).join("");
+  return `<div class="cost">${parts.map(([l, v]) => `<span>${l}</span><div class="bar" title="${esc(`${l}: ${n2(v)}`)}"><i style="width:${v / cmax * 100}%"></i></div><span class="cost-v">${n2(v)}</span>`).join("")}</div>
+    <p class="fx-total">J = ${n2(fitS)} + ${n2(porS)} + ${n2(o.cost.pref)} + ${n2(o.cost.rep)} = <b>${n2(o.cost.total)}</b></p>
+    <h5 class="fx-h">1. Metas: Σ w · a(r) · r², con r = (logra − falta) / σ</h5>
+    <div class="scroll"><table class="opt-cmp"><thead><tr><th>Macro</th><th>Tipo</th><th class="n">Falta</th><th class="n">Logra</th><th class="n">σ</th><th class="n">r</th><th class="n">w</th><th class="n">a(r)</th><th class="n">w·a·r²</th></tr></thead><tbody>${macro}</tbody></table></div>
+    <p class="small muted" style="margin:4px 0 0">σ = ${fmt(ctx.g.tol)}% de tu meta diaria. a(r) = 1 del lado que importa y κ = ${n2(OPT_KAPPA)} del otro (en un mínimo, pasarse; en un máximo, quedar corto).</p>
+    <h5 class="fx-h">2. Porciones: λ · Σ u², con u = (g − habitual) / s y λ = ${n2(P.lam)}</h5>
+    <div class="scroll"><table class="opt-cmp"><thead><tr><th>Comida</th><th>Alimento</th><th class="n">g</th><th class="n">Habitual</th><th class="n">s</th><th class="n">u</th><th class="n">λ·u²</th></tr></thead><tbody>${por}</tbody></table></div>
+    <p class="small muted" style="margin:4px 0 0">Habitual = mediana de tus registros de 60 días; s = 1,4826 · MAD, nunca menos de ${fmt(OPT_SPREAD * 100)}% de lo habitual.</p>
+    <h5 class="fx-h">3. Costumbre: π · Σ −log p(plato | comida), con π = ${n2(ctx.w.pref)}</h5>
+    <div class="scroll"><table class="opt-cmp"><thead><tr><th>Comida</th><th>Origen</th><th class="n">p</th><th class="n">−log p</th><th class="n">π·(−log p)</th></tr></thead><tbody>${pri}
+      <tr><td colspan="4">Repetir alimentos: π · ${n2(OPT_REP)} por repetición (p × δ, δ = ${n2(OPT_DELTA)})</td><td class="n"><b>${n2(o.cost.rep)}</b></td></tr></tbody></table></div>
+    <p class="small muted" style="margin:4px 0 0">p con suavizado de Laplace: (veces + 1) / (comidas + platos). Variación: × α = ${n2(OPT_ALPHA)} × p(alimento nuevo | rol). Otra franja: × γ = ${n2(OPT_GAMMA)}. Combinación nueva: ε = ${n2(OPT_EPS)} × Π p(alimento | rol).</p>
+    <h5 class="fx-h">4. ¿Es el óptimo? Certificado de los gramos</h5>${cert}
+    <h5 class="fx-h">5. Cómo se eligieron los platos</h5>
+    <p style="margin:0">Cada comida ordena sus candidatos contra su parte de lo que falta (${ctx.rem.map((sl, si) => `${sl.name.toLowerCase()} ${fmt(P.T[si])} kcal`).join(", ")}). Después, una búsqueda en haz de ${OPT_BEAM} caminos combina los ${OPT_K} mejores de cada comida: ${fmt(r.paths)} de ${fmt(r.space)} combinaciones del día se optimizaron completas. Esta opción venía con ${n2(o.beam)} por etapas y quedó en ${n2(o.cost.total)} optimizada como día.</p>
+    ${search}
+    <h5 class="fx-h">6. Qué elige λ: error de metas frente a desvío de porciones</h5>
+    <p style="margin:0 0 6px">Los mismos alimentos optimizados con distintos λ. Con λ chico las metas se cumplen mejor pero las porciones se alejan de lo habitual; con λ grande, al revés. Cada punto es un óptimo: ninguno es mejor en las dos cosas a la vez.</p>
+    ${optPareto(o, ctx)}
+    <div class="row mt"><button class="btn small" data-action="opt-export">Exportar el problema (JSON)</button><span class="small muted">Matriz A, metas, σ, pesos, porciones, cotas y la solución, para reproducirlo en Python o CVXPY.</span></div>`;
+}
+function renderOptCfg(ctx){
+  const sl = ctx.cfg.slots, W = sum(sl, s => s.share) || 1;
+  setHTML($("#optCfgBox"), `<p class="small muted" style="margin:10px 0 6px">Cada comida tiene una hora y un % de las kcal del día. Las opciones salen de tus platos: lo que comiste a esa hora y tus comidas frecuentes. Los componentes solo se usan para armar combinaciones nuevas cuando una comida tiene menos de 3 platos en tu historial. Escribe los componentes separados por coma; dentro de cada uno, las alternativas van con "/" (grupos o nombres de alimentos) y "?" lo hace opcional. Grupos: ${FG.map(([, l]) => l.toLowerCase()).join(", ")}. Ejemplo: "pan/avena, huevo/lácteo, fruta?".</p>
+    <ul class="list">${sl.map((s, i) => `<li class="item-head"><strong>${esc(s.time)} · ${esc(s.name)}</strong><span class="small muted">${fmt(s.share / W * 100)}% del día · ${esc(parseComps(s.comps).map(compText).join(" + ") || "sin componentes")}</span><span class="act"><button class="btn small" data-action="opt-slot-edit" data-i="${i}">Editar</button><button class="btn small ghost danger" data-action="opt-slot-del" data-i="${i}">Borrar</button></span></li>`).join("")}</ul>
+    <div class="row mt"><button class="btn small" data-action="opt-slot-add">Agregar comida</button>${S.lib.optim && S.lib.optim.slots ? `<button class="btn small ghost" data-action="opt-slots-reset">Volver a las comidas por defecto</button>` : ""}</div>
+    <p class="small muted" style="margin:8px 0 0">El grupo de cada alimento sale de su nombre o de sus macros. Puedes cambiarlo al editar el alimento en Mis alimentos.</p>`);
+}
+// Créditos de las fotos (licencias CC de Wikimedia Commons): se arman al abrir la sección.
+function renderOptCredits(){
+  const box = $("#optCredits"); if (!$("#optCreditsBox").open || box.dataset.done) return; box.dataset.done = "1";
+  box.innerHTML = `<p style="margin:10px 0 6px">Fotos de Wikimedia Commons, recortadas en cuadrado y reducidas. Cada una mantiene su licencia.</p><ul class="credits">${Object.entries(PHOTO_CREDITS).sort().map(([k, [title, author, lic, url]]) => `<li><img class="fpic" src="/img/alimentos/${k}.webp" alt=""><span><a href="${esc(url)}" target="_blank" rel="noopener">${esc(title)}</a> · ${esc(author)} · ${esc(lic)}</span></li>`).join("")}</ul>`;
+}
+let optTimer = null;
+function renderOpt(){
+  const past = S.date < today(); $("#optPanel").hidden = past; if (past) return;
+  if (!$("#optPanel").open){ const {need, done} = planNeed(S.date); $("#optSum").textContent = done ? "día cubierto" : `opciones sin IA para ${fmt(need.kcal)} kcal`; return; }
+  const r = optResult(), {ctx} = r, box = $("#optBox");
+  $("#optTol").textContent = ctx.g.tol;
+  document.querySelectorAll("#optW input[data-w]").forEach(el => { const k = el.dataset.w; if (document.activeElement !== el) el.value = ctx.w[k]; el.nextElementSibling.textContent = fmt(ctx.w[k], 2); });
+  setHTML($("#optSlots"), `<span class="small muted" style="align-self:center">Repartir en</span>` + ctx.stat.map(s => s.st === "hecha" || s.st === "pasó"
+    ? `<span class="chip" style="opacity:.55;cursor:default">${esc(s.name)} · ${s.st === "hecha" ? "registrada" : "ya pasó"}</span>`
+    : `<button class="chip${s.st === "va" ? " sel" : ""}" data-action="opt-slot" data-name="${esc(s.name)}" aria-pressed="${s.st === "va"}">${esc(s.time)} · ${esc(s.name)}</button>`).join(""));
+  renderOptCfg(ctx);
+  if (ctx.done){ $("#optSum").textContent = "día cubierto"; setHTML(box, `<p class="small" style="margin:12px 0 0">Ya estás dentro de tu meta de calorías: no hace falta otra comida.</p>`); return; }
+  if (!ctx.rem.length){ $("#optSum").textContent = "sin comidas elegidas"; setHTML(box, `<p class="small muted" style="margin:12px 0 0">Elige al menos una comida para repartir lo que falta.</p>`); return; }
+  const missing = r.slots.flatMap(s => s.missing.map(c => `${s.sl.name.toLowerCase()} (${compText(c)})`));
+  const missTxt = missing.length ? `<p class="small" style="margin:10px 0 0;color:var(--danger)">No hay alimentos para ${esc(missing.join("; "))}. Agrégalos o cambia su grupo en Mis alimentos.</p>` : "";
+  if (!r.opts.length){ $("#optSum").textContent = "sin opciones"; setHTML(box, `<p class="small" style="margin:12px 0 0">No encontré combinaciones con tus alimentos.</p>${missTxt}`); return; }
+  const pages = Math.ceil(r.opts.length / OPT_SHOW); if (S.opt.page >= pages) S.opt.page = 0;
+  const view = r.opts.slice(S.opt.page * OPT_SHOW, (S.opt.page + 1) * OPT_SHOW); S.opt.view = view;
+  if (S.opt.sel >= view.length) S.opt.sel = 0;
+  const o = view[S.opt.sel], num0 = S.opt.page * OPT_SHOW + S.opt.sel + 1;
+  $("#optSum").textContent = `${r.opts.length} ${r.opts.length === 1 ? "opción" : "opciones"} · ${fmt(r.evaluated)} combinaciones evaluadas`;
+  const short = o.cost.tot[0] < .85 * ctx.P.b[0];
+  const capTxt = short ? `<p class="small" style="margin:10px 0 0;color:var(--danger)">Con porciones cercanas a las habituales, ${ctx.rem.length === 1 ? "la comida que queda no alcanza" : `las ${ctx.rem.length} comidas que quedan no alcanzan`} lo que falta. Agrega una comida en "Comidas del día y sus grupos" o baja la prioridad de "Porciones habituales".</p>` : "";
+  const edits = Object.values(S.opt.pin).some(l => l.length) || Object.values(S.opt.no).some(l => l.length), kept = !!S.opt.keep;
+  const prev = S.opt.prev, moved = prev ? o.items.filter((it, i) => { const k = optKeyOf(ctx, it), w = prev.g[k]; return k !== prev.key && (w === undefined || Math.abs(o.g[i] - w) >= 1); }).length : 0;
+  const note = prev && prev.what ? `<div class="opt-note"><span>${esc(prev.what)}. ${moved ? `Recalculé el resto del día: ${moved === 1 ? "cambió 1 porción" : `cambiaron ${moved} porciones`} (marcadas).` : "El resto del día quedó igual."}</span>${(S.opt.hist || []).length ? `<button class="btn small ghost" data-action="opt-undo">Deshacer</button>` : ""}</div>` : "";
+  const keptTxt = kept ? `<div class="row" style="margin-top:10px"><span class="small muted">Ajustando tu versión: mantengo los alimentos y recalculo los gramos.</span><button class="btn small" data-action="opt-explore">Buscar otras combinaciones con mis cambios</button></div>` : "";
+  setHTML(box, `${kept ? "" : optCards(view, ctx)}${keptTxt}${missTxt}${capTxt}
+    <div class="opt-h">${kept ? "Tu versión" : `Opción ${num0}`}: así cerrarías el día</div>${optRings(o, ctx)}
+    <div class="opt-h">Comida por comida</div><p class="opt-hint">− y + ajustan los gramos · <svg aria-hidden="true"><use href="#i-swap"/></svg> cambia el alimento · el resto se recalcula</p>
+    ${note}${optPlates(o, ctx, r)}
+    <details class="manual mt" id="optWhy"${S.opt.why ? " open" : ""}><summary>Traza del cálculo: J = ${fmt(o.cost.total, 2)}</summary>${optWhyBox(o, ctx, r)}</details>
+    <div class="row mt">${pages > 1 && !kept ? `<button class="btn small" data-action="opt-more">Ver otras opciones</button>` : ""}${edits ? `<button class="btn small ghost" data-action="opt-reset-edits">Volver a la propuesta original</button>` : ""}<span class="small muted">${kept ? `Recalculado en ${fmt(r.ms)} ms.` : `${fmt(r.evaluated)} combinaciones por comida y ${fmt(r.paths)} ${r.paths === 1 ? "día completo evaluado" : "días completos evaluados"} en ${fmt(r.ms)} ms.`}</span></div>`);
+}
+// El alimento de la opción que estás viendo al que apunta un botón (data-s = comida, data-id = alimento).
+function optFind(el){
+  const {s, id} = el.dataset, o = (S.opt.view || [])[S.opt.sel], ctx = S.opt.res && S.opt.res.ctx; if (!o || !ctx) return null;
+  const i = o.items.findIndex(it => it.fd.id === id && ctx.rem[it.s].name === s);
+  return i < 0 ? null : {s, id, it: o.items[i], g: o.g[i]};
+}
+// Fijar los gramos de un alimento: queda elegido en esa comida y su cota se cierra en ese valor.
+function optSetGrams({s, id, it, g: was}, g){
+  if (!(g > 0) || g === was) return;
+  optEdit(`${s}: ${it.fd.name} en ${fmt(g)} g`, `${s}|${id}`, () => { optPin(s, id, it.ci, roleOf(it.fd)); S.opt.fix = {...S.opt.fix, [s]: {...(S.opt.fix[s] || {}), [id]: g}}; });
+}
+// Tus cambios: guarda los gramos de la opción que estabas viendo (para marcar qué se movió), aplica el cambio y vuelve a optimizar.
+function optEdit(what, key, fn){
+  const o = (S.opt.view || [])[S.opt.sel], ctx = S.opt.res && S.opt.res.ctx;
+  (S.opt.hist = S.opt.hist || []).push(clone({pin: S.opt.pin, fix: S.opt.fix, no: S.opt.no, keep: S.opt.keep}));
+  S.opt.prev = o && ctx ? {what, key, g: Object.fromEntries(o.items.map((it, i) => [optKeyOf(ctx, it), o.g[i]]))} : null;
+  if (o && ctx){ S.opt.keep = {}; o.parts.forEach(p => { S.opt.keep[ctx.rem[p.si].name] = {ids: p.picks.map(x => x.fd.id), src: p.src, pref: p.pref}; }); }
+  fn(); S.opt.open = null; S.opt.sel = 0; S.opt.page = 0; renderOpt();
+}
+const optPin = (s, id, ci, role) => { const l = S.opt.pin[s] || []; if (!l.some(p => p.id === id)) S.opt.pin = {...S.opt.pin, [s]: [...l, {id, ci, role}]}; };
+function optUnpin(s, id){ S.opt.pin = {...S.opt.pin, [s]: (S.opt.pin[s] || []).filter(p => p.id !== id)}; const F = {...(S.opt.fix[s] || {})}; delete F[id]; S.opt.fix = {...S.opt.fix, [s]: F}; }
+// Cambiar un alimento por otro: el nuevo toma el lugar (componente) del anterior, aunque sea de otro grupo.
+function optSwapTo(s, from, ci, to){
+  const a = foods().find(f => f.id === from), b = foods().find(f => f.id === to); if (!b) return;
+  optEdit(`${s}: ${a ? a.name : "alimento"} → ${b.name}`, `${s}|${to}`, () => {
+    const old = (S.opt.pin[s] || []).find(p => p.id === from), at = old ? old.ci : ci, role = old ? old.role : a ? roleOf(a) : roleOf(b);
+    optUnpin(s, from); optUnpin(s, to);
+    S.opt.pin = {...S.opt.pin, [s]: [...(S.opt.pin[s] || []), {id: to, ci: at, role}]};
+    S.opt.no = {...S.opt.no, [s]: (S.opt.no[s] || []).filter(x => x !== to)};
+  });
+}
+const SLOT_FIELDS = s => [{name: "name", label: "Nombre", value: s.name, required: true}, {name: "time", label: "Hora (HH:MM)", value: s.time, required: true},
+  {name: "share", label: "% de las kcal del día", value: s.share, num: true, required: true}, {name: "comps", label: "Componentes (ej.: proteína, carbohidrato/legumbre, verdura, aceite?)", value: s.comps, required: true}];
+function slotFromForm(v){
+  const m = /^(\d{1,2}):(\d{2})$/.exec(v.time || "");
+  if (!v.name || !m || !(v.share > 0) || !parseComps(v.comps).length){ toast("Revisa el nombre, la hora (HH:MM), el % y los componentes."); return null; }
+  return {name: v.name, time: `${pad(+m[1])}:${m[2]}`, share: v.share, comps: v.comps};
 }
 
 /* ---------- rutina desde notas ----------
@@ -2867,7 +3735,7 @@ const BOOK_FIELDS = b => [
   {name:"kind", label:"Tipo", type:"select", options:["libro","curso","paper","otro"], value:b.kind || "libro"},
   {name:"unit", label:"Unidad", value:b.unit || "páginas", list:["páginas","capítulos","lecciones","horas","módulos","%"]},
   {name:"total", label:"Total", value:b.total, num:true, required:true}, {name:"current", label:"Avance actual", value:b.current ?? 0, num:true}];
-const MEAL_FIELDS = m => [{name:"time",label:"Hora",value:m.time},{name:"desc",label:"Descripción",value:m.desc,required:true},{name:"kcal",label:"kcal",value:m.kcal,num:true},{name:"p",label:"Proteína g",value:m.p,num:true},{name:"c",label:"Carbohidratos g",value:m.c,num:true},{name:"f",label:"Grasa g",value:m.f,num:true},{name:"fib",label:"Fibra g",value:m.fib,num:true},{name:"plants",label:"Plantas (separadas por coma)",value:(m.plants||[]).join(", ")}];
+const MEAL_FIELDS = m => [{name:"time",label:"Hora",value:m.time},{name:"slot",label:"Comida",type:"select",options:["según la hora", ...optCfg().slots.map(s => s.name)],value:m.slot || "según la hora"},{name:"desc",label:"Descripción",value:m.desc,required:true},{name:"kcal",label:"kcal",value:m.kcal,num:true},{name:"p",label:"Proteína g",value:m.p,num:true},{name:"c",label:"Carbohidratos g",value:m.c,num:true},{name:"f",label:"Grasa g",value:m.f,num:true},{name:"fib",label:"Fibra g",value:m.fib,num:true},{name:"plants",label:"Plantas (separadas por coma)",value:(m.plants||[]).join(", ")}];
 
 const actions = {
   "share-create": () => { saveLib("share", () => ({...shareCfg(), token: newShareToken()})); toast("Link creado. Cópialo y compártelo."); },
@@ -2888,16 +3756,16 @@ const actions = {
   "meal-add": () => {
     const desc = $("#mDesc").value.trim(), kcal = num($("#mKcal").value);
     if (!desc || kcal === null){ toast("Escribe la comida y sus kcal."); return; }
-    const m = {id: uid(), time: $("#mTime").value || nowHM(), desc, kcal, p: num($("#mP").value) || 0, c: num($("#mC").value) || 0, f: num($("#mF").value) || 0, fib: num($("#mFib").value) || 0, plants: splitList($("#mPlants").value), ai: !!$("#mDesc").dataset.ai};
+    const m = {id: uid(), time: $("#mTime").value || nowHM(), slot: $("#mSlot").value || undefined, desc, kcal, p: num($("#mP").value) || 0, c: num($("#mC").value) || 0, f: num($("#mF").value) || 0, fib: num($("#mFib").value) || 0, plants: splitList($("#mPlants").value), ai: !!$("#mDesc").dataset.ai};
     saveDay(S.date, d => d.meals.push(m));
-    ["#mDesc","#mKcal","#mP","#mC","#mF","#mFib","#mPlants","#mTime","#mealAiText"].forEach(s => $(s).value = ""); delete $("#mDesc").dataset.ai;
+    ["#mDesc","#mKcal","#mP","#mC","#mF","#mFib","#mPlants","#mTime","#mSlot","#mealAiText"].forEach(s => $(s).value = ""); delete $("#mDesc").dataset.ai;
     $("#mealAiNote").textContent = ""; $("#mealPhoto").value = ""; $("#mealPhotoName").textContent = "";
     toast("Comida agregada.");
   },
   "meal-del": el => confirmClick(el, () => saveDay(S.date, d => { d.meals = d.meals.filter(m => m.id !== el.dataset.id); })),
   "meal-edit": el => {
     const m = day(S.date).meals.find(x => x.id === el.dataset.id); if (!m) return;
-    openDialog("Editar comida", MEAL_FIELDS(m), v => saveDay(S.date, d => { const x = d.meals.find(y => y.id === m.id); Object.assign(x, v, {kcal: v.kcal ?? 0, p: v.p ?? 0, c: v.c ?? 0, f: v.f ?? 0, fib: v.fib ?? 0, plants: splitList(v.plants)}); }));
+    openDialog("Editar comida", MEAL_FIELDS(m), v => saveDay(S.date, d => { const x = d.meals.find(y => y.id === m.id); Object.assign(x, v, {slot: v.slot === "según la hora" ? undefined : v.slot, kcal: v.kcal ?? 0, p: v.p ?? 0, c: v.c ?? 0, f: v.f ?? 0, fib: v.fib ?? 0, plants: splitList(v.plants)}); }));
   },
   "meal-estimate": () => estimateMeal(),
   "build-add": () => {
@@ -2920,8 +3788,9 @@ const actions = {
   "build-save": () => {
     if (!S.build.length) return;
     const m = mealFromItems(S.build, $("#mDesc").value.trim(), $("#mTime").value);
+    if ($("#mSlot").value) m.slot = $("#mSlot").value;
     saveDay(S.date, d => d.meals.push(m));
-    S.build = []; ["#mDesc","#mTime","#mealAiText"].forEach(x => $(x).value = ""); $("#mealAiNote").textContent = ""; $("#mealPhoto").value = ""; $("#mealPhotoName").textContent = "";
+    S.build = []; ["#mDesc","#mTime","#mSlot","#mealAiText"].forEach(x => $(x).value = ""); $("#mealAiNote").textContent = ""; $("#mealPhoto").value = ""; $("#mealPhotoName").textContent = "";
     renderBuild(); toast("Comida registrada.");
   },
   "combo-save": () => {
@@ -2956,6 +3825,51 @@ const actions = {
     toast("Comida armada: ajusta los gramos si hace falta y regístrala.");
   },
   "plan-meals": el => { S.planMeals = +el.dataset.v; renderPlan(); },
+  "opt-sel": el => { S.opt.sel = +el.dataset.i; S.opt.prev = null; S.opt.open = null; renderOpt(); },
+  "opt-more": () => { S.opt.page++; S.opt.sel = 0; S.opt.prev = null; S.opt.open = null; renderOpt(); },
+  "opt-open": el => { const k = `${el.dataset.s}|${el.dataset.id}`; S.opt.open = S.opt.open === k ? null : k; renderOpt(); },
+  "opt-swap": el => optSwapTo(el.dataset.s, el.dataset.id, +el.dataset.ci, el.dataset.to),
+  "opt-step": el => { const f = optFind(el); if (f) optSetGrams(f, Math.max(f.it.step, Math.round((f.g + +el.dataset.d * f.it.step) / f.it.step) * f.it.step)); },
+  "opt-grams": el => {
+    const f = optFind(el); if (!f) return;
+    openDialog(`Gramos de ${f.it.fd.name.toLowerCase()}`, [{name: "g", label: f.it.fd.unit && f.it.fd.unitG ? `Gramos (1 ${f.it.fd.unit} = ${fmt(f.it.fd.unitG)} g)` : "Gramos", value: f.g, num: true, required: true}], v => { if (v.g > 0) optSetGrams(f, Math.round(v.g)); });
+  },
+  "opt-drop": el => { const {s, id} = el.dataset, fd = foods().find(f => f.id === id); optEdit(`Quitaste ${fd ? fd.name.toLowerCase() : "un alimento"} de ${s.toLowerCase()}`, null, () => { optUnpin(s, id); S.opt.no = {...S.opt.no, [s]: [...new Set([...(S.opt.no[s] || []), id])]}; }); },
+  "opt-unfix": el => { const {s, id} = el.dataset; optEdit("Los gramos se vuelven a calcular", `${s}|${id}`, () => { const F = {...(S.opt.fix[s] || {})}; delete F[id]; S.opt.fix = {...S.opt.fix, [s]: F}; }); },
+  "opt-reset-edits": () => { Object.assign(S.opt, {hist: [], pin: {}, fix: {}, no: {}, keep: null, prev: null, open: null, sel: 0, page: 0}); renderOpt(); },
+  "opt-explore": () => { Object.assign(S.opt, {keep: null, prev: null, open: null, sel: 0, page: 0}); renderOpt(); },
+  "opt-slot": el => { const n = el.dataset.name; S.opt.keep = null; S.opt.prev = null; S.opt.skip = S.opt.skip.includes(n) ? S.opt.skip.filter(x => x !== n) : [...S.opt.skip, n]; renderOpt(); },
+  "opt-load": el => {
+    const o = (S.opt.view || [])[S.opt.sel], ctx = S.opt.res && S.opt.res.ctx, si = +el.dataset.m; if (!o || !ctx || !ctx.rem[si]) return;
+    S.build = o.items.map((it, i) => it.s === si ? itemFromFood(it.fd, o.g[i]) : null).filter(Boolean);
+    $("#mDesc").value = ""; $("#mTime").value = ctx.rem[si].time; $("#mSlot").value = ctx.rem[si].i >= 0 ? ctx.rem[si].name : ""; renderBuild();
+    $("#buildBox").scrollIntoView({behavior: "smooth", block: "center"});
+    toast("Comida armada: ajusta los gramos si hace falta y regístrala.");
+  },
+  "opt-log": el => {
+    const o = (S.opt.view || [])[S.opt.sel], ctx = S.opt.res && S.opt.res.ctx, si = +el.dataset.m, sl = ctx && ctx.rem[si]; if (!o || !sl) return;
+    const m = mealFromItems(o.items.map((it, i) => it.s === si ? itemFromFood(it.fd, o.g[i]) : null).filter(Boolean), "", S.date === today() ? nowHM() : sl.time);
+    if (sl.i >= 0) m.slot = sl.name;
+    saveDay(S.date, d => d.meals.push(m)); toast(`${sl.name}: registrada. Recalculé el resto del día.`);
+  },
+  "opt-undo": () => { const h = (S.opt.hist || []).pop(); if (!h) return; Object.assign(S.opt, h, {prev: null, open: null, sel: 0, page: 0}); renderOpt(); },
+  "opt-export": () => {
+    const o = (S.opt.view || [])[S.opt.sel], ctx = S.opt.res && S.opt.res.ctx; if (!o || !ctx || !S.downloads) return;
+    const P = ctx.P, data = {
+      fecha: ctx.date, formula: "J = sum_m w_m a_m(r_m) r_m^2 + lambda sum_i ((x_i - x0_i)/s_i)^2 + pi sum_comidas -log p(plato); r = (A x - b)/sigma; x en 100 g",
+      constantes: {kappa: OPT_KAPPA, alpha: OPT_ALPHA, gamma: OPT_GAMMA, epsilon: OPT_EPS, delta: OPT_DELTA, spread: OPT_SPREAD, cap: OPT_CAP},
+      macros: OPT_KEYS, tipo: OPT_KEYS.map(k => OPT_TYPE[k]), b: P.b, sigma: P.sig, w: P.w, a_corto_pasado: P.side, lambda: P.lam, pi: ctx.w.pref,
+      alimentos: o.items.map((it, i) => ({comida: ctx.rem[it.s].name, nombre: it.fd.name, por_100g: Object.fromEntries(OPT_KEYS.map((k, m) => [k, it.a[m]])),
+        x0_g: it.x0, s_g: it.sd, lo_g: it.loG, hi_g: it.hiG, paso_g: it.step, fijado: it.fixed, gramos_continuo: +(o.x[i] * 100).toFixed(2), gramos: o.g[i], menos_log_p: it.pref})),
+      platos: o.parts.map(p => ({comida: ctx.rem[p.si].name, origen: p.src, menos_log_p: p.pref})),
+      costo: {metas: sum(o.cost.fit, f => f.c), porciones: sum(o.cost.por, v => v), costumbre: o.cost.pref, repeticiones: o.cost.rep, total: o.cost.total, continuo: o.cost.cont}};
+    S.downloads.save({filename: `lincoyan-optimizador-${ctx.date}.json`, data: JSON.stringify(data, null, 1)});
+  },
+  "opt-w-reset": () => saveLib("optim", o => ({...o, w: {...OPT_W}})),
+  "opt-slot-edit": el => { const i = +el.dataset.i, s = optCfg().slots[i]; if (!s) return; openDialog(`Editar ${s.name.toLowerCase()}`, SLOT_FIELDS(s), v => { const n = slotFromForm(v); if (n) saveLib("optim", o => ({...o, slots: optCfg().slots.map((x, j) => j === i ? n : x)})); }); },
+  "opt-slot-add": () => openDialog("Agregar comida", SLOT_FIELDS({name: "", time: "", share: 10, comps: "lácteo/fruta"}), v => { const n = slotFromForm(v); if (n) saveLib("optim", o => ({...o, slots: [...optCfg().slots, n]})); }),
+  "opt-slot-del": el => confirmClick(el, () => { const i = +el.dataset.i; saveLib("optim", o => ({...o, slots: optCfg().slots.filter((x, j) => j !== i)})); }),
+  "opt-slots-reset": () => saveLib("optim", o => { const {slots, ...rest} = o; return rest; }),
   "plan-ai": () => { const v = $("#planNote").value.trim(); if (!v){ toast("Escribe tu comentario o el cambio que quieres."); return; } S.planNote = v; $("#planNote").value = ""; renderPlan(); },
   "plan-note-clear": () => { S.planNote = ""; renderPlan(); },
   "plan-retry": () => { S.plan = null; renderPlan(); },
@@ -3632,6 +4546,13 @@ function wireUI(){
     if (S.tab === "entreno") renderProgress();
   }));
   $("#planPanel").addEventListener("toggle", renderPlan);
+  $("#optPanel").addEventListener("toggle", renderOpt);
+  $("#optCreditsBox").addEventListener("toggle", renderOptCredits);
+  $("#optBox").addEventListener("toggle", e => { if (e.target.id !== "optWhy" || S.opt.why === e.target.open) return; S.opt.why = e.target.open; if (S.opt.why) renderOpt(); }, true);
+  $("#optBox").addEventListener("change", e => { const t = e.target; if (!t.matches("select[data-swap]") || !t.value) return; const to = t.value; t.blur(); optSwapTo(t.dataset.s, t.dataset.id, +t.dataset.ci, to); });
+  // Prioridades del optimizador: se aplican al mover el control y se guardan al soltarlo.
+  $("#optW").addEventListener("input", e => { const k = e.target.dataset.w; if (!k) return; S.opt.keep = null; S.opt.prev = null; S.lib.optim = {...(S.lib.optim || {}), w: {...optCfg().w, [k]: +e.target.value}}; clearTimeout(optTimer); optTimer = setTimeout(renderOpt, 80); });
+  $("#optW").addEventListener("change", e => { const k = e.target.dataset.w; if (!k) return; saveLib("optim", o => ({...o, w: {...optCfg().w, [k]: +e.target.value}})); });
   $("#weightPanel").addEventListener("toggle", renderWeight);
   ["#gWDate", "#gWFat", "#gWLean"].forEach(q => $(q).addEventListener("input", renderGoalInfo));
   $("#datePick").addEventListener("change", e => { if (e.target.value) setDate(e.target.value); });

@@ -1,7 +1,7 @@
 // Lincoyán: Worker que protege el sitio, guarda tus datos en D1 y hace de proxy al modelo.
 import { jwtVerify, createRemoteJWKSet } from "jose";
 
-const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share"]);
+const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DOC_BYTES = 256 * 1024;
 const MAX_IMAGES = 3;
