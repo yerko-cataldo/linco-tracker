@@ -60,7 +60,7 @@ const SHARE_HEADERS = { "x-robots-tag": "noindex, nofollow", "referrer-policy": 
 const SHARE_GOALS = {
   act: ["activeMin", "gymWeek"],
   bass: ["bassMin", "bassDays"],
-  study: ["studyMin"],
+  study: ["studyMin", "studyPlan"],
   food: ["kcal", "protein", "carbs", "fat", "fiber", "tol", "plantsWeek", "water"],
 };
 const SHARE_LIBS = { bass: ["techniques", "songs"], study: ["books"], food: ["foods"] };

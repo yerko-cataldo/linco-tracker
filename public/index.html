@@ -133,7 +133,7 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:64ch;font-size:1.02rem}
 .field input:focus,.field select:focus,.field textarea:focus,.quick textarea:focus{outline:none;border-color:var(--ink);background:var(--surface)}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 .row .grow{flex:1 1 180px}
-.w5{width:5.8rem}.w7{width:7.8rem}.w10{width:10rem}
+.w3{width:3.3rem}.w5{width:5.8rem}.w7{width:7.8rem}.w10{width:10rem}
 textarea{resize:vertical}
 input[type=checkbox]{accent-color:var(--ink);width:16px;height:16px;vertical-align:-3px}
 .muted{color:var(--muted)}
@@ -1081,6 +1081,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
       <div class="panel"><h3>Minutos de estudio en la semana</h3><div id="studyChart"></div></div>
     </div>
+    <div id="studyPlans"></div>
     <div class="panel mt focus no-share">
       <div>
         <h3>Sesión de foco</h3>
@@ -1192,7 +1193,10 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="row">
             <div class="field w7">Bajo min/día<input id="gBass" inputmode="numeric"></div>
             <div class="field w7">Días bajo/sem<input id="gBassDays" inputmode="numeric"></div>
-            <div class="field w7">Estudio min/día<input id="gStudy" inputmode="numeric"></div>
+          </div>
+          <div class="small muted">Estudio, minutos por día (0 = día libre)</div>
+          <div class="row" id="gStudyPlan">
+            <div class="field w3">lun<input data-wd="1" inputmode="numeric"></div><div class="field w3">mar<input data-wd="2" inputmode="numeric"></div><div class="field w3">mié<input data-wd="3" inputmode="numeric"></div><div class="field w3">jue<input data-wd="4" inputmode="numeric"></div><div class="field w3">vie<input data-wd="5" inputmode="numeric"></div><div class="field w3">sáb<input data-wd="6" inputmode="numeric"></div><div class="field w3">dom<input data-wd="0" inputmode="numeric"></div>
           </div>
           <div class="row">
             <div class="field w10">Fecha meta de peso<input id="gWDate" type="date"></div>
@@ -1404,18 +1408,21 @@ function setNotice(t){ const n = $("#modeNotice"); n.textContent = t; n.hidden =
 
 /* ---------- cálculos ---------- */
 function kcalScore(kcal, g){ const tolAbs = g.kcal * g.tol / 100, dev = Math.abs(kcal - g.kcal); return dev <= tolAbs ? 1 : Math.max(0, 1 - (dev - tolAbs) / (g.kcal * .25)); }
+// Meta de estudio por día de la semana: goals.studyPlan con índice getDay() (0 = domingo); sin plan, studyMin todos los días. 0 = día libre.
+function studyWeekPlan(g = goals()){ const p = g.studyPlan; return Array.isArray(p) && p.length === 7 && p.some(v => v > 0) ? p.map(v => +v || 0) : Array(7).fill(g.studyMin); }
+const studyGoalOn = (dt, g) => studyWeekPlan(g)[parseYmd(dt).getDay()];
 function dayStats(date){
   const d = day(date), g = goals(), a = d.act;
   const kcal = sum(d.meals, m => m.kcal), p = sum(d.meals, m => m.p), c = sum(d.meals, m => m.c), f = sum(d.meals, m => m.f), fib = sum(d.meals, m => m.fib);
   const actMin = walkOf(date) + (a.gym ? gymDur(a) : 0) + (a.tennisMin || 0) + (a.bikeMin || 0);
-  const studyMin = sum(d.study, s => s.minutes), bassMin = d.bass.minutes || 0;
+  const studyMin = sum(d.study, s => s.minutes), bassMin = d.bass.minutes || 0, studyGoal = studyGoalOn(date, g);
   const pct = {
     food: d.meals.length ? .5 * Math.min(1, p / g.protein) + .5 * kcalScore(kcal, g) : null,
     act: actMin ? actMin / g.activeMin : null,
     bass: bassMin || d.bass.logs.length ? bassMin / g.bassMin : null,
-    study: studyMin || d.study.length ? studyMin / g.studyMin : null
+    study: studyMin || d.study.length ? (studyGoal ? studyMin / studyGoal : 1) : null
   };
-  return {d, kcal, p, c, f, fib, actMin, studyMin, bassMin, pct, meals: d.meals.length};
+  return {d, kcal, p, c, f, fib, actMin, studyMin, studyGoal, bassMin, pct, meals: d.meals.length};
 }
 function weekStats(date){
   const t = today(), dates = weekDates(date).filter(x => x <= t), st = dates.map(dayStats), g = goals();
@@ -1432,12 +1439,12 @@ function weekStats(date){
     actMin: sum(st, s => s.actMin), tennisMin: sum(st, s => s.d.act.tennisMin), bikeKm: sum(st, s => s.d.act.bikeKm),
     gym, gymCount: Object.values(gym).reduce((a, b) => a + b, 0),
     bassMin: sum(st, s => s.bassMin), bassDays: st.filter(s => s.pct.bass !== null).length,
-    studyMin: sum(st, s => s.studyMin), studyDays: st.filter(s => s.studyMin > 0).length
+    studyMin: sum(st, s => s.studyMin), studyDays: st.filter(s => s.studyMin > 0).length, studyGoal: sum(st, s => s.studyGoal)
   };
   const foodScore = sum(st, s => Math.min(1, s.pct.food || 0)) / n;
   const actScore = Math.min(1, w.actMin / (g.activeMin * n));
   const bassScore = Math.min(1, w.bassMin / (g.bassMin * g.bassDays * n / 7));
-  const studyScore = Math.min(1, w.studyMin / (g.studyMin * n));
+  const studyScore = w.studyGoal ? Math.min(1, w.studyMin / w.studyGoal) : 1;
   w.parts = {food: foodScore, act: actScore, bass: bassScore, study: studyScore};
   w.score = Math.round(100 * sum(AREAS, k => w.parts[k]) / AREAS.length);
   return w;
@@ -1758,9 +1765,74 @@ const ILLU = {
 /* ILLU:fin */
 const exPic = (name, cls = "pic") => { const s = ILLU[exName(name)]; return s ? `<span class="${cls}">${s}</span>` : ""; };
 /* Constancia: promedio de cumplimiento de las 4 áreas, cada una con tope 1 */
-const dayScore = dt => { const p = dayStats(dt).pct; return AREAS.reduce((a, k) => a + Math.min(1, p[k] || 0), 0) / AREAS.length; };
+// Promedio de las áreas con meta ese día: un día libre de estudio sin estudio no cuenta.
+const dayScore = dt => { const s = dayStats(dt), ks = AREAS.filter(k => k !== "study" || s.studyGoal || s.pct.study !== null); return ks.length ? ks.reduce((a, k) => a + Math.min(1, s.pct[k] || 0), 0) / ks.length : 0; };
 const anyLog = dt => { const s = dayStats(dt); return s.meals > 0 || s.actMin > 0 || s.bassMin > 0 || s.d.bass.logs.length > 0 || s.studyMin > 0 || s.d.act.sets.length > 0; };
 function bookRate(id, days = 14){ let tot = 0; const t = today(); for (let i = 0; i < days; i++) tot += sum(day(addDays(t, -i)).study.filter(s => s.itemId === id), s => s.amount); return tot / days; }
+/* Plan de un libro o curso: b.start, b.end (terminarlo) y b.exam (opcional) son fechas; b.secs = [{t, n, min}] es el temario
+   (unidades y minutos de video por sección). La ruta reparte el temario en proporción a los minutos de estudio planificados
+   de cada día (studyGoalOn), medido en minutos de video si el temario los trae: una sección larga ocupa más días y un día libre queda plano. */
+const PLAN_PROJ_MIN = 7;
+const dayGap = (a, b) => Math.round((parseYmd(b) - parseYmd(a)) / 864e5);
+function bookPlan(b){
+  if (!b || !b.start || !b.end || b.end <= b.start || !(b.total > 0)) return null;
+  const secs = (b.secs || []).filter(s => s.n > 0), g = goals(), t = today();
+  let knots = [[0, 0]];
+  secs.forEach(s => { const [l, v] = knots[knots.length - 1]; knots.push([l + s.n, v + (s.min > 0 ? s.min : s.n)]); });
+  if (knots[knots.length - 1][0] !== b.total) knots = [[0, 0], [b.total, b.total]];
+  const V = knots[knots.length - 1][1];
+  const toUnits = v => { for (let k = 1; k < knots.length; k++) if (v <= knots[k][1] + 1e-9){ const [l0, v0] = knots[k - 1], [l1, v1] = knots[k]; return l0 + (l1 - l0) * (v1 > v0 ? (v - v0) / (v1 - v0) : 1); } return b.total; };
+  const route = {}, dates = [];
+  for (let dt = b.start; dt <= b.end; dt = addDays(dt, 1)) dates.push(dt);
+  const pm = dates.map(dt => studyGoalOn(dt, g)), P = sum(pm, x => x);
+  let acc = 0; dates.forEach((dt, i) => { acc += P ? pm[i] : 1; route[dt] = toUnits(V * acc / (P || dates.length)); });
+  const expected = dt => dt < b.start ? 0 : dt > b.end ? b.total : route[dt];
+  // Avance real al cierre de un día: el avance actual menos lo registrado después
+  const logs = Object.keys(S.days).map(dt => [dt, sum(day(dt).study.filter(s => s.itemId === b.id), s => s.amount)]).filter(x => x[1]);
+  const actual = dt => Math.max(0, (b.current || 0) - sum(logs.filter(x => x[0] > dt), x => x[1]));
+  const secAt = u => { let c = 0; for (let i = 0; i < secs.length; i++){ c += secs[i].n; if (u <= c) return {i: i + 1, t: secs[i].t}; } return null; };
+  const cur = actual(t), dueToday = expected(t), dueYest = expected(addDays(t, -1));
+  const span = t < b.start ? 0 : Math.min(14, dayGap(b.start, t) + 1), rate = span ? (cur - actual(addDays(t, -span))) / span : 0;
+  const rem = Math.max(0, b.total - cur), left = Math.max(1, dayGap(t, b.end));
+  const proj = span >= PLAN_PROJ_MIN && rate > 0, eta = rem === 0 ? null : proj ? addDays(t, Math.ceil(rem / rate)) : null;
+  const last = b.exam && b.exam > b.end ? b.exam : b.end, weeks = [];
+  for (let ws = weekStart(b.start), k = 1; ws <= last; ws = addDays(ws, 7), k++){
+    const we = addDays(ws, 6), wd = [0, 1, 2, 3, 4, 5, 6].map(i => addDays(ws, i));
+    weeks.push({k, ws, we, to: expected(we), done: we < t ? actual(we) : ws <= t ? cur : null, review: ws > b.end, exam: b.exam && b.exam >= ws && b.exam <= we ? b.exam : null,
+      min: sum(wd, dt => sum(day(dt).study.filter(s => s.itemId === b.id), s => s.minutes)), plan: sum(wd.filter(dt => dt >= b.start && dt <= last), dt => studyGoalOn(dt, g))});
+  }
+  // Diferencia con la ruta: adelantado si ya pasaste la meta de hoy; atrasado si no llegas a la de ayer
+  const diff = cur >= dueToday ? cur - dueToday : cur >= dueYest ? 0 : cur - dueYest;
+  return {b, secs, expected, actual, secAt, cur, dueToday, dueYest, diff, span, rate, proj, eta, rem, need: rem / left * 7, weeks, last};
+}
+function bookPlanChart(p, width){
+  const b = p.b, W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 220 : 260, L = 38, R = 16, T = 18, B = 28, t = today();
+  const d0 = addDays(b.start, -1), n = dayGap(d0, p.last) + 1, iT = clamp(dayGap(d0, t), 0, n - 1);
+  const x = i => L + (W - L - R) * i / (n - 1), y = v => T + (H - T - B) * (1 - v / b.total), ix = dt => dayGap(d0, dt);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Avance del plan de ${esc(b.title)}: real, ruta y proyección" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  if (t >= d0 && t < p.last) s += `<rect x="${x(iT)}" y="${T}" width="${x(n - 1) - x(iT)}" height="${H - T - B}" fill="var(--sunken)" opacity=".6"/>`;
+  let c = 0; p.secs.forEach((sc, i) => { c += sc.n; if (c < b.total) s += `<line x1="${L}" x2="${W - R}" y1="${y(c)}" y2="${y(c)}" stroke="var(--line)" stroke-dasharray="2 4"><title>Fin de la sección ${i + 1}: ${esc(sc.t)} (${unitTxt(c, b)})</title></line>`; });
+  const step = b.total <= 60 ? 10 : b.total <= 150 ? 25 : b.total <= 400 ? 50 : 100;
+  for (let v = 0; v <= b.total; v += step) if (b.total - v >= step * .4) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(v)}</text>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(b.total)}" y2="${y(b.total)}" stroke="var(--line-strong)"/><text x="${L - 6}" y="${y(b.total) + 4}" text-anchor="end" font-size="11" font-weight="700" fill="var(--ink)">${fmt(b.total)}</text>`;
+  const every = Math.max(1, Math.ceil(52 / ((W - L - R) / (n - 1) * 7)));
+  for (let i = 1, mon = 0; i < n; i++){ const dt = addDays(d0, i); if (parseYmd(dt).getDay() === 1 && mon++ % every === 0) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtShort(dt).replace(".", ""))}</text>`; }
+  [[b.end, "fin del curso", H - B - 6], [b.exam && b.exam > b.end ? b.exam : null, "examen", T + 12]].forEach(([dt, lb, ly]) => { if (dt) s += `<line x1="${x(ix(dt))}" x2="${x(ix(dt))}" y1="${T}" y2="${H - B}" stroke="var(--ok)" stroke-dasharray="3 4"/><text x="${x(ix(dt)) - 5}" y="${ly}" text-anchor="end" font-size="11" font-weight="600" fill="var(--ok)">${lb}</text>`; });
+  const pts = (from, to, f) => { const o = []; for (let i = from; i <= to; i++) o.push(`${x(i).toFixed(1)},${y(f(addDays(d0, i))).toFixed(1)}`); return o.join(" "); };
+  s += `<polyline points="${pts(0, n - 1, p.expected)}" fill="none" stroke="var(--ok)" stroke-width="2" stroke-dasharray="6 5"><title>Ruta del plan</title></polyline>`;
+  if (t >= b.start){
+    const iA = Math.min(iT, n - 1);
+    s += `<polyline points="${pts(0, iA, p.actual)}" fill="none" stroke="var(--study)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if (p.proj && iT < n - 1){
+      const iE = p.eta ? Math.min(n - 1, ix(p.eta)) : n - 1, vE = Math.min(b.total, p.cur + p.rate * (iE - iT));
+      s += `<line x1="${x(iT)}" y1="${y(p.cur)}" x2="${x(iE)}" y2="${y(vE)}" stroke="var(--study)" stroke-width="2.4" stroke-dasharray="1.5 5" stroke-linecap="round"><title>Proyección a tu ritmo: ${fmt(p.rate * 7, 1)} ${esc(b.unit || "")}/sem</title></line>`;
+    }
+    s += `<circle cx="${x(iA)}" cy="${y(p.cur)}" r="3.6" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.8"><title>Hoy: ${unitTxt(p.cur, b)}</title></circle>`;
+    if (t < p.last) s += `<text x="${x(iT) + 6}" y="${T + 12}" font-size="11" font-weight="600" fill="var(--muted)">hoy</text>`;
+  }
+  return s + "</svg>";
+}
+const unitTxt = (v, b) => `${fmt(v, v % 1 ? 1 : 0)} ${esc(b.unit || "")}`;
 function linreg(pts){ const n = pts.length; if (n < 3) return null; const mx = sum(pts, p => p[0]) / n, my = sum(pts, p => p[1]) / n; let sxy = 0, sxx = 0; for (const [x, y] of pts){ sxy += (x-mx)*(y-my); sxx += (x-mx)**2; } return sxx ? sxy / sxx : null; }
 function weightTrend(){
   const t = parseYmd(today()).getTime(), pts = [];
@@ -1865,8 +1937,10 @@ function weightChart(ser, width, plan){
   return s + "</svg>";
 }
 
+// goal puede ser un número (línea de meta) o un arreglo con la meta de cada barra
 function barChart(values, labels, goal, color, unit, hi = (parseYmd(S.date).getDay() + 6) % 7){
-  const W = 460, H = 180, L = 36, B = 26, T = 10, max = Math.max(goal || 0, ...values.map(v => v || 0)) * 1.12 || 1;
+  const per = Array.isArray(goal) ? goal : null;
+  const W = 460, H = 180, L = 36, B = 26, T = 10, max = Math.max(...(per || [goal || 0]), ...values.map(v => v || 0)) * 1.12 || 1;
   const bw = (W - L - 10) / values.length, y = v => T + (H - T - B) * (1 - v / max);
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico semanal en ${unit}" style="width:100%;height:auto;font-family:'Hanken Grotesk',system-ui,sans-serif">`;
   [0, .5, 1].forEach(f => { const v = max * f / 1.12; s += `<line x1="${L}" x2="${W-6}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)">${fmt(v)}</text>`; });
@@ -1874,8 +1948,10 @@ function barChart(values, labels, goal, color, unit, hi = (parseYmd(S.date).getD
     const x = L + i * bw + bw * .22, w = bw * .56, r = Math.min(5, w / 2, (H - B - y(v)) / 2);
     if (v) s += `<path d="M${x},${H-B} V${y(v)+r} Q${x},${y(v)} ${x+r},${y(v)} H${x+w-r} Q${x+w},${y(v)} ${x+w},${y(v)+r} V${H-B} Z" fill="${color}" fill-opacity="${i === hi ? 1 : .42}"><title>${fmt(v)} ${unit}</title></path>`;
     s += `<text x="${x + w/2}" y="${H - 8}" text-anchor="middle" font-size="11" font-weight="${i === hi ? 800 : 600}" fill="${i === hi ? "var(--ink)" : "var(--muted)"}">${labels[i]}</text>`;
+    if (per && per[i]) s += `<line x1="${x - bw * .1}" x2="${x + w + bw * .1}" y1="${y(per[i])}" y2="${y(per[i])}" stroke="var(--ink)" stroke-opacity=".7" stroke-dasharray="4 3" stroke-width="1.4"><title>Meta ${fmt(per[i])} ${unit}</title></line>`;
   });
-  if (goal) s += `<line x1="${L}" x2="${W-6}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--ink)" stroke-opacity=".7" stroke-dasharray="4 4" stroke-width="1.2"/><text x="${W-6}" y="${y(goal)-6}" text-anchor="end" font-size="10.5" font-weight="600" fill="var(--ink)">meta ${fmt(goal)}</text>`;
+  if (per) s += `<text x="${W-6}" y="${T + 8}" text-anchor="end" font-size="10.5" font-weight="600" fill="var(--ink)">--- meta del día</text>`;
+  else if (goal) s += `<line x1="${L}" x2="${W-6}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--ink)" stroke-opacity=".7" stroke-dasharray="4 4" stroke-width="1.2"/><text x="${W-6}" y="${y(goal)-6}" text-anchor="end" font-size="10.5" font-weight="600" fill="var(--ink)">meta ${fmt(goal)}</text>`;
   return s + "</svg>";
 }
 function sparkline(vals, color){
@@ -1979,9 +2055,14 @@ function renderKpis(){
     bass: () => kpiBlock("c-bass", `Bajo ${lbl}`, fmt(st.bassMin), fmt(g.bassMin), "min", st.bassMin / g.bassMin * 100, [
       ["Semana", `${fmt(ws.bassMin)} / ${fmt(g.bassMin * g.bassDays)} min`], ["Días practicados", `${ws.bassDays} de ${g.bassDays}`],
       ["Racha", days_(bassStreak())], ["Último limpio", lastTech ? esc(lastTech) + " bpm" : "—"]]),
-    study: () => kpiBlock("c-study", `Estudio ${lbl}`, fmt(st.studyMin), fmt(g.studyMin), "min", st.studyMin / g.studyMin * 100, [
-      ["Semana", `${fmt(ws.studyMin)} / ${fmt(g.studyMin * 7)} min`], ["Días con estudio", `${ws.studyDays} de ${ws.n}`],
-      ["Más avanzado", topBook ? `${esc(topBook.title)} ${fmt((topBook.current||0)/topBook.total*100)}%` : "—"]])
+    study: () => {
+      const wp = studyWeekPlan(g), bp = S.lib.books.filter(b => !b.archived).map(bookPlan).find(Boolean);
+      const dd = bp && Math.round(bp.diff);
+      const planRow = bp ? ["Plan del curso", `${fmt(bp.cur, bp.cur % 1 ? 1 : 0)} / ${fmt(bp.b.total)} ${esc(bp.b.unit || "")}, ${today() < bp.b.start ? `parte el ${fmtShort(bp.b.start)}` : dd > 0 ? `${fmt(dd)} adelantado` : dd < 0 ? `${fmt(-dd)} atrasado` : "al día"}`]
+        : ["Más avanzado", topBook ? `${esc(topBook.title)} ${fmt((topBook.current||0)/topBook.total*100)}%` : "—"];
+      return kpiBlock("c-study", `Estudio ${lbl}${st.studyGoal ? "" : " (día libre)"}`, fmt(st.studyMin), fmt(st.studyGoal), "min", st.studyGoal ? st.studyMin / st.studyGoal * 100 : 100, [
+        ["Semana", `${fmt(ws.studyMin)} / ${fmt(sum(wp, v => v))} min`], ["Días con estudio", `${ws.studyDays} de ${wp.filter(v => v > 0).length}`], planRow]);
+    }
   };
   setHTML($("#kpis"), ["food", "act", "bass", "study"].filter(k => AREAS.includes(k)).map(k => blocks[k]()).join(""));
 }
@@ -2458,14 +2539,19 @@ function renderBass(){
 
 function renderStudy(){
   const g = goals(), d = day(S.date), books = S.lib.books.filter(b => !b.archived);
-  $("#studyLede").textContent = `${fmtLong(S.date)}. Meta: ${g.studyMin} min al día.`;
+  const wp = studyWeekPlan(g), wk = weekDates(S.date);
+  $("#studyLede").textContent = `${fmtLong(S.date)}. Meta: ${fmt(sum(wp, v => v))} min a la semana (${studyPlanTxt(wp)}).`;
   fillSelect($("#sItem"), books.map(b => ({v: b.id, t: b.title})), books.length ? null : "Agrega un libro o curso primero");
   const sel = S.lib.books.find(b => b.id === $("#sItem").value);
   $("#sUnitLbl").textContent = sel ? `Avance (+${sel.unit})` : "Avance";
   const bName = id => (S.lib.books.find(b => b.id === id) || {}).title || "Ítem borrado";
   const bUnit = id => (S.lib.books.find(b => b.id === id) || {}).unit || "";
   setHTML($("#studyToday"), d.study.length ? `<ul class="list">${d.study.map(s => `<li class="item-head"><span>${esc(bName(s.itemId))}</span><strong class="hud">+${fmt(s.amount,1)} ${esc(bUnit(s.itemId))}</strong><span class="muted">${fmt(s.minutes)} min</span><span class="act"><button class="btn small ghost danger" data-action="study-del" data-id="${s.id}">Borrar</button></span></li>`).join("")}</ul>` : `<p class="empty">Sin avance registrado este día.</p>`);
-  setHTML($("#studyChart"), barChart(weekDates(S.date).map(x => dayStats(x).studyMin), DOW, g.studyMin, "var(--study)", "min"));
+  const wMin = sum(wk, x => dayStats(x).studyMin), wGoal = sum(wp, v => v);
+  setHTML($("#studyChart"), barChart(wk.map(x => dayStats(x).studyMin), DOW, wk.map(x => wp[parseYmd(x).getDay()]), "var(--study)", "min") + meter("Semana", wMin, wGoal, "min", "var(--study)"));
+  const pBox = $("#studyPlans");
+  // Con la pestaña oculta el contenedor mide 0: se usa el ancho de la ventana como aproximación
+  setHTML(pBox, books.map(bookPlan).filter(Boolean).map(p => bookPlanHTML(p, (pBox.clientWidth || Math.min(window.innerWidth, 1100)) - 40)).join(""));
   setHTML($("#bookList"), S.lib.books.length ? [...S.lib.books].sort((a,b) => (a.archived?1:0)-(b.archived?1:0)).map(b => {
     const pct = b.total ? (b.current || 0) / b.total * 100 : 0, rate = bookRate(b.id), rem = Math.max(0, (b.total||0) - (b.current||0));
     const eta = rem === 0 ? "terminado" : rate > 0 ? `termina aprox. el ${fmtShort(addDays(today(), Math.ceil(rem / rate)))}` : "sin ritmo reciente para proyectar";
@@ -2478,6 +2564,48 @@ function renderStudy(){
       <div class="small muted">${fmt(b.current||0,1)} de ${fmt(b.total,1)} ${esc(b.unit)} (${fmt(pct)}%). Ritmo 14 días: ${fmt(rate,1)} ${esc(b.unit)}/día, ${eta}.</div>
       <div class="bar" style="margin-top:6px"><i style="width:${clamp(pct,0,100)}%;background:var(--study)"></i></div></div></li>`;
   }).join("") : `<li class="empty">Agrega un libro, curso o paper con su total de páginas, capítulos o lecciones.</li>`);
+}
+
+const WD_SHORT = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+function studyPlanTxt(wp){
+  if (wp.every(v => v === wp[0])) return `${fmt(wp[0])} min todos los días`;
+  const ord = [1, 2, 3, 4, 5, 6, 0], free = ord.filter(i => !wp[i]).map(i => WD_SHORT[i]);
+  return ord.filter(i => wp[i]).map(i => `${WD_SHORT[i]} ${fmt(wp[i])}`).join(", ") + (free.length ? `; libres: ${free.join(", ")}` : "");
+}
+function bookPlanHTML(p, width){
+  const b = p.b, t = today(), u = esc(b.unit || ""), pct = p.cur / b.total * 100;
+  const now = p.secAt(Math.min(b.total, Math.floor(p.cur) + 1)), goalSec = p.secAt(Math.max(1, Math.ceil(p.dueToday - 1e-9)));
+  const before = t < b.start, afterEnd = t > b.end, d = Math.round(p.diff);
+  const vsTxt = before ? "—" : d > 0 ? `+${fmt(d)}` : d < 0 ? `−${fmt(-d)}` : "al día";
+  const vsSub = before ? `parte el ${esc(fmtShort(b.start))}` : d > 0 ? `${u} adelantado` : d < 0 ? `${u} atrasado` : `con la ruta`;
+  let verdict;
+  if (p.rem === 0) verdict = `Terminaste ${esc(b.title)}.${b.exam && b.exam >= t ? ` Quedan ${days_(dayGap(t, b.exam))} para el examen: dedícalos a exámenes de práctica y a repasar lo débil.` : ""}`;
+  else if (before) verdict = `El plan parte el ${esc(fmtLong(b.start))}.`;
+  else if (p.proj && p.eta){
+    const late = dayGap(b.end, p.eta);
+    verdict = `<span class="dot" style="display:inline-block;background:${late <= 0 ? "var(--ok)" : "var(--danger)"};margin-right:8px"></span>A tu ritmo terminarías el <strong>${esc(fmtLong(p.eta))}</strong>, ${late === 0 ? "justo en la fecha del plan" : `${days_(Math.abs(late))} ${late < 0 ? "antes" : "después"} de la meta del ${esc(fmtShort(b.end))}`}.${late > 0 ? ` Para llegar a tiempo necesitas ${fmt(p.need, 1)} ${u} por semana.` : ""}`;
+  } else verdict = `<span class="muted">Para proyectar la fecha de término necesito ${PLAN_PROJ_MIN} días de plan con avance registrado.</span>`;
+  const rows = p.weeks.map(w => {
+    const cur = w.ws <= t && t <= w.we, past = w.we < t, sec = p.secAt(Math.max(1, Math.ceil(w.to - 1e-9)));
+    const goal = w.review ? (w.exam ? `examen el ${esc(fmtShort(w.exam))}` : "repaso y exámenes de práctica")
+      : `hasta ${unitTxt(Math.ceil(w.to - 1e-9), b)}${sec ? `<div class="small muted">${sec.i}. ${esc(sec.t)}</div>` : ""}`;
+    const ok = w.done !== null && w.done >= Math.ceil(w.to - 1e-9);
+    const st = w.done === null ? "" : w.review ? fmt(w.done) : `${fmt(w.done, w.done % 1 ? 1 : 0)} <span style="color:${ok ? "var(--ok)" : past ? "var(--danger)" : "var(--muted)"}">${ok ? "✓" : past ? `faltaron ${fmt(Math.ceil(w.to - 1e-9) - w.done)}` : "en curso"}</span>`;
+    return `<tr${cur ? ' style="background:var(--hl)"' : ""}><td>${w.k}<div class="small muted" style="white-space:nowrap">${esc(fmtShort(w.ws))}</div></td><td>${goal}</td><td>${st}</td><td class="n" style="white-space:nowrap">${w.done === null && !w.min ? "—" : fmt(w.min)} / ${fmt(w.plan)}</td></tr>`;
+  }).join("");
+  return `<div class="panel mt c-study"><div class="item-head"><h3>Plan: ${esc(b.title)}</h3><span class="small muted">${esc(fmtShort(b.start))} al ${esc(fmtShort(b.end))}${b.exam ? `, examen el ${esc(fmtShort(b.exam))}` : ""}</span></div>
+    <div class="wstats w4">
+      <div><span>Avance</span><strong>${fmt(p.cur, p.cur % 1 ? 1 : 0)} / ${fmt(b.total)}</strong><small>${fmt(pct)}%${now && p.rem ? `, sección ${now.i}: ${esc(now.t)}` : ""}</small></div>
+      <div><span>Meta de hoy</span><strong>${afterEnd ? "repaso" : before ? "—" : fmt(Math.ceil(p.dueToday - 1e-9))}</strong><small>${afterEnd ? "temario completo según el plan" : before ? "&nbsp;" : `${u}${goalSec ? `, sección ${goalSec.i}` : ""}`}</small></div>
+      <div><span>Frente al plan</span><strong>${vsTxt}</strong><small>${vsSub}</small></div>
+      <div><span>Ritmo (${p.span || 14} días)</span><strong>${before ? "—" : fmt(p.rate * 7, 1)}</strong><small>${u}/sem${p.rem && !before ? `; necesitas ${fmt(p.need, 1)}` : ""}</small></div>
+    </div>
+    <div class="wchart">${bookPlanChart(p, width)}</div>
+    <div class="gw-legend" style="margin:8px 0 0"><span><i style="background:var(--study)"></i>Tu avance y proyección</span><span><i style="background:var(--ok)"></i>Ruta del plan</span></div>
+    <p style="margin:12px 0 0">${verdict}</p>
+    <div class="scroll mt"><table><thead><tr><th>Semana</th><th>Meta al domingo</th><th>Logrado</th><th class="n">Min</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="small muted" style="margin:10px 0 0">La ruta reparte ${p.secs.length ? "los minutos de video del temario" : `las ${u}`} en proporción a tus minutos de estudio planificados (${studyPlanTxt(studyWeekPlan())}): las secciones largas ocupan más días y los días libres quedan planos. "Frente al plan" compara tu avance con la meta de hoy si ya la pasaste, o con la de ayer si no. El ritmo es tu avance de los últimos 14 días (o desde que partió el plan) y la proyección lo extiende a esa velocidad. Las líneas punteadas horizontales marcan el fin de cada sección.</p>
+  </div>`;
 }
 
 const fmtBytes = b => b >= 1024 ** 3 ? `${fmt(b / 1024 ** 3, 2)} GB` : b >= 1024 ** 2 ? `${fmt(b / 1024 ** 2, 1)} MB` : `${fmt(b / 1024, 0)} KB`;
@@ -2541,7 +2669,8 @@ function renderProfile(){
   setVal("#cPal", String(p.pal)); setVal("#cPhase", p.phase);
   setVal("#gKcal", g.kcal); setVal("#gProt", g.protein); setVal("#gCarb", g.carbs); setVal("#gFat", g.fat); setVal("#gFib", g.fiber);
   setVal("#gTol", g.tol); setVal("#gPlants", g.plantsWeek); setVal("#gWater", g.water); setVal("#gActive", g.activeMin); setVal("#gGym", g.gymWeek);
-  setVal("#gBass", g.bassMin); setVal("#gBassDays", g.bassDays); setVal("#gStudy", g.studyMin);
+  setVal("#gBass", g.bassMin); setVal("#gBassDays", g.bassDays);
+  const sp = studyWeekPlan(g); document.querySelectorAll("#gStudyPlan input").forEach(el => setVal(`#gStudyPlan [data-wd="${el.dataset.wd}"]`, sp[+el.dataset.wd]));
   setVal("#gWDate", g.wDate || ""); setVal("#gWFat", g.wFat ?? ""); setVal("#gWLean", g.wLean ?? "");
   renderGoalInfo();
   renderCalc();
@@ -3704,8 +3833,8 @@ function openDialog(title, fields, onOk){
   $("#dlgTitle").textContent = title;
   $("#dlgFields").innerHTML = fields.map(f => `<label class="field">${esc(f.label)}${
     f.type === "select" ? `<select name="${f.name}">${f.options.map(o => `<option ${o === f.value ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`
-    : f.type === "textarea" ? `<textarea name="${f.name}" rows="2">${esc(f.value ?? "")}</textarea>`
-    : `<input name="${f.name}" ${f.num ? 'inputmode="decimal"' : ""} ${f.list ? `list="dl-${f.name}"` : ""} value="${esc(f.value ?? "")}" ${f.required ? "required" : ""}>${f.list ? `<datalist id="dl-${f.name}">${f.list.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : ""}`}</label>`).join("");
+    : f.type === "textarea" ? `<textarea name="${f.name}" rows="${f.rows || 2}">${esc(f.value ?? "")}</textarea>`
+    : `<input name="${f.name}" ${f.type === "date" ? 'type="date"' : ""} ${f.num ? 'inputmode="decimal"' : ""} ${f.list ? `list="dl-${f.name}"` : ""} value="${esc(f.value ?? "")}" ${f.required ? "required" : ""}>${f.list ? `<datalist id="dl-${f.name}">${f.list.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : ""}`}</label>`).join("");
   const dlg = $("#dlg");
   dlg.onclose = () => {
     if (dlg.returnValue !== "ok") return;
@@ -3734,7 +3863,17 @@ const BOOK_FIELDS = b => [
   {name:"title", label:"Título", value:b.title, required:true},
   {name:"kind", label:"Tipo", type:"select", options:["libro","curso","paper","otro"], value:b.kind || "libro"},
   {name:"unit", label:"Unidad", value:b.unit || "páginas", list:["páginas","capítulos","lecciones","horas","módulos","%"]},
-  {name:"total", label:"Total", value:b.total, num:true, required:true}, {name:"current", label:"Avance actual", value:b.current ?? 0, num:true}];
+  {name:"total", label:"Total (con temario, la suma de sus unidades)", value:b.total, num:true}, {name:"current", label:"Avance actual", value:b.current ?? 0, num:true},
+  {name:"start", label:"Plan: fecha de inicio (opcional)", type:"date", value:b.start}, {name:"end", label:"Plan: terminarlo el", type:"date", value:b.end},
+  {name:"exam", label:"Plan: fecha del examen (opcional)", type:"date", value:b.exam},
+  {name:"secs", label:"Temario (opcional): una sección por línea, con nombre; unidades; minutos de video", type:"textarea", rows:5, value:(b.secs || []).map(s => `${s.t}; ${s.n}${s.min ? `; ${s.min}` : ""}`).join("\n")}];
+// Valores del diálogo de libro o curso: lee el temario y deja el total como la suma de sus unidades
+function bookFromDialog(v){
+  const secs = v.secs.split("\n").map(l => l.split(";").map(x => x.trim())).filter(p => p[0] && num(p[1]) > 0).map(([t, n, min]) => ({t, n: num(n), ...(num(min) > 0 ? {min: num(min)} : {})}));
+  const out = {...v, secs, total: secs.length ? sum(secs, s => s.n) : v.total};
+  ["start", "end", "exam"].forEach(k => { if (!out[k]) out[k] = null; });
+  return out;
+}
 const MEAL_FIELDS = m => [{name:"time",label:"Hora",value:m.time},{name:"slot",label:"Comida",type:"select",options:["según la hora", ...optCfg().slots.map(s => s.name)],value:m.slot || "según la hora"},{name:"desc",label:"Descripción",value:m.desc,required:true},{name:"kcal",label:"kcal",value:m.kcal,num:true},{name:"p",label:"Proteína g",value:m.p,num:true},{name:"c",label:"Carbohidratos g",value:m.c,num:true},{name:"f",label:"Grasa g",value:m.f,num:true},{name:"fib",label:"Fibra g",value:m.fib,num:true},{name:"plants",label:"Plantas (separadas por coma)",value:(m.plants||[]).join(", ")}];
 
 const actions = {
@@ -4014,8 +4153,8 @@ const actions = {
   "song-practiced": el => saveDay(S.date, d => { const id = el.dataset.id; d.bass.songs = d.bass.songs.includes(id) ? d.bass.songs.filter(x => x !== id) : [...d.bass.songs, id]; }),
   "song-metro": el => { const s = S.lib.songs.find(x => x.id === el.dataset.id); Metro.setBpm(s.bpmCur || Math.round(s.bpmTarget * .75)); $("#trMax").value = s.bpmTarget; window.scrollTo({top: 0, behavior: "smooth"}); toast(`Metrónomo a ${Metro.bpm} bpm, tope ${s.bpmTarget} para ${s.title}.`); },
 
-  "book-new": () => openDialog("Agregar libro o curso", BOOK_FIELDS({}), v => v.title && v.total && saveLib("books", l => { l.push({id: uid(), ...v, current: v.current || 0}); })),
-  "book-edit": el => { const b = S.lib.books.find(x => x.id === el.dataset.id); openDialog("Editar", BOOK_FIELDS(b), v => saveLib("books", l => { Object.assign(l.find(x => x.id === b.id), v); })); },
+  "book-new": () => openDialog("Agregar libro o curso", BOOK_FIELDS({}), v => { v = bookFromDialog(v); if (!v.title || !v.total){ toast("Falta el título o el total."); return; } saveLib("books", l => { l.push({id: uid(), ...v, current: v.current || 0}); }); }),
+  "book-edit": el => { const b = S.lib.books.find(x => x.id === el.dataset.id); openDialog("Editar", BOOK_FIELDS(b), v => { v = bookFromDialog(v); if (!v.total) v.total = b.total; saveLib("books", l => { Object.assign(l.find(x => x.id === b.id), v); }); }); },
   "book-arch": el => saveLib("books", l => { const b = l.find(x => x.id === el.dataset.id); b.archived = !b.archived; }),
   "book-del": el => confirmClick(el, () => saveLib("books", l => l.filter(x => x.id !== el.dataset.id))),
   "study-log": () => {
@@ -4045,8 +4184,10 @@ const actions = {
   },
   "goals-save": () => {
     const v = {kcal: num($("#gKcal").value), protein: num($("#gProt").value), carbs: num($("#gCarb").value), fat: num($("#gFat").value), fiber: num($("#gFib").value), tol: num($("#gTol").value), plantsWeek: num($("#gPlants").value), water: num($("#gWater").value),
-      activeMin: num($("#gActive").value), gymWeek: num($("#gGym").value), bassMin: num($("#gBass").value), bassDays: num($("#gBassDays").value), studyMin: num($("#gStudy").value)};
+      activeMin: num($("#gActive").value), gymWeek: num($("#gGym").value), bassMin: num($("#gBass").value), bassDays: num($("#gBassDays").value)};
     for (const k in v) if (!v[k] || v[k] < 0) v[k] = DEFAULT_GOALS[k];
+    const sp = [0, 1, 2, 3, 4, 5, 6].map(i => Math.max(0, Math.round(num($(`#gStudyPlan [data-wd="${i}"]`).value) || 0)));
+    Object.assign(v, sp.some(x => x > 0) ? {studyPlan: sp, studyMin: Math.round(sum(sp, x => x) / 7)} : {studyMin: DEFAULT_GOALS.studyMin});
     const wFat = num($("#gWFat").value), wLean = num($("#gWLean").value);
     Object.assign(v, {wDate: $("#gWDate").value || null, wFat: wFat > 0 && wFat < 60 ? wFat : null, wLean: wLean > 0 ? wLean : null});
     document.activeElement && document.activeElement.blur(); saveLib("goals", () => v); toast("Metas guardadas.");
@@ -4302,7 +4443,9 @@ function contextData(){
     semana_actual: {rango: tierOf(ws.score).name, puntos: ws.score, plantas_distintas: ws.plantList, gimnasio: ws.gym},
     tecnicas: S.lib.techniques.map(x => ({nombre: x.name, objetivo_bpm: x.target, mejor_limpio: techBest(x.id), historial_limpio: techHistory(x.id).filter(h => h.clean).slice(-8).map(h => `${h.date}:${h.bpm}`)})),
     canciones: S.lib.songs.map(s => ({titulo: s.title, artista: s.artist, genero: s.genre, estado: s.status, bpm_logrado: s.bpmCur, bpm_original: s.bpmTarget})),
-    lecturas: S.lib.books.filter(b => !b.archived).map(b => ({titulo: b.title, tipo: b.kind, avance: `${b.current||0}/${b.total} ${b.unit}`, ritmo_14d_por_dia: +bookRate(b.id).toFixed(2)})),
+    meta_estudio_min_por_dia: studyPlanTxt(studyWeekPlan(g)),
+    lecturas: S.lib.books.filter(b => !b.archived).map(b => { const p = bookPlan(b); return {titulo: b.title, tipo: b.kind, avance: `${b.current||0}/${b.total} ${b.unit}`, ritmo_14d_por_dia: +bookRate(b.id).toFixed(2),
+      ...(p ? {plan: {inicio: b.start, terminar: b.end, examen: b.exam, meta_hoy: Math.ceil(p.dueToday - 1e-9), diferencia_con_plan: +p.diff.toFixed(1), seccion_actual: (p.secAt(Math.min(b.total, Math.floor(p.cur) + 1)) || {}).t || null, termino_proyectado: p.eta, necesario_por_semana: +p.need.toFixed(1)}} : {})}; }),
     tendencia_peso_kg_sem: (weightTrend() || {}).perWeek ?? null
   };
 }
@@ -4544,6 +4687,7 @@ function wireUI(){
     if (S.tab === "metricas") loadMetrics();
     if (S.tab === "nutricion") renderPlan();
     if (S.tab === "entreno") renderProgress();
+    if (S.tab === "estudio") renderStudy();
   }));
   $("#planPanel").addEventListener("toggle", renderPlan);
   $("#optPanel").addEventListener("toggle", renderOpt);
