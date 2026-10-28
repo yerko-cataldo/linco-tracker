@@ -1165,6 +1165,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <h3>Movimientos</h3>
       <div class="row" style="margin-bottom:10px">
         <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
+        <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"><option value="">Comida, casa y otros</option><option value="comida">Solo comida</option><option value="casa">Solo casa</option><option value="otros">Solo otros</option></select></div>
         <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
       </div>
       <div id="finList"></div>
@@ -1175,7 +1176,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="row" style="margin-top:10px"><label class="btn ai-only" hidden>Foto de la boleta<input type="file" id="finDetPhoto" accept="image/*" multiple class="sr"></label><span class="small muted" id="finDetPhotoName"></span><button class="btn primary ai-only" data-action="fin-det-ai" hidden>Separar con IA</button><button class="btn" data-action="fin-det-add">Agregar producto</button><span class="small muted" id="finDetStatus"></span></div>
       <div id="finDetItems" class="mt"></div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-action="fin-det-save">Guardar detalle</button></div>
-      <p class="small muted" style="margin:10px 0 0">Con texto, la IA separa los productos y copia los números que escribiste. Con foto (hasta 3, para una boleta larga), la IA solo transcribe las líneas tal cual y el código las lee: el código de barras abre un producto, una línea sin monto continúa su nombre, "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990" es su cantidad, "2 KG" o "250G" en el nombre es el contenido del envase y un monto negativo es un descuento del producto anterior, con su misma categoría. Después la IA solo escribe nombres legibles y elige alimento y categoría. Si las líneas no suman el TOTAL impreso, o el TOTAL no coincide con la compra, te avisa. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
+      <p class="small muted" style="margin:10px 0 0">Con texto, la IA separa los productos y copia los números que escribiste. Con foto (hasta 3, para una boleta larga), la IA solo transcribe las líneas tal cual y el código las lee: el código de barras abre un producto, una línea sin monto continúa su nombre, "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990" es su cantidad, "2 KG" o "250G" en el nombre es el contenido del envase y un monto negativo es un descuento del producto anterior, con su misma categoría. Después la IA solo escribe nombres legibles y elige alimento y categoría. Si las líneas no suman el TOTAL impreso, la boleta se lee una segunda vez y queda la lectura que cuadra; si ninguna cuadra, o el TOTAL no coincide con la compra, te avisa. Lo que leyó la IA se ve bajo la tabla. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
     </div>
     <div class="panel mt"><h3>Precios por producto</h3><div id="finPrices"></div></div>
     <div class="grid g2 mt">
@@ -2959,7 +2960,14 @@ function renderFinDist(c, top){
     s += `<rect class="seg" x="${x.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${H}" fill="${p.color}"><title>${esc(p.cat)}: ${fmtClp(p.v)} (${fmt(p.v / total * 100)}%)</title></rect>`;
     x += w + gap;
   }
-  setHTML($("#finDist"), s + `</g></svg>` + finLegend(g, total));
+  const gr = {comida: 0, casa: 0, otros: 0}, food = {casa: 0, fuera: 0};
+  for (const m of c.buys){ const x = finSplitGroups(m), f = finFoodSplit(m); for (const k in gr) gr[k] += x[k]; food.casa += f.casa; food.fuera += f.fuera; }
+  const pct = v => fmt(v / total * 100);
+  setHTML($("#finDist"), s + `</g></svg>` + finLegend(g, total) + `<dl class="mt">
+    <dt>Comida</dt><dd>${fmtClp(gr.comida)} <span class="muted">${pct(gr.comida)}%: en casa ${fmtClp(food.casa)}, fuera ${fmtClp(food.fuera)}</span></dd>
+    <dt>Casa</dt><dd>${fmtClp(gr.casa)} <span class="muted">${pct(gr.casa)}%</span></dd>
+    <dt>Otros</dt><dd>${fmtClp(gr.otros)} <span class="muted">${pct(gr.otros)}%</span></dd>
+  </dl><p class="small muted" style="margin:6px 0 0">Comida: Supermercado, Comida y delivery, Restaurantes y bares y productos con un alimento asociado. Casa: Hogar (aseo, limpieza, papel y artículos de la casa). En una compra detallada cuenta cada producto por separado; si no, cuenta la categoría del comercio.</p>`);
 }
 
 /* Evolución mensual: 12 meses apilados por categoría; el mes en curso muestra además su proyección */
@@ -3006,6 +3014,18 @@ function renderFinEvo(c, top){
     <details class="mt"><summary class="small">Ver como tabla</summary><div class="scroll"><table><thead><tr><th>Mes</th>${top.map(t => `<th class="n">${esc(t)}</th>`).join("")}<th class="n">Otras</th><th class="n">Total</th></tr></thead><tbody>${shown.map(d => `<tr><td>${esc(d.ym)}</td>${d.g.map(x => `<td class="n">${fmtClp(x.v)}</td>`).join("")}<td class="n"><strong>${fmtClp(d.total)}</strong></td></tr>`).join("")}</tbody></table></div></details>`);
 }
 
+/* Destino del gasto: comida (Supermercado, Comida y delivery, Restaurantes y bares, o producto con alimento asociado),
+   casa (Hogar) u otros. Por producto si la compra está detallada; si no, por la categoría del comercio. */
+const FIN_GROUPS = {comida: ["Supermercado", "Comida y delivery", "Restaurantes y bares"], casa: ["Hogar"]};
+const FIN_GROUP_LBL = {comida: "Comida", casa: "Casa", otros: "Otros"};
+const finGroupOf = (cat, foodId) => FIN_GROUPS.comida.includes(cat) ? "comida" : FIN_GROUPS.casa.includes(cat) ? "casa" : foodId ? "comida" : "otros";
+function finSplitGroups(m){
+  const base = finCat(m), r = {comida: 0, casa: 0, otros: 0};
+  let rest = m.monto;
+  for (const it of (S.movDet[m.id] || {}).items || []){ if (!it.amt) continue; rest -= it.amt; r[finGroupOf(it.cat || base, it.foodId)] += it.amt; }
+  if (rest > 0) r[finGroupOf(base)] += rest;
+  return r;
+}
 /* Comida: en casa (Supermercado, o productos detallados con alimento) y fuera (Comida y delivery, Restaurantes y bares) */
 const FOOD_HOME = ["Supermercado"], FOOD_OUT = ["Comida y delivery", "Restaurantes y bares"];
 function finFoodSplit(m){
@@ -3013,7 +3033,7 @@ function finFoodSplit(m){
   let rest = m.monto;
   for (const it of (S.movDet[m.id] || {}).items || []){
     if (!it.amt) continue; rest -= it.amt;
-    const k = kind(it.cat || base) || (it.foodId ? kind(base) || "casa" : null);
+    const c = it.cat || base, k = kind(c) || (finGroupOf(c, it.foodId) === "comida" ? kind(base) || "casa" : null);
     if (k) r[k] += it.amt;
   }
   const kb = kind(base); if (kb && rest > 0) r[kb] += rest;
@@ -3132,16 +3152,18 @@ function renderFinAnom(c){
 
 /* Lista de movimientos del mes con búsqueda (comercio, detalle del banco o producto) y filtro de categoría */
 function renderFinList(){
-  const ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value;
+  const ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value, gf = $("#finGroupF").value;
   const all = S.movs.filter(m => m.fecha.startsWith(ym));
+  // con destino elegido: solo compras con una parte en ese destino, y se muestra esa parte
+  const part = m => gf ? (isPurchase(m) ? finSplitGroups(m)[gf] : 0) : m.monto;
   const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
-    && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)));
-  const shown = sum(list.filter(isPurchase), m => m.monto);
-  setHTML($("#finList"), list.length ? `${q || cf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; compras por ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
+    && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0));
+  const shown = sum(list.filter(isPurchase), part);
+  setHTML($("#finList"), list.length ? `${q || cf || gf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${FIN_GROUP_LBL[gf].toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
       <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
       <td>${finCatSelect(m)}</td>
-      <td class="n">${m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${finAmountNote(m)}</td>
+      <td class="n">${gf && part(m) !== m.monto ? `${fmtClp(part(m))}<div class="small muted">de ${fmtClp(m.monto)}</div>` : m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${finAmountNote(m)}</td>
     </tr>`).join("")}</tbody></table></div>`
     : `<p class="empty">${all.length ? "Ningún movimiento coincide con la búsqueda." : "Sin movimientos en este mes."}</p>`);
 }
@@ -3393,8 +3415,11 @@ function renderFinDet(){
       <td><select class="fin-in" data-i="${i}" data-f="cat"><option value="">del comercio</option>${opt(FIN_CATS, it.cat)}</select></td>
       <td><button class="btn ghost small danger" data-action="fin-det-del" data-i="${i}" aria-label="Quitar ${esc(it.name)}">Quitar</button></td>
     </tr>`).join("")}</tbody></table></div>
-    <p class="small" style="margin:10px 0 0">Suma de productos: <strong>${fmtClp(c.sum)}</strong> de ${fmtClp(m.monto)}${Math.abs(c.diff) >= 1 ? `; <span style="color:var(--danger)">${c.diff > 0 ? "faltan" : "sobran"} ${fmtClp(Math.abs(c.diff))}</span>` : ", cuadra"}.</p>`
-    : `<p class="empty">Sin productos. Escribe qué compraste o sube la foto de la boleta y sepáralo con IA, o agrégalos a mano.</p>`);
+    <p class="small" style="margin:10px 0 0">Suma de productos: <strong>${fmtClp(c.sum)}</strong> de ${fmtClp(m.monto)}${Math.abs(c.diff) >= 1 ? `; <span style="color:var(--danger)">${c.diff > 0 ? "faltan" : "sobran"} ${fmtClp(Math.abs(c.diff))}</span>` : ", cuadra"}.</p>${finTranscriptHtml(d)}`
+    : `<p class="empty">Sin productos. Escribe qué compraste o sube la foto de la boleta y sepáralo con IA, o agrégalos a mano.</p>${finTranscriptHtml(d)}`);
+}
+function finTranscriptHtml(d){
+  return d.lines && d.lines.length ? `<details class="mt"><summary class="small">Ver lo que leyó la IA en la boleta (${d.lines.length} líneas)</summary><pre class="small" style="white-space:pre-wrap;margin:8px 0 0">${esc(d.lines.join("\n"))}</pre></details>` : "";
 }
 // Historial de precios por kg o litro de cada producto, con pesos exactos (no estimados)
 function finPriceRows(){
@@ -3421,7 +3446,9 @@ function renderFinPrices(){
    Línea con código y sin monto: nombre cuyo monto viene en la línea siguiente. Monto negativo: descuento del producto anterior.
    "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990": cantidad y precio del producto anterior. "2 KG", "250G", "1 L" en el nombre: contenido por envase.
    Termina en la línea TOTAL. */
-const RC_PRICE = /(-)?\s*\$\s*(-)?\s*(\d{1,3}(?:\.\d{3})+|\d+)\s*$/;
+// monto al final de la línea; acepta "S" leída en lugar de "$" cuando va separada de la palabra anterior
+const RC_PRICE = /(-)?\s*(?:\$|(?:^|\s)S)\s*(-)?\s*(\d{1,3}(?:\.\d{3})+|\d+)\s*$/;
+const RC_DISC = /\b(club|dcto|desc|descuento|ahorro|promo|oferta|rebaja)\b/i;
 const RC_CODE = /^\d{4,14}\s+/;
 const RC_MULT = /^(\d+(?:[.,]\d+)?)\s*(kg|k|un|u)?\s*x\s*(?:\d+\s*(?:un|u)\s*)?\$?\s*(\d{1,3}(?:\.\d{3})+|\d+)/i;
 const RC_SIZE = /(\d+(?:[.,]\d+)?)\s*(kg|kilo|gr|g|lt|l|ml|cc)\b/i;
@@ -3439,7 +3466,9 @@ function finParseReceipt(lines){
     const s = String(raw || "").replace(/\s+/g, " ").trim(); if (!s) continue;
     if (/^total\b/i.test(s) && !/^total\s+(items|art|ahorro|pagos)/i.test(s)){ const p = s.match(RC_PRICE); if (p){ total = rcNum(p[3]); break; } continue; }
     if (RC_SKIP.test(s)) continue;
-    const pm = s.match(RC_PRICE), hasCode = RC_CODE.test(s);
+    // línea de descuento con el monto sin "$" ("Club Unimarc NOVA -900")
+    const hasCode = RC_CODE.test(s), discWord = !hasCode && RC_DISC.test(s);
+    const pm = s.match(RC_PRICE) || (discWord ? s.match(/(-)?\s*()(\d{1,3}(?:\.\d{3})+|\d{2,})\s*$/) : null);
     const body = (pm ? s.slice(0, pm.index) : s).replace(RC_CODE, "").trim();
     const mult = body.match(RC_MULT) || (!pm ? s.match(RC_MULT) : null);
     const isDetail = mult && !/[a-zñ]{3,}/i.test(body.replace(/\b(kg|un|c\/u|x)\b/gi, ""));
@@ -3453,7 +3482,7 @@ function finParseReceipt(lines){
       continue;
     }
     if (pm){
-      const v = rcNum(pm[3]) * (pm[1] || pm[2] ? -1 : 1);
+      const v = rcNum(pm[3]) * (pm[1] || pm[2] || (discWord && lastP >= 0) ? -1 : 1);
       if (v < 0){ items.push({name: body || "Descuento", qty: null, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: v, disc: true, of: lastP >= 0 ? lastP : null}); continue; }
       if (!body && pending){ items.push({...prod(pending), total: v}); pending = null; lastP = items.length - 1; continue; }
       if (!body && lastP >= 0 && items[lastP].total === null){ items[lastP].total = v; continue; }
@@ -3465,22 +3494,31 @@ function finParseReceipt(lines){
   }
   return {items, total};
 }
-async function finReceiptItems(m, photos, note){
-  const t = await S.sample.json(`Transcribe esta boleta chilena línea por línea, tal como está impresa, desde la primera línea de productos hasta la línea TOTAL, inclusive.
+const RC_PROMPT = `Transcribe esta boleta chilena línea por línea, tal como está impresa, desde la primera línea de productos hasta la línea TOTAL, inclusive.
 Reglas:
-- Una entrada por línea impresa, en orden. No juntes ni separes líneas.
-- Copia el código de barras, el texto y el monto de cada línea tal cual (por ejemplo "7801505002659 AZUCAR GRANULADA B $2690" o "Club Unimarc IANS $-600").
+- Una entrada por línea impresa, en orden. No juntes, no separes y no omitas líneas.
+- Copia el código de barras, el texto y el monto de cada línea tal cual, con su signo (por ejemplo "7801505002659 AZUCAR GRANULADA B $2690", "Club Unimarc IANS $-600" o "2 x 1 UN $1250 c/u").
 - No interpretes, no corrijas, no calcules y no agregues nada. Si algo no se lee, escribe lo que se alcance a leer.
-Responde solo con este JSON: {"lines": [string]}`, {modelTier: "default", maxTokens: 3000, images: photos});
-  const rec = finParseReceipt(Array.isArray(t.lines) ? t.lines : []);
-  if (!rec.items.length) return {items: [], total: rec.total};
+Responde solo con este JSON: {"lines": [string]}`;
+const rcDiff = rec => rec.total === null ? 0 : Math.abs(sum(rec.items, it => it.total || 0) - rec.total);
+// Transcribe la boleta; si las líneas no suman el TOTAL, pide una segunda transcripción y se queda con la que cuadra mejor
+async function finReceiptRead(photos){
+  const read = async extra => { const t = await S.sample.json(RC_PROMPT + extra, {modelTier: "default", maxTokens: 3000, images: photos}); const lines = (Array.isArray(t.lines) ? t.lines : []).map(String); return {lines, rec: finParseReceipt(lines)}; };
+  const a = await read("");
+  if (!a.rec.items.length || rcDiff(a.rec) < 1) return {...a, tries: 1};
+  const b = await read(`\nUna transcripción anterior no sumó el TOTAL impreso. Revisa con cuidado que estén todas las líneas, en especial los descuentos con monto negativo (como "Club Unimarc NOVA $-900") y las líneas de cantidad (como "2 x 1 UN $1250 c/u").`);
+  return {...(b.rec.items.length && rcDiff(b.rec) < rcDiff(a.rec) ? b : a), tries: 2};
+}
+async function finReceiptItems(m, photos, note){
+  const {lines, rec, tries} = await finReceiptRead(photos);
+  if (!rec.items.length) return {items: [], total: rec.total, lines, tries};
   const prods = rec.items.map((it, i) => ({i, linea: it.name, desc: it.disc})).filter(x => !x.desc).map(({i, linea}) => ({i, linea}));
   const r = await S.sample.json(`Estos productos vienen de una boleta de ${m.comercio}, con nombres abreviados.
 Mis alimentos: ${JSON.stringify(foodsForPrompt())}
 Para cada producto:
 - name: nombre completo y legible en español ("TIRITAS POLLO FUND" es "Tiritas de pollo", "LECHE S LACTOSA DE" es "Leche sin lactosa descremada"). Sin códigos ni montos.
 - foodId: id del alimento de la lista que es ese producto; si hay versión cruda o seca, elige esa; si no está, null.
-- cat: una de ${JSON.stringify(FIN_CATS)}.
+- cat: para qué es el producto, una de ${JSON.stringify(FIN_CATS)}. Comida y bebida para preparar o consumir en casa: "Supermercado" (nunca "Comida y delivery" ni "Restaurantes y bares", que son para comer fuera). Aseo, limpieza, papel, cocina y artículos de la casa: "Hogar". Farmacia y cuidado personal: "Salud". Alimento y cosas de mascotas: "Mascotas".
 ${note ? `Nota de la persona: ${note}\n` : ""}Productos: ${JSON.stringify(prods)}
 Responde solo con este JSON: {"items": [{"i": number, "name": string, "foodId": string o null, "cat": string}]}`, {modelTier: "default", maxTokens: 2000});
   const byI = new Map((Array.isArray(r.items) ? r.items : []).map(x => [x && x.i, x || {}]));
@@ -3491,7 +3529,7 @@ Responde solo con este JSON: {"items": [{"i": number, "name": string, "foodId": 
   });
   // cada descuento toma la categoría del producto al que se aplica
   rec.items.forEach((it, i) => { if (it.disc && it.of !== null){ items[i].cat = items[it.of].cat; items[i].name = "Descuento " + items[it.of].name.toLowerCase(); } });
-  return {items, total: rec.total};
+  return {items, total: rec.total, lines, tries};
 }
 async function finDetAI(){
   const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), text = $("#finDetText").value.trim(), photos = [...$("#finDetPhoto").files];
@@ -3500,12 +3538,13 @@ async function finDetAI(){
   const st = $("#finDetStatus"); st.innerHTML = `<span class="spin"></span> ${photos.length ? "Leyendo la boleta…" : "Separando…"}`;
   if (photos.length){
     try {
-      const {items, total} = await finReceiptItems(m, photos.slice(0, 3), text);
-      if (!items.length){ st.textContent = "No pude leer productos en la foto. Prueba con una foto más nítida y derecha, o escribe el detalle."; return; }
+      const {items, total, lines, tries} = await finReceiptItems(m, photos.slice(0, 3), text);
+      if (!items.length){ S.finDraft = {...d, lines}; renderFinDet(); st.textContent = "No pude leer productos en la foto. Prueba con una foto más nítida y derecha, o escribe el detalle."; return; }
       const s = sum(items, it => it.total || 0), warn = [];
-      if (total !== null && Math.abs(s - total) >= 1) warn.push(`Las líneas suman ${fmtClp(s)} y el TOTAL de la boleta dice ${fmtClp(total)}: alguna línea quedó mal leída.`);
+      if (total !== null && Math.abs(s - total) >= 1) warn.push(`Las líneas suman ${fmtClp(s)} y el TOTAL de la boleta dice ${fmtClp(total)}${tries > 1 ? ", incluso después de leerla dos veces" : ""}: alguna línea quedó mal leída. Compara con la transcripción, bajo la tabla.`);
+      else if (total !== null && tries > 1) warn.push("La primera lectura no cuadró; la segunda sí.");
       if (total !== null && Math.abs(total - m.monto) >= 1) warn.push(`El TOTAL de la boleta (${fmtClp(total)}) no coincide con la compra (${fmtClp(m.monto)}): revisa que sea la boleta correcta.`);
-      S.finDraft = {...d, items}; st.textContent = [...warn, "Revisa los productos antes de guardar."].join(" ");
+      S.finDraft = {...d, items, lines}; st.textContent = [...warn, "Revisa los productos antes de guardar."].join(" ");
       renderFinDet();
     } catch (e) { st.textContent = aiErr(e); }
     return;
@@ -5664,6 +5703,7 @@ function wireUI(){
   $("#finCatF").innerHTML = `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>` + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
   $("#finQ").addEventListener("input", renderFinList);
   $("#finCatF").addEventListener("change", renderFinList);
+  $("#finGroupF").addEventListener("change", renderFinList);
   $("#finDetItems").addEventListener("change", e => {
     const t = e.target, d = S.finDraft; if (!t.classList.contains("fin-in") || !d) return;
     const it = d.items[+t.dataset.i], f = t.dataset.f; if (!it) return;
