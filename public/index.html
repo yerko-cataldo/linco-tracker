@@ -1175,7 +1175,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="row" style="margin-top:10px"><label class="btn ai-only" hidden>Foto de la boleta<input type="file" id="finDetPhoto" accept="image/*" multiple class="sr"></label><span class="small muted" id="finDetPhotoName"></span><button class="btn primary ai-only" data-action="fin-det-ai" hidden>Separar con IA</button><button class="btn" data-action="fin-det-add">Agregar producto</button><span class="small muted" id="finDetStatus"></span></div>
       <div id="finDetItems" class="mt"></div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-action="fin-det-save">Guardar detalle</button></div>
-      <p class="small muted" style="margin:10px 0 0">La IA solo separa los productos y copia los números que escribiste o que lee en la boleta (hasta 3 fotos para una boleta larga; los descuentos quedan como productos con total negativo, y si el total impreso no coincide con el de la compra, te avisa). El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
+      <p class="small muted" style="margin:10px 0 0">Con texto, la IA separa los productos y copia los números que escribiste. Con foto (hasta 3, para una boleta larga), la IA solo transcribe las líneas tal cual y el código las lee: el código de barras abre un producto, una línea sin monto continúa su nombre, "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990" es su cantidad, "2 KG" o "250G" en el nombre es el contenido del envase y un monto negativo es un descuento del producto anterior, con su misma categoría. Después la IA solo escribe nombres legibles y elige alimento y categoría. Si las líneas no suman el TOTAL impreso, o el TOTAL no coincide con la compra, te avisa. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
     </div>
     <div class="panel mt"><h3>Precios por producto</h3><div id="finPrices"></div></div>
     <div class="grid g2 mt">
@@ -3331,6 +3331,8 @@ function finBase(it){
   if (it.qty === null || it.qty === undefined) return null;
   if (it.unit !== "un") return FIN_UNITS[it.unit] ? {v: it.qty * FIN_UNITS[it.unit], est: false} : null;
   if (it.each) return {v: it.qty * it.each, est: false};
+  // envase de boleta sin contenido impreso: sin estimación por porción
+  if (it.pkg) return null;
   const f = foodOf(it.foodId); return f && f.unitG ? {v: it.qty * f.unitG, est: true} : null;
 }
 // Calculados: amt (total del producto), g (gramos o ml), gEst, perKg ($ por kg o L) y rest (recibe lo que falta)
@@ -3350,7 +3352,8 @@ function finCalc(items, monto){
     const o = open[0]; o.amt = Math.max(0, monto - sum(out.filter(x => x !== o), x => x.amt)); o.rest = true;
     if (o.price && o.per && o.per !== "un" && (!o.g || o.gEst)){ o.g = o.amt / o.price * 1000; o.gEst = false; }
   }
-  for (const o of out) o.perKg = o.amt && o.g ? o.amt / o.g * 1000 : null;
+  // precio por kg o L con el monto neto: total del producto más sus descuentos (ítems con of = su índice)
+  out.forEach((o, i) => { const net = o.amt + sum(out.filter(x => x.of === i), x => x.amt); o.perKg = o.amt > 0 && o.g && net > 0 ? net / o.g * 1000 : null; });
   const tot = sum(out, o => o.amt);
   return {items: out, sum: tot, diff: monto - tot};
 }
@@ -3413,22 +3416,106 @@ function renderFinPrices(){
     return `<tr><td>${esc(r.name)}</td><td class="n">${fmtClp(last.v)}/${u}</td><td class="n">${fmtClp(min)}/${u}</td><td class="n">${r.pts.length}</td><td>${fmtShort(last.fecha)} <span class="small muted">${esc(last.comercio)}</span></td></tr>`;
   }).join("")}</tbody></table></div>` : `<p class="empty">Aún no hay precios. Aparecen al detallar compras con peso o volumen.</p>`);
 }
+/* Boleta: la IA transcribe las líneas tal cual; finParseReceipt() las interpreta sin IA.
+   Producto: línea con monto al final (y código de barras opcional al inicio). Línea sin monto ni código: continúa el nombre anterior.
+   Línea con código y sin monto: nombre cuyo monto viene en la línea siguiente. Monto negativo: descuento del producto anterior.
+   "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990": cantidad y precio del producto anterior. "2 KG", "250G", "1 L" en el nombre: contenido por envase.
+   Termina en la línea TOTAL. */
+const RC_PRICE = /(-)?\s*\$\s*(-)?\s*(\d{1,3}(?:\.\d{3})+|\d+)\s*$/;
+const RC_CODE = /^\d{4,14}\s+/;
+const RC_MULT = /^(\d+(?:[.,]\d+)?)\s*(kg|k|un|u)?\s*x\s*(?:\d+\s*(?:un|u)\s*)?\$?\s*(\d{1,3}(?:\.\d{3})+|\d+)/i;
+const RC_SIZE = /(\d+(?:[.,]\d+)?)\s*(kg|kilo|gr|g|lt|l|ml|cc)\b/i;
+const RC_SKIP = /^(neto|iva|subtotal|sub total|vuelto|tarjeta|efectivo|detalle de pagos|desglose)/i;
+const rcNum = s => Number(String(s).replace(/\./g, ""));
+function rcSize(name){
+  const m = name.match(RC_SIZE); if (!m) return {each: null, eachUnit: "g"};
+  const v = parseFloat(m[1].replace(",", ".")), u = m[2].toLowerCase();
+  return ["kg", "kilo"].includes(u) ? {each: v * 1000, eachUnit: "g"} : ["lt", "l"].includes(u) ? {each: v * 1000, eachUnit: "ml"} : ["ml", "cc"].includes(u) ? {each: v, eachUnit: "ml"} : {each: v, eachUnit: "g"};
+}
+function finParseReceipt(lines){
+  const items = [], prod = name => ({name, qty: 1, unit: "un", ...rcSize(name), price: null, per: null, total: null, disc: false, of: null});
+  let total = null, pending = null, lastP = -1;
+  for (const raw of lines){
+    const s = String(raw || "").replace(/\s+/g, " ").trim(); if (!s) continue;
+    if (/^total\b/i.test(s) && !/^total\s+(items|art|ahorro|pagos)/i.test(s)){ const p = s.match(RC_PRICE); if (p){ total = rcNum(p[3]); break; } continue; }
+    if (RC_SKIP.test(s)) continue;
+    const pm = s.match(RC_PRICE), hasCode = RC_CODE.test(s);
+    const body = (pm ? s.slice(0, pm.index) : s).replace(RC_CODE, "").trim();
+    const mult = body.match(RC_MULT) || (!pm ? s.match(RC_MULT) : null);
+    const isDetail = mult && !/[a-zñ]{3,}/i.test(body.replace(/\b(kg|un|c\/u|x)\b/gi, ""));
+    // nombre pendiente (línea con código sin monto) seguido de su línea de cantidad
+    if (isDetail && pending){ items.push(prod(pending)); pending = null; lastP = items.length - 1; }
+    if (isDetail && lastP >= 0){
+      const it = items[lastP], kg = /^k/i.test(mult[2] || "");
+      it.qty = parseFloat(mult[1].replace(",", ".")); it.unit = kg ? "kg" : "un"; it.price = rcNum(mult[3]); it.per = kg ? "kg" : "un";
+      if (kg){ it.each = null; }
+      if (pm && it.total === null) it.total = rcNum(pm[3]);
+      continue;
+    }
+    if (pm){
+      const v = rcNum(pm[3]) * (pm[1] || pm[2] ? -1 : 1);
+      if (v < 0){ items.push({name: body || "Descuento", qty: null, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: v, disc: true, of: lastP >= 0 ? lastP : null}); continue; }
+      if (!body && pending){ items.push({...prod(pending), total: v}); pending = null; lastP = items.length - 1; continue; }
+      if (!body && lastP >= 0 && items[lastP].total === null){ items[lastP].total = v; continue; }
+      items.push({...prod(body), total: v}); lastP = items.length - 1; continue;
+    }
+    if (hasCode){ pending = body; continue; }
+    // continuación del nombre del último producto
+    if (lastP >= 0 && /[a-zñ]{2,}/i.test(body)){ const it = items[lastP]; it.name += " " + body; if (!it.each && it.unit === "un") Object.assign(it, rcSize(it.name)); }
+  }
+  return {items, total};
+}
+async function finReceiptItems(m, photos, note){
+  const t = await S.sample.json(`Transcribe esta boleta chilena línea por línea, tal como está impresa, desde la primera línea de productos hasta la línea TOTAL, inclusive.
+Reglas:
+- Una entrada por línea impresa, en orden. No juntes ni separes líneas.
+- Copia el código de barras, el texto y el monto de cada línea tal cual (por ejemplo "7801505002659 AZUCAR GRANULADA B $2690" o "Club Unimarc IANS $-600").
+- No interpretes, no corrijas, no calcules y no agregues nada. Si algo no se lee, escribe lo que se alcance a leer.
+Responde solo con este JSON: {"lines": [string]}`, {modelTier: "default", maxTokens: 3000, images: photos});
+  const rec = finParseReceipt(Array.isArray(t.lines) ? t.lines : []);
+  if (!rec.items.length) return {items: [], total: rec.total};
+  const prods = rec.items.map((it, i) => ({i, linea: it.name, desc: it.disc})).filter(x => !x.desc).map(({i, linea}) => ({i, linea}));
+  const r = await S.sample.json(`Estos productos vienen de una boleta de ${m.comercio}, con nombres abreviados.
+Mis alimentos: ${JSON.stringify(foodsForPrompt())}
+Para cada producto:
+- name: nombre completo y legible en español ("TIRITAS POLLO FUND" es "Tiritas de pollo", "LECHE S LACTOSA DE" es "Leche sin lactosa descremada"). Sin códigos ni montos.
+- foodId: id del alimento de la lista que es ese producto; si hay versión cruda o seca, elige esa; si no está, null.
+- cat: una de ${JSON.stringify(FIN_CATS)}.
+${note ? `Nota de la persona: ${note}\n` : ""}Productos: ${JSON.stringify(prods)}
+Responde solo con este JSON: {"items": [{"i": number, "name": string, "foodId": string o null, "cat": string}]}`, {modelTier: "default", maxTokens: 2000});
+  const byI = new Map((Array.isArray(r.items) ? r.items : []).map(x => [x && x.i, x || {}]));
+  const items = rec.items.map((it, i) => {
+    const x = byI.get(i) || {};
+    return {name: typeof x.name === "string" && x.name.trim() ? x.name.trim() : it.name, foodId: foodOf(x.foodId) ? x.foodId : null,
+      qty: it.qty, unit: it.unit, each: it.each, eachUnit: it.eachUnit, price: it.price, per: it.per, total: it.total, cat: FIN_CATS.includes(x.cat) ? x.cat : "", of: it.disc ? it.of : null, pkg: it.unit === "un"};
+  });
+  // cada descuento toma la categoría del producto al que se aplica
+  rec.items.forEach((it, i) => { if (it.disc && it.of !== null){ items[i].cat = items[it.of].cat; items[i].name = "Descuento " + items[it.of].name.toLowerCase(); } });
+  return {items, total: rec.total};
+}
 async function finDetAI(){
   const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), text = $("#finDetText").value.trim(), photos = [...$("#finDetPhoto").files];
   if (!m) return;
   if (!text && !photos.length){ toast("Escribe qué compraste o sube la foto de la boleta."); return; }
   const st = $("#finDetStatus"); st.innerHTML = `<span class="spin"></span> ${photos.length ? "Leyendo la boleta…" : "Separando…"}`;
-  const src = photos.length ? (text ? "en la boleta de la foto y en el texto" : "en la boleta de la foto") : "en el texto";
+  if (photos.length){
+    try {
+      const {items, total} = await finReceiptItems(m, photos.slice(0, 3), text);
+      if (!items.length){ st.textContent = "No pude leer productos en la foto. Prueba con una foto más nítida y derecha, o escribe el detalle."; return; }
+      const s = sum(items, it => it.total || 0), warn = [];
+      if (total !== null && Math.abs(s - total) >= 1) warn.push(`Las líneas suman ${fmtClp(s)} y el TOTAL de la boleta dice ${fmtClp(total)}: alguna línea quedó mal leída.`);
+      if (total !== null && Math.abs(total - m.monto) >= 1) warn.push(`El TOTAL de la boleta (${fmtClp(total)}) no coincide con la compra (${fmtClp(m.monto)}): revisa que sea la boleta correcta.`);
+      S.finDraft = {...d, items}; st.textContent = [...warn, "Revisa los productos antes de guardar."].join(" ");
+      renderFinDet();
+    } catch (e) { st.textContent = aiErr(e); }
+    return;
+  }
   try {
     const r = await S.sample.json(`Separa en productos lo que compró esta persona. Compra: ${m.comercio}, ${m.fecha}, total ${m.monto} pesos chilenos.
 Mis alimentos: ${JSON.stringify(foodsForPrompt())}
 Reglas:
 - Un ítem por producto distinto.
-- Copia solo los números que aparecen ${src}; usa null si no están. No calcules ni estimes montos ni pesos.${photos.length ? `
-- Boleta: un ítem por línea de producto. Escribe el nombre completo y legible ("PLAT GRANEL" es "Plátano a granel"), sin códigos.
-- Boleta: "2 X 1.290" es qty 2, price 1290, per "un"; "0,845 KG X 1.990" es qty 0.845, unit "kg", price 1990, per "kg". El total del ítem es el monto de la línea.
-- Boleta: cada descuento es un ítem aparte con name "Descuento ..." y total negativo. Ignora subtotal, neto, IVA, total, vuelto, propina y medio de pago.
-- totalBoleta: el TOTAL impreso en la boleta, o null.` : ""}
+- Copia solo los números que aparecen en el texto; usa null si no están. No calcules ni estimes montos ni pesos.
 - En los montos chilenos el punto separa miles: "$2.100" es 2100.
 - qty y unit: cantidad comprada; unit es "un", "kg", "g", "L" o "ml". "8 plátanos" es qty 8, unit "un"; "1,5 kg de papas" es qty 1.5, unit "kg".
 - each y eachUnit: contenido de cada unidad si el texto lo dice, en "g" o "ml" ("bidón de 20 L" es each 20000, eachUnit "ml"); si no, null.
@@ -3437,19 +3524,17 @@ Reglas:
 - foodId: id del alimento de la lista que es ese producto; si hay versión cruda o seca, elige esa; si no está, null.
 - cat: una de ${JSON.stringify(FIN_CATS)}.
 Texto: ${text || "(solo foto)"}
-Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]${photos.length ? `, "totalBoleta": number o null` : ""}}`, {modelTier: "default", maxTokens: 3000, ...(photos.length ? {images: photos} : {})});
+Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]}`, {modelTier: "default"});
     const items = finItemsFromAI(r.items);
-    if (!items.length){ st.textContent = photos.length ? "No pude leer productos en la foto. Prueba con una foto más nítida y derecha, o escribe el detalle." : "No pude identificar productos. Escribe el detalle con más precisión."; return; }
-    const tb = typeof r.totalBoleta === "number" && isFinite(r.totalBoleta) ? r.totalBoleta : null;
-    S.finDraft = {...d, items};
-    st.textContent = (tb !== null && Math.abs(tb - m.monto) >= 1 ? `El total de la boleta (${fmtClp(tb)}) no coincide con el de la compra (${fmtClp(m.monto)}): revisa que sea la boleta correcta. ` : "") + "Revisa cantidades y precios antes de guardar.";
+    if (!items.length){ st.textContent = "No pude identificar productos. Escribe el detalle con más precisión."; return; }
+    S.finDraft = {...d, items}; st.textContent = "Revisa cantidades y precios antes de guardar.";
     renderFinDet();
   } catch (e) { st.textContent = aiErr(e); }
 }
 function finDetSave(){
   const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id); if (!m) return;
   const c = finCalc(d.items, m.monto);
-  const items = c.items.map(({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, amt, g, gEst, perKg, rest}) => ({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, amt, g, gEst, perKg, rest}));
+  const items = c.items.map(({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, of, pkg, amt, g, gEst, perKg, rest}) => ({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, of: of ?? null, pkg: !!pkg, amt, g, gEst, perKg, rest}));
   const doc = {text: $("#finDetText").value.trim(), items};
   S.movDet[m.id] = doc; S.finDraft = null; finDetClearPhoto(); renderFin();
   Store.write("movdet/" + encodeURIComponent(m.id), doc);
@@ -4850,7 +4935,13 @@ const actions = {
   "fin-det-close": () => { S.finDraft = null; finDetClearPhoto(); renderFinDet(); },
   "fin-det-ai": () => finDetAI(),
   "fin-det-add": () => { if (!S.finDraft) return; S.finDraft.items.push({name: "Producto", foodId: null, qty: null, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: null, cat: ""}); renderFinDet(); },
-  "fin-det-del": el => { if (!S.finDraft) return; S.finDraft.items.splice(+el.dataset.i, 1); renderFinDet(); },
+  "fin-det-del": el => {
+    if (!S.finDraft) return;
+    const k = +el.dataset.i; S.finDraft.items.splice(k, 1);
+    // descuentos ligados: se corrige el índice o se sueltan si su producto se quitó
+    for (const it of S.finDraft.items) if (it.of != null) it.of = it.of === k ? null : it.of > k ? it.of - 1 : it.of;
+    renderFinDet();
+  },
   "fin-det-save": () => finDetSave(),
   "fin-inbox-ok": el => finMarkReviewed([el.dataset.id]),
   "fin-inbox-all": () => finMarkReviewed(S.movs.filter(m => !m.revisado).map(m => m.id)),
