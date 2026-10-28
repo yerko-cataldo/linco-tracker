@@ -1172,10 +1172,10 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     <div class="panel mt" id="finDetPanel" hidden>
       <div class="item-head"><h3 id="finDetHead">Detalle de la compra</h3><span class="act"><button class="btn ghost small" data-action="fin-det-close">Cerrar</button></span></div>
       <div class="field"><span class="sr">Qué compraste</span><textarea id="finDetText" rows="2" placeholder="3 bidones de agua de 20 L, 8 plátanos a $2.100 el kg"></textarea></div>
-      <div class="row" style="margin-top:10px"><button class="btn primary ai-only" data-action="fin-det-ai" hidden>Separar con IA</button><button class="btn" data-action="fin-det-add">Agregar producto</button><span class="small muted" id="finDetStatus"></span></div>
+      <div class="row" style="margin-top:10px"><label class="btn ai-only" hidden>Foto de la boleta<input type="file" id="finDetPhoto" accept="image/*" multiple class="sr"></label><span class="small muted" id="finDetPhotoName"></span><button class="btn primary ai-only" data-action="fin-det-ai" hidden>Separar con IA</button><button class="btn" data-action="fin-det-add">Agregar producto</button><span class="small muted" id="finDetStatus"></span></div>
       <div id="finDetItems" class="mt"></div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-action="fin-det-save">Guardar detalle</button></div>
-      <p class="small muted" style="margin:10px 0 0">La IA solo separa los productos y copia los números que escribiste. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
+      <p class="small muted" style="margin:10px 0 0">La IA solo separa los productos y copia los números que escribiste o que lee en la boleta (hasta 3 fotos para una boleta larga; los descuentos quedan como productos con total negativo, y si el total impreso no coincide con el de la compra, te avisa). El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
     </div>
     <div class="panel mt"><h3>Precios por producto</h3><div id="finPrices"></div></div>
     <div class="grid g2 mt">
@@ -3358,15 +3358,18 @@ function finDetSummary(m){
   const items = (S.movDet[m.id] || {}).items || [];
   return items.length ? `<div class="small muted">${items.map(it => esc(it.name)).join(", ")}</div>` : "";
 }
+function finDetClearPhoto(){ $("#finDetPhoto").value = ""; $("#finDetPhotoName").textContent = ""; }
+// Valida la respuesta de la IA; el total puede ser negativo (descuentos de la boleta)
 function finItemsFromAI(list){
   const n = v => typeof v === "number" && isFinite(v) && v >= 0 ? v : null;
+  const signed = v => typeof v === "number" && isFinite(v) ? v : null;
   return (Array.isArray(list) ? list : []).filter(x => x && typeof x.name === "string" && x.name.trim()).map(x => ({
     name: x.name.trim(),
     foodId: foodOf(x.foodId) ? x.foodId : null,
     qty: n(x.qty), unit: x.unit in FIN_UNITS ? x.unit : "un",
     each: n(x.each), eachUnit: x.eachUnit === "ml" ? "ml" : "g",
     price: n(x.price), per: FIN_PER.includes(x.per) ? x.per : null,
-    total: n(x.total), cat: FIN_CATS.includes(x.cat) ? x.cat : ""
+    total: signed(x.total), cat: FIN_CATS.includes(x.cat) ? x.cat : ""
   }));
 }
 function renderFinDet(){
@@ -3388,7 +3391,7 @@ function renderFinDet(){
       <td><button class="btn ghost small danger" data-action="fin-det-del" data-i="${i}" aria-label="Quitar ${esc(it.name)}">Quitar</button></td>
     </tr>`).join("")}</tbody></table></div>
     <p class="small" style="margin:10px 0 0">Suma de productos: <strong>${fmtClp(c.sum)}</strong> de ${fmtClp(m.monto)}${Math.abs(c.diff) >= 1 ? `; <span style="color:var(--danger)">${c.diff > 0 ? "faltan" : "sobran"} ${fmtClp(Math.abs(c.diff))}</span>` : ", cuadra"}.</p>`
-    : `<p class="empty">Sin productos. Escribe qué compraste y sepáralo con IA, o agrégalos a mano.</p>`);
+    : `<p class="empty">Sin productos. Escribe qué compraste o sube la foto de la boleta y sepáralo con IA, o agrégalos a mano.</p>`);
 }
 // Historial de precios por kg o litro de cada producto, con pesos exactos (no estimados)
 function finPriceRows(){
@@ -3411,16 +3414,21 @@ function renderFinPrices(){
   }).join("")}</tbody></table></div>` : `<p class="empty">Aún no hay precios. Aparecen al detallar compras con peso o volumen.</p>`);
 }
 async function finDetAI(){
-  const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), text = $("#finDetText").value.trim();
+  const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), text = $("#finDetText").value.trim(), photos = [...$("#finDetPhoto").files];
   if (!m) return;
-  if (!text){ toast("Escribe qué compraste."); return; }
-  const st = $("#finDetStatus"); st.innerHTML = `<span class="spin"></span> Separando…`;
+  if (!text && !photos.length){ toast("Escribe qué compraste o sube la foto de la boleta."); return; }
+  const st = $("#finDetStatus"); st.innerHTML = `<span class="spin"></span> ${photos.length ? "Leyendo la boleta…" : "Separando…"}`;
+  const src = photos.length ? (text ? "en la boleta de la foto y en el texto" : "en la boleta de la foto") : "en el texto";
   try {
     const r = await S.sample.json(`Separa en productos lo que compró esta persona. Compra: ${m.comercio}, ${m.fecha}, total ${m.monto} pesos chilenos.
 Mis alimentos: ${JSON.stringify(foodsForPrompt())}
 Reglas:
 - Un ítem por producto distinto.
-- Copia solo los números que aparecen en el texto; usa null si no están. No calcules ni estimes montos ni pesos.
+- Copia solo los números que aparecen ${src}; usa null si no están. No calcules ni estimes montos ni pesos.${photos.length ? `
+- Boleta: un ítem por línea de producto. Escribe el nombre completo y legible ("PLAT GRANEL" es "Plátano a granel"), sin códigos.
+- Boleta: "2 X 1.290" es qty 2, price 1290, per "un"; "0,845 KG X 1.990" es qty 0.845, unit "kg", price 1990, per "kg". El total del ítem es el monto de la línea.
+- Boleta: cada descuento es un ítem aparte con name "Descuento ..." y total negativo. Ignora subtotal, neto, IVA, total, vuelto, propina y medio de pago.
+- totalBoleta: el TOTAL impreso en la boleta, o null.` : ""}
 - En los montos chilenos el punto separa miles: "$2.100" es 2100.
 - qty y unit: cantidad comprada; unit es "un", "kg", "g", "L" o "ml". "8 plátanos" es qty 8, unit "un"; "1,5 kg de papas" es qty 1.5, unit "kg".
 - each y eachUnit: contenido de cada unidad si el texto lo dice, en "g" o "ml" ("bidón de 20 L" es each 20000, eachUnit "ml"); si no, null.
@@ -3428,11 +3436,13 @@ Reglas:
 - total: lo pagado por ese producto, solo si el texto lo dice.
 - foodId: id del alimento de la lista que es ese producto; si hay versión cruda o seca, elige esa; si no está, null.
 - cat: una de ${JSON.stringify(FIN_CATS)}.
-Texto: ${text}
-Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]}`, {modelTier: "default"});
+Texto: ${text || "(solo foto)"}
+Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]${photos.length ? `, "totalBoleta": number o null` : ""}}`, {modelTier: "default", maxTokens: 3000, ...(photos.length ? {images: photos} : {})});
     const items = finItemsFromAI(r.items);
-    if (!items.length){ st.textContent = "No pude identificar productos. Escribe el detalle con más precisión."; return; }
-    S.finDraft = {...d, items}; st.textContent = "Revisa cantidades y precios antes de guardar.";
+    if (!items.length){ st.textContent = photos.length ? "No pude leer productos en la foto. Prueba con una foto más nítida y derecha, o escribe el detalle." : "No pude identificar productos. Escribe el detalle con más precisión."; return; }
+    const tb = typeof r.totalBoleta === "number" && isFinite(r.totalBoleta) ? r.totalBoleta : null;
+    S.finDraft = {...d, items};
+    st.textContent = (tb !== null && Math.abs(tb - m.monto) >= 1 ? `El total de la boleta (${fmtClp(tb)}) no coincide con el de la compra (${fmtClp(m.monto)}): revisa que sea la boleta correcta. ` : "") + "Revisa cantidades y precios antes de guardar.";
     renderFinDet();
   } catch (e) { st.textContent = aiErr(e); }
 }
@@ -3441,7 +3451,7 @@ function finDetSave(){
   const c = finCalc(d.items, m.monto);
   const items = c.items.map(({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, amt, g, gEst, perKg, rest}) => ({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, amt, g, gEst, perKg, rest}));
   const doc = {text: $("#finDetText").value.trim(), items};
-  S.movDet[m.id] = doc; S.finDraft = null; renderFin();
+  S.movDet[m.id] = doc; S.finDraft = null; finDetClearPhoto(); renderFin();
   Store.write("movdet/" + encodeURIComponent(m.id), doc);
   toast("Detalle guardado.");
 }
@@ -4834,10 +4844,10 @@ const actions = {
   "fin-det": el => {
     const saved = S.movDet[el.dataset.id];
     S.finDraft = {id: el.dataset.id, items: clone((saved && saved.items) || [])};
-    $("#finDetText").value = (saved && saved.text) || ""; $("#finDetStatus").textContent = "";
+    $("#finDetText").value = (saved && saved.text) || ""; $("#finDetStatus").textContent = ""; finDetClearPhoto();
     renderFinDet(); $("#finDetPanel").scrollIntoView({behavior: "smooth", block: "start"});
   },
-  "fin-det-close": () => { S.finDraft = null; renderFinDet(); },
+  "fin-det-close": () => { S.finDraft = null; finDetClearPhoto(); renderFinDet(); },
   "fin-det-ai": () => finDetAI(),
   "fin-det-add": () => { if (!S.finDraft) return; S.finDraft.items.push({name: "Producto", foodId: null, qty: null, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: null, cat: ""}); renderFinDet(); },
   "fin-det-del": el => { if (!S.finDraft) return; S.finDraft.items.splice(+el.dataset.i, 1); renderFinDet(); },
@@ -5558,6 +5568,7 @@ function wireUI(){
   ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => { const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur(); saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: t.value}}; }); }));
   $("#finCatBudgets").addEventListener("change", e => { const c = e.target.dataset.catbud; if (!c) return; const v = clp(e.target.value); saveLib("fin", () => { const f = finCfg(), b = {...f.catBudgets}; if (v > 0) b[c] = Math.round(v); else delete b[c]; return {...f, catBudgets: b}; }); });
   $("#cartolaFile").addEventListener("change", e => importCartola(e.target.files[0]));
+  $("#finDetPhoto").addEventListener("change", e => { const f = [...e.target.files].slice(0, 3); $("#finDetPhotoName").textContent = f.map(x => x.name).join(", ") + (e.target.files.length > 3 ? " (solo se leen las 3 primeras)" : ""); });
   $("#finRuleCat").innerHTML = FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
   $("#finCatF").innerHTML = `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>` + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
   $("#finQ").addEventListener("input", renderFinList);
