@@ -372,6 +372,7 @@ nav.tabs button[data-tab=bajo][aria-selected=true] .ico{color:var(--bass)}
 nav.tabs button[data-tab=estudio][aria-selected=true] .ico{color:var(--study)}
 nav.tabs button[data-tab=finanzas][aria-selected=true] .ico{color:var(--fin)}
 .c-ink{--c:var(--ink)}.c-fin{--c:var(--fin)}
+.fincum rect.hit:hover{fill:var(--hl);fill-opacity:.7}
 .nbadge{margin-left:6px;padding:0 7px;border-radius:999px;background:var(--fin);color:var(--surface);font-size:.72rem;font-weight:700;line-height:1.5}
 .page-head{display:flex;gap:16px;align-items:center;margin-bottom:24px}
 .page-head h2{margin:0}
@@ -1116,9 +1117,11 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div id="finInbox"></div>
       <p class="small muted" style="margin:10px 0 0">Al marcar una compra como revisada, su categoría queda guardada para ese comercio.</p>
     </div>
-    <div class="panel mt">
-      <div class="item-head"><h3 id="finMonthLbl"></h3><span class="act"><button class="btn small" data-action="fin-prev" aria-label="Mes anterior">‹</button><button class="btn small" data-action="fin-next" aria-label="Mes siguiente">›</button></span></div>
-      <div id="finSummary"></div>
+    <div class="item-head mt"><h3 id="finMonthLbl"></h3><span class="act"><button class="btn small" data-action="fin-prev" aria-label="Mes anterior">‹</button><button class="btn small" data-action="fin-next" aria-label="Mes siguiente">›</button></span></div>
+    <div class="grid g4" id="finKpis"></div>
+    <div class="grid g2 mt">
+      <div class="panel"><h3>Gasto acumulado</h3><div id="finCum"></div></div>
+      <div class="panel"><h3>Resumen</h3><div id="finSummary"></div></div>
     </div>
     <div class="grid g2 mt">
       <div class="panel">
@@ -1140,7 +1143,22 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
       <div class="panel"><h3>Gastos recurrentes</h3><div id="finRecur"></div></div>
     </div>
-    <div class="panel mt"><h3>Movimientos</h3><div id="finList"></div></div>
+    <div class="grid g2 mt">
+      <div class="panel"><h3>Tendencia por categoría</h3><div id="finTrend"></div></div>
+      <div class="panel"><h3>Dónde gastas</h3><div id="finMerch"></div></div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="panel"><h3>Patrones</h3><div id="finPattern"></div></div>
+      <div class="panel"><h3>Fuera de lo normal</h3><div id="finAnom"></div><p class="small muted" style="margin:8px 0 0">Compras de más de 2,5 veces lo habitual en ese comercio (con 3 compras previas o más) o de más de 3 veces una compra típica de su categoría (con 5 o más, y solo si la categoría la elegiste tú: por comercio o con una regla).</p></div>
+    </div>
+    <div class="panel mt">
+      <h3>Movimientos</h3>
+      <div class="row" style="margin-bottom:10px">
+        <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
+        <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
+      </div>
+      <div id="finList"></div>
+    </div>
     <div class="panel mt" id="finDetPanel" hidden>
       <div class="item-head"><h3 id="finDetHead">Detalle de la compra</h3><span class="act"><button class="btn ghost small" data-action="fin-det-close">Cerrar</button></span></div>
       <div class="field"><span class="sr">Qué compraste</span><textarea id="finDetText" rows="2" placeholder="3 bidones de agua de 20 L, 8 plátanos a $2.100 el kg"></textarea></div>
@@ -2053,7 +2071,7 @@ function fillSelect(sel, opts, placeholder){
 }
 function renderAll(){
   setVal("#datePick", S.date);
-  renderStaff(); renderRank(); renderKpis(); renderHeat(); renderNutrition(); renderAct(); renderBass(); renderStudy(); renderFin(); renderCoach(); renderProfile();
+  renderStaff(); renderRank(); renderKpis(); renderHeat(); renderNutrition(); renderAct(); renderBass(); renderStudy(); if (S.tab === "finanzas") renderFin(); else renderFinBadge(); renderCoach(); renderProfile();
 }
 
 /* Tablatura semanal: 4 cuerdas, traste 12 = meta */
@@ -2731,12 +2749,18 @@ const finCfg = () => Object.assign({budget: null, cats: {}, rules: [], catBudget
 const finKey = s => norm(s).replace(/[^a-z0-9]/g, "");
 const finTokens = s => norm(s).replace(/^(merpago\*?|payu\s+|mp\s*\*)/, "").split(/[^a-z0-9]+/).filter(t => t.length >= 4 && !["compras", "ltda", "chile"].includes(t));
 const finCatMap = () => { const o = {}; for (const [k, v] of Object.entries(finCfg().cats)) if (v) o[finKey(k)] = v; return o; };
-// Categoría y su origen: comercio, regla, sugerida (comercios parecidos ya categorizados) o banco
+// Nombres cortados por el banco: un nombre es prefijo del otro (8 letras o más)
+const finSameMerchant = (a, b) => a === b || (Math.min(a.length, b.length) >= 8 && (a.startsWith(b) || b.startsWith(a)));
+// Categoría y su origen: comercio, regla, sugerida (comercios parecidos ya categorizados) o banco.
+// Caché por movimiento; se vacía en cada renderFin().
+let FIN_CAT_CACHE = new Map();
 function finCatInfo(m){
+  if (FIN_CAT_CACHE.has(m)) return FIN_CAT_CACHE.get(m);
+  const r = finCatInfoCalc(m); FIN_CAT_CACHE.set(m, r); return r;
+}
+function finCatInfoCalc(m){
   const map = finCatMap(), k = finKey(m.comercio);
-  if (map[k]) return {cat: map[k], src: "comercio"};
-  // nombres cortados por el banco: un nombre es prefijo del otro (8 letras o más)
-  const pre = Object.keys(map).find(x => Math.min(x.length, k.length) >= 8 && (x.startsWith(k) || k.startsWith(x)));
+  const pre = Object.keys(map).find(x => finSameMerchant(x, k));
   if (pre) return {cat: map[pre], src: "comercio"};
   const rule = (finCfg().rules || []).find(r => r.pat && k.includes(finKey(r.pat)));
   if (rule) return {cat: rule.cat, src: "regla"};
@@ -2744,7 +2768,9 @@ function finCatInfo(m){
   for (const t of finTokens(m.comercio)) for (const [x, c] of Object.entries(map)) if (x.includes(t)) votes[c] = (votes[c] || 0) + 1;
   const best = Object.entries(votes).sort((a, b) => b[1] - a[1])[0];
   if (best) return {cat: best[0], src: "sugerida"};
-  if (BANK_CATS[m.cat_banco]) return {cat: BANK_CATS[m.cat_banco], src: "banco"};
+  // categoría del banco: la del movimiento o la del mismo comercio en la cartola
+  const bank = m.cat_banco || (S.movs.find(x => x.cat_banco && finSameMerchant(finKey(x.comercio), k)) || {}).cat_banco;
+  if (BANK_CATS[bank]) return {cat: BANK_CATS[bank], src: "banco"};
   return {cat: "", src: ""};
 }
 const finCat = m => finCatInfo(m).cat;
@@ -2759,32 +2785,41 @@ const finMonth = () => S.finMonth || today().slice(0, 7);
 const shiftMonth = (ym, n) => { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
 const isPurchase = m => m.moneda === "CLP" && norm(m.tipo) === "compra";
 const fmtClp = x => "$" + fmt(x);
-function renderFin(){
-  if (SHARE) return;
+const finBuysOf = ym => S.movs.filter(m => m.fecha.startsWith(ym) && isPurchase(m));
+// Totales por categoría: cada producto detallado va a su categoría; lo no detallado, a la del comercio
+function finCatTotals(buys){
+  const o = {};
+  for (const m of buys){
+    const base = finCat(m) || "Sin categoría"; let rest = m.monto;
+    for (const it of (S.movDet[m.id] || {}).items || []){ if (!it.amt) continue; const c = it.cat || base; o[c] = (o[c] || 0) + it.amt; rest -= it.amt; }
+    if (rest > 0) o[base] = (o[base] || 0) + rest;
+  }
+  return o;
+}
+// Contexto del mes elegido: días, día de corte (hoy si es el mes en curso), gasto, comparación y proyección
+function finMonthCtx(){
   const ym = finMonth(), [y, mo] = ym.split("-").map(Number), t = today();
   const lastDay = new Date(y, mo, 0).getDate(), isCur = ym === t.slice(0, 7), dayCut = isCur ? +t.slice(8) : lastDay;
-  const inMonth = S.movs.filter(m => m.fecha.startsWith(ym)), buys = inMonth.filter(isPurchase);
-  const total = sum(buys, m => m.monto);
-  const prevYm = shiftMonth(ym, -1);
-  const prevSame = sum(S.movs.filter(m => m.fecha.startsWith(prevYm) && +m.fecha.slice(8) <= dayCut && isPurchase(m)), m => m.monto);
-  const daily = dayCut ? total / dayCut : 0, proj = isCur ? daily * lastDay : total;
+  const buys = finBuysOf(ym), total = sum(buys, m => m.monto), prevYm = shiftMonth(ym, -1);
+  const prevSame = sum(finBuysOf(prevYm).filter(m => +m.fecha.slice(8) <= dayCut), m => m.monto), daily = dayCut ? total / dayCut : 0;
+  return {ym, y, mo, lastDay, isCur, dayCut, buys, total, prevYm, prevSame, daily, proj: isCur ? daily * lastDay : total};
+}
+const fmtClpShort = v => Math.abs(v) >= 1e6 ? `$${fmt(v / 1e6, 1)} M` : Math.abs(v) >= 1e3 ? `$${fmt(v / 1e3)} mil` : fmtClp(v);
+function renderFin(){
+  if (SHARE) return;
+  FIN_CAT_CACHE = new Map();
+  const c = finMonthCtx(), {ym, lastDay, isCur, dayCut, buys, total, prevSame, daily, proj} = c;
   const vs = prevSame ? (total - prevSame) / prevSame * 100 : null;
-  $("#finMonthLbl").textContent = new Date(y, mo - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
+  $("#finMonthLbl").textContent = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
+  renderFinKpis(c); renderFinCum(c);
   setHTML($("#finSummary"), `<dl>
-    <dt>Gasto del mes</dt><dd>${fmtClp(total)}</dd>
     <dt>Compras</dt><dd>${fmt(buys.length)}</dd>
+    <dt>Ticket promedio</dt><dd>${buys.length ? fmtClp(total / buys.length) : "—"}</dd>
     <dt>Promedio diario</dt><dd>${fmtClp(daily)}</dd>
-    ${isCur ? `<dt>Proyección al cierre</dt><dd>${fmtClp(proj)}</dd>` : ""}
     <dt>Frente al mes anterior</dt><dd>${vs === null ? "—" : `${vs > 0 ? "+" : ""}${fmt(vs)}% (${fmtClp(prevSame)} al día ${dayCut})`}</dd>
   </dl>`);
 
-  // Por categoría: cada producto detallado va a su categoría; lo no detallado, a la del comercio
-  const byCat = {};
-  for (const m of buys){
-    const base = finCat(m) || "Sin categoría"; let rest = m.monto;
-    for (const it of (S.movDet[m.id] || {}).items || []){ if (!it.amt) continue; const c = it.cat || base; byCat[c] = (byCat[c] || 0) + it.amt; rest -= it.amt; }
-    if (rest > 0) byCat[base] = (byCat[base] || 0) + rest;
-  }
+  const byCat = finCatTotals(buys);
   const cfg = finCfg(), buds = cfg.catBudgets || {}, pace = dayCut / lastDay * 100;
   for (const c of Object.keys(buds)) if (buds[c] && !(c in byCat)) byCat[c] = 0;
   const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
@@ -2802,14 +2837,135 @@ function renderFin(){
   setVal("#finBudget", cfg.budget ?? "");
   setHTML($("#finBudgetInfo"), cfg.budget ? usageMeter("Gastado", total, cfg.budget, fmtClp, isCur ? `proyección al cierre: ${fmtClp(proj)}` : "") : `<p class="empty">Sin presupuesto definido.</p>`);
 
-  setHTML($("#finList"), inMonth.length ? `<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${inMonth.map(m => `<tr>
+  renderFinList();
+  renderFinTrend(c); renderFinMerch(c); renderFinPattern(c); renderFinAnom(c);
+  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinReview(); renderFinDet(); renderFinPrices();
+}
+/* KPI del mes: gasto frente al presupuesto, proyección, recurrentes y cuotas */
+function finKpi(title, big, sub, side = ""){
+  return `<div class="panel kpi c-fin"><h3><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg>${title}</h3><div class="kpi-top"><div class="big">${big}${sub ? `<div class="small muted" style="font-weight:500;letter-spacing:0">${sub}</div>` : ""}</div>${side}</div></div>`;
+}
+function renderFinKpis(c){
+  const b = finCfg().budget, rec = finRecurring(), inst = finInstallments(), over = b && c.total > b;
+  setHTML($("#finKpis"), [
+    finKpi("Gasto del mes", fmtClpShort(c.total), b ? `de ${fmtClp(b)}` : "sin presupuesto", b ? ring(c.total / b, over ? "var(--danger)" : "var(--c)", 58, 6, fmt(c.total / b * 100) + "%") : ""),
+    c.isCur ? finKpi("Proyección al cierre", fmtClpShort(c.proj), b ? (c.proj > b ? `${fmtClp(c.proj - b)} sobre el presupuesto` : `${fmtClp(b - c.proj)} bajo el presupuesto`) : `al ritmo de ${fmtClp(c.daily)} al día`)
+      : finKpi("Promedio diario", fmtClpShort(c.daily), `${c.lastDay} días`),
+    finKpi("Recurrentes al mes", fmtClpShort(sum(rec, r => r.monthly)), `${rec.length} ${rec.length === 1 ? "cobro" : "cobros"}`),
+    finKpi("Cuotas por pagar", fmtClpShort(sum(inst, g => g.pending)), `${inst.length} ${inst.length === 1 ? "compra" : "compras"}`)
+  ].join(""));
+}
+
+/* Gasto acumulado día a día: este mes, el mes anterior y el ritmo del presupuesto (recta de 0 al tope) */
+function finCumSeries(c){
+  const acc = list => { const a = new Array(32).fill(0); for (const m of list) a[+m.fecha.slice(8)] += m.monto; for (let i = 1; i < 32; i++) a[i] += a[i - 1]; return a; };
+  return {cur: acc(c.buys), prev: acc(finBuysOf(c.prevYm)), prevLast: new Date(c.y, c.mo - 1, 0).getDate(), end: c.dayCut, b: finCfg().budget};
+}
+function finCumChart(c, width){
+  const {cur, prev, prevLast, end, b} = finCumSeries(c), n = c.lastDay;
+  const W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 200 : 240, L = 56, R = 86, T = 14, B = 26;
+  const top = Math.max(cur[end], prev[Math.min(prevLast, n)], c.isCur ? c.proj : 0, b || 0, 1);
+  const raw = top / 4, p10 = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 2.5, 5, 10].map(k => k * p10).find(k => k >= raw), max = Math.ceil(top * 1.04 / step) * step;
+  const x = d => L + (W - L - R) * (d - 1) / Math.max(1, n - 1), y = v => T + (H - T - B) * (1 - v / max);
+  const line = (a, from, to) => Array.from({length: to - from + 1}, (_, i) => `${x(from + i).toFixed(1)},${y(a[from + i]).toFixed(1)}`).join(" ");
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gasto acumulado del mes, mes anterior${b ? " y ritmo del presupuesto" : ""}" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  for (let v = 0; v <= max + 1e-9; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmtClpShort(v)}</text>`;
+  for (const d of [1, 8, 15, 22, n]) s += `<text x="${x(d)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${d}</text>`;
+  for (let d = 1; d <= n; d++) s += `<rect class="hit" x="${x(d) - (W - L - R) / n / 2}" y="${T}" width="${(W - L - R) / n}" height="${H - T - B}" fill="transparent"><title>Día ${d}: ${d <= end ? fmtClp(cur[d]) + " este mes" : "aún no llega"}${d <= prevLast ? `; ${fmtClp(prev[d])} el mes anterior` : ""}${b ? `; ritmo ${fmtClp(b * d / n)}` : ""}</title></rect>`;
+  if (b) s += `<line x1="${x(1)}" y1="${y(b / n)}" x2="${x(n)}" y2="${y(b)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="5 4"/><text x="${x(n) + 6}" y="${y(b) + 4}" font-size="11" fill="var(--muted)">tope ${fmtClpShort(b)}</text>`;
+  const pe = Math.min(prevLast, n);
+  if (prev[pe]) s += `<polyline points="${line(prev, 1, pe)}" fill="none" stroke="var(--muted)" stroke-opacity=".8" stroke-width="1.6" stroke-linejoin="round"/>`;
+  if (c.isCur && end < n) s += `<line x1="${x(end)}" y1="${y(cur[end])}" x2="${x(n)}" y2="${y(c.proj)}" stroke="var(--fin)" stroke-width="2.2" stroke-dasharray="1.5 5" stroke-linecap="round"/><text x="${x(n) + 6}" y="${y(c.proj) + 4}" font-size="11" font-weight="600" fill="var(--ink)">${fmtClpShort(c.proj)}</text>`;
+  s += `<polyline points="${line(cur, 1, end)}" fill="none" stroke="var(--fin)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s += `<circle cx="${x(end)}" cy="${y(cur[end])}" r="4" fill="var(--fin)" stroke="var(--surface)" stroke-width="2"/><text x="${x(end) + (c.isCur && end < n ? -8 : 8)}" y="${y(cur[end]) - 9}" text-anchor="${c.isCur && end < n ? "end" : "start"}" font-size="12" font-weight="700" fill="var(--ink)">${fmtClpShort(cur[end])}</text>`;
+  return s + "</svg>";
+}
+function renderFinCum(c){
+  const el = $("#finCum"); if (!el) return;
+  const {cur, prev, end, b} = finCumSeries(c), n = c.lastDay;
+  const rows = [7, 14, 21, 28, n].filter((d, i, a) => d <= n && a.indexOf(d) === i);
+  setHTML(el, `<div class="wchart fincum">${finCumChart(c, el.clientWidth)}</div>
+    <div class="gw-legend" style="margin:8px 0 0"><span><i style="background:var(--fin)"></i>Este mes${c.isCur ? " (punteado: proyección)" : ""}</span><span><i style="background:var(--muted)"></i>Mes anterior</span>${b ? `<span><i style="background:var(--ink);opacity:.55"></i>Ritmo del presupuesto</span>` : ""}</div>
+    <details class="mt"><summary class="small">Ver como tabla</summary><div class="scroll"><table><thead><tr><th>Al día</th><th class="n">Este mes</th><th class="n">Mes anterior</th>${b ? `<th class="n">Ritmo</th>` : ""}</tr></thead><tbody>${rows.map(d => `<tr><td>${d}</td><td class="n">${d <= end ? fmtClp(cur[d]) : "—"}</td><td class="n">${fmtClp(prev[Math.min(d, 31)])}</td>${b ? `<td class="n">${fmtClp(b * d / n)}</td>` : ""}</tr>`).join("")}</tbody></table></div></details>`);
+}
+
+/* Tendencia por categoría: últimos 6 meses; el mes en curso se compara proyectado */
+function renderFinTrend(c){
+  const months = [5, 4, 3, 2, 1, 0].map(i => shiftMonth(c.ym, -i)), tot = months.map(ym => finCatTotals(finBuysOf(ym)));
+  const has = tot.map(o => Object.values(o).some(v => v > 0)), k = c.isCur ? c.lastDay / c.dayCut : 1;
+  const prior = [2, 3, 4].filter(i => has[i]);
+  const rows = [...new Set(tot.flatMap(o => Object.keys(o)))].map(cat => {
+    const vals = tot.map(o => o[cat] || 0), avg = prior.length ? sum(prior, i => vals[i]) / prior.length : null, now = vals[5] * k;
+    return {cat, vals, avg, var: avg ? (now - avg) / avg * 100 : null};
+  }).filter(r => r.vals.some(v => v)).sort((a, b) => b.vals[5] - a.vals[5] || sum(b.vals, v => v) - sum(a.vals, v => v));
+  const mlab = ym => new Date(+ym.slice(0, 4), +ym.slice(5) - 1, 1).toLocaleDateString("es-CL", {month: "short"}).replace(".", "");
+  setHTML($("#finTrend"), rows.length ? `<div class="scroll"><table><thead><tr><th>Categoría</th><th>6 meses</th><th class="n">${esc(mlab(c.ym))}</th><th class="n">Promedio 3 meses</th><th class="n">Variación</th></tr></thead><tbody>${rows.map(r => `<tr>
+      <td>${esc(r.cat)}</td><td>${sparkline(r.vals, "var(--fin)")}</td><td class="n">${fmtClp(r.vals[5])}</td>
+      <td class="n">${r.avg === null ? "—" : fmtClp(r.avg)}</td>
+      <td class="n"${r.var !== null && r.var > 20 ? ` style="color:var(--danger)"` : ""}>${r.var === null ? "—" : `${r.var > 0 ? "+" : ""}${fmt(r.var)}%`}</td></tr>`).join("")}</tbody></table></div>
+    <p class="small muted" style="margin:8px 0 0">El promedio usa los 3 meses anteriores al elegido que tienen compras${prior.length ? "" : " (aún no hay)"}.${c.isCur ? ` La variación del mes en curso usa su proyección: lo gastado × ${c.lastDay} / ${c.dayCut} días.` : ""} En rojo, alzas sobre 20%.</p>`
+    : `<p class="empty">Sin compras en los últimos 6 meses.</p>`);
+}
+
+/* Comercios del mes: total, visitas y ticket promedio */
+function renderFinMerch(c){
+  const by = {};
+  for (const m of c.buys){ const k = finKey(m.comercio), g = by[k] || (by[k] = {name: m.comercio, n: 0, total: 0}); g.n++; g.total += m.monto; }
+  const top = Object.values(by).sort((a, b) => b.total - a.total).slice(0, 8);
+  setHTML($("#finMerch"), top.length ? `<div class="scroll"><table><thead><tr><th>Comercio</th><th class="n">Visitas</th><th class="n">Ticket</th><th class="n">Total</th><th class="n">Del mes</th></tr></thead><tbody>${top.map(g => `<tr><td>${esc(g.name)}</td><td class="n">${g.n}</td><td class="n">${fmtClp(g.total / g.n)}</td><td class="n">${fmtClp(g.total)}</td><td class="n">${fmt(g.total / c.total * 100)}%</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="empty">Sin compras en este mes.</p>`);
+}
+
+/* Patrones: gasto promedio por día de la semana (8 semanas), compras chicas y fin de semana */
+const FIN_SMALL = 5000;
+function renderFinPattern(c){
+  const t = today(), from = addDays(t, -55), recent = S.movs.filter(m => isPurchase(m) && m.fecha >= from && m.fecha <= t);
+  const byDow = [0, 0, 0, 0, 0, 0, 0];
+  for (const m of recent) byDow[(parseYmd(m.fecha).getDay() + 6) % 7] += m.monto;
+  const avg = byDow.map(v => Math.round(v / 8)), weekend = byDow[5] + byDow[6], all = sum(byDow, v => v);
+  const small = c.buys.filter(m => m.monto < FIN_SMALL), smallT = sum(small, m => m.monto);
+  setHTML($("#finPattern"), recent.length ? `<p class="small muted" style="margin:0 0 6px">Gasto promedio por día de la semana, últimas 8 semanas</p>
+    ${barChart(avg, DOW, null, "var(--fin)", "pesos", (parseYmd(t).getDay() + 6) % 7)}
+    <dl class="mt">
+      <dt>Fin de semana</dt><dd>${all ? fmt(weekend / all * 100) : 0}% del gasto (2 de 7 días)</dd>
+      <dt>Compras bajo ${fmtClp(FIN_SMALL)} este mes</dt><dd>${small.length} por ${fmtClp(smallT)} (${c.total ? fmt(smallT / c.total * 100) : 0}%)</dd>
+    </dl>` : `<p class="empty">Sin compras en las últimas 8 semanas.</p>`);
+}
+
+/* Fuera de lo normal: más de 2,5 veces la mediana del comercio (3 compras previas o más)
+   o más de 3 veces la de su categoría (5 compras previas o más, solo con categoría elegida por ti: comercio o regla) */
+function finAnomalies(c){
+  const past = S.movs.filter(isPurchase), out = [];
+  for (const m of c.buys){
+    const before = past.filter(x => x.fecha < m.fecha), k = finKey(m.comercio);
+    const sameM = before.filter(x => finSameMerchant(finKey(x.comercio), k)).map(x => x.monto);
+    if (sameM.length >= 3 && m.monto > 2.5 * median(sameM)){ out.push({m, x: m.monto / median(sameM), ref: `lo habitual en ${m.comercio} (${fmtClp(median(sameM))})`}); continue; }
+    const info = finCatInfo(m); if (!info.cat || !["comercio", "regla"].includes(info.src)) continue;
+    const sameC = before.filter(x => { const i = finCatInfo(x); return i.cat === info.cat && ["comercio", "regla"].includes(i.src); }).map(x => x.monto);
+    if (sameC.length >= 5 && m.monto > 3 * median(sameC)) out.push({m, x: m.monto / median(sameC), ref: `una compra típica de ${info.cat} (${fmtClp(median(sameC))})`});
+  }
+  return out.sort((a, b) => b.x - a.x);
+}
+function renderFinAnom(c){
+  const list = finAnomalies(c);
+  setHTML($("#finAnom"), list.length ? list.map(a => `<div style="border-top:1px solid var(--line);padding:8px 0"><strong>${esc(a.m.comercio)}</strong> ${fmtClp(a.m.monto)} <span class="muted">${fmtShort(a.m.fecha)}</span><div class="small muted">${fmt(a.x, 1)} veces ${esc(a.ref)}</div></div>`).join("")
+    : `<p class="empty">Nada fuera de lo normal este mes.</p>`);
+}
+
+/* Lista de movimientos del mes con búsqueda (comercio, detalle del banco o producto) y filtro de categoría */
+function renderFinList(){
+  const ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value;
+  const all = S.movs.filter(m => m.fecha.startsWith(ym));
+  const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
+    && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)));
+  const shown = sum(list.filter(isPurchase), m => m.monto);
+  setHTML($("#finList"), list.length ? `${q || cf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; compras por ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
       <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
       <td>${finCatSelect(m)}</td>
       <td class="n">${m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${finAmountNote(m)}</td>
     </tr>`).join("")}</tbody></table></div>`
-    : `<p class="empty">Sin movimientos en este mes.</p>`);
-  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinReview(); renderFinDet(); renderFinPrices();
+    : `<p class="empty">${all.length ? "Ningún movimiento coincide con la búsqueda." : "Sin movimientos en este mes."}</p>`);
 }
 function finCatSelect(m){
   const info = finCatInfo(m);
@@ -2829,10 +2985,14 @@ function finStatusHtml(m){
   return `<div class="small muted">solo alerta</div>`;
 }
 
-/* Bandeja: movimientos con revisado = 0 */
+/* Bandeja: movimientos con revisado = 0; el contador de la pestaña se actualiza aunque Finanzas esté cerrada */
+function renderFinBadge(){
+  const n = SHARE ? 0 : S.movs.filter(m => !m.revisado).length, b = $("#finBadge");
+  b.hidden = !n; b.textContent = n;
+}
 function renderFinInbox(){
   const list = S.movs.filter(m => !m.revisado).sort((a, b) => (a.fecha + (a.hora || "")).localeCompare(b.fecha + (b.hora || "")));
-  const b = $("#finBadge"); b.hidden = !list.length; b.textContent = list.length;
+  renderFinBadge();
   $("#finInboxPanel").hidden = !list.length;
   $("#finInboxHead").textContent = `Por revisar (${list.length})`;
   setHTML($("#finInbox"), list.map(m => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:10px 0">
@@ -5179,6 +5339,7 @@ function wireUI(){
     if (S.tab === "nutricion") renderPlan();
     if (S.tab === "entreno") renderProgress();
     if (S.tab === "estudio") renderStudy();
+    if (S.tab === "finanzas") renderFin();
   }));
   $("#planPanel").addEventListener("toggle", renderPlan);
   $("#optPanel").addEventListener("toggle", renderOpt);
@@ -5220,6 +5381,9 @@ function wireUI(){
   $("#finCatBudgets").addEventListener("change", e => { const c = e.target.dataset.catbud; if (!c) return; const v = clp(e.target.value); saveLib("fin", () => { const f = finCfg(), b = {...f.catBudgets}; if (v > 0) b[c] = Math.round(v); else delete b[c]; return {...f, catBudgets: b}; }); });
   $("#cartolaFile").addEventListener("change", e => importCartola(e.target.files[0]));
   $("#finRuleCat").innerHTML = FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
+  $("#finCatF").innerHTML = `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>` + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
+  $("#finQ").addEventListener("input", renderFinList);
+  $("#finCatF").addEventListener("change", renderFinList);
   $("#finDetItems").addEventListener("change", e => {
     const t = e.target, d = S.finDraft; if (!t.classList.contains("fin-in") || !d) return;
     const it = d.items[+t.dataset.i], f = t.dataset.f; if (!it) return;
@@ -5241,7 +5405,7 @@ function wireUI(){
     const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT|BUTTON/.test(a.tagName)) return;
     e.preventDefault(); Metro.toggle();
   });
-  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); renderProgress(); }, 150); });
+  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFinCum(finMonthCtx()); }, 150); });
   Metro.drawBeats(); Metro.setBpm(80);
 }
 init();
