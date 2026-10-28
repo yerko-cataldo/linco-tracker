@@ -1,7 +1,8 @@
 // Lincoyán: Worker que protege el sitio, guarda tus datos en D1 y hace de proxy al modelo.
 import { jwtVerify, createRemoteJWKSet } from "jose";
+import { parseVisaAlert } from "./alertas.js";
 
-const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim"]);
+const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DOC_BYTES = 256 * 1024;
 const MAX_IMAGES = 3;
@@ -40,24 +41,41 @@ export default {
   // Correos que llegan por Email Routing a la dirección de alertas
   async email(message, env) {
     try {
-      await storeRawEmail(message, env);
+      await processEmail(message, env);
     } catch (err) {
       console.error(err);
     }
   },
 };
 
-/* ---------- correo entrante: guarda el mensaje sin procesar ---------- */
+/* ---------- correo entrante: guarda el mensaje y registra la compra ---------- */
+async function processEmail(message, env) {
+  const { raw, inboxId } = await storeRawEmail(message, env);
+  if (raw === null) return;
+
+  const res = parseVisaAlert(raw, message.from);
+  if (!res.ok) {
+    console.log(`correo descartado: ${res.reason}`);
+    return;
+  }
+  const mv = res.mov;
+  await env.DB.prepare(
+    "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'alerta', ?)"
+  )
+    .bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.ciudad, mv.pais, mv.tarjeta, mv.tipo, mv.moneda, mv.monto, inboxId)
+    .run();
+}
+
 async function storeRawEmail(message, env) {
   const raw = message.rawSize <= MAX_RAW_EMAIL_BYTES ? await new Response(message.raw).text() : null;
-  await env.DB.batch([
+  const [inserted] = await env.DB.batch([
     env.DB.prepare(
       "INSERT INTO inbox_raw (envelope_from, envelope_to, subject, auth_results, raw_size, raw) VALUES (?, ?, ?, ?, ?, ?)"
     ).bind(
       message.from,
       message.to,
       message.headers.get("subject"),
-      message.headers.get("authentication-results"),
+      message.headers.get("authentication-results") || message.headers.get("arc-authentication-results"),
       message.rawSize,
       raw
     ),
@@ -65,6 +83,7 @@ async function storeRawEmail(message, env) {
       "DELETE FROM inbox_raw WHERE id NOT IN (SELECT id FROM inbox_raw ORDER BY id DESC LIMIT ?)"
     ).bind(MAX_INBOX_ROWS),
   ]);
+  return { raw, inboxId: inserted.meta.last_row_id };
 }
 
 /* ---------- autenticación: valida el JWT que agrega Cloudflare Access ---------- */
@@ -149,13 +168,17 @@ async function api(request, env, url) {
   let match;
 
   if (p === "/api/state" && m === "GET") {
-    const [days, lib] = await env.DB.batch([
+    const [days, lib, movs] = await env.DB.batch([
       env.DB.prepare("SELECT date, data FROM days ORDER BY date DESC LIMIT 400"),
       env.DB.prepare("SELECT key, data FROM lib"),
+      env.DB.prepare(
+        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente FROM movimientos WHERE fecha >= date('now', '-400 days') ORDER BY fecha DESC, hora DESC"
+      ),
     ]);
     return json({
       days: Object.fromEntries(days.results.map((r) => [r.date, JSON.parse(r.data)])),
       lib: Object.fromEntries(lib.results.map((r) => [r.key, JSON.parse(r.data)])),
+      movs: movs.results,
     });
   }
 
