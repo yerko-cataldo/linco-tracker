@@ -380,6 +380,22 @@ nav.tabs button[data-tab=finanzas][aria-selected=true] .ico{color:var(--fin)}
 .fin-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 #finDist rect.seg:hover,.fin-chart rect.seg:hover{opacity:.8}
 .fin-chart g.day:hover>rect:first-child{fill:var(--hl)}
+.fin-tot{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+.fin-tot .big{font-family:var(--display);font-weight:750;font-size:1.9rem;letter-spacing:-.02em}
+.fin-row{display:grid;grid-template-columns:minmax(150px,1.3fr) minmax(90px,2fr) 100px 100px 82px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:.92rem}
+.fin-row.head{border-top:0;padding-top:0;font-size:.78rem;color:var(--muted)}
+.fin-row .n{text-align:right;font-variant-numeric:tabular-nums}
+.fin-name{background:none;border:0;padding:0;text-align:left;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;display:flex;gap:6px;align-items:baseline}
+.fin-name:disabled{cursor:default}
+.fin-name .car{display:inline-block;width:10px;color:var(--muted)}
+.fin-row.l1 .fin-name{padding-left:18px;font-weight:600}
+.fin-row.l2 .fin-name{padding-left:36px;font-weight:400;color:var(--muted)}
+.fin-bar{position:relative;height:10px;background:var(--sunken);border-radius:999px}
+.fin-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--fin);border-radius:999px}
+.fin-row.l1 .fin-bar i{opacity:.75}.fin-row.l2 .fin-bar i{opacity:.5}
+.fin-bar b{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
+.fin-up{color:var(--danger)}.fin-down{color:var(--ok)}
+@media (max-width:640px){.fin-row{grid-template-columns:1fr 92px 70px}.fin-row .fin-bar{grid-column:1/-1;order:5}.fin-row .cmp{display:none}}
 .nbadge{margin-left:6px;padding:0 7px;border-radius:999px;background:var(--fin);color:var(--surface);font-size:.72rem;font-weight:700;line-height:1.5}
 .page-head{display:flex;gap:16px;align-items:center;margin-bottom:24px}
 .page-head h2{margin:0}
@@ -1128,7 +1144,12 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     <div class="grid g4" id="finKpis"></div>
     <div class="grid g2 mt">
       <div class="panel"><h3>Gasto acumulado</h3><div id="finCum"></div></div>
-      <div class="panel"><h3>Resumen</h3><div id="finSummary"></div></div>
+      <div class="panel"><h3>Lo más importante</h3><div id="finSummary"></div></div>
+    </div>
+    <div class="panel mt">
+      <div class="item-head"><h3>En qué gastaste</h3><span class="act"><label class="small muted" for="finCmp">Comparar con</label> <select id="finCmp"></select></span></div>
+      <div id="finTree"></div>
+      <p class="small muted" style="margin:10px 0 0">Toca un grupo para ver sus categorías y una categoría para ver productos (en compras detalladas) o comercios. La barra es lo gastado; la marca vertical, la comparación. En el mes en curso, cada mes comparado se cuenta hasta el mismo día. El promedio de 3 meses usa solo meses con datos completos.</p>
     </div>
     <div class="panel mt"><h3>Distribución del gasto</h3><div id="finDist"></div></div>
     <div class="panel mt"><h3>Evolución mensual</h3><div id="finEvo"></div></div>
@@ -1165,7 +1186,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <h3>Movimientos</h3>
       <div class="row" style="margin-bottom:10px">
         <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
-        <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"><option value="">Comida, casa y otros</option><option value="comida">Solo comida</option><option value="casa">Solo casa</option><option value="otros">Solo otros</option></select></div>
+        <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"></select></div>
         <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
       </div>
       <div id="finList"></div>
@@ -2845,17 +2866,12 @@ function renderFin(){
   if (SHARE) return;
   FIN_CAT_CACHE = new Map();
   const c = finMonthCtx(), {ym, lastDay, isCur, dayCut, buys, total, prevSame, daily, proj} = c;
-  const vs = prevSame ? (total - prevSame) / prevSame * 100 : null;
   $("#finMonthLbl").textContent = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
   renderFinKpis(c); renderFinCum(c);
   const top = finTopCats(c.ym);
   renderFinDist(c, top); renderFinEvo(c, top); renderFinFood(c);
-  setHTML($("#finSummary"), `<dl>
-    <dt>Compras</dt><dd>${fmt(buys.length)}</dd>
-    <dt>Ticket promedio</dt><dd>${buys.length ? fmtClp(total / buys.length) : "—"}</dd>
-    <dt>Promedio diario</dt><dd>${fmtClp(daily)}</dd>
-    <dt>Frente al mes anterior</dt><dd>${vs === null ? "—" : `${vs > 0 ? "+" : ""}${fmt(vs)}% (${fmtClp(prevSame)} al día ${dayCut})`}${finPartialNote(c.prevYm) ? `<div class="small muted">mes anterior con ${finPartialNote(c.prevYm)}</div>` : ""}</dd>
-  </dl>`);
+  const cmp = finCmpBase(c), tree = finTreeOf(buys);
+  renderFinTree(c, tree, cmp); renderFinSummary(c, tree, cmp);
 
   const byCat = finCatTotals(buys);
   const cfg = finCfg(), buds = cfg.catBudgets || {}, pace = dayCut / lastDay * 100;
@@ -2879,6 +2895,86 @@ function renderFin(){
   renderFinTrend(c); renderFinMerch(c); renderFinPattern(c); renderFinAnom(c);
   renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinReview(); renderFinDet(); renderFinPrices();
 }
+/* Comparación: mes anterior, promedio de 3 meses completos, mismo mes del año pasado o un mes elegido.
+   En el mes en curso, cada mes comparado se cuenta hasta el mismo día. */
+const fmtMonth = ym => new Date(+ym.slice(0, 4), +ym.slice(5) - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
+function finCmpBase(c){
+  const sel = $("#finCmp"), months = [...new Set(S.movs.filter(isPurchase).map(m => m.fecha.slice(0, 7)))].filter(ym => ym < c.ym).sort().reverse();
+  fillSelect(sel, [{v: "prev", t: "el mes anterior"}, {v: "avg3", t: "el promedio de 3 meses"}, {v: "yoy", t: "el mismo mes del año pasado"}, ...months.map(ym => ({v: ym, t: fmtMonth(ym)}))]);
+  const kind = sel.value || "prev", day = c.isCur ? c.dayCut : 31, cut = c.isCur ? ` al día ${c.dayCut}` : "";
+  const upTo = ym => finBuysOf(ym).filter(m => +m.fecha.slice(8) <= day);
+  let list, label;
+  if (kind === "avg3"){ list = [1, 2, 3].map(i => shiftMonth(c.ym, -i)).filter(ym => finBuysOf(ym).length && !finPartialNote(ym)); label = list.length ? `el promedio de ${list.length === 1 ? "1 mes" : list.length + " meses"}${cut}` : "el promedio de 3 meses"; }
+  else { const ym = kind === "prev" ? c.prevYm : kind === "yoy" ? shiftMonth(c.ym, -12) : kind; list = [ym]; label = `${kind === "prev" ? "el mes anterior" : fmtMonth(ym)}${cut}`; }
+  const trees = list.filter(ym => finBuysOf(ym).length).map(ym => finTreeOf(upTo(ym)));
+  const partial = list.map(finPartialNote).find(Boolean) || "";
+  // valor comparado de un nodo: promedio entre los meses de la comparación
+  const val = (g, cat, it) => trees.length ? sum(trees, t => { const G = t[g]; if (!G) return 0; if (cat == null) return G.v; const C = G.cats[cat]; return !C ? 0 : it == null ? C.v : C.items[it] || 0; }) / trees.length : null;
+  const none = kind === "avg3" ? "Aún no hay meses completos para el promedio de 3 meses." : `No hay datos para comparar con ${label}.`;
+  return {label, val, has: trees.length > 0, partial, none, total: trees.length ? sum(trees, t => sum(Object.values(t), G => G.v)) / trees.length : null};
+}
+const finDelta = (v, b) => {
+  if (b === null) return `<span class="muted">—</span>`;
+  if (!b) return v ? `<span class="fin-up">nuevo</span>` : `<span class="muted">—</span>`;
+  const p = (v - b) / b * 100;
+  if (Math.abs(p) < 1) return `<span class="muted">igual</span>`;
+  return `<span class="${p > 0 ? "fin-up" : "fin-down"}">${p >= 200 ? `▲ × ${fmt(v / b, v / b < 10 ? 1 : 0)}` : `${p > 0 ? "▲" : "▼"} ${fmt(Math.abs(p))}%`}</span>`;
+};
+/* En qué gastaste: árbol grupo → categoría → detalle, con barra (gasto) y marca (comparación) */
+S.finOpen = new Set();
+function renderFinTree(c, tree, cmp){
+  const el = $("#finTree");
+  if (!c.buys.length && !cmp.has){ setHTML(el, `<p class="empty">Sin compras en este mes.</p>`); return; }
+  const row = (lvl, key, label, v, b, scale, kids) => {
+    const open = kids && S.finOpen.has(key);
+    return `<div class="fin-row l${lvl}">
+      <button class="fin-name" data-action="fin-tree" data-k="${esc(key)}"${kids ? ` aria-expanded="${open}"` : " disabled"}><span class="car">${kids ? (open ? "▾" : "▸") : ""}</span>${esc(label)}</button>
+      <div class="fin-bar"><i style="width:${scale ? v / scale * 100 : 0}%"></i>${b ? `<b style="left:${clamp(b / scale * 100, 0, 100)}%" title="${esc(cmp.label)}: ${fmtClp(b)}"></b>` : ""}</div>
+      <div class="n">${fmtClp(v)}</div><div class="n cmp muted">${b === null ? "—" : fmtClp(b)}</div><div class="n">${finDelta(v, b)}</div></div>`;
+  };
+  const groups = [...new Set([...Object.keys(tree), ...FIN_TREE.map(([g]) => g).filter(g => cmp.val(g))])]
+    .map(g => ({g, v: (tree[g] || {}).v || 0, b: cmp.val(g)})).sort((a, b) => b.v - a.v || (b.b || 0) - (a.b || 0));
+  const scale0 = Math.max(1, ...groups.map(x => Math.max(x.v, x.b || 0)));
+  let h = `<div class="fin-tot"><span class="big">${fmtClp(c.total)}</span><span>${cmp.has ? `${finDelta(c.total, cmp.total)} <span class="muted">frente a ${fmtClp(cmp.total)}, ${esc(cmp.label)}</span>` : `<span class="muted">${esc(cmp.none)}</span>`}</span></div>
+    <div class="fin-row head"><div>Grupo</div><div></div><div class="n">${c.isCur ? `Al día ${c.dayCut}` : "Este mes"}</div><div class="n cmp">Comparado</div><div class="n">Cambio</div></div>`;
+  for (const G of groups){
+    const cats = Object.keys({...((tree[G.g] || {}).cats || {})});
+    FIN_TREE.find(([g]) => g === G.g)[1].forEach(cat => { if (!cats.includes(cat) && cmp.val(G.g, cat)) cats.push(cat); });
+    h += row(0, G.g, G.g, G.v, G.b, scale0, cats.length > 0);
+    if (!S.finOpen.has(G.g)) continue;
+    const cl = cats.map(cat => ({cat, v: ((tree[G.g] || {}).cats || {})[cat]?.v || 0, b: cmp.val(G.g, cat)})).sort((a, b) => b.v - a.v);
+    const scale1 = Math.max(1, ...cl.map(x => Math.max(x.v, x.b || 0)));
+    for (const C of cl){
+      const k1 = G.g + "|" + C.cat, items = Object.entries((((tree[G.g] || {}).cats || {})[C.cat] || {}).items || {}).sort((a, b) => b[1] - a[1]);
+      h += row(1, k1, C.cat, C.v, C.b, scale1, items.length > 0);
+      if (!S.finOpen.has(k1)) continue;
+      const scale2 = Math.max(1, ...items.map(([it, v]) => Math.max(v, cmp.val(G.g, C.cat, it) || 0)));
+      items.slice(0, 10).forEach(([it, v]) => { h += row(2, k1 + "|" + it, it, v, cmp.val(G.g, C.cat, it), scale2, false); });
+      if (items.length > 10){ const rest = items.slice(10); h += row(2, k1 + "|+", `${rest.length} más`, sum(rest, x => x[1]), null, scale2, false); }
+    }
+  }
+  setHTML(el, h + (cmp.partial ? `<p class="small muted" style="margin:8px 0 0">La comparación tiene ${esc(cmp.partial)}.</p>` : ""));
+}
+/* Lo más importante: total, diferencia con la comparación, categorías que más subieron y bajaron, compra más grande */
+function renderFinSummary(c, tree, cmp){
+  if (!c.buys.length){ setHTML($("#finSummary"), `<p class="empty">Sin compras en este mes.</p>`); return; }
+  const diffs = [];
+  for (const [g, cs] of FIN_TREE) for (const cat of cs){
+    const v = (((tree[g] || {}).cats || {})[cat] || {}).v || 0, b = cmp.val(g, cat);
+    if (b !== null && (v || b)) diffs.push({g, cat, v, b, d: v - b});
+  }
+  const ups = diffs.filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 3), downs = diffs.filter(x => x.d < 0).sort((a, b) => a.d - b.d).slice(0, 2);
+  const big = c.buys.reduce((a, m) => m.monto > a.monto ? m : a, c.buys[0]);
+  const top = Object.entries(tree).sort((a, b) => b[1].v - a[1].v)[0];
+  const li = x => `<li><strong>${esc(x.cat)}</strong> <span class="muted">(${esc(x.g)})</span>: ${x.d > 0 ? "+" : "−"}${fmtClp(Math.abs(x.d))} <span class="muted">(${fmtClp(x.v)} frente a ${fmtClp(x.b)})</span></li>`;
+  const d = cmp.has ? c.total - cmp.total : null;
+  setHTML($("#finSummary"), `<p style="margin:0 0 8px">Llevas <strong>${fmtClp(c.total)}</strong> en ${c.buys.length} ${c.buys.length === 1 ? "compra" : "compras"}${c.isCur ? ` al día ${c.dayCut}` : ""}${top ? `; el grupo más grande es <strong>${esc(top[0])}</strong> (${fmt(top[1].v / c.total * 100)}%)` : ""}.</p>
+    ${d !== null ? `<p style="margin:0 0 8px">Son <strong class="${d > 0 ? "fin-up" : "fin-down"}">${fmtClp(Math.abs(d))} ${d > 0 ? "más" : "menos"}</strong> que ${esc(cmp.label)}${cmp.total ? ` (${d > 0 ? "+" : "−"}${fmt(Math.abs(d) / cmp.total * 100)}%)` : ""}.${cmp.partial ? ` <span class="small muted">Ojo: la comparación tiene ${esc(cmp.partial)}.</span>` : ""}</p>` : `<p class="muted" style="margin:0 0 8px">${esc(cmp.none)}</p>`}
+    ${ups.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde más subió</p><ul style="margin:0;padding-left:18px">${ups.map(li).join("")}</ul>` : ""}
+    ${downs.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde bajó</p><ul style="margin:0;padding-left:18px">${downs.map(li).join("")}</ul>` : ""}
+    <p class="small muted" style="margin:10px 0 0">Compra más grande: ${esc(big.comercio)}, ${fmtClp(big.monto)} el ${fmtShort(big.fecha)}. Ticket promedio ${fmtClp(c.total / c.buys.length)}; promedio diario ${fmtClp(c.daily)}.</p>`);
+}
+
 /* KPI del mes: gasto frente al presupuesto, proyección, recurrentes y cuotas */
 function finKpi(title, big, sub, side = ""){
   return `<div class="panel kpi c-fin"><h3><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg>${title}</h3><div class="kpi-top"><div class="big">${big}${sub ? `<div class="small muted" style="font-weight:500;letter-spacing:0">${sub}</div>` : ""}</div>${side}</div></div>`;
@@ -2960,14 +3056,7 @@ function renderFinDist(c, top){
     s += `<rect class="seg" x="${x.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${H}" fill="${p.color}"><title>${esc(p.cat)}: ${fmtClp(p.v)} (${fmt(p.v / total * 100)}%)</title></rect>`;
     x += w + gap;
   }
-  const gr = {comida: 0, casa: 0, otros: 0}, food = {casa: 0, fuera: 0};
-  for (const m of c.buys){ const x = finSplitGroups(m), f = finFoodSplit(m); for (const k in gr) gr[k] += x[k]; food.casa += f.casa; food.fuera += f.fuera; }
-  const pct = v => fmt(v / total * 100);
-  setHTML($("#finDist"), s + `</g></svg>` + finLegend(g, total) + `<dl class="mt">
-    <dt>Comida</dt><dd>${fmtClp(gr.comida)} <span class="muted">${pct(gr.comida)}%: en casa ${fmtClp(food.casa)}, fuera ${fmtClp(food.fuera)}</span></dd>
-    <dt>Casa</dt><dd>${fmtClp(gr.casa)} <span class="muted">${pct(gr.casa)}%</span></dd>
-    <dt>Otros</dt><dd>${fmtClp(gr.otros)} <span class="muted">${pct(gr.otros)}%</span></dd>
-  </dl><p class="small muted" style="margin:6px 0 0">Comida: Supermercado, Comida y delivery, Restaurantes y bares y productos con un alimento asociado. Casa: Hogar (aseo, limpieza, papel y artículos de la casa). En una compra detallada cuenta cada producto por separado; si no, cuenta la categoría del comercio.</p>`);
+  setHTML($("#finDist"), s + `</g></svg>` + finLegend(g, total));
 }
 
 /* Evolución mensual: 12 meses apilados por categoría; el mes en curso muestra además su proyección */
@@ -3014,17 +3103,47 @@ function renderFinEvo(c, top){
     <details class="mt"><summary class="small">Ver como tabla</summary><div class="scroll"><table><thead><tr><th>Mes</th>${top.map(t => `<th class="n">${esc(t)}</th>`).join("")}<th class="n">Otras</th><th class="n">Total</th></tr></thead><tbody>${shown.map(d => `<tr><td>${esc(d.ym)}</td>${d.g.map(x => `<td class="n">${fmtClp(x.v)}</td>`).join("")}<td class="n"><strong>${fmtClp(d.total)}</strong></td></tr>`).join("")}</tbody></table></div></details>`);
 }
 
-/* Destino del gasto: comida (Supermercado, Comida y delivery, Restaurantes y bares, o producto con alimento asociado),
-   casa (Hogar) u otros. Por producto si la compra está detallada; si no, por la categoría del comercio. */
-const FIN_GROUPS = {comida: ["Supermercado", "Comida y delivery", "Restaurantes y bares"], casa: ["Hogar"]};
-const FIN_GROUP_LBL = {comida: "Comida", casa: "Casa", otros: "Otros"};
-const finGroupOf = (cat, foodId) => FIN_GROUPS.comida.includes(cat) ? "comida" : FIN_GROUPS.casa.includes(cat) ? "casa" : foodId ? "comida" : "otros";
+/* Grupos de gasto: cada categoría pertenece a un grupo. Un producto con alimento asociado cuenta como Comida
+   (categoría Supermercado) salvo que su categoría sea de Casa. Por producto si la compra está detallada; si no, por la categoría del comercio. */
+const FIN_TREE = [
+  ["Comida", ["Supermercado", "Comida y delivery", "Restaurantes y bares"]],
+  ["Casa", ["Hogar", "Servicios"]],
+  ["Transporte", ["Transporte"]],
+  ["Salud y deporte", ["Salud", "Deporte"]],
+  ["Ocio", ["Entretención", "Suscripciones", "Viajes"]],
+  ["Compras", ["Compras", "Ropa", "Educación"]],
+  ["Mascotas", ["Mascotas"]],
+  ["Otros", ["Otros", "Sin categoría"]]
+];
+const FIN_GROUP_OF = Object.fromEntries(FIN_TREE.flatMap(([g, cs]) => cs.map(c => [c, g])));
+// categoría efectiva de un producto detallado
+const finItemCat = (it, base) => { const c = it.cat || base || "Sin categoría"; return it.foodId && !["Comida", "Casa"].includes(FIN_GROUP_OF[c]) ? "Supermercado" : c; };
+const finGroupOf = cat => FIN_GROUP_OF[cat || "Sin categoría"] || "Otros";
 function finSplitGroups(m){
-  const base = finCat(m), r = {comida: 0, casa: 0, otros: 0};
+  const base = finCat(m) || "Sin categoría", r = Object.fromEntries(FIN_TREE.map(([g]) => [g, 0]));
   let rest = m.monto;
-  for (const it of (S.movDet[m.id] || {}).items || []){ if (!it.amt) continue; rest -= it.amt; r[finGroupOf(it.cat || base, it.foodId)] += it.amt; }
+  for (const it of (S.movDet[m.id] || {}).items || []){ if (!it.amt) continue; rest -= it.amt; r[finGroupOf(finItemCat(it, base))] += it.amt; }
   if (rest > 0) r[finGroupOf(base)] += rest;
   return r;
+}
+// Árbol del gasto: grupo → categoría → detalle (producto o alimento si la compra está detallada; si no, comercio)
+function finTreeOf(buys){
+  const t = {};
+  const add = (cat, label, v) => {
+    const G = t[finGroupOf(cat)] || (t[finGroupOf(cat)] = {v: 0, cats: {}}), C = G.cats[cat] || (G.cats[cat] = {v: 0, items: {}});
+    G.v += v; C.v += v; C.items[label] = (C.items[label] || 0) + v;
+  };
+  for (const m of buys){
+    const base = finCat(m) || "Sin categoría", items = (S.movDet[m.id] || {}).items || [];
+    let rest = m.monto;
+    items.forEach(it => {
+      if (!it.amt) return; rest -= it.amt;
+      const p = it.of != null && items[it.of] ? items[it.of] : it;   // un descuento suma a su producto
+      add(finItemCat(p, base), (foodOf(p.foodId) || {}).name || p.name, it.amt);
+    });
+    if (rest > 0) add(base, m.comercio, rest);
+  }
+  return t;
 }
 /* Comida: en casa (Supermercado, o productos detallados con alimento) y fuera (Comida y delivery, Restaurantes y bares) */
 const FOOD_HOME = ["Supermercado"], FOOD_OUT = ["Comida y delivery", "Restaurantes y bares"];
@@ -3033,7 +3152,7 @@ function finFoodSplit(m){
   let rest = m.monto;
   for (const it of (S.movDet[m.id] || {}).items || []){
     if (!it.amt) continue; rest -= it.amt;
-    const c = it.cat || base, k = kind(c) || (finGroupOf(c, it.foodId) === "comida" ? kind(base) || "casa" : null);
+    const c = finItemCat(it, base), k = kind(c);
     if (k) r[k] += it.amt;
   }
   const kb = kind(base); if (kb && rest > 0) r[kb] += rest;
@@ -3159,7 +3278,7 @@ function renderFinList(){
   const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
     && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0));
   const shown = sum(list.filter(isPurchase), part);
-  setHTML($("#finList"), list.length ? `${q || cf || gf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${FIN_GROUP_LBL[gf].toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
+  setHTML($("#finList"), list.length ? `${q || cf || gf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${gf.toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
       <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
       <td>${finCatSelect(m)}</td>
@@ -4963,6 +5082,7 @@ const actions = {
   "creatine": () => saveDay(S.date, d => { d.creatine = !d.creatine; }),
   "day-open": el => setDate(el.dataset.d),
   "metrics-load": () => loadMetrics(),
+  "fin-tree": el => { const k = el.dataset.k; if (S.finOpen.has(k)) S.finOpen.delete(k); else S.finOpen.add(k); renderFin(); },
   "fin-prev": () => { S.finMonth = shiftMonth(finMonth(), -1); renderFin(); },
   "fin-next": () => { S.finMonth = shiftMonth(finMonth(), 1); renderFin(); },
   "fin-det": el => {
@@ -5703,7 +5823,9 @@ function wireUI(){
   $("#finCatF").innerHTML = `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>` + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
   $("#finQ").addEventListener("input", renderFinList);
   $("#finCatF").addEventListener("change", renderFinList);
+  $("#finGroupF").innerHTML = `<option value="">Todos los grupos</option>` + FIN_TREE.map(([g]) => `<option value="${esc(g)}">Solo ${esc(g.toLowerCase())}</option>`).join("");
   $("#finGroupF").addEventListener("change", renderFinList);
+  $("#finCmp").addEventListener("change", renderFin);
   $("#finDetItems").addEventListener("change", e => {
     const t = e.target, d = S.finDraft; if (!t.classList.contains("fin-in") || !d) return;
     const it = d.items[+t.dataset.i], f = t.dataset.f; if (!it) return;
