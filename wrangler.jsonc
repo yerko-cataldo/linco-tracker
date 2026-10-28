@@ -43,5 +43,43 @@
     "PROVIDER_COACH": "workers-ai",
     "PROVIDER_DEFAULT": "workers-ai",
     "PROVIDER_VISION": "workers-ai"
+  },
+
+  // Instancia de Jere: mismo código, su propio Worker (lincoyan-jere), su D1 y su subdominio.
+  // Se despliega a mano con `npx wrangler deploy --env jere`; el push a main solo despliega la instancia principal.
+  // vars, d1_databases, ai y routes no se heredan entre entornos, por eso van completos.
+  "env": {
+    "jere": {
+      "routes": [
+        { "pattern": "jere.yerkolincoyan.cl", "custom_domain": true }
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "lincoyan-jere",
+          "database_id": "c319302c-4834-458f-88f9-92e33a490c89",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "ai": { "binding": "AI" },
+      "vars": {
+        "ACCESS_AUD": "458be877431de7f5aa728172d0beedc70a7c1c2b971075011adeec19ef17d587",
+        "ACCESS_TEAM_DOMAIN": "https://autumn-bar-84fe.cloudflareaccess.com",
+        "AI_DAILY_LIMIT": "150",
+        "APP_NAME": "Jere Torres",
+        "ALLOWED_EMAIL": "jeretorresinversiones@gmail.com,yfigueroa.figueroa@gmail.com",
+        "ANTHROPIC_BASE_URL": "https://api.anthropic.com",
+        "CF_ACCOUNT_ID": "820f0de182a0433466aa4461778f95ba",
+        "D1_DATABASE_ID": "c319302c-4834-458f-88f9-92e33a490c89",
+        "DOMAIN_EXPIRY": "2027-10-04",
+        "DOMAIN_NAME": "yerkolincoyan.cl",
+        "MODEL_COACH": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "MODEL_DEFAULT": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "MODEL_VISION": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "PROVIDER_COACH": "workers-ai",
+        "PROVIDER_DEFAULT": "workers-ai",
+        "PROVIDER_VISION": "workers-ai"
+      }
+    }
   }
 }

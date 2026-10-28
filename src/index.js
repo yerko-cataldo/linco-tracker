@@ -29,7 +29,7 @@ export default {
     const user = await authorize(request, env);
     if (!user) return new Response("No autorizado", { status: 403 });
 
-    if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
+    if (!url.pathname.startsWith("/api/")) return brand(await env.ASSETS.fetch(request), env);
 
     try {
       return await api(request, env, url);
@@ -129,6 +129,13 @@ async function importCartola(request, env) {
   });
 }
 
+/* ---------- nombre de la instancia: APP_NAME reemplaza "Lincoyán" en el título y el logo ---------- */
+function brand(res, env) {
+  if (!env.APP_NAME || !(res.headers.get("content-type") || "").includes("text/html")) return res;
+  const name = { element: (el) => el.setInnerContent(env.APP_NAME) };
+  return new HTMLRewriter().on("head > title", name).on(".brand .logo", name).transform(res);
+}
+
 /* ---------- autenticación: valida el JWT que agrega Cloudflare Access ---------- */
 async function authorize(request, env) {
   if (env.DEV_BYPASS_AUTH === "1") return { email: "dev@local" }; // solo en .dev.vars
@@ -138,7 +145,8 @@ async function authorize(request, env) {
   try {
     const { payload } = await jwtVerify(token, JWKS, { issuer: env.ACCESS_TEAM_DOMAIN, audience: env.ACCESS_AUD });
     const email = String(payload.email || "").toLowerCase();
-    if (env.ALLOWED_EMAIL && email !== env.ALLOWED_EMAIL.toLowerCase()) return null;
+    // ALLOWED_EMAIL acepta varios correos separados por coma
+    if (env.ALLOWED_EMAIL && !env.ALLOWED_EMAIL.toLowerCase().split(",").map((s) => s.trim()).includes(email)) return null;
     return { email };
   } catch {
     return null;
@@ -175,7 +183,7 @@ async function share(request, env, url) {
   const areas = SHARE_AREAS.filter((a) => (cfg.areas || []).includes(a));
 
   if (!m[2]) {
-    const page = await env.ASSETS.fetch(new Request(new URL("/", url), request));
+    const page = brand(await env.ASSETS.fetch(new Request(new URL("/", url), request)), env);
     const res = new Response(page.body, page);
     for (const [k, v] of Object.entries(SHARE_HEADERS)) res.headers.set(k, v);
     return res;
