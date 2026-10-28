@@ -6,6 +6,8 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DOC_BYTES = 256 * 1024;
 const MAX_IMAGES = 3;
 const MAX_IMAGE_B64 = 7_000_000;
+const MAX_RAW_EMAIL_BYTES = 512 * 1024;
+const MAX_INBOX_ROWS = 200;
 
 let JWKS = null;
 
@@ -34,7 +36,36 @@ export default {
       return json({ error: "internal" }, 500);
     }
   },
+
+  // Correos que llegan por Email Routing a la dirección de alertas
+  async email(message, env) {
+    try {
+      await storeRawEmail(message, env);
+    } catch (err) {
+      console.error(err);
+    }
+  },
 };
+
+/* ---------- correo entrante: guarda el mensaje sin procesar ---------- */
+async function storeRawEmail(message, env) {
+  const raw = message.rawSize <= MAX_RAW_EMAIL_BYTES ? await new Response(message.raw).text() : null;
+  await env.DB.batch([
+    env.DB.prepare(
+      "INSERT INTO inbox_raw (envelope_from, envelope_to, subject, auth_results, raw_size, raw) VALUES (?, ?, ?, ?, ?, ?)"
+    ).bind(
+      message.from,
+      message.to,
+      message.headers.get("subject"),
+      message.headers.get("authentication-results"),
+      message.rawSize,
+      raw
+    ),
+    env.DB.prepare(
+      "DELETE FROM inbox_raw WHERE id NOT IN (SELECT id FROM inbox_raw ORDER BY id DESC LIMIT ?)"
+    ).bind(MAX_INBOX_ROWS),
+  ]);
+}
 
 /* ---------- autenticación: valida el JWT que agrega Cloudflare Access ---------- */
 async function authorize(request, env) {
