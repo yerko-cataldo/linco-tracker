@@ -1,6 +1,7 @@
 // Lincoyán: Worker que protege el sitio, guarda tus datos en D1 y hace de proxy al modelo.
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import { parseVisaAlert } from "./alertas.js";
+import { parseCartola, planConciliation } from "./cartola.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -84,6 +85,48 @@ async function storeRawEmail(message, env) {
     ).bind(MAX_INBOX_ROWS),
   ]);
   return { raw, inboxId: inserted.meta.last_row_id };
+}
+
+/* ---------- cartola BICE: importa las filas y las concilia con las alertas ---------- */
+async function importCartola(request, env) {
+  const text = await request.text();
+  if (!text || text.length > 2 * 1024 * 1024) return json({ error: "bad_body" }, 400);
+  const parsed = parseCartola(text);
+  if (!parsed || !parsed.rows.length) return json({ error: "not_cartola" }, 400);
+
+  const desde = parsed.rows.reduce((a, r) => (r.fecha < a ? r.fecha : a), "9999-12-31");
+  const existing = await env.DB.prepare(
+    "SELECT id, fecha, monto, moneda, fuente, banco_id FROM movimientos WHERE fecha >= date(?, '-5 days')"
+  ).bind(desde).all();
+  const plan = planConciliation(parsed.rows, existing.results);
+
+  const refresh = env.DB.prepare("UPDATE movimientos SET pendiente = ?, cat_banco = ? WHERE banco_id = ?");
+  const link = env.DB.prepare(
+    "UPDATE movimientos SET banco_id = ?, detalle_banco = ?, cat_banco = ?, cuota = ?, cuotas = ?, pendiente = ? WHERE id = ?"
+  );
+  const insert = env.DB.prepare(
+    "INSERT OR IGNORE INTO movimientos (id, fecha, comercio, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado) " +
+    "VALUES (?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'cartola', ?, ?, ?, ?, ?, ?, 1)"
+  );
+  const stmts = [
+    ...plan.refresh.map((r) => refresh.bind(r.pendiente ? 1 : 0, r.catBanco, r.bancoId)),
+    ...plan.update.map(([id, r]) => link.bind(r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0, id)),
+    ...plan.insert.map((r) =>
+      insert.bind(r.bancoId, r.fecha, r.comercio, r.tipo, r.monto, r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0)
+    ),
+  ];
+  for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
+
+  const cargos = parsed.rows.reduce((s, r) => s + (r.monto > 0 ? r.monto : 0), 0);
+  return json({
+    ok: true,
+    inicio: parsed.inicio,
+    filas: parsed.rows.length,
+    nuevos: plan.insert.length,
+    conciliados: plan.update.length,
+    actualizados: plan.refresh.length,
+    cuadra: parsed.totalCargos === null ? null : cargos === parsed.totalCargos,
+  });
 }
 
 /* ---------- autenticación: valida el JWT que agrega Cloudflare Access ---------- */
@@ -172,7 +215,8 @@ async function api(request, env, url) {
       env.DB.prepare("SELECT date, data FROM days ORDER BY date DESC LIMIT 400"),
       env.DB.prepare("SELECT key, data FROM lib"),
       env.DB.prepare(
-        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente FROM movimientos WHERE fecha >= date('now', '-400 days') ORDER BY fecha DESC, hora DESC"
+        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado " +
+        "FROM movimientos WHERE fecha >= date('now', '-400 days') ORDER BY fecha DESC, hora DESC"
       ),
       env.DB.prepare("SELECT mov_id, data FROM mov_detalle"),
     ]);
@@ -182,6 +226,27 @@ async function api(request, env, url) {
       movs: movs.results,
       movDet: Object.fromEntries(movDet.results.map((r) => [r.mov_id, JSON.parse(r.data)])),
     });
+  }
+
+  if (p === "/api/cartola" && m === "POST") return importCartola(request, env);
+
+  if (p === "/api/movs/revisado" && m === "PUT") {
+    let body;
+    try { body = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
+    const ids = Array.isArray(body.ids) ? body.ids.filter((x) => typeof x === "string").slice(0, 500) : [];
+    const stmt = env.DB.prepare("UPDATE movimientos SET revisado = ? WHERE id = ?");
+    const stmts = ids.map((id) => stmt.bind(body.revisado ? 1 : 0, id));
+    for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
+    return json({ ok: true, updated: ids.length });
+  }
+
+  if ((match = p.match(/^\/api\/movs\/(.{1,300})$/)) && m === "DELETE") {
+    const id = decodeURIComponent(match[1]);
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM movimientos WHERE id = ?").bind(id),
+      env.DB.prepare("DELETE FROM mov_detalle WHERE mov_id = ?").bind(id),
+    ]);
+    return json({ ok: true });
   }
 
   if ((match = p.match(/^\/api\/movdet\/(.{1,300})$/)) && m === "PUT") {

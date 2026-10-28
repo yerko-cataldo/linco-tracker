@@ -372,6 +372,7 @@ nav.tabs button[data-tab=bajo][aria-selected=true] .ico{color:var(--bass)}
 nav.tabs button[data-tab=estudio][aria-selected=true] .ico{color:var(--study)}
 nav.tabs button[data-tab=finanzas][aria-selected=true] .ico{color:var(--fin)}
 .c-ink{--c:var(--ink)}.c-fin{--c:var(--fin)}
+.nbadge{margin-left:6px;padding:0 7px;border-radius:999px;background:var(--fin);color:var(--surface);font-size:.72rem;font-weight:700;line-height:1.5}
 .page-head{display:flex;gap:16px;align-items:center;margin-bottom:24px}
 .page-head h2{margin:0}
 .page-head .lede{margin:4px 0 0}
@@ -706,7 +707,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <button data-tab="entreno" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg>Entreno</button>
       <button data-tab="bajo" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-bass"/></svg>Bajo</button>
       <button data-tab="estudio" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-study"/></svg>Estudio</button>
-      <button data-tab="finanzas" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg>Finanzas</button>
+      <button data-tab="finanzas" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg>Finanzas<span class="nbadge" id="finBadge" hidden></span></button>
       <button data-tab="coach" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg>Coach</button>
       <button data-tab="perfil" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-perfil"/></svg>Perfil y metas</button>
       <button data-tab="metricas" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="#i-metricas"/></svg>Métricas</button>
@@ -1109,18 +1110,35 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- FINANZAS -->
   <section class="tab" id="tab-finanzas">
-    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta de crédito, registradas desde las alertas de compra de Visa.</p></div></div>
-    <div class="panel">
+    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta de crédito: llegan solas desde las alertas de Visa y se concilian con la cartola de BICE.</p></div></div>
+    <div class="panel" id="finInboxPanel" hidden>
+      <div class="item-head"><h3 id="finInboxHead">Por revisar</h3><span class="act"><button class="btn small" data-action="fin-inbox-all">Marcar todo como revisado</button></span></div>
+      <div id="finInbox"></div>
+      <p class="small muted" style="margin:10px 0 0">Al marcar una compra como revisada, su categoría queda guardada para ese comercio.</p>
+    </div>
+    <div class="panel mt">
       <div class="item-head"><h3 id="finMonthLbl"></h3><span class="act"><button class="btn small" data-action="fin-prev" aria-label="Mes anterior">‹</button><button class="btn small" data-action="fin-next" aria-label="Mes siguiente">›</button></span></div>
       <div id="finSummary"></div>
     </div>
     <div class="grid g2 mt">
-      <div class="panel"><h3>Por categoría</h3><div id="finCats"></div></div>
+      <div class="panel">
+        <h3>Por categoría</h3>
+        <div id="finCats"></div>
+        <details class="mt" id="finCatBudBox"><summary class="small">Topes por categoría</summary><div id="finCatBudgets" class="mt"></div></details>
+      </div>
       <div class="panel">
         <h3>Presupuesto mensual</h3>
         <div class="row"><div class="field w10">Monto en pesos<input id="finBudget" inputmode="numeric"></div></div>
         <div id="finBudgetInfo"></div>
       </div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="panel">
+        <div class="item-head"><h3>Ciclo de facturación</h3><span class="act"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label></span></div>
+        <div class="small muted" id="cartolaStatus"></div>
+        <div id="finCycle"></div>
+      </div>
+      <div class="panel"><h3>Gastos recurrentes</h3><div id="finRecur"></div></div>
     </div>
     <div class="panel mt"><h3>Movimientos</h3><div id="finList"></div></div>
     <div class="panel mt" id="finDetPanel" hidden>
@@ -1132,7 +1150,25 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <p class="small muted" style="margin:10px 0 0">La IA solo separa los productos y copia los números que escribiste. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
     </div>
     <div class="panel mt"><h3>Precios por producto</h3><div id="finPrices"></div></div>
-    <p class="small muted">El gasto suma las compras en pesos. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. La categoría se asigna por comercio y se aplica a todas sus compras. Las alertas de Visa llegan al autorizar la compra, así que una compra anulada puede aparecer igual.</p>
+    <div class="grid g2 mt">
+      <div class="panel">
+        <h3>Reglas de categoría</h3>
+        <div id="finRules"></div>
+        <div class="row mt">
+          <div class="field w10">Si el comercio contiene<input id="finRulePat" placeholder="uber eats"></div>
+          <div class="field w10">Categoría<select id="finRuleCat"></select></div>
+          <button class="btn" data-action="fin-rule-add">Agregar regla</button>
+        </div>
+      </div>
+      <div class="panel ai-only" hidden>
+        <div class="item-head"><h3>Resumen del mes</h3><span class="act"><button class="btn small primary" data-action="fin-review">Escribir resumen</button></span></div>
+        <div class="small muted" id="finReviewStatus"></div>
+        <div class="md" id="finReviewOut"></div>
+      </div>
+    </div>
+    <p class="small muted">El gasto suma las compras en pesos; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%.</p>
+    <p class="small muted">Categoría de cada compra, en este orden: la que elegiste para ese comercio, una regla que calce con su nombre, la sugerida por comercios parecidos que ya categorizaste y, al final, la del banco.</p>
+    <p class="small muted">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
   </section>
 
   <!-- COACH -->
@@ -2685,11 +2721,40 @@ function renderMetrics(m){
   }
   setHTML($("#metDomain"), dom);
 }
-/* Finanzas: movimientos de tarjeta (S.movs, desde las alertas de Visa); lib.fin = {budget, cats: {comercio normalizado: categoría}} */
-const FIN_CATS = ["Supermercado", "Comida y delivery", "Transporte", "Hogar", "Salud", "Entretención", "Suscripciones", "Ropa", "Educación", "Viajes", "Otros"];
-const finCfg = () => Object.assign({budget: null, cats: {}}, S.lib.fin || {});
-const finKey = s => norm(s).replace(/\s+/g, " ");
-const finCat = m => finCfg().cats[finKey(m.comercio)] || "";
+/* Finanzas: movimientos de tarjeta (S.movs: alertas de Visa y cartola BICE).
+   lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto}} */
+const FIN_CATS = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Otros"];
+const BANK_CATS = {"Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros"};
+const FIN_SRC = {comercio: "", regla: "regla", sugerida: "sugerida", banco: "banco"};
+const finCfg = () => Object.assign({budget: null, cats: {}, rules: [], catBudgets: {}, reviews: {}}, S.lib.fin || {});
+// Clave de comercio: sin tildes, mayúsculas ni signos ("MERPAGO*X" y "MERPAGOX" coinciden)
+const finKey = s => norm(s).replace(/[^a-z0-9]/g, "");
+const finTokens = s => norm(s).replace(/^(merpago\*?|payu\s+|mp\s*\*)/, "").split(/[^a-z0-9]+/).filter(t => t.length >= 4 && !["compras", "ltda", "chile"].includes(t));
+const finCatMap = () => { const o = {}; for (const [k, v] of Object.entries(finCfg().cats)) if (v) o[finKey(k)] = v; return o; };
+// Categoría y su origen: comercio, regla, sugerida (comercios parecidos ya categorizados) o banco
+function finCatInfo(m){
+  const map = finCatMap(), k = finKey(m.comercio);
+  if (map[k]) return {cat: map[k], src: "comercio"};
+  // nombres cortados por el banco: un nombre es prefijo del otro (8 letras o más)
+  const pre = Object.keys(map).find(x => Math.min(x.length, k.length) >= 8 && (x.startsWith(k) || k.startsWith(x)));
+  if (pre) return {cat: map[pre], src: "comercio"};
+  const rule = (finCfg().rules || []).find(r => r.pat && k.includes(finKey(r.pat)));
+  if (rule) return {cat: rule.cat, src: "regla"};
+  const votes = {};
+  for (const t of finTokens(m.comercio)) for (const [x, c] of Object.entries(map)) if (x.includes(t)) votes[c] = (votes[c] || 0) + 1;
+  const best = Object.entries(votes).sort((a, b) => b[1] - a[1])[0];
+  if (best) return {cat: best[0], src: "sugerida"};
+  if (BANK_CATS[m.cat_banco]) return {cat: BANK_CATS[m.cat_banco], src: "banco"};
+  return {cat: "", src: ""};
+}
+const finCat = m => finCatInfo(m).cat;
+async function finApi(method, path, body){
+  const r = await fetch("/api/" + path, {method, headers: {"content-type": "application/json"}, credentials: "same-origin", body: body === undefined ? undefined : typeof body === "string" ? body : JSON.stringify(body)});
+  if (r.status === 403) throw new Error("Tu sesión expiró. Recarga la página.");
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || "HTTP " + r.status);
+  return j;
+}
 const finMonth = () => S.finMonth || today().slice(0, 7);
 const shiftMonth = (ym, n) => { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
 const isPurchase = m => m.moneda === "CLP" && norm(m.tipo) === "compra";
@@ -2720,24 +2785,201 @@ function renderFin(){
     for (const it of (S.movDet[m.id] || {}).items || []){ if (!it.amt) continue; const c = it.cat || base; byCat[c] = (byCat[c] || 0) + it.amt; rest -= it.amt; }
     if (rest > 0) byCat[base] = (byCat[base] || 0) + rest;
   }
+  const cfg = finCfg(), buds = cfg.catBudgets || {}, pace = dayCut / lastDay * 100;
+  for (const c of Object.keys(buds)) if (buds[c] && !(c in byCat)) byCat[c] = 0;
   const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-  setHTML($("#finCats"), cats.length ? cats.map(([c, v]) => { const pct = total ? v / total * 100 : 0;
-    return `<div class="meter"><div class="lab"><span><strong>${esc(c)}</strong> ${fmtClp(v)}</span><span>${fmt(pct)}%</span></div><div class="bar"><i style="width:${clamp(pct, 0, 100)}%;background:var(--fin)"></i></div></div>`; }).join("")
+  setHTML($("#finCats"), cats.length ? cats.map(([c, v]) => {
+    const b = buds[c];
+    if (b){
+      const pct = v / b * 100, over = pct > pace + 10;
+      return `<div class="meter"><div class="lab"><span><strong>${esc(c)}</strong> ${fmtClp(v)} de ${fmtClp(b)}</span><span${over ? ` style="color:var(--danger)"` : ""}>${fmt(pct)}%${isCur ? `, ritmo ${fmt(pace)}%` : ""}</span></div><div class="bar"><i style="width:${clamp(pct, 0, 100)}%;background:${over ? "var(--danger)" : "var(--fin)"}"></i></div></div>`;
+    }
+    const pct = total ? v / total * 100 : 0;
+    return `<div class="meter"><div class="lab"><span><strong>${esc(c)}</strong> ${fmtClp(v)}</span><span>${fmt(pct)}% del mes</span></div><div class="bar"><i style="width:${clamp(pct, 0, 100)}%;background:var(--fin)"></i></div></div>`; }).join("")
     : `<p class="empty">Sin compras en este mes.</p>`);
+  setHTML($("#finCatBudgets"), `<div class="row">${FIN_CATS.map(c => `<div class="field w10">${esc(c)}<input data-catbud="${esc(c)}" inputmode="numeric" value="${buds[c] ? buds[c] : ""}"></div>`).join("")}</div>`);
 
-  const cfg = finCfg();
   setVal("#finBudget", cfg.budget ?? "");
   setHTML($("#finBudgetInfo"), cfg.budget ? usageMeter("Gastado", total, cfg.budget, fmtClp, isCur ? `proyección al cierre: ${fmtClp(proj)}` : "") : `<p class="empty">Sin presupuesto definido.</p>`);
 
-  const opts = c => `<option value="">Sin categoría</option>` + FIN_CATS.map(x => `<option${x === c ? " selected" : ""}>${esc(x)}</option>`).join("");
   setHTML($("#finList"), inMonth.length ? `<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${inMonth.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
-      <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}${finDetSummary(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
-      <td><select data-fin-cat="${esc(finKey(m.comercio))}" aria-label="Categoría de ${esc(m.comercio)}">${opts(finCat(m))}</select></td>
-      <td class="n">${m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${isPurchase(m) ? "" : `<div class="small muted">${esc(m.tipo)}, no suma</div>`}</td>
+      <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
+      <td>${finCatSelect(m)}</td>
+      <td class="n">${m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${finAmountNote(m)}</td>
     </tr>`).join("")}</tbody></table></div>`
     : `<p class="empty">Sin movimientos en este mes.</p>`);
-  renderFinDet(); renderFinPrices();
+  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinReview(); renderFinDet(); renderFinPrices();
+}
+function finCatSelect(m){
+  const info = finCatInfo(m);
+  return `<select data-fin-cat="${esc(finKey(m.comercio))}" aria-label="Categoría de ${esc(m.comercio)}"><option value="">Sin categoría</option>${FIN_CATS.map(x => `<option${x === info.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}</select>${FIN_SRC[info.src] ? `<div class="small muted">${FIN_SRC[info.src]}</div>` : ""}`;
+}
+function finAmountNote(m){
+  if (m.tipo === "Cuota") return `<div class="small muted">cuota ${m.cuota} de ${m.cuotas}, no suma</div>`;
+  if (m.cuotas > 1) return `<div class="small muted">en ${m.cuotas} cuotas</div>`;
+  return isPurchase(m) || m.monto < 0 ? "" : `<div class="small muted">${esc(m.tipo)}, no suma</div>`;
+}
+// Estado frente a la cartola: en cartola, por confirmar, solo alerta o no aparece (posible anulación)
+function finStatusHtml(m){
+  if (m.banco_id) return m.pendiente ? `<div class="small muted">en cartola, por confirmar</div>` : "";
+  if (m.fuente !== "alerta") return "";
+  const al = finCfg().cartolaAl;
+  if (al && m.fecha <= addDays(al, -3)) return `<div class="small" style="color:var(--danger)">no aparece en la cartola <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
+  return `<div class="small muted">solo alerta</div>`;
+}
+
+/* Bandeja: movimientos con revisado = 0 */
+function renderFinInbox(){
+  const list = S.movs.filter(m => !m.revisado).sort((a, b) => (a.fecha + (a.hora || "")).localeCompare(b.fecha + (b.hora || "")));
+  const b = $("#finBadge"); b.hidden = !list.length; b.textContent = list.length;
+  $("#finInboxPanel").hidden = !list.length;
+  $("#finInboxHead").textContent = `Por revisar (${list.length})`;
+  setHTML($("#finInbox"), list.map(m => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:10px 0">
+      <div><strong>${esc(m.comercio)}</strong> <span class="muted">${fmtShort(m.fecha)}${m.hora ? " " + esc(m.hora) : ""}</span>${finDetSummary(m)}</div>
+      <div class="row"><strong>${fmtClp(m.monto)}</strong>${finCatSelect(m)}
+        <button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">Detallar</button>
+        <button class="btn small primary" data-action="fin-inbox-ok" data-id="${esc(m.id)}">Listo</button></div>
+    </div>`).join(""));
+}
+async function finMarkReviewed(ids){
+  if (!ids.length) return;
+  const cfg = finCfg(), cats = {...cfg.cats};
+  for (const m of S.movs.filter(x => ids.includes(x.id))){
+    const info = finCatInfo(m);
+    if (info.cat && info.src !== "comercio" && info.src !== "regla") cats[finKey(m.comercio)] = info.cat;
+    m.revisado = 1;
+  }
+  if (Object.keys(cats).length !== Object.keys(cfg.cats).length) saveLib("fin", () => ({...finCfg(), cats}));
+  else renderFin();
+  try { await finApi("PUT", "movs/revisado", {ids, revisado: 1}); } catch (e) { toast("No se pudo guardar la revisión: " + e.message); }
+}
+
+/* Ciclo de facturación (desde lib.fin.cicloInicio) y cuotas por pagar */
+function finCycleRange(t){
+  const ini = finCfg().cicloInicio; if (!ini) return null;
+  const day = +ini.slice(8), [y, mo, d] = t.split("-").map(Number);
+  const start = new Date(y, mo - 1 - (d < day ? 1 : 0), day), end = new Date(start.getFullYear(), start.getMonth() + 1, day - 1);
+  return {start: ymd(start), end: ymd(end)};
+}
+// Planes de cuotas: una compra en cuotas (cuota 0) o una cuota cobrada; restantes = total de cuotas − última cobrada
+function finInstallments(){
+  const by = {};
+  for (const m of S.movs){
+    if (!(m.cuotas > 1)) continue;
+    const k = finKey(m.comercio) + "|" + m.cuotas, g = by[k] || (by[k] = {name: m.comercio, n: m.cuotas, last: -1, cuotaAmt: null, total: null});
+    if (m.cuota === 0) g.total = m.monto; else g.cuotaAmt = m.monto;
+    g.last = Math.max(g.last, m.cuota || 0);
+  }
+  return Object.values(by).map(g => {
+    const per = g.cuotaAmt ?? (g.total ? g.total / g.n : 0), left = Math.max(0, g.n - g.last);
+    return {...g, per, est: g.cuotaAmt === null, left, pending: per * left};
+  }).filter(g => g.left > 0);
+}
+function renderFinCycle(){
+  const cfg = finCfg(), rg = finCycleRange(today());
+  $("#cartolaStatus").textContent = cfg.cartolaAl ? `Última cartola importada el ${fmtShort(cfg.cartolaAl)}.` : "Importa la cartola de BICE (CSV) para conciliar las alertas y ver el ciclo y las cuotas.";
+  if (!rg){ setHTML($("#finCycle"), ""); return; }
+  const inCyc = S.movs.filter(m => m.fecha >= rg.start && m.fecha <= rg.end && m.moneda === "CLP");
+  const cargos = sum(inCyc.filter(m => m.monto > 0), m => m.monto), pagos = -sum(inCyc.filter(m => m.monto < 0), m => m.monto);
+  const inst = finInstallments(), pend = sum(inst, g => g.pending);
+  setHTML($("#finCycle"), `<dl class="mt">
+      <dt>Periodo</dt><dd>${fmtShort(rg.start)} al ${fmtShort(rg.end)}</dd>
+      <dt>Cargos del periodo</dt><dd>${fmtClp(cargos)}</dd>
+      <dt>Pagos del periodo</dt><dd>${fmtClp(pagos)}</dd>
+      <dt>Cuotas por pagar</dt><dd>${fmtClp(pend)}</dd>
+    </dl>
+    ${inst.length ? `<div class="scroll mt"><table><thead><tr><th>Compra</th><th class="n">Cuota</th><th class="n">Quedan</th><th class="n">Por pagar</th></tr></thead><tbody>${inst.map(g => `<tr><td>${esc(g.name)}</td><td class="n">${g.est ? "≈ " : ""}${fmtClp(g.per)}</td><td class="n">${g.left} de ${g.n}</td><td class="n">${fmtClp(g.pending)}</td></tr>`).join("")}</tbody></table></div>
+      <p class="small muted" style="margin:8px 0 0">Las cuotas marcadas con ≈ son el total dividido por el número de cuotas, porque aún no se cobra ninguna; con interés pueden ser más altas.</p>` : ""}`);
+}
+async function importCartola(file){
+  if (!file) return;
+  const st = $("#cartolaStatus"); st.innerHTML = `<span class="spin"></span> Importando…`;
+  try {
+    const buf = await file.arrayBuffer();
+    let text; try { text = new TextDecoder("utf-8", {fatal: true}).decode(buf); } catch { text = new TextDecoder("windows-1252").decode(buf); }
+    const r = await finApi("POST", "cartola", text);
+    saveLib("fin", () => ({...finCfg(), cicloInicio: r.inicio || finCfg().cicloInicio, cartolaAl: today()}));
+    await loadState(); renderAll();
+    toast(`Cartola: ${r.filas} filas; ${r.nuevos} nuevas, ${r.conciliados} unidas a alertas, ${r.actualizados} ya estaban.`);
+    if (r.cuadra === false) st.textContent = "Ojo: la suma de las filas no coincide con el total de cargos de la cartola.";
+  } catch (e) {
+    st.textContent = e.message === "not_cartola" ? "El archivo no parece una cartola de BICE en CSV." : "No se pudo importar: " + e.message;
+  } finally { $("#cartolaFile").value = ""; }
+}
+
+/* Recurrentes: mismo comercio, monto ±15% de la mediana, intervalo regular */
+const median = a => { const s = [...a].sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+const daysBetween = (a, b) => Math.round((parseYmd(b) - parseYmd(a)) / 864e5);
+const FIN_FREQ = [["semanal", 6, 8, 3, 52 / 12], ["mensual", 26, 35, 2, 1], ["anual", 355, 375, 2, 1 / 12]];
+function finRecurring(){
+  const by = {};
+  for (const m of S.movs) if (isPurchase(m) && !(m.cuotas > 1)) (by[finKey(m.comercio)] || (by[finKey(m.comercio)] = [])).push(m);
+  const out = [];
+  for (const xs of Object.values(by)){
+    if (xs.length < 2) continue;
+    const med = median(xs.map(m => m.monto)), same = xs.filter(m => Math.abs(m.monto - med) <= .15 * med).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    if (same.length < 2) continue;
+    const gaps = same.slice(1).map((m, i) => daysBetween(same[i].fecha, m.fecha)), gm = median(gaps);
+    const f = FIN_FREQ.find(([, lo, hi, n]) => gm >= lo && gm <= hi && same.length >= n);
+    if (!f || !gaps.every(g => Math.abs(g - gm) <= Math.max(2, .25 * gm))) continue;
+    const last = same[same.length - 1], prev = same[same.length - 2], next = addDays(last.fecha, Math.round(gm));
+    out.push({name: last.comercio, freq: f[0], amount: med, monthly: med * f[4], last, next,
+      up: last.monto > prev.monto * 1.05 ? (last.monto / prev.monto - 1) * 100 : 0, late: daysBetween(next, today()) > 7});
+  }
+  return out.sort((a, b) => b.monthly - a.monthly);
+}
+function renderFinRecur(){
+  const rs = finRecurring();
+  setHTML($("#finRecur"), rs.length ? `<p style="margin:0 0 10px">Equivalen a <strong>${fmtClp(sum(rs, r => r.monthly))}</strong> al mes.</p>
+    <div class="scroll"><table><thead><tr><th>Comercio</th><th>Frecuencia</th><th class="n">Monto</th><th>Próximo</th></tr></thead><tbody>${rs.map(r => `<tr>
+      <td>${esc(r.name)}${r.up ? `<div class="small" style="color:var(--danger)">subió ${fmt(r.up)}%</div>` : ""}</td>
+      <td>${r.freq}</td><td class="n">${fmtClp(r.amount)}</td>
+      <td>${fmtShort(r.next)}${r.late ? `<div class="small muted">atrasado: ¿lo cancelaste?</div>` : ""}</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="empty">Aún no hay cobros que se repitan con regularidad.</p>`);
+}
+
+/* Reglas de categoría: lib.fin.rules = [{pat, cat}] */
+function renderFinRules(){
+  const rules = finCfg().rules || [];
+  setHTML($("#finRules"), rules.length ? rules.map((r, i) => `<div class="row" style="justify-content:space-between"><span>contiene <strong>${esc(r.pat)}</strong> → ${esc(r.cat)}</span><button class="btn ghost small danger" data-action="fin-rule-del" data-i="${i}">Quitar</button></div>`).join("")
+    : `<p class="empty">Sin reglas. Úsalas para comercios con nombres variables, como "uber eats" o "mercadolibre".</p>`);
+}
+
+/* Resumen del mes: el código calcula las cifras y la IA las redacta */
+function finMonthFacts(ym){
+  const buysOf = x => S.movs.filter(m => m.fecha.startsWith(x) && isPurchase(m));
+  const cur = buysOf(ym), prev = buysOf(shiftMonth(ym, -1));
+  const catSum = list => { const o = {}; for (const m of list){ const c = finCat(m) || "Sin categoría"; o[c] = (o[c] || 0) + m.monto; } return o; };
+  const cc = catSum(cur), pc = catSum(prev), seenBefore = new Set(S.movs.filter(m => m.fecha < ym + "-01").map(m => finKey(m.comercio)));
+  const byMerch = {}; for (const m of cur) byMerch[m.comercio] = (byMerch[m.comercio] || 0) + m.monto;
+  return {
+    mes: ym, gasto: sum(cur, m => m.monto), compras: cur.length, gastoMesAnterior: sum(prev, m => m.monto),
+    porCategoria: Object.entries(cc).sort((a, b) => b[1] - a[1]).map(([c, v]) => ({categoria: c, monto: v, mesAnterior: pc[c] || 0, tope: finCfg().catBudgets[c] || null})),
+    principalesComercios: Object.entries(byMerch).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c, v]) => ({comercio: c, monto: v})),
+    comerciosNuevos: [...new Set(cur.filter(m => !seenBefore.has(finKey(m.comercio))).map(m => m.comercio))].slice(0, 10),
+    recurrentes: finRecurring().map(r => ({comercio: r.name, frecuencia: r.freq, monto: r.amount, subioPct: r.up ? Math.round(r.up) : 0})),
+    cuotasPorPagar: Math.round(sum(finInstallments(), g => g.pending)),
+    presupuesto: finCfg().budget
+  };
+}
+function renderFinReview(){
+  const t = (finCfg().reviews || {})[finMonth()];
+  if (!S.finReviewing) setHTML($("#finReviewOut"), t ? md(t) : `<p class="empty">Sin resumen para este mes.</p>`);
+}
+async function finReview(){
+  const ym = finMonth(), st = $("#finReviewStatus"), facts = finMonthFacts(ym);
+  if (!facts.compras){ st.textContent = "No hay compras en este mes."; return; }
+  st.innerHTML = `<span class="spin"></span> Escribiendo…`; S.finReviewing = true;
+  try {
+    const r = await S.sample(`Escribe un resumen breve de mis gastos con tarjeta de crédito del mes ${ym}, en español de Chile, tuteando.
+Usa solo estas cifras, ya calculadas; no calcules cifras nuevas ni inventes datos. Montos en pesos chilenos.
+${JSON.stringify(facts)}
+Formato: 4 a 6 viñetas en markdown. Destaca lo que cambió frente al mes anterior, las categorías sobre su tope, los recurrentes que subieron y los comercios nuevos. Termina con una sugerencia concreta.`, {onText: ({text}) => setHTML($("#finReviewOut"), md(text))});
+    saveLib("fin", c => ({...finCfg(), reviews: {...finCfg().reviews, [ym]: r.text}}));
+    st.textContent = "";
+  } catch (e) { st.textContent = aiErr(e); }
+  finally { S.finReviewing = false; }
 }
 
 /* Detalle de compra: productos con cantidad (qty + unit), contenido por unidad (each + eachUnit), precio (price por per) y total.
@@ -4263,6 +4505,22 @@ const actions = {
   "fin-det-add": () => { if (!S.finDraft) return; S.finDraft.items.push({name: "Producto", foodId: null, qty: null, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: null, cat: ""}); renderFinDet(); },
   "fin-det-del": el => { if (!S.finDraft) return; S.finDraft.items.splice(+el.dataset.i, 1); renderFinDet(); },
   "fin-det-save": () => finDetSave(),
+  "fin-inbox-ok": el => finMarkReviewed([el.dataset.id]),
+  "fin-inbox-all": () => finMarkReviewed(S.movs.filter(m => !m.revisado).map(m => m.id)),
+  "fin-mov-del": async el => {
+    const id = el.dataset.id, m = S.movs.find(x => x.id === id);
+    if (!m || !confirm(`¿Borrar la compra de ${m.comercio} por ${fmtClp(m.monto)}?`)) return;
+    S.movs = S.movs.filter(x => x.id !== id); delete S.movDet[id]; renderFin();
+    try { await finApi("DELETE", "movs/" + encodeURIComponent(id)); } catch (e) { toast("No se pudo borrar: " + e.message); }
+  },
+  "fin-rule-add": () => {
+    const pat = $("#finRulePat").value.trim(), cat = $("#finRuleCat").value;
+    if (!pat || !cat){ toast("Escribe el texto y elige la categoría."); return; }
+    saveLib("fin", () => { const c = finCfg(); return {...c, rules: [...(c.rules || []), {pat, cat}]}; });
+    $("#finRulePat").value = "";
+  },
+  "fin-rule-del": el => saveLib("fin", () => { const c = finCfg(); return {...c, rules: (c.rules || []).filter((_, i) => i !== +el.dataset.i)}; }),
+  "fin-review": () => finReview(),
   "water": el => saveDay(S.date, d => { d.water = Math.max(0, (d.water || 0) + Number(el.dataset.v)); }),
 
   "act-save": () => { saveAct(); document.activeElement && document.activeElement.blur(); toast("Actividad guardada."); },
@@ -4959,7 +5217,10 @@ function wireUI(){
   $("#sItem").addEventListener("change", () => renderStudy());
   ["#cPal","#cPhase","#pAge","#pHeight","#pWeight","#pSex"].forEach(s => $(s).addEventListener("input", renderCalc));
   $("#importFile").addEventListener("change", e => importJson(e.target.files[0]));
-  $("#finList").addEventListener("change", e => { const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur(); saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: t.value}}; }); });
+  ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => { const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur(); saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: t.value}}; }); }));
+  $("#finCatBudgets").addEventListener("change", e => { const c = e.target.dataset.catbud; if (!c) return; const v = clp(e.target.value); saveLib("fin", () => { const f = finCfg(), b = {...f.catBudgets}; if (v > 0) b[c] = Math.round(v); else delete b[c]; return {...f, catBudgets: b}; }); });
+  $("#cartolaFile").addEventListener("change", e => importCartola(e.target.files[0]));
+  $("#finRuleCat").innerHTML = FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
   $("#finDetItems").addEventListener("change", e => {
     const t = e.target, d = S.finDraft; if (!t.classList.contains("fin-in") || !d) return;
     const it = d.items[+t.dataset.i], f = t.dataset.f; if (!it) return;
