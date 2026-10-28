@@ -13,6 +13,7 @@ const CAMPOS = {
 const VISA_FROM_RE = /@([a-z0-9-]+\.)*visa\.com$/i;
 const DKIM_RE = /dkim=pass\s+header\.i=@visa\.com/i;
 const DMARC_RE = /dmarc=pass\s+header\.from=visa\.com/i;
+const MONTO_RE = /^(\d+(?:\.\d+)?)\s*(?:\(.*\))?$/;
 
 /* Devuelve {ok: true, mov} o {ok: false, reason}. */
 export function parseVisaAlert(raw, envelopeFrom) {
@@ -30,11 +31,13 @@ export function parseVisaAlert(raw, envelopeFrom) {
   const campos = {};
   for (const [key, label] of Object.entries(CAMPOS)) {
     const m = text.match(new RegExp(`^\\s*${label}:[ \\t]*(.*)$`, "m"));
-    if (m) campos[key] = m[1].trim();
+    if (m) campos[key] = m[1].replace(/\s+/g, " ").trim();
   }
   if (!campos.comercio || !campos.tarjeta || !campos.tipo) return { ok: false, reason: "no_alerta" };
   if (!/^\d{4}$/.test(campos.tarjeta)) return { ok: false, reason: "tarjeta_invalida" };
-  if (!/^\d+(\.\d+)?$/.test(campos.monto || "")) return { ok: false, reason: "monto_invalido" };
+  // Monto con nota opcional entre paréntesis: "3500(puede haber una diferencia en el monto real)"
+  const monto = (campos.monto || "").match(MONTO_RE);
+  if (!monto) return { ok: false, reason: "monto_invalido" };
 
   const when = chileDateTime(headerValue(head, "date"));
   const messageId = headerValue(head, "message-id");
@@ -52,7 +55,7 @@ export function parseVisaAlert(raw, envelopeFrom) {
       tarjeta: campos.tarjeta,
       tipo: campos.tipo,
       moneda: campos.moneda || "CLP",
-      monto: Number(campos.monto),
+      monto: Number(monto[1]),
     },
   };
 }
