@@ -13,6 +13,7 @@
 :root{
   --bg:#F5F1EA; --surface:#FFFDF9; --sunken:#EEE8DE; --ink:#1D1B18; --muted:#6B645A; --line:#E4DDD1; --line-strong:#CFC6B7; --hl:#EEE8DE;
   --food:#B44D08; --bass:#B4235A; --study:#1F6F8B; --act:#4A55C9; --fin:#8A6A00; --danger:#B3261E; --ok:#2F7D4F;
+  --cat1:#2a78d6; --cat2:#eb6834; --cat3:#1baf7a; --cat4:#eda100; --cat5:#e87ba4; /* series de gráficos de finanzas, validadas sobre --surface */
   --r:14px; --r-sm:10px;
   --fg-prot:#2a78d6; --fg-carb:#eb6834; --fg-veg:#1baf7a; --fg-fat:#eda100; --fg-fruit:#e87ba4; --fg-leg:#008300; --fg-lact:#6250d6; --fg-dish:#e34948;
   --shadow:0 1px 2px rgba(40,30,15,.04),0 2px 10px rgba(40,30,15,.04);
@@ -24,6 +25,7 @@
   :root:not([data-theme="light"]){
     --bg:#22272E; --surface:#2D333B; --sunken:#1C2128; --ink:#E6EDF3; --muted:#A3AEBB; --line:#373E47; --line-strong:#4A525D; --hl:#3A424C;
     --food:#F0904F; --bass:#F2689C; --study:#5DB9D7; --act:#9098F4; --fin:#DDB64F; --danger:#FF8A80; --ok:#6CCB8F;
+    --cat1:#3987e5; --cat2:#d95926; --cat3:#199e70; --cat4:#c98500; --cat5:#d55181;
     --fg-prot:#3987e5; --fg-carb:#d95926; --fg-veg:#199e70; --fg-fat:#c98500; --fg-fruit:#d55181; --fg-leg:#008300; --fg-lact:#9085e9; --fg-dish:#e66767;
     --shadow:0 1px 2px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14); color-scheme:dark;
   }
@@ -31,6 +33,7 @@
 :root[data-theme="dark"]{
   --bg:#22272E; --surface:#2D333B; --sunken:#1C2128; --ink:#E6EDF3; --muted:#A3AEBB; --line:#373E47; --line-strong:#4A525D; --hl:#3A424C;
   --food:#F0904F; --bass:#F2689C; --study:#5DB9D7; --act:#9098F4; --fin:#DDB64F; --danger:#FF8A80; --ok:#6CCB8F;
+  --cat1:#3987e5; --cat2:#d95926; --cat3:#199e70; --cat4:#c98500; --cat5:#d55181;
   --fg-prot:#3987e5; --fg-carb:#d95926; --fg-veg:#199e70; --fg-fat:#c98500; --fg-fruit:#d55181; --fg-leg:#008300; --fg-lact:#9085e9; --fg-dish:#e66767;
   --shadow:0 1px 2px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14); color-scheme:dark;
 }
@@ -373,6 +376,10 @@ nav.tabs button[data-tab=estudio][aria-selected=true] .ico{color:var(--study)}
 nav.tabs button[data-tab=finanzas][aria-selected=true] .ico{color:var(--fin)}
 .c-ink{--c:var(--ink)}.c-fin{--c:var(--fin)}
 .fincum rect.hit:hover{fill:var(--hl);fill-opacity:.7}
+.fin-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 0 0;font-size:.84rem;color:var(--ink)}
+.fin-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+#finDist rect.seg:hover,.fin-chart rect.seg:hover{opacity:.8}
+.fin-chart g.day:hover>rect:first-child{fill:var(--hl)}
 .nbadge{margin-left:6px;padding:0 7px;border-radius:999px;background:var(--fin);color:var(--surface);font-size:.72rem;font-weight:700;line-height:1.5}
 .page-head{display:flex;gap:16px;align-items:center;margin-bottom:24px}
 .page-head h2{margin:0}
@@ -1123,6 +1130,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="panel"><h3>Gasto acumulado</h3><div id="finCum"></div></div>
       <div class="panel"><h3>Resumen</h3><div id="finSummary"></div></div>
     </div>
+    <div class="panel mt"><h3>Distribución del gasto</h3><div id="finDist"></div></div>
+    <div class="panel mt"><h3>Evolución mensual</h3><div id="finEvo"></div></div>
+    <div class="panel mt"><h3>Comida por día</h3><div id="finFood"></div></div>
     <div class="grid g2 mt">
       <div class="panel">
         <h3>Por categoría</h3>
@@ -2743,7 +2753,30 @@ function renderMetrics(m){
    lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto}} */
 const FIN_CATS = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Otros"];
 const BANK_CATS = {"Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros"};
-const FIN_SRC = {comercio: "", regla: "regla", sugerida: "sugerida", banco: "banco"};
+const FIN_SRC = {comercio: "", regla: "regla", base: "regla base", sugerida: "sugerida", banco: "banco"};
+// Reglas base: palabras genéricas y cadenas de Chile, en orden de prioridad (mascotas antes que salud).
+// Palabras de menos de 6 letras calzan con una palabra completa del nombre; las demás, como parte del nombre.
+const FIN_BASE_RULES = [
+  ["Mascotas", ["veterinaria", "veterinario", "petshop", "pet", "mascota", "superzoo", "jardin zoo"]],
+  ["Comida y delivery", ["uber eats", "rappi", "pedidosya", "justo", "didi food", "cornershop"]],
+  ["Supermercado", ["unimarc", "lider", "lidercl", "jumbo", "tottus", "santa isabel", "acuenta", "alvi", "minimarket", "market", "carniceria", "panaderia", "pasteleria", "emporio", "verduleria", "almacen", "tostaduria", "feria", "fruteria"]],
+  ["Restaurantes y bares", ["bar", "restaurant", "restobar", "cafe", "cafeteria", "sushi", "pizza", "pizzeria", "cerveceria", "birras", "sangucheria", "fuente de soda", "starbucks", "juan maestro", "dominos", "mcdonalds", "burger"]],
+  ["Transporte", ["uber trip", "uber rides", "cabify", "didi", "metro", "bip", "copec", "shell", "aramco", "petrobras", "estacionamiento", "parking", "autopista", "tag"]],
+  ["Salud", ["farmacia", "salcobrand", "cruz verde", "ahumada", "dr simi", "clinica", "dental", "laboratorio", "optica"]],
+  ["Deporte", ["easycancha", "wellhub", "gympass", "smartfit", "sportlife", "pacific", "gimnasio", "gym", "decathlon"]],
+  ["Suscripciones", ["netflix", "spotify", "disney", "hbo", "youtube", "apple com", "icloud", "google", "openai", "chatgpt", "prime video", "amazon prime"]],
+  ["Compras", ["mercadolibre", "falabella", "paris", "ripley", "aliexpress", "temu", "shein", "amazon", "hites", "abcdin"]],
+  ["Entretención", ["cine", "cinemark", "cineplanet", "puntoticket", "ticketmaster", "passline", "buin zoo"]],
+  ["Hogar", ["sodimac", "homecenter", "easy", "ikea", "construmart", "imperial"]]
+];
+function finBaseRule(comercio){
+  const words = norm(comercio).split(/[^a-z0-9]+/).filter(Boolean), joined = words.join("");
+  for (const [cat, kws] of FIN_BASE_RULES) for (const kw of kws){
+    const k = norm(kw).replace(/[^a-z0-9]/g, "");
+    if (k.length < 6 && !kw.includes(" ") ? words.includes(k) : joined.includes(k)) return cat;
+  }
+  return null;
+}
 const finCfg = () => Object.assign({budget: null, cats: {}, rules: [], catBudgets: {}, reviews: {}}, S.lib.fin || {});
 // Clave de comercio: sin tildes, mayúsculas ni signos ("MERPAGO*X" y "MERPAGOX" coinciden)
 const finKey = s => norm(s).replace(/[^a-z0-9]/g, "");
@@ -2764,6 +2797,8 @@ function finCatInfoCalc(m){
   if (pre) return {cat: map[pre], src: "comercio"};
   const rule = (finCfg().rules || []).find(r => r.pat && k.includes(finKey(r.pat)));
   if (rule) return {cat: rule.cat, src: "regla"};
+  const base = finBaseRule(m.comercio);
+  if (base) return {cat: base, src: "base"};
   const votes = {};
   for (const t of finTokens(m.comercio)) for (const [x, c] of Object.entries(map)) if (x.includes(t)) votes[c] = (votes[c] || 0) + 1;
   const best = Object.entries(votes).sort((a, b) => b[1] - a[1])[0];
@@ -2812,11 +2847,13 @@ function renderFin(){
   const vs = prevSame ? (total - prevSame) / prevSame * 100 : null;
   $("#finMonthLbl").textContent = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
   renderFinKpis(c); renderFinCum(c);
+  const top = finTopCats(c.ym);
+  renderFinDist(c, top); renderFinEvo(c, top); renderFinFood(c);
   setHTML($("#finSummary"), `<dl>
     <dt>Compras</dt><dd>${fmt(buys.length)}</dd>
     <dt>Ticket promedio</dt><dd>${buys.length ? fmtClp(total / buys.length) : "—"}</dd>
     <dt>Promedio diario</dt><dd>${fmtClp(daily)}</dd>
-    <dt>Frente al mes anterior</dt><dd>${vs === null ? "—" : `${vs > 0 ? "+" : ""}${fmt(vs)}% (${fmtClp(prevSame)} al día ${dayCut})`}</dd>
+    <dt>Frente al mes anterior</dt><dd>${vs === null ? "—" : `${vs > 0 ? "+" : ""}${fmt(vs)}% (${fmtClp(prevSame)} al día ${dayCut})`}${finPartialNote(c.prevYm) ? `<div class="small muted">mes anterior con ${finPartialNote(c.prevYm)}</div>` : ""}</dd>
   </dl>`);
 
   const byCat = finCatTotals(buys);
@@ -2872,10 +2909,14 @@ function finCumChart(c, width){
   for (let v = 0; v <= max + 1e-9; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmtClpShort(v)}</text>`;
   for (const d of [1, 8, 15, 22, n]) s += `<text x="${x(d)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${d}</text>`;
   for (let d = 1; d <= n; d++) s += `<rect class="hit" x="${x(d) - (W - L - R) / n / 2}" y="${T}" width="${(W - L - R) / n}" height="${H - T - B}" fill="transparent"><title>Día ${d}: ${d <= end ? fmtClp(cur[d]) + " este mes" : "aún no llega"}${d <= prevLast ? `; ${fmtClp(prev[d])} el mes anterior` : ""}${b ? `; ritmo ${fmtClp(b * d / n)}` : ""}</title></rect>`;
-  if (b) s += `<line x1="${x(1)}" y1="${y(b / n)}" x2="${x(n)}" y2="${y(b)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="5 4"/><text x="${x(n) + 6}" y="${y(b) + 4}" font-size="11" fill="var(--muted)">tope ${fmtClpShort(b)}</text>`;
+  // etiquetas del borde derecho (proyección y tope) separadas al menos 14 px
+  const hasProj = c.isCur && end < n;
+  let yP = y(c.proj) + 4, yB = b ? y(b) + 4 : null;
+  if (hasProj && yB !== null && Math.abs(yP - yB) < 14){ if (yP <= yB) yB = yP + 14; else yP = yB + 14; }
+  if (b) s += `<line x1="${x(1)}" y1="${y(b / n)}" x2="${x(n)}" y2="${y(b)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="5 4"/><text x="${x(n) + 6}" y="${yB}" font-size="11" fill="var(--muted)">tope ${fmtClpShort(b)}</text>`;
   const pe = Math.min(prevLast, n);
   if (prev[pe]) s += `<polyline points="${line(prev, 1, pe)}" fill="none" stroke="var(--muted)" stroke-opacity=".8" stroke-width="1.6" stroke-linejoin="round"/>`;
-  if (c.isCur && end < n) s += `<line x1="${x(end)}" y1="${y(cur[end])}" x2="${x(n)}" y2="${y(c.proj)}" stroke="var(--fin)" stroke-width="2.2" stroke-dasharray="1.5 5" stroke-linecap="round"/><text x="${x(n) + 6}" y="${y(c.proj) + 4}" font-size="11" font-weight="600" fill="var(--ink)">${fmtClpShort(c.proj)}</text>`;
+  if (hasProj) s += `<line x1="${x(end)}" y1="${y(cur[end])}" x2="${x(n)}" y2="${y(c.proj)}" stroke="var(--fin)" stroke-width="2.2" stroke-dasharray="1.5 5" stroke-linecap="round"/><text x="${x(n) + 6}" y="${yP}" font-size="11" font-weight="600" fill="var(--ink)">${fmtClpShort(c.proj)}</text>`;
   s += `<polyline points="${line(cur, 1, end)}" fill="none" stroke="var(--fin)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
   s += `<circle cx="${x(end)}" cy="${y(cur[end])}" r="4" fill="var(--fin)" stroke="var(--surface)" stroke-width="2"/><text x="${x(end) + (c.isCur && end < n ? -8 : 8)}" y="${y(cur[end]) - 9}" text-anchor="${c.isCur && end < n ? "end" : "start"}" font-size="12" font-weight="700" fill="var(--ink)">${fmtClpShort(cur[end])}</text>`;
   return s + "</svg>";
@@ -2885,8 +2926,145 @@ function renderFinCum(c){
   const {cur, prev, end, b} = finCumSeries(c), n = c.lastDay;
   const rows = [7, 14, 21, 28, n].filter((d, i, a) => d <= n && a.indexOf(d) === i);
   setHTML(el, `<div class="wchart fincum">${finCumChart(c, el.clientWidth)}</div>
-    <div class="gw-legend" style="margin:8px 0 0"><span><i style="background:var(--fin)"></i>Este mes${c.isCur ? " (punteado: proyección)" : ""}</span><span><i style="background:var(--muted)"></i>Mes anterior</span>${b ? `<span><i style="background:var(--ink);opacity:.55"></i>Ritmo del presupuesto</span>` : ""}</div>
+    <div class="gw-legend" style="margin:8px 0 0"><span><i style="background:var(--fin)"></i>Este mes${c.isCur ? " (punteado: proyección)" : ""}</span><span><i style="background:var(--muted)"></i>Mes anterior${finPartialNote(c.prevYm) ? ` (${finPartialNote(c.prevYm)})` : ""}</span>${b ? `<span><i style="background:var(--ink);opacity:.55"></i>Ritmo del presupuesto</span>` : ""}</div>
     <details class="mt"><summary class="small">Ver como tabla</summary><div class="scroll"><table><thead><tr><th>Al día</th><th class="n">Este mes</th><th class="n">Mes anterior</th>${b ? `<th class="n">Ritmo</th>` : ""}</tr></thead><tbody>${rows.map(d => `<tr><td>${d}</td><td class="n">${d <= end ? fmtClp(cur[d]) : "—"}</td><td class="n">${fmtClp(prev[Math.min(d, 31)])}</td>${b ? `<td class="n">${fmtClp(b * d / n)}</td>` : ""}</tr>`).join("")}</tbody></table></div></details>`);
+}
+
+/* Colores por categoría: las 5 de mayor gasto en los 12 meses que terminan en el mes elegido; el resto va a "Otras" */
+const FIN_SLOTS = ["var(--cat1)", "var(--cat2)", "var(--cat3)", "var(--cat4)", "var(--cat5)"], FIN_OTHER = "var(--muted)";
+const finMonths12 = ym => Array.from({length: 12}, (_, i) => shiftMonth(ym, i - 11));
+// Primera compra registrada; un mes que empieza antes tiene datos parciales
+const finDataStart = () => S.movs.filter(isPurchase).reduce((a, m) => m.fecha < a ? m.fecha : a, "9999-12-31");
+const finPartialNote = ym => { const s = finDataStart(); return s > ym + "-01" && s.startsWith(ym) ? `datos desde el ${fmtShort(s)}` : ""; };
+function finTopCats(ym){
+  const tot = finCatTotals(finMonths12(ym).flatMap(finBuysOf));
+  return Object.entries(tot).filter(([c]) => c !== "Sin categoría").sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c]) => c);
+}
+// Agrupa los totales por categoría en las 5 principales + Otras, en orden fijo
+function finGroup(tot, top){
+  const g = top.map((c, i) => ({cat: c, color: FIN_SLOTS[i], v: tot[c] || 0}));
+  g.push({cat: "Otras", color: FIN_OTHER, v: sum(Object.entries(tot).filter(([c]) => !top.includes(c)), ([, v]) => v)});
+  return g;
+}
+const finLegend = (g, total) => `<div class="fin-legend">${g.filter(x => x.v > 0).map(x => `<span><i style="background:${x.color}"></i>${esc(x.cat)} <strong>${fmtClp(x.v)}</strong>${total ? ` <span class="muted">${fmt(x.v / total * 100)}%</span>` : ""}</span>`).join("")}</div>`;
+
+/* Distribución del mes: barra 100% apilada por categoría */
+function renderFinDist(c, top){
+  const g = finGroup(finCatTotals(c.buys), top), total = sum(g, x => x.v);
+  if (!total){ setHTML($("#finDist"), `<p class="empty">Sin compras en este mes.</p>`); return; }
+  const W = 600, H = 30, gap = 2, parts = g.filter(x => x.v > 0), avail = W - gap * (parts.length - 1);
+  let x = 0, s = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Distribución del gasto del mes por categoría" style="display:block;width:100%;height:${H}px"><defs><clipPath id="finDistClip"><rect width="${W}" height="${H}" rx="6"/></clipPath></defs><g clip-path="url(#finDistClip)">`;
+  for (const p of parts){
+    const w = avail * p.v / total;
+    s += `<rect class="seg" x="${x.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${H}" fill="${p.color}"><title>${esc(p.cat)}: ${fmtClp(p.v)} (${fmt(p.v / total * 100)}%)</title></rect>`;
+    x += w + gap;
+  }
+  setHTML($("#finDist"), s + `</g></svg>` + finLegend(g, total));
+}
+
+/* Evolución mensual: 12 meses apilados por categoría; el mes en curso muestra además su proyección */
+function finEvoChart(c, top, width){
+  const t = today();
+  let data = finMonths12(c.ym).map(ym => ({ym, g: finGroup(finCatTotals(finBuysOf(ym)), top)})).map(d => ({...d, total: sum(d.g, x => x.v)}));
+  // sin los meses vacíos del inicio, con un mínimo de 6
+  const first = data.findIndex(d => d.total > 0);
+  if (first > 0) data = data.slice(Math.min(first, data.length - 6));
+  const cur = data.find(d => d.ym === t.slice(0, 7)), proj = cur ? cur.total * new Date(+cur.ym.slice(0, 4), +cur.ym.slice(5), 0).getDate() / +t.slice(8) : 0;
+  const full = data.filter(d => d.total > 0 && d.ym < t.slice(0, 7) && !finPartialNote(d.ym)), avg = full.length ? sum(full, d => d.total) / full.length : 0;
+  const W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 210 : 250, L = 56, R = 12, T = 18, B = 26;
+  const top_ = Math.max(...data.map(d => d.total), proj, avg, 1), raw = top_ / 4, p10 = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map(k => k * p10).find(k => k >= raw), max = Math.ceil(top_ * 1.04 / step) * step;
+  const slot = (W - L - R) / data.length, bw = Math.min(44, slot * .62), y = v => T + (H - T - B) * (1 - v / max), hpx = v => (H - T - B) * v / max;
+  const mlab = ym => new Date(+ym.slice(0, 4), +ym.slice(5) - 1, 1).toLocaleDateString("es-CL", {month: "short"}).replace(".", "");
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gasto de los últimos 12 meses por categoría" style="font-family:'Hanken Grotesk',system-ui,sans-serif"><defs>`;
+  data.forEach((d, i) => { const x0 = L + slot * i + (slot - bw) / 2; s += `<clipPath id="finEvo${i}"><rect x="${x0}" y="${T}" width="${bw}" height="${H - T - B + 6}" rx="4"/></clipPath>`; });
+  s += `</defs>`;
+  for (let v = 0; v <= max + 1e-9; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmtClpShort(v)}</text>`;
+  data.forEach((d, i) => {
+    const x0 = L + slot * i + (slot - bw) / 2, sel = d.ym === c.ym;
+    if (d === cur && proj > d.total) s += `<rect x="${x0}" y="${y(proj)}" width="${bw}" height="${hpx(proj - d.total)}" rx="4" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="3 3"><title>Proyección de ${mlab(d.ym)}: ${fmtClp(proj)}</title></rect>`;
+    let acc = 0; s += `<g clip-path="url(#finEvo${i})">`;
+    for (const p of d.g){
+      if (!p.v) continue;
+      const h = hpx(p.v), yy = y(acc + p.v);
+      s += `<rect class="seg" x="${x0}" y="${yy.toFixed(1)}" width="${bw}" height="${Math.max(0, h - 2).toFixed(1)}" fill="${p.color}"><title>${esc(p.cat)}, ${mlab(d.ym)}: ${fmtClp(p.v)}</title></rect>`;
+      acc += p.v;
+    }
+    s += `</g><text x="${x0 + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" font-weight="${sel ? 700 : 500}" fill="${sel ? "var(--ink)" : "var(--muted)"}">${mlab(d.ym)}</text>`;
+    if (sel && d.total) s += `<text x="${x0 + bw / 2}" y="${y(Math.max(d.total, d === cur ? proj : 0)) - 6}" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">${fmtClpShort(d.total)}</text>`;
+  });
+  if (avg) s += `<line x1="${L}" x2="${W - R}" y1="${y(avg)}" y2="${y(avg)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="5 4"><title>Promedio de los meses cerrados: ${fmtClp(avg)}</title></line>`;
+  return {svg: s + "</svg>", data, avg, proj, cur};
+}
+function renderFinEvo(c, top){
+  const el = $("#finEvo"), r = finEvoChart(c, top, el.clientWidth);
+  if (!r.data.some(d => d.total)){ setHTML(el, `<p class="empty">Sin compras en los últimos 12 meses.</p>`); return; }
+  const shown = r.data.filter(d => d.total), partial = shown.find(d => finPartialNote(d.ym));
+  setHTML(el, `<div class="wchart fin-chart">${r.svg}</div>
+    ${finLegend(finGroup(finCatTotals(finMonths12(c.ym).flatMap(finBuysOf)), top), 0)}
+    <p class="small muted" style="margin:6px 0 0">${r.avg ? `Línea punteada: promedio de los meses cerrados y completos, ${fmtClp(r.avg)}. ` : ""}${r.cur && r.proj > r.cur.total ? `El contorno punteado del mes en curso es su proyección (${fmtClp(r.proj)}). ` : ""}${partial ? `${esc(partial.ym)} tiene ${finPartialNote(partial.ym)}.` : ""}</p>
+    <details class="mt"><summary class="small">Ver como tabla</summary><div class="scroll"><table><thead><tr><th>Mes</th>${top.map(t => `<th class="n">${esc(t)}</th>`).join("")}<th class="n">Otras</th><th class="n">Total</th></tr></thead><tbody>${shown.map(d => `<tr><td>${esc(d.ym)}</td>${d.g.map(x => `<td class="n">${fmtClp(x.v)}</td>`).join("")}<td class="n"><strong>${fmtClp(d.total)}</strong></td></tr>`).join("")}</tbody></table></div></details>`);
+}
+
+/* Comida: en casa (Supermercado, o productos detallados con alimento) y fuera (Comida y delivery, Restaurantes y bares) */
+const FOOD_HOME = ["Supermercado"], FOOD_OUT = ["Comida y delivery", "Restaurantes y bares"];
+function finFoodSplit(m){
+  const base = finCat(m), r = {casa: 0, fuera: 0}, kind = c => FOOD_OUT.includes(c) ? "fuera" : FOOD_HOME.includes(c) ? "casa" : null;
+  let rest = m.monto;
+  for (const it of (S.movDet[m.id] || {}).items || []){
+    if (!it.amt) continue; rest -= it.amt;
+    const k = kind(it.cat || base) || (it.foodId ? kind(base) || "casa" : null);
+    if (k) r[k] += it.amt;
+  }
+  const kb = kind(base); if (kb && rest > 0) r[kb] += rest;
+  return r;
+}
+function finFoodDaily(ym, n){
+  const days = Array.from({length: n + 1}, () => ({casa: 0, fuera: 0}));
+  for (const m of finBuysOf(ym)){ const d = +m.fecha.slice(8), f = finFoodSplit(m); if (d <= n){ days[d].casa += f.casa; days[d].fuera += f.fuera; } }
+  return days;
+}
+function finFoodChart(c, days, avg, width){
+  const n = c.lastDay, W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 190 : 220, L = 56, R = 12, T = 14, B = 26;
+  const top_ = Math.max(...days.slice(1).map(d => d.casa + d.fuera), avg, 1), raw = top_ / 4, p10 = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map(k => k * p10).find(k => k >= raw), max = Math.ceil(top_ * 1.04 / step) * step;
+  const slot = (W - L - R) / n, bw = Math.max(3, slot * .64), y = v => T + (H - T - B) * (1 - v / max), hpx = v => (H - T - B) * v / max;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gasto diario en comida, en casa y fuera" style="font-family:'Hanken Grotesk',system-ui,sans-serif"><defs>`;
+  for (let d = 1; d <= n; d++) s += `<clipPath id="finFood${d}"><rect x="${L + slot * (d - 1) + (slot - bw) / 2}" y="${T}" width="${bw}" height="${H - T - B + 6}" rx="${Math.min(4, bw / 2)}"/></clipPath>`;
+  s += `</defs>`;
+  for (let v = 0; v <= max + 1e-9; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmtClpShort(v)}</text>`;
+  for (let d = 1; d <= n; d++){
+    const x0 = L + slot * (d - 1) + (slot - bw) / 2, v = days[d], tot = v.casa + v.fuera;
+    s += `<g class="day"><rect x="${L + slot * (d - 1)}" y="${T}" width="${slot}" height="${H - T - B}" fill="transparent"/>`;
+    if (tot){
+      s += `<g clip-path="url(#finFood${d})">`;
+      if (v.casa) s += `<rect x="${x0}" y="${y(v.casa).toFixed(1)}" width="${bw}" height="${hpx(v.casa).toFixed(1)}" fill="var(--cat1)"/>`;
+      if (v.fuera) s += `<rect x="${x0}" y="${y(tot).toFixed(1)}" width="${bw}" height="${Math.max(0, hpx(v.fuera) - (v.casa ? 2 : 0)).toFixed(1)}" fill="var(--cat2)"/>`;
+      s += `</g>`;
+    }
+    s += `<title>Día ${d}: ${fmtClp(tot)}${tot ? ` (en casa ${fmtClp(v.casa)}, fuera ${fmtClp(v.fuera)})` : ""}</title></g>`;
+  }
+  for (const d of [1, 8, 15, 22, n]) s += `<text x="${L + slot * (d - .5)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${d}</text>`;
+  if (avg) s += `<line x1="${L}" x2="${W - R}" y1="${y(avg)}" y2="${y(avg)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="5 4"/><text x="${W - R}" y="${y(avg) - 5}" text-anchor="end" font-size="11" font-weight="600" fill="var(--ink)">promedio ${fmtClp(avg)}</text>`;
+  return s + "</svg>";
+}
+function renderFinFood(c){
+  const el = $("#finFood"), days = finFoodDaily(c.ym, c.lastDay), upto = days.slice(1, c.dayCut + 1);
+  const casa = sum(upto, d => d.casa), fuera = sum(upto, d => d.fuera), tot = casa + fuera, avg = c.dayCut ? tot / c.dayCut : 0;
+  const prevN = new Date(c.y, c.mo - 1, 0).getDate(), prev = finFoodDaily(c.prevYm, prevN).slice(1), prevAvg = sum(prev, d => d.casa + d.fuera) / prevN;
+  const withFood = upto.filter(d => d.casa + d.fuera > 0).length, maxD = upto.reduce((b, d, i) => d.casa + d.fuera > b.v ? {v: d.casa + d.fuera, d: i + 1} : b, {v: 0, d: 0});
+  if (!tot){ setHTML(el, `<p class="empty">Sin gasto en comida este mes. Cuenta lo que esté en Supermercado, Comida y delivery o Restaurantes y bares, y los productos detallados que tengan un alimento asociado.</p>`); return; }
+  setHTML(el, `<div class="grid g2"><div><div class="wchart fin-chart">${finFoodChart(c, days, avg, el.clientWidth / 2)}</div>
+      <div class="fin-legend"><span><i style="background:var(--cat1)"></i>En casa <strong>${fmtClp(casa)}</strong> <span class="muted">${fmt(casa / tot * 100)}%</span></span><span><i style="background:var(--cat2)"></i>Fuera <strong>${fmtClp(fuera)}</strong> <span class="muted">${fmt(fuera / tot * 100)}%</span></span></div></div>
+    <dl>
+      <dt>Promedio diario</dt><dd>${fmtClp(avg)}</dd>
+      <dt>Mes anterior</dt><dd>${finPartialNote(c.prevYm) ? `<span class="muted">${finPartialNote(c.prevYm)}, sin comparar</span>` : prevAvg ? `${fmtClp(prevAvg)} al día (${avg > prevAvg ? "+" : ""}${fmt((avg - prevAvg) / prevAvg * 100)}%)` : "—"}</dd>
+      <dt>Total del mes</dt><dd>${fmtClp(tot)}</dd>
+      <dt>Días con compras de comida</dt><dd>${withFood} de ${c.dayCut}</dd>
+      <dt>Día de mayor gasto</dt><dd>${maxD.d ? `${maxD.d}: ${fmtClp(maxD.v)}` : "—"}</dd>
+      ${c.isCur ? `<dt>Proyección del mes</dt><dd>${fmtClp(avg * c.lastDay)}</dd>` : ""}
+    </dl></div>
+    <p class="small muted" style="margin:8px 0 0">El promedio divide lo gastado en comida entre los días transcurridos del mes, incluidos los días sin compras. En casa: Supermercado y productos detallados con un alimento asociado. Fuera: Comida y delivery y Restaurantes y bares. Una compra de supermercado sin detallar cuenta completa, aunque incluya cosas que no son comida.</p>`);
 }
 
 /* Tendencia por categoría: últimos 6 meses; el mes en curso se compara proyectado */
@@ -5405,7 +5583,7 @@ function wireUI(){
     const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT|BUTTON/.test(a.tagName)) return;
     e.preventDefault(); Metro.toggle();
   });
-  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFinCum(finMonthCtx()); }, 150); });
+  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFin(); }, 150); });
   Metro.drawBeats(); Metro.setBpm(80);
 }
 init();
