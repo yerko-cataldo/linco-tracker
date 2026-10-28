@@ -1123,6 +1123,15 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       </div>
     </div>
     <div class="panel mt"><h3>Movimientos</h3><div id="finList"></div></div>
+    <div class="panel mt" id="finDetPanel" hidden>
+      <div class="item-head"><h3 id="finDetHead">Detalle de la compra</h3><span class="act"><button class="btn ghost small" data-action="fin-det-close">Cerrar</button></span></div>
+      <div class="field"><span class="sr">Qué compraste</span><textarea id="finDetText" rows="2" placeholder="3 bidones de agua de 20 L, 8 plátanos a $2.100 el kg"></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn primary ai-only" data-action="fin-det-ai" hidden>Separar con IA</button><button class="btn" data-action="fin-det-add">Agregar producto</button><span class="small muted" id="finDetStatus"></span></div>
+      <div id="finDetItems" class="mt"></div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-action="fin-det-save">Guardar detalle</button></div>
+      <p class="small muted" style="margin:10px 0 0">La IA solo separa los productos y copia los números que escribiste. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
+    </div>
+    <div class="panel mt"><h3>Precios por producto</h3><div id="finPrices"></div></div>
     <p class="small muted">El gasto suma las compras en pesos. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. La categoría se asigna por comercio y se aplica a todas sus compras. Las alertas de Visa llegan al autorizar la compra, así que una compra anulada puede aparecer igual.</p>
   </section>
 
@@ -1326,7 +1335,7 @@ const r1 = x => Math.round((Number(x) || 0) * 10) / 10;
 const S = {
   date: today(), tab: "hoy", days: {},
   lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: [], share: {}, optim: {}, fin: {}},
-  movs: [], finMonth: null,
+  movs: [], movDet: {}, finMonth: null, finDraft: null,
   build: [],
   weekFrom: null,
   mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planNote: "",
@@ -1392,7 +1401,13 @@ async function loadState(){
   for (const [k, v] of Object.entries(st.days || {})) if (!(Store.pending["days/" + k] > 0)) next[k] = v;
   S.days = next;
   for (const [k, v] of Object.entries(st.lib || {})) if (!(Store.pending["lib/" + k] > 0)) applyLib(k, v);
-  if (!SHARE) S.movs = st.movs || [];
+  if (!SHARE){
+    S.movs = st.movs || [];
+    const det = {};
+    for (const k of Object.keys(S.movDet)) if (Store.pending["movdet/" + encodeURIComponent(k)] > 0) det[k] = S.movDet[k];
+    for (const [k, v] of Object.entries(st.movDet || {})) if (!(k in det)) det[k] = v;
+    S.movDet = det;
+  }
 }
 async function initShare(){
   document.body.classList.add("share"); S.readOnly = true;
@@ -2698,8 +2713,13 @@ function renderFin(){
     <dt>Frente al mes anterior</dt><dd>${vs === null ? "—" : `${vs > 0 ? "+" : ""}${fmt(vs)}% (${fmtClp(prevSame)} al día ${dayCut})`}</dd>
   </dl>`);
 
+  // Por categoría: cada producto detallado va a su categoría; lo no detallado, a la del comercio
   const byCat = {};
-  for (const m of buys){ const c = finCat(m) || "Sin categoría"; byCat[c] = (byCat[c] || 0) + m.monto; }
+  for (const m of buys){
+    const base = finCat(m) || "Sin categoría"; let rest = m.monto;
+    for (const it of (S.movDet[m.id] || {}).items || []){ if (!it.amt) continue; const c = it.cat || base; byCat[c] = (byCat[c] || 0) + it.amt; rest -= it.amt; }
+    if (rest > 0) byCat[base] = (byCat[base] || 0) + rest;
+  }
   const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
   setHTML($("#finCats"), cats.length ? cats.map(([c, v]) => { const pct = total ? v / total * 100 : 0;
     return `<div class="meter"><div class="lab"><span><strong>${esc(c)}</strong> ${fmtClp(v)}</span><span>${fmt(pct)}%</span></div><div class="bar"><i style="width:${clamp(pct, 0, 100)}%;background:var(--fin)"></i></div></div>`; }).join("")
@@ -2712,11 +2732,139 @@ function renderFin(){
   const opts = c => `<option value="">Sin categoría</option>` + FIN_CATS.map(x => `<option${x === c ? " selected" : ""}>${esc(x)}</option>`).join("");
   setHTML($("#finList"), inMonth.length ? `<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${inMonth.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
-      <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}</td>
+      <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}${finDetSummary(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
       <td><select data-fin-cat="${esc(finKey(m.comercio))}" aria-label="Categoría de ${esc(m.comercio)}">${opts(finCat(m))}</select></td>
       <td class="n">${m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${isPurchase(m) ? "" : `<div class="small muted">${esc(m.tipo)}, no suma</div>`}</td>
     </tr>`).join("")}</tbody></table></div>`
     : `<p class="empty">Sin movimientos en este mes.</p>`);
+  renderFinDet(); renderFinPrices();
+}
+
+/* Detalle de compra: productos con cantidad (qty + unit), contenido por unidad (each + eachUnit), precio (price por per) y total.
+   La IA separa el texto; finCalc() calcula totales, cantidades y precio por kg o litro. */
+const FIN_UNITS = {un: 0, kg: 1000, g: 1, L: 1000, ml: 1};
+const FIN_PER = ["un", "kg", "L"];
+const foodOf = id => id ? foods().find(f => f.id === id) || null : null;
+const clp = v => { if (v === null || v === undefined || v === "") return null; const x = parseFloat(String(v).replace(/[$\s]/g, "").replace(/\./g, "").replace(",", ".")); return isFinite(x) ? x : null; };
+const finLiquid = it => it.unit === "L" || it.unit === "ml" || it.per === "L" || (it.unit === "un" && it.eachUnit === "ml");
+// Gramos o mililitros comprados: {v, est}; est = sale de la porción típica del alimento
+function finBase(it){
+  if (it.qty === null || it.qty === undefined) return null;
+  if (it.unit !== "un") return FIN_UNITS[it.unit] ? {v: it.qty * FIN_UNITS[it.unit], est: false} : null;
+  if (it.each) return {v: it.qty * it.each, est: false};
+  const f = foodOf(it.foodId); return f && f.unitG ? {v: it.qty * f.unitG, est: true} : null;
+}
+// Calculados: amt (total del producto), g (gramos o ml), gEst, perKg ($ por kg o L) y rest (recibe lo que falta)
+function finCalc(items, monto){
+  const out = items.map(it => {
+    const o = {...it, rest: false, amt: null}, b = finBase(o);
+    o.g = b ? b.v : null; o.gEst = b ? b.est : false;
+    if (o.total !== null && o.total !== undefined) o.amt = o.total;
+    else if (o.price !== null && o.price !== undefined){
+      if (o.per === "un" && o.unit === "un" && o.qty) o.amt = Math.round(o.price * o.qty);
+      else if (o.per && o.per !== "un" && o.g && !o.gEst) o.amt = Math.round(o.price * o.g / 1000);
+    }
+    return o;
+  });
+  const open = out.filter(o => o.amt === null);
+  if (open.length === 1){
+    const o = open[0]; o.amt = Math.max(0, monto - sum(out.filter(x => x !== o), x => x.amt)); o.rest = true;
+    if (o.price && o.per && o.per !== "un" && (!o.g || o.gEst)){ o.g = o.amt / o.price * 1000; o.gEst = false; }
+  }
+  for (const o of out) o.perKg = o.amt && o.g ? o.amt / o.g * 1000 : null;
+  const tot = sum(out, o => o.amt);
+  return {items: out, sum: tot, diff: monto - tot};
+}
+function finDetSummary(m){
+  const items = (S.movDet[m.id] || {}).items || [];
+  return items.length ? `<div class="small muted">${items.map(it => esc(it.name)).join(", ")}</div>` : "";
+}
+function finItemsFromAI(list){
+  const n = v => typeof v === "number" && isFinite(v) && v >= 0 ? v : null;
+  return (Array.isArray(list) ? list : []).filter(x => x && typeof x.name === "string" && x.name.trim()).map(x => ({
+    name: x.name.trim(),
+    foodId: foodOf(x.foodId) ? x.foodId : null,
+    qty: n(x.qty), unit: x.unit in FIN_UNITS ? x.unit : "un",
+    each: n(x.each), eachUnit: x.eachUnit === "ml" ? "ml" : "g",
+    price: n(x.price), per: FIN_PER.includes(x.per) ? x.per : null,
+    total: n(x.total), cat: FIN_CATS.includes(x.cat) ? x.cat : ""
+  }));
+}
+function renderFinDet(){
+  const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), p = $("#finDetPanel");
+  p.hidden = !m; if (!m) return;
+  $("#finDetHead").textContent = `${m.comercio}, ${fmtShort(m.fecha)}: ${fmtClp(m.monto)}`;
+  const c = finCalc(d.items, m.monto), fl = foods();
+  const opt = (vals, cur, lbl = v => v) => vals.map(v => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(lbl(v))}</option>`).join("");
+  const inp = (i, f, v, w = 5) => `<input class="fin-in" data-i="${i}" data-f="${f}" value="${esc(v ?? "")}" inputmode="decimal" style="width:${w}em">`;
+  setHTML($("#finDetItems"), d.items.length ? `<div class="scroll"><table><thead><tr><th>Producto</th><th>Alimento</th><th>Cantidad</th><th>Contenido c/u</th><th>Precio</th><th class="n">Total</th><th class="n">$/kg o L</th><th>Categoría</th><th></th></tr></thead><tbody>${c.items.map((it, i) => `<tr>
+      <td><input class="fin-in" data-i="${i}" data-f="name" value="${esc(it.name)}" style="width:10em"></td>
+      <td><select class="fin-in" data-i="${i}" data-f="foodId"><option value="">—</option>${fl.map(f => `<option value="${esc(f.id)}"${f.id === it.foodId ? " selected" : ""}>${esc(f.name)}</option>`).join("")}</select></td>
+      <td>${inp(i, "qty", it.qty === null ? "" : String(it.qty).replace(".", ","), 4)} <select class="fin-in" data-i="${i}" data-f="unit">${opt(Object.keys(FIN_UNITS), it.unit)}</select></td>
+      <td>${it.unit === "un" ? `${inp(i, "each", it.each, 5)} <select class="fin-in" data-i="${i}" data-f="eachUnit">${opt(["g", "ml"], it.eachUnit)}</select>` : `<span class="muted">—</span>`}</td>
+      <td>${inp(i, "price", it.price, 6)} <select class="fin-in" data-i="${i}" data-f="per"><option value="">—</option>${opt(FIN_PER, it.per, v => "por " + v)}</select></td>
+      <td class="n"><input class="fin-in" data-i="${i}" data-f="total" value="${esc(it.total ?? "")}" placeholder="${it.amt === null ? "" : esc(fmt(it.amt))}" inputmode="numeric" style="width:6em">${it.rest ? `<div class="small muted">lo que falta</div>` : ""}${it.g && !it.gEst ? `<div class="small muted">${fmt(it.g / 1000, 2)} ${finLiquid(it) ? "L" : "kg"}</div>` : ""}</td>
+      <td class="n">${it.perKg ? `${fmtClp(it.perKg)}/${finLiquid(it) ? "L" : "kg"}${it.gEst ? `<div class="small muted">estimado</div>` : ""}` : "—"}</td>
+      <td><select class="fin-in" data-i="${i}" data-f="cat"><option value="">del comercio</option>${opt(FIN_CATS, it.cat)}</select></td>
+      <td><button class="btn ghost small danger" data-action="fin-det-del" data-i="${i}" aria-label="Quitar ${esc(it.name)}">Quitar</button></td>
+    </tr>`).join("")}</tbody></table></div>
+    <p class="small" style="margin:10px 0 0">Suma de productos: <strong>${fmtClp(c.sum)}</strong> de ${fmtClp(m.monto)}${Math.abs(c.diff) >= 1 ? `; <span style="color:var(--danger)">${c.diff > 0 ? "faltan" : "sobran"} ${fmtClp(Math.abs(c.diff))}</span>` : ", cuadra"}.</p>`
+    : `<p class="empty">Sin productos. Escribe qué compraste y sepáralo con IA, o agrégalos a mano.</p>`);
+}
+// Historial de precios por kg o litro de cada producto, con pesos exactos (no estimados)
+function finPriceRows(){
+  const by = {};
+  for (const m of [...S.movs].sort((a, b) => a.fecha.localeCompare(b.fecha))){
+    for (const it of (S.movDet[m.id] || {}).items || []){
+      if (!it.perKg || it.gEst) continue;
+      const f = foodOf(it.foodId), key = f ? f.id : "n:" + finKey(it.name);
+      const r = by[key] || (by[key] = {name: f ? f.name : it.name, liq: finLiquid(it), pts: []});
+      r.pts.push({fecha: m.fecha, comercio: m.comercio, v: it.perKg});
+    }
+  }
+  return Object.values(by).sort((a, b) => a.name.localeCompare(b.name, "es"));
+}
+function renderFinPrices(){
+  const rows = finPriceRows();
+  setHTML($("#finPrices"), rows.length ? `<div class="scroll"><table><thead><tr><th>Producto</th><th class="n">Último</th><th class="n">Mínimo</th><th class="n">Compras</th><th>Última compra</th></tr></thead><tbody>${rows.map(r => {
+    const last = r.pts[r.pts.length - 1], min = Math.min(...r.pts.map(p => p.v)), u = r.liq ? "L" : "kg";
+    return `<tr><td>${esc(r.name)}</td><td class="n">${fmtClp(last.v)}/${u}</td><td class="n">${fmtClp(min)}/${u}</td><td class="n">${r.pts.length}</td><td>${fmtShort(last.fecha)} <span class="small muted">${esc(last.comercio)}</span></td></tr>`;
+  }).join("")}</tbody></table></div>` : `<p class="empty">Aún no hay precios. Aparecen al detallar compras con peso o volumen.</p>`);
+}
+async function finDetAI(){
+  const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), text = $("#finDetText").value.trim();
+  if (!m) return;
+  if (!text){ toast("Escribe qué compraste."); return; }
+  const st = $("#finDetStatus"); st.innerHTML = `<span class="spin"></span> Separando…`;
+  try {
+    const r = await S.sample.json(`Separa en productos lo que compró esta persona. Compra: ${m.comercio}, ${m.fecha}, total ${m.monto} pesos chilenos.
+Mis alimentos: ${JSON.stringify(foodsForPrompt())}
+Reglas:
+- Un ítem por producto distinto.
+- Copia solo los números que aparecen en el texto; usa null si no están. No calcules ni estimes montos ni pesos.
+- En los montos chilenos el punto separa miles: "$2.100" es 2100.
+- qty y unit: cantidad comprada; unit es "un", "kg", "g", "L" o "ml". "8 plátanos" es qty 8, unit "un"; "1,5 kg de papas" es qty 1.5, unit "kg".
+- each y eachUnit: contenido de cada unidad si el texto lo dice, en "g" o "ml" ("bidón de 20 L" es each 20000, eachUnit "ml"); si no, null.
+- price y per: precio informado y su base, "un", "kg" o "L" ("$2.100 el kg" es price 2100, per "kg").
+- total: lo pagado por ese producto, solo si el texto lo dice.
+- foodId: id del alimento de la lista que es ese producto; si hay versión cruda o seca, elige esa; si no está, null.
+- cat: una de ${JSON.stringify(FIN_CATS)}.
+Texto: ${text}
+Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]}`, {modelTier: "default"});
+    const items = finItemsFromAI(r.items);
+    if (!items.length){ st.textContent = "No pude identificar productos. Escribe el detalle con más precisión."; return; }
+    S.finDraft = {...d, items}; st.textContent = "Revisa cantidades y precios antes de guardar.";
+    renderFinDet();
+  } catch (e) { st.textContent = aiErr(e); }
+}
+function finDetSave(){
+  const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id); if (!m) return;
+  const c = finCalc(d.items, m.monto);
+  const items = c.items.map(({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, amt, g, gEst, perKg, rest}) => ({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, amt, g, gEst, perKg, rest}));
+  const doc = {text: $("#finDetText").value.trim(), items};
+  S.movDet[m.id] = doc; S.finDraft = null; renderFin();
+  Store.write("movdet/" + encodeURIComponent(m.id), doc);
+  toast("Detalle guardado.");
 }
 function renderCoach(){
   const revs = S.lib.coach || [];
@@ -4104,6 +4252,17 @@ const actions = {
   "metrics-load": () => loadMetrics(),
   "fin-prev": () => { S.finMonth = shiftMonth(finMonth(), -1); renderFin(); },
   "fin-next": () => { S.finMonth = shiftMonth(finMonth(), 1); renderFin(); },
+  "fin-det": el => {
+    const saved = S.movDet[el.dataset.id];
+    S.finDraft = {id: el.dataset.id, items: clone((saved && saved.items) || [])};
+    $("#finDetText").value = (saved && saved.text) || ""; $("#finDetStatus").textContent = "";
+    renderFinDet(); $("#finDetPanel").scrollIntoView({behavior: "smooth", block: "start"});
+  },
+  "fin-det-close": () => { S.finDraft = null; renderFinDet(); },
+  "fin-det-ai": () => finDetAI(),
+  "fin-det-add": () => { if (!S.finDraft) return; S.finDraft.items.push({name: "Producto", foodId: null, qty: null, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: null, cat: ""}); renderFinDet(); },
+  "fin-det-del": el => { if (!S.finDraft) return; S.finDraft.items.splice(+el.dataset.i, 1); renderFinDet(); },
+  "fin-det-save": () => finDetSave(),
   "water": el => saveDay(S.date, d => { d.water = Math.max(0, (d.water || 0) + Number(el.dataset.v)); }),
 
   "act-save": () => { saveAct(); document.activeElement && document.activeElement.blur(); toast("Actividad guardada."); },
@@ -4801,6 +4960,15 @@ function wireUI(){
   ["#cPal","#cPhase","#pAge","#pHeight","#pWeight","#pSex"].forEach(s => $(s).addEventListener("input", renderCalc));
   $("#importFile").addEventListener("change", e => importJson(e.target.files[0]));
   $("#finList").addEventListener("change", e => { const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur(); saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: t.value}}; }); });
+  $("#finDetItems").addEventListener("change", e => {
+    const t = e.target, d = S.finDraft; if (!t.classList.contains("fin-in") || !d) return;
+    const it = d.items[+t.dataset.i], f = t.dataset.f; if (!it) return;
+    if (f === "name") it.name = t.value.trim() || it.name;
+    else if (f === "qty" || f === "each") it[f] = num(t.value);
+    else if (f === "price" || f === "total") it[f] = clp(t.value);
+    else it[f] = t.value || (f === "cat" ? "" : null);
+    t.blur(); renderFinDet();
+  });
   $("#finBudget").addEventListener("change", e => { const v = num(e.target.value); saveLib("fin", () => ({...finCfg(), budget: v !== null && v > 0 ? Math.round(v) : null})); });
   $("#fdFood").addEventListener("input", updateUnits);
   $("#fdQty").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); actions["build-add"](); } });

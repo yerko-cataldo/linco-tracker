@@ -168,18 +168,30 @@ async function api(request, env, url) {
   let match;
 
   if (p === "/api/state" && m === "GET") {
-    const [days, lib, movs] = await env.DB.batch([
+    const [days, lib, movs, movDet] = await env.DB.batch([
       env.DB.prepare("SELECT date, data FROM days ORDER BY date DESC LIMIT 400"),
       env.DB.prepare("SELECT key, data FROM lib"),
       env.DB.prepare(
         "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente FROM movimientos WHERE fecha >= date('now', '-400 days') ORDER BY fecha DESC, hora DESC"
       ),
+      env.DB.prepare("SELECT mov_id, data FROM mov_detalle"),
     ]);
     return json({
       days: Object.fromEntries(days.results.map((r) => [r.date, JSON.parse(r.data)])),
       lib: Object.fromEntries(lib.results.map((r) => [r.key, JSON.parse(r.data)])),
       movs: movs.results,
+      movDet: Object.fromEntries(movDet.results.map((r) => [r.mov_id, JSON.parse(r.data)])),
     });
+  }
+
+  if ((match = p.match(/^\/api\/movdet\/(.{1,300})$/)) && m === "PUT") {
+    const body = await readDoc(request);
+    if (!body) return json({ error: "bad_body" }, 400);
+    await env.DB.prepare(
+      "INSERT INTO mov_detalle(mov_id, data, updated_at) VALUES(?1, ?2, datetime('now')) " +
+      "ON CONFLICT(mov_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
+    ).bind(decodeURIComponent(match[1]), body).run();
+    return json({ ok: true });
   }
 
   if ((match = p.match(/^\/api\/days\/(\d{4}-\d{2}-\d{2})$/)) && m === "PUT") {
