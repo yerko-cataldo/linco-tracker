@@ -499,7 +499,7 @@ button.link{background:none;border:0;padding:0;color:inherit;font:inherit;text-d
 .trend.up{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
 .trend.down{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,var(--surface))}
 .trend.eq{color:var(--muted);background:var(--sunken)}
-.prog-now{display:flex;gap:8px;align-items:center}
+.prog-now{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
 .prog .mid .spark{margin-left:auto}
 /* Checklist del entreno */
 .wk-panel .wk-types{margin-left:auto}
@@ -962,7 +962,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div id="progCards" class="prog-grid mt"></div>
       <details class="manual mt">
         <summary>Cómo se calcula</summary>
-        <p class="small muted" style="margin:10px 0 0">La línea une el 1RM estimado de la mejor serie de cada sesión, con la fórmula de Epley: carga × (1 + reps / 30). Las libras se convierten a kg; en máquinas por nivel se aplica la misma fórmula al nivel; sin carga externa se cuentan las reps totales. La flecha compara con la sesión anterior. El checklist propone la carga con doble progresión en 8 a 12 reps: con 12 o más en todas las series a la carga más alta, sube la carga (2,5 kg bajo 40 kg, 5 kg desde 40 kg, 5 o 10 lb, o un nivel) y parte en 8; si ninguna llega a 6 reps, baja cerca de un 10%; si no, mantiene la carga.</p>
+        <p class="small muted" style="margin:10px 0 0">La línea une el 1RM estimado de la mejor serie de cada sesión, con la fórmula de Epley: carga × (1 + reps / 30); los puntos tenues son las demás series de trabajo y el trofeo marca un récord. El eje usa un rango mínimo de ±5% para que una diferencia chica no parezca una caída. Las libras se convierten a kg; en máquinas por nivel se aplica la misma fórmula al nivel; sin carga externa se cuentan las reps totales. El cambio se compara con la sesión anterior. Debajo, las reps de cada serie (S1, S2…) en las sesiones seguidas con la carga actual, con la meta de 12. El checklist propone la carga con doble progresión en 8 a 12 reps: con 12 o más en todas las series a la carga más alta, sube la carga (2,5 kg bajo 40 kg, 5 kg desde 40 kg, 5 o 10 lb, o un nivel) y parte en 8; si ninguna llega a 6 reps, baja cerca de un 10%; si no, mantiene la carga.</p>
       </details>
     </div>
     <details class="panel sec mt" id="catBox">
@@ -1383,7 +1383,8 @@ const DEFAULT_PROFILE = {
 };
 const SONG_STATES = ["por aprender","aprendiendo","tocándola","dominada"];
 const DATA_START = "2026-09-28", WALK_DAILY_MIN = 60;
-const walkOf = date => date >= DATA_START && date <= today() ? WALK_DAILY_MIN : 0;
+const walkMin = () => profile().walkMin ?? WALK_DAILY_MIN; // profile.walkMin: caminata diaria fija; 0 en instancias sin paseo
+const walkOf = date => date >= DATA_START && date <= today() ? walkMin() : 0;
 const fmtDur = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`; };
 const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body", core:"Core"};
 // Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
@@ -2343,7 +2344,7 @@ function saveAct(){
 }
 function renderAct(){
   const g = goals(), d = day(S.date), st = dayStats(S.date), ws = weekStats(S.date), a = d.act;
-  $("#actLede").textContent = `${fmtLong(S.date)}. Meta: ${g.activeMin} min activos al día (incluye ${WALK_DAILY_MIN} min de paseo con el galgo) y ${g.gymWeek} sesiones de gimnasio por semana.`;
+  $("#actLede").textContent = `${fmtLong(S.date)}. Meta: ${g.activeMin} min activos al día${walkMin() ? ` (incluye ${walkMin()} min de paseo con el galgo)` : ""} y ${g.gymWeek} sesiones de gimnasio por semana.`;
   setVal("#aGym", a.gym); setVal("#aGymMin", a.sets.length ? gymDur(a) : a.gymMin || ""); $("#aGymNote").hidden = !a.sets.length; setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
   const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
   const selWk = weekDates(S.date), tdy = today();
@@ -2582,33 +2583,76 @@ function renderProgress(){
   const hs = exHistory().sort((a, b) => b.ses[b.ses.length - 1].date.localeCompare(a.ses[a.ses.length - 1].date) || a.ord - b.ord);
   if (!hs.length){ setHTML($("#progDetail"), `<p class="empty">Cuando registres series, aquí ves cómo avanza cada ejercicio.</p>`); setHTML($("#progCards"), ""); return; }
   if (!S.exPick || !hs.some(h => h.k === S.exSel)) S.exSel = hs[0].k;
-  const dOf = h => { const l = h.ses[h.ses.length - 1], p = h.ses[h.ses.length - 2]; return p && p.metric ? (l.metric - p.metric) / p.metric * 100 : null; };
   const h = hs.find(x => x.k === S.exSel), last = h.ses[h.ses.length - 1];
-  setHTML($("#progDetail"), `<div class="ex-head">${exPic(h.ex, "pic big")}${exFig(h.info)}<div class="grow"><strong class="ex-title">${esc(h.ex)}</strong><div class="mus">${esc(muDetail(h.info))}</div></div><div class="prog-now"><span class="big-n">${esc(progTop(h, last))}</span>${trend(dOf(h))}</div></div>
-    <div class="wchart">${progChart(h, $("#progDetail").clientWidth || 640)}</div>`);
+  const prev = h.ses[h.ses.length - 2], now = h.bw ? `${fmt(last.metric)} reps` : e1Txt(last.metric, last.top.unit);
+  setHTML($("#progDetail"), `<div class="ex-head">${exPic(h.ex, "pic big")}${exFig(h.info)}<div class="grow"><strong class="ex-title">${esc(h.ex)}</strong><div class="mus">${esc(muDetail(h.info))}</div></div><div class="prog-now"><span class="big-n">${esc(now)}</span><span class="small muted">${h.bw ? "reps totales" : "1RM estimado"}${prev ? ` · ${deltaTxt(h, last, prev)}` : ""}</span></div></div>
+    <div class="wchart">${progChart(h, $("#progDetail").clientWidth || 640)}</div>${repsBlock(h, $("#progDetail").clientWidth || 640)}`);
   setHTML($("#progCards"), hs.map(x => { const l = x.ses[x.ses.length - 1];
     return `<button class="prog" data-action="ex-sel" data-k="${esc(x.k)}" aria-pressed="${x.k === S.exSel}">
       <span class="top">${exFig(x.info)}<strong class="grow">${esc(x.ex)}</strong></span>
-      <span class="mid"><span class="big-n">${esc(progTop(x, l))}</span>${trend(dOf(x))}${x.ses.length > 1 ? sparkline(x.ses.slice(-12).map(s => s.metric), "var(--act)") : ""}</span>
+      <span class="mid"><span class="big-n">${esc(progTop(x, l))}</span>${x.ses.length > 1 ? `<span class="small muted">${deltaTxt(x, l, x.ses[x.ses.length - 2])}</span>` : ""}${x.ses.length > 1 ? sparkline(x.ses.slice(-12).map(s => s.metric), "var(--act)") : ""}</span>
     </button>`; }).join(""));
 }
-/* Gráfico de progreso: línea del 1RM estimado de la mejor serie por sesión */
+/* Cambio frente a la sesión anterior, en la misma métrica del gráfico */
+function deltaTxt(h, l, p){
+  const d = l.metric - p.metric, u = h.bw ? " reps" : l.top.unit === "nivel" ? "" : " kg";
+  if (Math.abs(d) < (h.bw ? .5 : .05)) return "igual que la anterior";
+  return `<span style="color:${d > 0 ? "var(--ok)" : "var(--muted)"}">${d > 0 ? "+" : "−"}${fmt(Math.abs(d), h.bw ? 0 : 1)}${u}</span> vs. anterior`;
+}
+/* Gráfico de progreso: las series de trabajo como puntos tenues, una línea con el 1RM estimado de la mejor serie por sesión y trofeo en los récords */
+const PROG_MIN_SPAN = .1;
 function progChart(h, width){
   const W2 = Math.round(clamp(width, 300, 1100)), H = W2 < 480 ? 170 : 200, L = 14, R = 30, T = 26, B = 28;
   const ses = h.ses.slice(-16), n = ses.length, u = ses[n - 1].top.unit, vals = ses.map(s => s.metric);
-  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || Math.max(1, hi * .1), mn = lo - span * .25, mx = hi + span * .25;
+  const all = h.bw ? vals : [...vals, ...ses.flatMap(p => p.work.map(e1rm))];
+  // Rango mínimo de ±5% (o ±2 reps) para que una diferencia chica no parezca una caída
+  const lo = Math.min(...all), hi = Math.max(...all), mid = (lo + hi) / 2, span = Math.max(hi - lo, h.bw ? 4 : mid * PROG_MIN_SPAN, 1);
+  const mn = mid - span * .65, mx = mid + span * .65;
   const x = i => L + (W2 - L - R) * (n === 1 ? .5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - (v - mn) / (mx - mn));
   const lbl = p => h.bw ? `${fmt(p.metric)} reps` : setTxt(p.top);
+  let run = h.ses.slice(0, h.ses.length - n).reduce((a, p) => Math.max(a, p.metric), -Infinity);
+  const pr = ses.map(p => { const r = !h.bw && run > -Infinity && p.metric > run + 1e-9; run = Math.max(run, p.metric); return r; });
   let s = `<svg viewBox="0 0 ${W2} ${H}" role="img" aria-label="Progreso de ${esc(h.ex)}" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
   s += `<line x1="${L}" x2="${W2 - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>`;
   const every = Math.max(1, Math.ceil(n * 60 / (W2 - L - R)));
   ses.forEach((p, i) => { if ((n - 1 - i) % every === 0) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtShort(p.date).replace(".", ""))}</text>`; });
+  if (!h.bw) ses.forEach((p, i) => p.work.forEach(w => { if (w !== p.top) s += `<circle cx="${x(i)}" cy="${y(e1rm(w)).toFixed(1)}" r="3" fill="var(--act)" opacity=".3"><title>${esc(setTxt(w))}</title></circle>`; }));
   if (n > 1) s += `<polyline points="${ses.map((p, i) => `${x(i).toFixed(1)},${y(p.metric).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--act)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
-  ses.forEach((p, i) => { s += `<g class="pt" data-action="day-open" data-d="${p.date}"><title>${esc(fmtLong(p.date))}: ${esc(lbl(p))}${h.bw ? "" : `, 1RM estimado ${esc(e1Txt(p.metric, u))}`}</title><circle cx="${x(i)}" cy="${y(p.metric)}" r="11" fill="transparent"/><circle class="dot" cx="${x(i)}" cy="${y(p.metric)}" r="${i === n - 1 ? 5.5 : 4}" fill="${i === n - 1 ? "var(--act)" : "var(--surface)"}" stroke="var(--act)" stroke-width="2"/></g>`; });
+  ses.forEach((p, i) => { s += `<g class="pt" data-action="day-open" data-d="${p.date}"><title>${esc(fmtLong(p.date))}: ${esc(lbl(p))}${h.bw ? "" : `, 1RM estimado ${esc(e1Txt(p.metric, u))}`}${pr[i] ? " (récord)" : ""}</title><circle cx="${x(i)}" cy="${y(p.metric)}" r="11" fill="transparent"/><circle class="dot" cx="${x(i)}" cy="${y(p.metric)}" r="${i === n - 1 ? 5.5 : 4}" fill="${i === n - 1 ? "var(--act)" : "var(--surface)"}" stroke="var(--act)" stroke-width="2"/>${pr[i] ? `<text x="${x(i)}" y="${y(p.metric) + 22}" text-anchor="middle" font-size="12">🏆</text>` : ""}</g>`; });
   const tag = (i, anchor) => `<text x="${x(i)}" y="${y(ses[i].metric) - 12}" text-anchor="${anchor}" font-size="12" font-weight="650" fill="var(--ink)">${esc(lbl(ses[i]))}</text>`;
   s += tag(n - 1, n === 1 ? "middle" : "end");
   if (n > 2) s += tag(0, "start");
   return s + "</svg>";
+}
+/* Reps por serie a la carga actual: sesiones seguidas con la misma carga más alta, una línea por serie (S1, S2…) y la meta de 12 */
+const SER_COL = ["var(--act)", "var(--study)", "var(--bass)", "var(--food)", "var(--muted)"];
+function repsBlock(h, width){
+  const topLoad = p => Math.max(0, ...p.work.map(s => Number(s.kg) || 0)), last = h.ses[h.ses.length - 1], load = topLoad(last), u = last.top.unit || "";
+  const ses = [];
+  for (let i = h.ses.length - 1; i >= 0 && ses.length < 12; i--){ const p = h.ses[i]; if (topLoad(p) !== load || (p.top.unit || "") !== u) break; ses.unshift(p); }
+  const rows = ses.map(p => p.work.filter(s => (Number(s.kg) || 0) === load).map(s => Number(s.reps) || 0));
+  const k = Math.min(SER_COL.length, Math.max(...rows.map(r => r.length))), n = ses.length, flat = rows.flat();
+  if (!k) return "";
+  const W2 = Math.round(clamp(width, 300, 1100)), H = 150, L = 30, R = 30, T = 14, B = 26;
+  const goal = h.bw ? null : REP_RANGE[1], top = Math.max(goal || 0, ...flat) + 1, bot = Math.max(0, Math.min(...flat) - 2);
+  const x = i => L + (W2 - L - R) * (n === 1 ? .5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - (v - bot) / (top - bot));
+  let s = `<svg viewBox="0 0 ${W2} ${H}" role="img" aria-label="Reps por serie" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  s += `<line x1="${L}" x2="${W2 - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>`;
+  if (goal) s += `<line x1="${L}" x2="${W2 - R}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--ok)" stroke-dasharray="4 4"/><text x="${L - 6}" y="${y(goal) + 4}" text-anchor="end" font-size="11" fill="var(--ok)">${goal}</text>`;
+  const every = Math.max(1, Math.ceil(n * 60 / (W2 - L - R)));
+  ses.forEach((p, i) => { if ((n - 1 - i) % every === 0) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtShort(p.date).replace(".", ""))}</text>`; });
+  for (let j = 0; j < k; j++){
+    const c = SER_COL[j], pts = rows.map((r, i) => r[j] === undefined ? null : [x(i), y(r[j]), r[j]]).filter(Boolean);
+    if (pts.length > 1) s += `<polyline points="${pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ")}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`;
+    pts.forEach(p => s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--surface)" stroke="${c}" stroke-width="2"><title>S${j + 1}: ${p[2]} reps</title></circle>`);
+    const lp = pts[pts.length - 1];
+    if (lp && !rows[rows.length - 1].slice(0, j).includes(lp[2])) s += `<text x="${lp[0] + 8}" y="${lp[1] + 4}" font-size="11" font-weight="650" fill="${c}">${lp[2]}</text>`;
+  }
+  s += "</svg>";
+  const step = nextStep({work: last.work, sets: last.sets, top: last.top});
+  const legend = Array.from({length: k}, (_, j) => `<span><i style="background:${SER_COL[j]}"></i>S${j + 1}</span>`).join("");
+  return `<div class="item-head mt" style="margin-bottom:6px"><strong>Reps por serie${load ? ` a ${esc(wTxt(load, u))}` : ""}</strong><span class="small muted">${n} ${n === 1 ? "sesión" : "sesiones"} con esta carga · próxima: ${esc(step.txt)}</span></div>
+    <div class="wchart">${s}</div><div class="mu-legend" style="justify-content:flex-start;margin-top:4px">${legend}</div>`;
 }
 /* Catálogo de ejercicios por grupo, con búsqueda por nombre, alias o músculo */
 function renderCatalog(){
