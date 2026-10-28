@@ -2909,7 +2909,6 @@ async function importCartola(file){
 }
 
 /* Recurrentes: mismo comercio, monto ±15% de la mediana, intervalo regular */
-const median = a => { const s = [...a].sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
 const daysBetween = (a, b) => Math.round((parseYmd(b) - parseYmd(a)) / 864e5);
 const FIN_FREQ = [["semanal", 6, 8, 3, 52 / 12], ["mensual", 26, 35, 2, 1], ["anual", 355, 375, 2, 1 / 12]];
 function finRecurring(){
