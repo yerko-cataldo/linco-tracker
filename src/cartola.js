@@ -177,7 +177,7 @@ export function parseCuenta(text) {
 
 const dayDiff = (a, b) => Math.abs(Date.parse(a) - Date.parse(b)) / 864e5;
 
-const nameKey = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, "");
+export const nameKey = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, "");
 
 /* Plan de conciliación: {update: [[movId, row]], insert: [row], refresh: [row]}.
    1. Fila ya importada (mismo bancoId): se actualiza.

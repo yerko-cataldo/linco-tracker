@@ -1,7 +1,7 @@
 // Lincoyán: Worker que protege el sitio, guarda tus datos en D1 y hace de proxy al modelo.
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import { parseVisaAlert } from "./alertas.js";
-import { parseCartola, parseCuenta, planConciliation, rutOrigen } from "./cartola.js";
+import { parseCartola, parseCuenta, planConciliation, rutOrigen, nameKey } from "./cartola.js";
 import { parseBankMail } from "./correos.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin"]);
@@ -80,13 +80,13 @@ async function processBankMail(raw, message, env, inboxId) {
     return;
   }
   const mv = res.mov;
-  // Una transferencia que la cartola de la cuenta ya trajo no se duplica
-  const dup = await env.DB.prepare(
-    "SELECT " +
-    "(SELECT COUNT(*) FROM movimientos WHERE fuente = 'cartola' AND banco_id LIKE 'bicecta:%' AND tipo = 'Transferencia' AND fecha = ?1 AND monto = ?2 AND lower(comercio) = lower(?3)) AS cartola, " +
-    "(SELECT COUNT(*) FROM movimientos WHERE fuente = 'correo' AND tipo = 'Transferencia' AND fecha = ?1 AND monto = ?2 AND lower(comercio) = lower(?3)) AS correo"
-  ).bind(mv.fecha, mv.monto, mv.comercio).first();
-  if (dup.cartola > dup.correo) {
+  // Una transferencia que la cartola de la cuenta ya trajo no se duplica; el destinatario se compara con nameKey()
+  const same = await env.DB.prepare(
+    "SELECT fuente, comercio FROM movimientos WHERE tipo = 'Transferencia' AND fecha = ? AND monto = ? " +
+    "AND (fuente = 'correo' OR (fuente = 'cartola' AND banco_id LIKE 'bicecta:%'))"
+  ).bind(mv.fecha, mv.monto).all();
+  const key = nameKey(mv.comercio), match = same.results.filter((r) => nameKey(r.comercio) === key);
+  if (match.filter((r) => r.fuente === "cartola").length > match.filter((r) => r.fuente === "correo").length) {
     console.log("correo descartado: ya está en la cartola");
     return;
   }
