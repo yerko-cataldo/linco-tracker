@@ -962,7 +962,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div id="progCards" class="prog-grid mt"></div>
       <details class="manual mt">
         <summary>Cómo se calcula</summary>
-        <p class="small muted" style="margin:10px 0 0">La línea une el 1RM estimado de la mejor serie de cada sesión, con la fórmula de Epley: carga × (1 + reps / 30); los puntos tenues son las demás series de trabajo y el trofeo marca un récord. El eje usa un rango mínimo de ±5% para que una diferencia chica no parezca una caída. Las libras se convierten a kg; en máquinas por nivel se aplica la misma fórmula al nivel; sin carga externa se cuentan las reps totales. El cambio se compara con la sesión anterior. Debajo, las reps de cada serie (S1, S2…) en las sesiones seguidas con la carga actual, con la meta de 12. El checklist propone la carga con doble progresión en 8 a 12 reps: con 12 o más en todas las series a la carga más alta, sube la carga (2,5 kg bajo 40 kg, 5 kg desde 40 kg, 5 o 10 lb, o un nivel) y parte en 8; si ninguna llega a 6 reps, baja cerca de un 10%; si no, mantiene la carga.</p>
+        <p class="small muted" style="margin:10px 0 0">La línea une el 1RM estimado de la mejor serie de cada sesión, con la fórmula de Epley: carga × (1 + reps / 30); los puntos tenues son las demás series de trabajo y el trofeo marca un récord. El eje usa un rango mínimo de ±5% para que una diferencia chica no parezca una caída. Las libras se convierten a kg; en máquinas por nivel se aplica la misma fórmula al nivel; sin carga externa se cuentan las reps totales. El cambio se compara con la sesión anterior. Debajo, las reps de cada serie de trabajo (S1, S2…) en las últimas 8 sesiones, con la carga de cada sesión, un corte donde cambia la carga, la meta de 12 y la tabla de sesiones × series; un punto hueco es una serie con otro peso. El checklist propone la carga con doble progresión en 8 a 12 reps: con 12 o más en todas las series a la carga más alta, sube la carga (2,5 kg bajo 40 kg, 5 kg desde 40 kg, 5 o 10 lb, o un nivel) y parte en 8; si ninguna llega a 6 reps, baja cerca de un 10%; si no, mantiene la carga.</p>
       </details>
     </div>
     <details class="panel sec mt" id="catBox">
@@ -2627,35 +2627,43 @@ function progChart(h, width){
   if (n > 2) s += tag(0, "start");
   return s + "</svg>";
 }
-/* Reps por serie a la carga actual: sesiones seguidas con la misma carga más alta, una línea por serie (S1, S2…) y la meta de 12 */
-const SER_COL = ["var(--act)", "var(--study)", "var(--bass)", "var(--food)", "var(--muted)"];
+/* Series y reps de las últimas sesiones: una línea por serie de trabajo (S1, S2…) con sus reps, el peso cuando difiere de la carga de la sesión, un corte donde cambia la carga, la meta de 12 y la tabla de sesiones × series */
+const SER_COL = ["var(--act)", "var(--study)", "var(--bass)", "var(--food)", "var(--muted)"], REPS_SES = 8;
 function repsBlock(h, width){
-  const topLoad = p => Math.max(0, ...p.work.map(s => Number(s.kg) || 0)), last = h.ses[h.ses.length - 1], load = topLoad(last), u = last.top.unit || "";
-  const ses = [];
-  for (let i = h.ses.length - 1; i >= 0 && ses.length < 12; i--){ const p = h.ses[i]; if (topLoad(p) !== load || (p.top.unit || "") !== u) break; ses.unshift(p); }
-  const rows = ses.map(p => p.work.filter(s => (Number(s.kg) || 0) === load).map(s => Number(s.reps) || 0));
-  const k = Math.min(SER_COL.length, Math.max(...rows.map(r => r.length))), n = ses.length, flat = rows.flat();
+  const ses = h.ses.slice(-REPS_SES), n = ses.length, last = ses[n - 1];
+  const topLoad = p => Math.max(0, ...p.work.map(s => Number(s.kg) || 0)), loads = ses.map(topLoad);
+  const rows = ses.map(p => p.work.map(s => ({kg: Number(s.kg) || 0, reps: Number(s.reps) || 0, unit: s.unit})));
+  const k = Math.min(SER_COL.length, Math.max(...rows.map(r => r.length))), flat = rows.flat().map(r => r.reps);
   if (!k) return "";
-  const W2 = Math.round(clamp(width, 300, 1100)), H = 150, L = 30, R = 30, T = 14, B = 26;
+  const W2 = Math.round(clamp(width, 300, 1100)), H = 170, L = 30, R = 30, T = 18, B = 40;
   const goal = h.bw ? null : REP_RANGE[1], top = Math.max(goal || 0, ...flat) + 1, bot = Math.max(0, Math.min(...flat) - 2);
   const x = progX(n, W2, L, R), y = v => T + (H - T - B) * (1 - (v - bot) / (top - bot));
-  let s = `<svg viewBox="0 0 ${W2} ${H}" role="img" aria-label="Reps por serie" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
+  let s = `<svg viewBox="0 0 ${W2} ${H}" role="img" aria-label="Series y reps por sesión" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
   s += `<line x1="${L}" x2="${x(n - 1) + 12}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>`;
   if (goal) s += `<line x1="${L}" x2="${x(n - 1) + 12}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--ok)" stroke-dasharray="4 4"/><text x="${L - 6}" y="${y(goal) + 4}" text-anchor="end" font-size="11" fill="var(--ok)">${goal}</text>`;
-  const every = Math.max(1, Math.ceil(n * 60 / (W2 - L - R)));
-  ses.forEach((p, i) => { if ((n - 1 - i) % every === 0) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtShort(p.date).replace(".", ""))}</text>`; });
+  // Corte vertical donde cambia la carga de la sesión
+  ses.forEach((p, i) => { if (i && loads[i] !== loads[i - 1]) { const xm = (x(i) + x(i - 1)) / 2; s += `<line x1="${xm}" x2="${xm}" y1="${T}" y2="${H - B}" stroke="var(--line-strong)" stroke-dasharray="2 4"/>`; } });
+  const every = Math.max(1, Math.ceil(n * 60 / Math.max(60, x(n - 1) - x(0) + 60)));
+  ses.forEach((p, i) => { if ((n - 1 - i) % every === 0) s += `<text x="${x(i)}" y="${H - 22}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtShort(p.date).replace(".", ""))}</text>${loads[i] ? `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" font-weight="650" fill="var(--ink)">${esc(wTxt(loads[i], p.top.unit))}</text>` : ""}`; });
   for (let j = 0; j < k; j++){
-    const c = SER_COL[j], pts = rows.map((r, i) => r[j] === undefined ? null : [x(i), y(r[j]), r[j]]).filter(Boolean);
-    if (pts.length > 1) s += `<polyline points="${pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ")}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`;
-    pts.forEach(p => s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--surface)" stroke="${c}" stroke-width="2"><title>S${j + 1}: ${p[2]} reps</title></circle>`);
-    const lp = pts[pts.length - 1];
-    if (lp && !rows[rows.length - 1].slice(0, j).includes(lp[2])) s += `<text x="${lp[0] + 8}" y="${lp[1] + 4}" font-size="11" font-weight="650" fill="${c}">${lp[2]}</text>`;
+    const c = SER_COL[j], pts = rows.map((r, i) => r[j] ? {x: x(i), y: y(r[j].reps), ...r[j], off: r[j].kg !== loads[i]} : null).filter(Boolean);
+    if (pts.length > 1) s += `<polyline points="${pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round" opacity=".85"/>`;
+    pts.forEach(p => {
+      s += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${p.off ? "var(--surface)" : c}" stroke="${c}" stroke-width="2"${p.off ? ` stroke-dasharray="2 2"` : ""}><title>S${j + 1}: ${esc(wTxt(p.kg, p.unit))} × ${p.reps}</title></circle>`;
+      if (p.off) s += `<text x="${p.x + 7}" y="${p.y - 6}" font-size="10" fill="${c}">${esc(wTxt(p.kg, p.unit))}</text>`;
+    });
   }
+  // Reps al lado del último punto de cada serie, sin repetir números en el mismo lugar
+  const lastRow = rows[n - 1], shown = new Set();
+  lastRow.slice(0, k).forEach((r, j) => { if (shown.has(r.reps)) return; shown.add(r.reps); s += `<text x="${x(n - 1) + 8}" y="${y(r.reps) + 4}" font-size="11" font-weight="650" fill="${SER_COL[j]}">${r.reps}</text>`; });
   s += "</svg>";
   const step = nextStep({work: last.work, sets: last.sets, top: last.top});
-  const legend = Array.from({length: k}, (_, j) => `<span><i style="background:${SER_COL[j]}"></i>S${j + 1}</span>`).join("");
-  return `<div class="item-head mt" style="margin-bottom:6px"><strong>Reps por serie${load ? ` a ${esc(wTxt(load, u))}` : ""}</strong><span class="small muted">${n} ${n === 1 ? "sesión" : "sesiones"} con esta carga · próxima: ${esc(step.txt)}</span></div>
-    <div class="wchart">${s}</div><div class="mu-legend" style="justify-content:flex-start;margin-top:4px">${legend}</div>`;
+  const legend = Array.from({length: k}, (_, j) => `<span><i style="background:${SER_COL[j]}"></i>S${j + 1}</span>`).join("") + `<span class="muted">punto hueco: otro peso</span>`;
+  const cell = (r, i) => !r ? `<td class="muted">—</td>` : `<td><strong>${r.reps}</strong>${r.kg !== loads[i] || !loads[i] ? ` <span class="muted">${r.kg ? esc(wTxt(r.kg, r.unit)) : ""}</span>` : ""}</td>`;
+  const tbl = `<div style="overflow-x:auto"><table class="ses-table small mt" style="width:auto;min-width:min(100%,420px)"><thead><tr><th>Sesión</th><th>Carga</th>${Array.from({length: k}, (_, j) => `<th style="color:${SER_COL[j]}">S${j + 1}</th>`).join("")}</tr></thead><tbody>${
+    ses.map((p, i) => ({p, i})).reverse().map(({p, i}) => `<tr><td><button class="link" data-action="day-open" data-d="${p.date}">${esc(fmtShort(p.date).replace(".", ""))}</button></td><td>${loads[i] ? esc(wTxt(loads[i], p.top.unit)) : "—"}</td>${Array.from({length: k}, (_, j) => cell(rows[i][j], i)).join("")}</tr>`).join("")}</tbody></table></div>`;
+  return `<div class="item-head mt" style="margin-bottom:6px"><strong>Series y reps</strong><span class="small muted">últimas ${n} ${n === 1 ? "sesión" : "sesiones"} · próxima: ${esc(step.txt)}</span></div>
+    <div class="wchart">${s}</div><div class="mu-legend" style="justify-content:flex-start;margin-top:4px">${legend}</div>${tbl}`;
 }
 /* Catálogo de ejercicios por grupo, con búsqueda por nombre, alias o músculo */
 function renderCatalog(){
