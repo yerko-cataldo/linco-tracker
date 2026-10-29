@@ -89,7 +89,8 @@ async function storeRawEmail(message, env) {
 
 /* ---------- cartola BICE: importa las filas y las concilia con las alertas ----------
    Tarjeta de crédito: todas las filas, unidas a alertas de tarjetas que no son de débito.
-   Cuenta: solo las compras con débito, unidas a alertas de tarjetas de débito. */
+   Cuenta: compras con débito, unidas a alertas de tarjetas de débito; transferencias, pagos de cuentas y cargos del banco,
+   sin tarjeta y por revisar. */
 async function importCartola(request, env) {
   const text = await request.text();
   if (!text || text.length > 2 * 1024 * 1024) return json({ error: "bad_body" }, 400);
@@ -108,8 +109,9 @@ async function importCartola(request, env) {
   const cards = fin.results[0] ? JSON.parse(fin.results[0].data).values?.cards || {} : {};
   const debit = new Set(Object.keys(cards).filter((k) => cards[k]?.kind === "debito"));
   const plan = planConciliation(parsed.rows, existing.results.filter((e) => e.banco_id || debit.has(e.tarjeta) !== !!credito));
-  // Filas nuevas de la cuenta: con la tarjeta de débito si hay una sola
-  const tarjeta = !credito && debit.size === 1 ? [...debit][0] : "";
+  // Compras nuevas de la cuenta: con la tarjeta de débito si hay una sola
+  const debitCard = !credito && debit.size === 1 ? [...debit][0] : "";
+  const compra = (r) => r.tipo === "Compra" || r.tipo === "Cuota" || r.tipo === "Abono";
 
   const refresh = env.DB.prepare("UPDATE movimientos SET pendiente = ?, cat_banco = ? WHERE banco_id = ?");
   const link = env.DB.prepare(
@@ -117,13 +119,16 @@ async function importCartola(request, env) {
   );
   const insert = env.DB.prepare(
     "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado) " +
-    "VALUES (?, ?, ?, ?, 'CHL', ?, ?, 'CLP', ?, 'cartola', ?, ?, ?, ?, ?, ?, 1)"
+    "VALUES (?, ?, ?, ?, 'CHL', ?, ?, 'CLP', ?, 'cartola', ?, ?, ?, ?, ?, ?, ?)"
   );
   const stmts = [
     ...plan.refresh.map((r) => refresh.bind(r.pendiente ? 1 : 0, r.catBanco, r.bancoId)),
     ...plan.update.map(([id, r]) => link.bind(r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0, id)),
     ...plan.insert.map((r) =>
-      insert.bind(r.bancoId, r.fecha, r.hora || null, r.comercio, tarjeta, r.tipo, r.monto, r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0)
+      insert.bind(
+        r.bancoId, r.fecha, r.hora || null, r.comercio, compra(r) ? debitCard : "", r.tipo, r.monto,
+        r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0, compra(r) ? 1 : 0
+      )
     ),
   ];
   for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
@@ -136,7 +141,9 @@ async function importCartola(request, env) {
     desde: parsed.desde || null,
     hasta: parsed.hasta || null,
     omitidos: parsed.omitidos || 0,
+    desconocidos: (parsed.desconocidos || []).slice(0, 10),
     filas: parsed.rows.length,
+    compras: parsed.rows.filter(compra).length,
     nuevos: plan.insert.length,
     conciliados: plan.update.length,
     actualizados: plan.refresh.length,

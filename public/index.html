@@ -1138,7 +1138,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- FINANZAS -->
   <section class="tab" id="tab-finanzas">
-    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta de crédito y débito: llegan solas desde las alertas de Visa, y las de crédito se concilian con la cartola de BICE.</p></div></div>
+    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta de crédito y débito, que llegan solas desde las alertas de Visa, y transferencias y pagos de cuentas desde la cartola de la cuenta BICE.</p></div></div>
     <div class="panel" id="finInboxPanel" hidden>
       <div class="item-head"><h3 id="finInboxHead">Por revisar</h3><span class="act"><button class="btn small" data-action="fin-inbox-all">Marcar todo como revisado</button></span></div>
       <div id="finInbox"></div>
@@ -1191,7 +1191,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
         <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"></select></div>
         <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
-        <div class="field w10" hidden><span class="sr">Filtrar por tarjeta</span><select id="finCardF"><option value="">Todas las tarjetas</option><option value="credito">Solo crédito</option><option value="debito">Solo débito</option></select></div>
+        <div class="field w10" hidden><span class="sr">Filtrar por medio de pago</span><select id="finCardF"><option value="">Todas las tarjetas</option><option value="credito">Solo crédito</option><option value="debito">Solo débito</option><option value="cuenta">Solo transferencias y pagos</option></select></div>
       </div>
       <div id="finList"></div>
     </div>
@@ -1208,7 +1208,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="item-head"><h3>Tarjetas</h3><span class="act"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label></span></div>
       <div class="small muted" id="cartolaStatus"></div>
       <div id="finCards" class="mt"></div>
-      <p class="small muted" style="margin:10px 0 0">Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa. Una tarjeta sin tipo cuenta como de crédito. El gasto del mes suma todas las tarjetas; el ciclo de facturación y las cuotas usan solo las de crédito. "Importar cartola" acepta el CSV de BICE de la tarjeta de crédito o el de la cuenta: la de crédito se concilia con las alertas de crédito y la de la cuenta con las de débito.</p>
+      <p class="small muted" style="margin:10px 0 0">Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa. Una tarjeta sin tipo cuenta como de crédito. El gasto del mes suma todas las tarjetas y las transferencias y pagos de la cuenta; el ciclo de facturación y las cuotas usan solo las tarjetas de crédito. "Importar cartola" acepta el CSV de BICE de la tarjeta de crédito o el de la cuenta: la de crédito se concilia con las alertas de crédito y la de la cuenta con las de débito.</p>
     </div>
     <div class="grid g2 mt">
       <div class="panel">
@@ -1226,9 +1226,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div class="md" id="finReviewOut"></div>
       </div>
     </div>
-    <p class="small muted">El gasto suma las compras en pesos; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%.</p>
+    <p class="small muted">El gasto suma las compras en pesos y las transferencias, pagos de cuentas y cargos del banco de la cuenta; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%.</p>
     <p class="small muted">Categoría de cada compra, en este orden: la que elegiste para ese comercio, una regla que calce con su nombre, la sugerida por comercios parecidos que ya categorizaste y, al final, la del banco.</p>
-    <p class="small muted">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. De la cartola de la cuenta solo entran las compras con débito ("Cargo por Compra en…"), con la fecha y hora de la compra; transferencias, pagos de cuentas, el pago de la tarjeta de crédito e intereses quedan fuera. Una alerta de débito queda marcada si es del periodo de las cartolas de la cuenta importadas, hasta 5 días antes de su cierre, y no aparece en ellas. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
+    <p class="small muted">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. De la cartola de la cuenta entran los cargos: compras con débito ("Cargo por Compra en…"), transferencias a otras personas (el destinatario hace de comercio: su categoría se elige una vez), pagos de cuentas por internet y cargos del banco (intereses, impuestos, comisiones), con la fecha y hora de la operación. Quedan fuera los abonos, el pago de la tarjeta de crédito (sus compras ya están en la cartola de crédito) y las transferencias entre tus cuentas (mismo RUT). Una transferencia sin categoría va a "Transferencias". Las transferencias que te devuelven amigos no se descuentan del gasto. Una alerta de débito queda marcada si es del periodo de las cartolas de la cuenta importadas, hasta 5 días antes de su cierre, y no aparece en ellas. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
   </section>
 
   <!-- COACH -->
@@ -2822,13 +2822,16 @@ function renderMetrics(m){
 /* Finanzas: movimientos de tarjeta (S.movs: alertas de Visa y cartola BICE).
    lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto},
               cards: {últimos 4 dígitos: {name, kind: "credito" | "debito"}}, cuentaDesde, cuentaHasta} */
-const FIN_CATS = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Otros"];
+const FIN_CATS = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Arriendo y gastos comunes", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Transferencias", "Comisiones e intereses", "Otros"];
 const BANK_CATS = {"Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros"};
 const FIN_SRC = {comercio: "", regla: "regla", base: "regla base", sugerida: "sugerida", banco: "banco"};
 // Reglas base: palabras genéricas y cadenas de Chile, en orden de prioridad (mascotas antes que salud).
 // Palabras de menos de 6 letras calzan con una palabra completa del nombre; las demás, como parte del nombre.
 const FIN_BASE_RULES = [
   ["Mascotas", ["veterinaria", "veterinario", "petshop", "pet", "mascota", "superzoo", "jardin zoo"]],
+  ["Arriendo y gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes", "arriendo"]],
+  ["Comisiones e intereses", ["sobregiro", "intereses", "comision", "mantencion"]],
+  ["Servicios", ["cuentas de servicio"]],
   ["Comida y delivery", ["uber eats", "rappi", "pedidosya", "justo", "didi food", "cornershop"]],
   ["Supermercado", ["unimarc", "lider", "lidercl", "jumbo", "tottus", "santa isabel", "acuenta", "alvi", "minimarket", "market", "carniceria", "panaderia", "pasteleria", "emporio", "verduleria", "almacen", "tostaduria", "feria", "fruteria"]],
   ["Restaurantes y bares", ["bar", "restaurant", "restobar", "cafe", "cafeteria", "sushi", "pizza", "pizzeria", "cerveceria", "birras", "sangucheria", "fuente de soda", "starbucks", "juan maestro", "dominos", "mcdonalds", "burger"]],
@@ -2849,15 +2852,17 @@ function finBaseRule(comercio){
   return null;
 }
 const finCfg = () => Object.assign({budget: null, cats: {}, rules: [], catBudgets: {}, reviews: {}}, S.lib.fin || {});
-// Tarjetas: tipo por últimos 4 dígitos; una fila de la cartola de la cuenta es de débito, una de la cartola de crédito es de crédito
-// y una tarjeta sin tipo cuenta como crédito
+// Medio de pago: tipo de tarjeta por últimos 4 dígitos o "cuenta" (transferencias, pagos de cuentas y cargos del banco).
+// Una compra de la cartola de la cuenta es de débito, una fila de la cartola de crédito es de crédito y una tarjeta sin tipo cuenta como crédito.
 const FIN_KIND = {credito: "crédito", debito: "débito"};
+const FIN_MEDIO = {...FIN_KIND, cuenta: "transferencias y pagos"};
 const finCards = () => finCfg().cards || {};
-const finCardKind = m => m.banco_id ? (m.banco_id.startsWith("bicecta:") ? "debito" : "credito") : (finCards()[m.tarjeta] || {}).kind || "credito";
-const finCardLabel = m => (finCards()[m.tarjeta] || {}).name || `${FIN_KIND[finCardKind(m)]}${m.tarjeta ? " ··" + m.tarjeta : ""}`;
+const finCardKind = m => m.banco_id && m.banco_id.startsWith("bicecta:") ? (norm(m.tipo) === "compra" ? "debito" : "cuenta")
+  : m.banco_id ? "credito" : (finCards()[m.tarjeta] || {}).kind || "credito";
+const finCardLabel = m => finCardKind(m) === "cuenta" ? m.tipo.toLowerCase() : (finCards()[m.tarjeta] || {}).name || `${FIN_KIND[finCardKind(m)]}${m.tarjeta ? " ··" + m.tarjeta : ""}`;
 // Tarjetas conocidas: las configuradas y las que aparecen en alguna alerta
 const finCardList = () => [...new Set([...Object.keys(finCards()), ...S.movs.filter(m => m.tarjeta).map(m => m.tarjeta)])].sort();
-const finMultiCard = () => finCardList().length > 1;
+const finMultiCard = () => finCardList().length > 1 || S.movs.some(m => finCardKind(m) === "cuenta");
 // Clave de comercio: sin tildes, mayúsculas ni signos ("MERPAGO*X" y "MERPAGOX" coinciden)
 const finKey = s => norm(s).replace(/[^a-z0-9]/g, "");
 const finTokens = s => norm(s).replace(/^(merpago\*?|payu\s+|mp\s*\*)/, "").split(/[^a-z0-9]+/).filter(t => t.length >= 4 && !["compras", "ltda", "chile"].includes(t));
@@ -2879,6 +2884,7 @@ function finCatInfoCalc(m){
   if (rule) return {cat: rule.cat, src: "regla"};
   const base = finBaseRule(m.comercio);
   if (base) return {cat: base, src: "base"};
+  if (norm(m.tipo) === "transferencia") return {cat: "Transferencias", src: "base"};
   const votes = {};
   for (const t of finTokens(m.comercio)) for (const [x, c] of Object.entries(map)) if (x.includes(t)) votes[c] = (votes[c] || 0) + 1;
   const best = Object.entries(votes).sort((a, b) => b[1] - a[1])[0];
@@ -2898,7 +2904,9 @@ async function finApi(method, path, body){
 }
 const finMonth = () => S.finMonth || today().slice(0, 7);
 const shiftMonth = (ym, n) => { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
-const isPurchase = m => m.moneda === "CLP" && norm(m.tipo) === "compra";
+// Gasto: compras con tarjeta y, desde la cartola de la cuenta, transferencias, pagos de cuentas y cargos del banco
+const FIN_SPEND = ["compra", "transferencia", "pago de cuenta", "cargo del banco"];
+const isPurchase = m => m.moneda === "CLP" && FIN_SPEND.includes(norm(m.tipo));
 const fmtClp = x => "$" + fmt(x);
 const finBuysOf = ym => S.movs.filter(m => m.fecha.startsWith(ym) && isPurchase(m));
 // Totales por categoría: cada producto detallado va a su categoría; lo no detallado, a la del comercio
@@ -3024,14 +3032,14 @@ function renderFinSummary(c, tree, cmp){
   const ups = diffs.filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 3), downs = diffs.filter(x => x.d < 0).sort((a, b) => a.d - b.d).slice(0, 2);
   const big = c.buys.reduce((a, m) => m.monto > a.monto ? m : a, c.buys[0]);
   const top = Object.entries(tree).sort((a, b) => b[1].v - a[1].v)[0];
-  const deb = sum(c.buys.filter(m => finCardKind(m) === "debito"), m => m.monto);
+  const byMedio = Object.keys(FIN_MEDIO).map(k => [k, sum(c.buys.filter(m => finCardKind(m) === k), m => m.monto)]).filter(x => x[1]);
   const li = x => `<li><strong>${esc(x.cat)}</strong> <span class="muted">(${esc(x.g)})</span>: ${x.d > 0 ? "+" : "−"}${fmtClp(Math.abs(x.d))} <span class="muted">(${fmtClp(x.v)} frente a ${fmtClp(x.b)})</span></li>`;
   const d = cmp.has ? c.total - cmp.total : null;
   setHTML($("#finSummary"), `<p style="margin:0 0 8px">Llevas <strong>${fmtClp(c.total)}</strong> en ${c.buys.length} ${c.buys.length === 1 ? "compra" : "compras"}${c.isCur ? ` al día ${c.dayCut}` : ""}${top ? `; el grupo más grande es <strong>${esc(top[0])}</strong> (${fmt(top[1].v / c.total * 100)}%)` : ""}.</p>
     ${d !== null ? `<p style="margin:0 0 8px">Son <strong class="${d > 0 ? "fin-up" : "fin-down"}">${fmtClp(Math.abs(d))} ${d > 0 ? "más" : "menos"}</strong> que ${esc(cmp.label)}${cmp.total ? ` (${d > 0 ? "+" : "−"}${fmt(Math.abs(d) / cmp.total * 100)}%)` : ""}.${cmp.partial ? ` <span class="small muted">Ojo: la comparación tiene ${esc(cmp.partial)}.</span>` : ""}</p>` : `<p class="muted" style="margin:0 0 8px">${esc(cmp.none)}</p>`}
     ${ups.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde más subió</p><ul style="margin:0;padding-left:18px">${ups.map(li).join("")}</ul>` : ""}
     ${downs.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde bajó</p><ul style="margin:0;padding-left:18px">${downs.map(li).join("")}</ul>` : ""}
-    <p class="small muted" style="margin:10px 0 0">Compra más grande: ${esc(big.comercio)}, ${fmtClp(big.monto)} el ${fmtShort(big.fecha)}. Ticket promedio ${fmtClp(c.total / c.buys.length)}; promedio diario ${fmtClp(c.daily)}.${deb ? ` Con crédito ${fmtClp(c.total - deb)} y con débito ${fmtClp(deb)}.` : ""}</p>`);
+    <p class="small muted" style="margin:10px 0 0">Compra más grande: ${esc(big.comercio)}, ${fmtClp(big.monto)} el ${fmtShort(big.fecha)}. Ticket promedio ${fmtClp(c.total / c.buys.length)}; promedio diario ${fmtClp(c.daily)}.${byMedio.length > 1 ? ` Por medio de pago: ${byMedio.map(([k, v]) => `${FIN_MEDIO[k]} ${fmtClp(v)}`).join(", ")}.` : ""}</p>`);
 }
 
 /* KPI del mes: gasto frente al presupuesto, proyección, recurrentes y cuotas */
@@ -3166,13 +3174,13 @@ function renderFinEvo(c, top){
    (categoría Supermercado) salvo que su categoría sea de Casa. Por producto si la compra está detallada; si no, por la categoría del comercio. */
 const FIN_TREE = [
   ["Comida", ["Supermercado", "Comida y delivery", "Restaurantes y bares"]],
-  ["Casa", ["Hogar", "Servicios"]],
+  ["Casa", ["Arriendo y gastos comunes", "Hogar", "Servicios"]],
   ["Transporte", ["Transporte"]],
   ["Salud y deporte", ["Salud", "Deporte"]],
   ["Ocio", ["Entretención", "Suscripciones", "Viajes"]],
   ["Compras", ["Compras", "Ropa", "Educación"]],
   ["Mascotas", ["Mascotas"]],
-  ["Otros", ["Otros", "Sin categoría"]]
+  ["Otros", ["Transferencias", "Comisiones e intereses", "Otros", "Sin categoría"]]
 ];
 const FIN_GROUP_OF = Object.fromEntries(FIN_TREE.flatMap(([g, cs]) => cs.map(c => [c, g])));
 // categoría efectiva de un producto detallado
@@ -3447,9 +3455,12 @@ async function importCartola(file){
       return {...c, cuentaDesde: [c.cuentaDesde, r.desde].filter(Boolean).sort()[0] || null, cuentaHasta: [c.cuentaHasta, r.hasta].filter(Boolean).sort().pop() || null};
     });
     await loadState(); renderAll();
-    toast(cuenta ? `Cartola de la cuenta: ${r.filas} ${r.filas === 1 ? "compra" : "compras"} con débito; ${r.nuevos} nuevas, ${r.conciliados} unidas a alertas, ${r.actualizados} ya estaban. ${r.omitidos} movimientos que no son compras quedaron fuera.`
+    toast(cuenta ? `Cartola de la cuenta: ${r.compras} ${r.compras === 1 ? "compra" : "compras"} con débito y ${r.filas - r.compras} transferencias y pagos; ${r.nuevos} nuevos, ${r.conciliados} unidos a alertas, ${r.actualizados} ya estaban. Quedaron fuera ${r.omitidos} abonos, pagos de la tarjeta y transferencias entre tus cuentas.`
       : `Cartola de crédito: ${r.filas} filas; ${r.nuevos} nuevas, ${r.conciliados} unidas a alertas, ${r.actualizados} ya estaban.`);
-    if (r.cuadra === false) st.textContent = "Ojo: la suma de los cargos no coincide con el total de cargos de la cartola.";
+    const warn = [];
+    if (r.cuadra === false) warn.push("Ojo: la suma de los cargos no coincide con el total de cargos de la cartola.");
+    if ((r.desconocidos || []).length) warn.push(`No se reconocieron estos cargos y quedaron fuera: ${r.desconocidos.join(" · ")}`);
+    if (warn.length) st.textContent = warn.join(" ");
   } catch (e) {
     st.textContent = e.message === "not_cartola" ? "El archivo no parece una cartola de BICE en CSV (de la tarjeta de crédito o de la cuenta)." : "No se pudo importar: " + e.message;
   } finally { $("#cartolaFile").value = ""; }
@@ -3517,7 +3528,7 @@ function finMonthFacts(ym){
   const byMerch = {}; for (const m of cur) byMerch[m.comercio] = (byMerch[m.comercio] || 0) + m.monto;
   return {
     mes: ym, gasto: sum(cur, m => m.monto), compras: cur.length, gastoMesAnterior: sum(prev, m => m.monto),
-    gastoPorTipoDeTarjeta: Object.fromEntries(Object.keys(FIN_KIND).map(k => [k, sum(cur.filter(m => finCardKind(m) === k), m => m.monto)])),
+    gastoPorMedioDePago: Object.fromEntries(Object.keys(FIN_MEDIO).map(k => [FIN_MEDIO[k], sum(cur.filter(m => finCardKind(m) === k), m => m.monto)])),
     porCategoria: Object.entries(cc).sort((a, b) => b[1] - a[1]).map(([c, v]) => ({categoria: c, monto: v, mesAnterior: pc[c] || 0, tope: finCfg().catBudgets[c] || null})),
     principalesComercios: Object.entries(byMerch).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c, v]) => ({comercio: c, monto: v})),
     comerciosNuevos: [...new Set(cur.filter(m => !seenBefore.has(finKey(m.comercio))).map(m => m.comercio))].slice(0, 10),
@@ -3535,7 +3546,7 @@ async function finReview(){
   if (!facts.compras){ st.textContent = "No hay compras en este mes."; return; }
   st.innerHTML = `<span class="spin"></span> Escribiendo…`; S.finReviewing = true;
   try {
-    const r = await S.sample(`Escribe un resumen breve de mis gastos con tarjeta de crédito y débito del mes ${ym}, en español de Chile, tuteando.
+    const r = await S.sample(`Escribe un resumen breve de mis gastos del mes (tarjeta de crédito, débito, transferencias y pagos de cuentas) ${ym}, en español de Chile, tuteando.
 Usa solo estas cifras, ya calculadas; no calcules cifras nuevas ni inventes datos. Montos en pesos chilenos.
 ${JSON.stringify(facts)}
 Formato: 4 a 6 viñetas en markdown. Destaca lo que cambió frente al mes anterior, las categorías sobre su tope, los recurrentes que subieron y los comercios nuevos. Termina con una sugerencia concreta.`, {onText: ({text}) => setHTML($("#finReviewOut"), md(text))});

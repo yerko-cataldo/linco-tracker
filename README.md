@@ -13,7 +13,7 @@ La interfaz está en español de Chile.
 | **Entreno** | Checklist de series con descansos, 1RM estimado, récords, series efectivas por músculo, sugerencia de progresión e ilustraciones de ejercicios. |
 | **Bajo** | Metrónomo y batería sintetizados con Web Audio, técnicas con su BPM limpio y repertorio. |
 | **Estudio** | Libros y cursos con plan por temario, ritmo, proyección y temporizador. |
-| **Finanzas** | Compras con tarjeta de crédito y débito que llegan solas desde las alertas de Visa, conciliación con la cartola del banco, detalle de productos por compra, categorías con reglas, presupuesto y topes, recurrentes, cuotas, gráficos de distribución y evolución, gasto diario en comida y resumen del mes con IA. |
+| **Finanzas** | Compras con tarjeta de crédito y débito que llegan solas desde las alertas de Visa, transferencias y pagos de cuentas desde la cartola de la cuenta, conciliación con la cartola del banco, detalle de productos por compra, categorías con reglas, presupuesto y topes, recurrentes, cuotas, gráficos de distribución y evolución, gasto diario en comida y resumen del mes con IA. |
 | **Coach** | Revisión semanal y chat con el contexto de tu perfil y tus registros. |
 | **Perfil y metas** | Perfil, metas, importación y exportación, y un link de solo lectura para compartir algunas áreas con amigos. |
 | **Métricas** | Uso frente a los límites gratis de Cloudflare, uso del modelo y vencimiento del dominio. |
@@ -102,7 +102,7 @@ Las compras llegan por correo y se concilian con la cartola del banco.
 
    Cuando llegue la primera compra con una tarjeta de débito, márcala como débito en **Finanzas → Tarjetas**. Una tarjeta sin tipo cuenta como de crédito.
 
-3. **Cartolas.** Descarga el CSV de movimientos de la tarjeta de crédito, o el de la cuenta, e impórtalo en **Finanzas → Tarjetas → Importar cartola**; la app reconoce cuál es. Une cada fila con su alerta, agrega lo que falte y marca las alertas que no aparecen (posibles compras anuladas). De la cartola de crédito toma el ciclo de facturación y las cuotas; de la cuenta, solo las compras con débito.
+3. **Cartolas.** Descarga el CSV de movimientos de la tarjeta de crédito, o el de la cuenta, e impórtalo en **Finanzas → Tarjetas → Importar cartola**; la app reconoce cuál es. Une cada fila con su alerta, agrega lo que falte y marca las alertas que no aparecen (posibles compras anuladas). De la cartola de crédito toma el ciclo de facturación y las cuotas; de la cuenta, las compras con débito, las transferencias a otras personas, los pagos de cuentas y los cargos del banco (sin abonos, sin el pago de la tarjeta y sin transferencias entre tus cuentas).
 
 El Worker solo acepta alertas con remitente de `visa.com` y firmas DKIM y DMARC válidas. Los lectores de las cartolas siguen el formato de los CSV de BICE (`src/cartola.js`). Otro banco requiere adaptar ese archivo.
 

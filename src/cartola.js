@@ -64,13 +64,21 @@ export function parseCartola(text) {
   return { inicio, totalCargos, totalAbonos, rows };
 }
 
-/* ---------- cartola de la cuenta: solo las compras con la tarjeta de débito ---------- */
+/* ---------- cartola de la cuenta: compras con débito, transferencias, pagos de cuentas y cargos del banco ---------- */
 export const CUENTA_PREFIX = "bicecta:";
 const MESES = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, sept: 9, oct: 10, nov: 11, dic: 12 };
 const LONG_DATE_RE = /^(\d{1,2})\s+([a-z]{3,4})\.?\s+(\d{4})$/i;
 const PERIODO_RE = /^(\d{1,2}\s+[a-z]{3,4}\.?\s+\d{4})\s+-\s+(\d{1,2}\s+[a-z]{3,4}\.?\s+\d{4})$/i;
 // "Cargo por Compra en HIP LIDER NUNOA   El 23/10/2026  a las  13:37:48., Monto 20.780"
 const COMPRA_CTA_RE = /^Cargo por Compra en\s+(.+?)\s+El\s+(\d{2}\/\d{2}\/\d{4})\s+a las\s+(\d{2}:\d{2})/i;
+// "Transferencia de <titular> Rut <rut> desde <banco> a <destinatario> Rut <rut> a <cuenta>, el 2026-10-28 a las 14:24 hrs."
+const TRANSF_RE = /^Transferencia de .+? Rut ([\d.]+-[\dk]) desde .+? a (.+?) Rut ([\d.]+-[\dk]) a .+?, el (\d{4}-\d{2}-\d{2}) a las (\d{2}:\d{2})/i;
+// "Cargo por pago Cuentas de Servicio vía internet, operación realizada a las 11:08 el 12/10/2026, …"
+const PAGO_RE = /^Cargo por pago (.+?)\s+v[ií]a internet/i;
+const BANCO_RE = /^Cargo (impuesto|intereses|comisi[oó]n|mantenci[oó]n)\b/i;
+const PAGO_TARJETA_RE = /^Cargo por abono\/pago de tarjeta de cr[eé]dito/i;
+const DMY_RE = /(\d{2}\/\d{2}\/\d{4})/;
+const HM_RE = /\b(\d{2}:\d{2})\b/;
 
 const longDate = (s) => {
   const m = String(s || "").trim().match(LONG_DATE_RE);
@@ -78,8 +86,30 @@ const longDate = (s) => {
   return mes ? `${m[3]}-${String(mes).padStart(2, "0")}-${m[1].padStart(2, "0")}` : null;
 };
 
-/* Devuelve {desde, hasta, totalCargos, cargos, omitidos, rows} o null si el texto no es una cartola de cuenta.
-   rows: compras con débito, con la fecha y hora de la compra; omitidos: los demás movimientos. */
+/* Lectura de un cargo de la cuenta: {tipo, comercio, fecha, hora}, "omitir" o null si no se reconoce.
+   1. Compra con débito: comercio, fecha y hora de la compra.
+   2. Transferencia a otra persona: el destinatario es el comercio; una transferencia a otra cuenta propia (mismo RUT) se omite.
+   3. Pago de cuenta por internet: el servicio es el comercio.
+   4. Impuesto, intereses, comisión o mantención: cargo del banco.
+   5. Pago de la tarjeta de crédito: se omite (sus compras ya están en la cartola de crédito). */
+function cuentaCargo(desc, fechaCta) {
+  let m;
+  if ((m = desc.match(COMPRA_CTA_RE))) return { tipo: "Compra", comercio: m[1].trim(), fecha: isoDate(m[2]) || fechaCta, hora: m[3] };
+  if ((m = desc.match(TRANSF_RE))) {
+    if (m[1].replace(/\./g, "").toLowerCase() === m[3].replace(/\./g, "").toLowerCase()) return "omitir";
+    return { tipo: "Transferencia", comercio: m[2].trim(), fecha: m[4], hora: m[5] };
+  }
+  if ((m = desc.match(PAGO_RE))) {
+    const f = desc.match(DMY_RE), h = desc.match(HM_RE);
+    return { tipo: "Pago de cuenta", comercio: m[1].replace(/\s+Portal\s+\S+$/i, "").trim(), fecha: (f && isoDate(f[1])) || fechaCta, hora: h ? h[1] : null };
+  }
+  if (BANCO_RE.test(desc)) return { tipo: "Cargo del banco", comercio: desc.replace(/^Cargo\s+/i, "").replace(/[.\s]+$/, ""), fecha: fechaCta, hora: null };
+  if (PAGO_TARJETA_RE.test(desc)) return "omitir";
+  return null;
+}
+
+/* Devuelve {desde, hasta, totalCargos, cargos, omitidos, desconocidos, rows} o null si el texto no es una cartola de cuenta.
+   rows: cargos reconocidos por cuentaCargo(); omitidos: abonos y cargos que se omiten; desconocidos: descripciones de cargos no reconocidos. */
 export function parseCuenta(text) {
   const lines = String(text).replace(/^﻿/, "").split(/\r?\n/).map((l) => l.split(";").map((c) => c.trim()));
   let desde = null, hasta = null, totalCargos = null, head = -1;
@@ -95,7 +125,7 @@ export function parseCuenta(text) {
   const iCat = hc.findIndex((h) => /^Categor/i.test(h)), iMon = hc.findIndex((h) => h.startsWith("Monto"));
   if (iMon < 0) return null;
 
-  const rows = [], seen = {};
+  const rows = [], seen = {}, desconocidos = [];
   let cargos = 0, omitidos = 0;
   for (const c of lines.slice(head + 1)) {
     const fechaCta = longDate(c[iFec]), monto = clpInt(c[iMon]);
@@ -103,17 +133,17 @@ export function parseCuenta(text) {
     const cargo = iCat < 0 || /^cargo/i.test(c[iCat] || "");
     if (cargo) cargos += monto;
     const detalle = (c[iDes] || "").replace(/\s+/g, " ").trim();
-    const m = cargo && (c[iDes] || "").match(COMPRA_CTA_RE);
-    if (!m) { omitidos++; continue; }
+    const r = cargo ? cuentaCargo(detalle, fechaCta) : "omitir";
+    if (r === "omitir") { omitidos++; continue; }
+    if (!r) { desconocidos.push(detalle); continue; }
     const base = `${detalle}|${monto}`;
     seen[base] = (seen[base] || 0) + 1;
     rows.push({
-      bancoId: `${CUENTA_PREFIX}${base}#${seen[base]}`,
-      fecha: isoDate(m[2]) || fechaCta, hora: m[3], comercio: m[1].trim(), detalle,
-      tipo: "Compra", monto, cuota: null, cuotas: null, pendiente: false, catBanco: null,
+      bancoId: `${CUENTA_PREFIX}${base}#${seen[base]}`, ...r, detalle,
+      monto, cuota: null, cuotas: null, pendiente: false, catBanco: null,
     });
   }
-  return { desde, hasta, totalCargos, cargos, omitidos, rows };
+  return { desde, hasta, totalCargos, cargos, omitidos, desconocidos, rows };
 }
 
 const dayDiff = (a, b) => Math.abs(Date.parse(a) - Date.parse(b)) / 864e5;
