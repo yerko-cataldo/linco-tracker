@@ -89,8 +89,8 @@ async function storeRawEmail(message, env) {
 
 /* ---------- cartola BICE: importa las filas y las concilia con las alertas ----------
    Tarjeta de crédito: todas las filas, unidas a alertas de tarjetas que no son de débito.
-   Cuenta: compras con débito, unidas a alertas de tarjetas de débito; transferencias, pagos de cuentas y cargos del banco,
-   sin tarjeta y por revisar. */
+   Cuenta: compras con débito, unidas a alertas de tarjetas de débito; transferencias, pagos de cuentas, cargos del banco
+   y transferencias recibidas, sin tarjeta y por revisar. */
 async function importCartola(request, env) {
   const text = await request.text();
   if (!text || text.length > 2 * 1024 * 1024) return json({ error: "bad_body" }, 400);
@@ -144,6 +144,7 @@ async function importCartola(request, env) {
     desconocidos: (parsed.desconocidos || []).slice(0, 10),
     filas: parsed.rows.length,
     compras: parsed.rows.filter(compra).length,
+    abonos: credito ? 0 : parsed.rows.filter((r) => r.monto < 0).length,
     nuevos: plan.insert.length,
     conciliados: plan.update.length,
     actualizados: plan.refresh.length,

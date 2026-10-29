@@ -64,7 +64,7 @@ export function parseCartola(text) {
   return { inicio, totalCargos, totalAbonos, rows };
 }
 
-/* ---------- cartola de la cuenta: compras con débito, transferencias, pagos de cuentas y cargos del banco ---------- */
+/* ---------- cartola de la cuenta: compras con débito, transferencias, pagos de cuentas, cargos del banco y abonos recibidos ---------- */
 export const CUENTA_PREFIX = "bicecta:";
 const MESES = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, sept: 9, oct: 10, nov: 11, dic: 12 };
 const LONG_DATE_RE = /^(\d{1,2})\s+([a-z]{3,4})\.?\s+(\d{4})$/i;
@@ -77,6 +77,11 @@ const TRANSF_RE = /^Transferencia de .+? Rut ([\d.]+-[\dk]) desde .+? a (.+?) Ru
 const PAGO_RE = /^Cargo por pago (.+?)\s+v[ií]a internet/i;
 const BANCO_RE = /^Cargo (impuesto|intereses|comisi[oó]n|mantenci[oó]n)\b/i;
 const PAGO_TARJETA_RE = /^Cargo por abono\/pago de tarjeta de cr[eé]dito/i;
+// "Abono por transferencia de NOMBRE Rut 12.690.841-5 desde Santander el 29/10/2026 a las 06:46"
+const ABONO_RE = /^Abono por transferencia de (.+?) Rut ([\d.]+-[\dk]) desde .+? el (\d{2}\/\d{2}\/\d{4}) a las (\d{2}:\d{2})/i;
+// "Abono por Transferencia via CCA, originador Rut: 96572800-7 Nombre: ISAPRE BANMEDICA (N.Ref: …)."
+const ABONO_CCA_RE = /^Abono por Transferencia v[ií]a CCA, originador Rut: ([\dk.-]+) Nombre: (.+?)\s*\(/i;
+const rutKey = (r) => r.replace(/\./g, "").toLowerCase();
 const DMY_RE = /(\d{2}\/\d{2}\/\d{4})/;
 const HM_RE = /\b(\d{2}:\d{2})\b/;
 
@@ -108,8 +113,24 @@ function cuentaCargo(desc, fechaCta) {
   return null;
 }
 
+/* Lectura de un abono de la cuenta: transferencia recibida de otra persona o institución (posible devolución), o "omitir".
+   Se omiten las transferencias desde una cuenta propia (RUT del titular), las remuneraciones y los abonos no reconocidos. */
+function cuentaAbono(desc, fechaCta, propios) {
+  let m;
+  if ((m = desc.match(ABONO_RE))) {
+    if (propios.has(rutKey(m[2]))) return "omitir";
+    return { tipo: "Transferencia recibida", comercio: m[1].trim(), fecha: isoDate(m[3]) || fechaCta, hora: m[4] };
+  }
+  if ((m = desc.match(ABONO_CCA_RE))) {
+    if (propios.has(rutKey(m[1]))) return "omitir";
+    return { tipo: "Transferencia recibida", comercio: m[2].trim(), fecha: fechaCta, hora: null };
+  }
+  return "omitir";
+}
+
 /* Devuelve {desde, hasta, totalCargos, cargos, omitidos, desconocidos, rows} o null si el texto no es una cartola de cuenta.
-   rows: cargos reconocidos por cuentaCargo(); omitidos: abonos y cargos que se omiten; desconocidos: descripciones de cargos no reconocidos. */
+   rows: cargos reconocidos por cuentaCargo() y abonos de cuentaAbono() (monto negativo);
+   omitidos: movimientos que se omiten; desconocidos: descripciones de cargos no reconocidos. */
 export function parseCuenta(text) {
   const lines = String(text).replace(/^﻿/, "").split(/\r?\n/).map((l) => l.split(";").map((c) => c.trim()));
   let desde = null, hasta = null, totalCargos = null, head = -1;
@@ -127,20 +148,26 @@ export function parseCuenta(text) {
 
   const rows = [], seen = {}, desconocidos = [];
   let cargos = 0, omitidos = 0;
+  // RUT del titular: el de origen de las transferencias enviadas
+  const propios = new Set();
+  for (const c of lines.slice(head + 1)) {
+    const t = (c[iDes] || "").replace(/\s+/g, " ").match(TRANSF_RE);
+    if (t) propios.add(rutKey(t[1]));
+  }
   for (const c of lines.slice(head + 1)) {
     const fechaCta = longDate(c[iFec]), monto = clpInt(c[iMon]);
     if (!fechaCta || monto === null) continue;
     const cargo = iCat < 0 || /^cargo/i.test(c[iCat] || "");
     if (cargo) cargos += monto;
     const detalle = (c[iDes] || "").replace(/\s+/g, " ").trim();
-    const r = cargo ? cuentaCargo(detalle, fechaCta) : "omitir";
+    const r = cargo ? cuentaCargo(detalle, fechaCta) : cuentaAbono(detalle, fechaCta, propios);
     if (r === "omitir") { omitidos++; continue; }
     if (!r) { desconocidos.push(detalle); continue; }
     const base = `${detalle}|${monto}`;
     seen[base] = (seen[base] || 0) + 1;
     rows.push({
       bancoId: `${CUENTA_PREFIX}${base}#${seen[base]}`, ...r, detalle,
-      monto, cuota: null, cuotas: null, pendiente: false, catBanco: null,
+      monto: cargo ? monto : -monto, cuota: null, cuotas: null, pendiente: false, catBanco: null,
     });
   }
   return { desde, hasta, totalCargos, cargos, omitidos, desconocidos, rows };
