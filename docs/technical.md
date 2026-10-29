@@ -30,3 +30,20 @@ El contexto general del proyecto (stack, modelo de datos, API y principios) est�
 - Para revisar un dibujo, cada `pose_*.py` tiene `draw()`; renderiza el SVG en un HTML con el `CSS` de `silueta_lib.py` y míralo también a 72 px, que es su tamaño en la app.
 - Para regenerar: `py tools/ilustraciones/build.py`. El script reemplaza el objeto `ILLU` de `public/index.html` entre `/* ILLU:inicio */` y `/* ILLU:fin */`.
 - Los colores son clases (`.b`, `.m`, `.mk`…) definidas en el CSS de la app con sus tokens, así que funcionan en modo claro y oscuro.
+
+## Finanzas
+
+### Tarjetas
+- Cada movimiento trae los últimos 4 dígitos de la tarjeta (`movimientos.tarjeta`) desde la alerta de Visa. El tipo y el nombre de cada tarjeta se guardan en `lib.fin.cards` (`{últimos 4: {name, kind: "credito" | "debito"}}`) y se editan en Finanzas → Tarjetas.
+- Tipo de un movimiento (`finCardKind()`): una fila de la cartola de la cuenta (`banco_id` con prefijo `bicecta:`) es de débito y una de la cartola de crédito (`bice:`) es de crédito; una alerta toma el tipo de su tarjeta y, sin tipo, cuenta como crédito. Así una tarjeta de crédito que nunca se configuró sigue funcionando igual que antes.
+- El gasto del mes, las categorías, el presupuesto y los recurrentes suman todas las tarjetas. El ciclo de facturación y las cuotas usan solo las de crédito.
+- `importCartola()` en el Worker reconoce el formato (`parseCartola()` para la tarjeta de crédito, `parseCuenta()` para la cuenta) y lee `lib.fin.cards`: la cartola de crédito se concilia solo con alertas de tarjetas que no son de débito, y la de la cuenta solo con alertas de débito. Sin esa separación, una compra con débito del mismo monto y fecha que una de crédito podía quedar unida a la fila equivocada.
+
+### Cartola de la cuenta (`parseCuenta()`)
+- CSV de BICE "Abonos y cargos" de la cuenta en pesos: columnas Fecha (`29 oct 2026`), Categoría (Abonos o Cargos), Descripción y Monto (`$2.190`), con una columna vacía a la izquierda. El periodo sale de la línea `29 oct 2026 - 1 oct 2026` y el total de cargos, de la línea siguiente a "Total cargos".
+- Solo entran los cargos "Cargo por Compra en COMERCIO El dd/mm/aaaa a las hh:mm:ss., Monto N": el comercio, la fecha y la hora salen de la descripción, porque la fecha de la fila es la del cargo en la cuenta (hasta 3 días después de la compra). Transferencias, abonos, pagos de cuentas, el pago de la tarjeta de crédito e intereses de sobregiro cuentan en `omitidos`.
+- `cuadra` compara la suma de todas las filas de cargos (no solo las compras) con el total de cargos impreso; sirve para detectar filas que el lector no entendió.
+- La clave de cada fila (`banco_id`) es `bicecta:<descripción>|<monto>#<n>`, sin la fecha de la fila, para que una cartola provisoria y la definitiva del mismo periodo no dupliquen compras.
+- Las filas nuevas llevan la tarjeta de débito si hay una sola configurada.
+- Aviso "no aparece en la cartola" para una alerta de débito: su fecha está entre `lib.fin.cuentaDesde` y 5 días antes de `lib.fin.cuentaHasta` (el periodo cubierto por las cartolas de la cuenta importadas) y no se unió a ninguna fila. Los 5 días cubren el desfase entre la compra y el cargo. Para crédito sigue la regla de 3 días después de la última importación (`cartolaAl`).
+- El filtro por tarjeta de la lista de movimientos y la tarjeta de cada movimiento se muestran solo cuando hay más de una tarjeta.

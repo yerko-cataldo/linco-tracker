@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-29
+- Finanzas: tarjeta de débito. Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa y se marca como crédito o débito en el nuevo panel Tarjetas (una sin tipo cuenta como crédito). El gasto del mes suma ambas; cada movimiento muestra su tarjeta, la lista tiene filtro por tipo y "Lo más importante" separa crédito y débito. El ciclo de facturación y las cuotas son solo de crédito. Si llega una compra con una tarjeta sin tipo, "Por revisar" lo avisa.
+- Finanzas: "Importar cartola" (ahora en Tarjetas) acepta también la cartola de la cuenta BICE. Importa solo las compras con débito, con la fecha y hora de la compra, y las concilia con las alertas de débito; deja fuera transferencias, pagos de cuentas, el pago de la tarjeta e intereses. Avisa si los cargos no suman el total impreso.
+- Finanzas: corrige la conciliación de la cartola de crédito, que podía unir una fila con una alerta de débito del mismo monto y fecha.
+
 ## 2026-10-23
 - Compartir con amigos: link de solo lectura sin login (`/s/<código>`), que se crea, cambia y desactiva en Perfil. Muestra solo las áreas marcadas (por defecto entreno, bajo y estudio; nutrición es opcional) y nunca peso, perfil, InBody ni coach. La constancia y el rango se calculan con las áreas compartidas. El Worker filtra los datos y la página va con `noindex`. Requiere una excepción Bypass en Cloudflare Access para `/s`.
 - Entreno: los calentamientos de gimnasio asumen que llegas en bici. Sale el cardio de 5 min y quedan movilidad dinámica y series de aproximación (~4 min), con una nota para sumar cardio si demoras más de 15 min en empezar.

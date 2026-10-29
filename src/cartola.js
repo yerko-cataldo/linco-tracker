@@ -1,4 +1,4 @@
-// Cartola de tarjeta de crédito BICE (CSV separado por ";"): lectura y conciliación con las alertas de Visa.
+// Cartolas BICE (CSV separado por ";") de la tarjeta de crédito y de la cuenta: lectura y conciliación con las alertas de Visa.
 
 const DATE_RE = /^(\d{2})\/(\d{2})\/(\d{4})$/;
 const CUOTA_RE = /^(.*?)\s+(\d{1,2})-(\d{2})\s+CUOTA$/i;
@@ -62,6 +62,58 @@ export function parseCartola(text) {
     });
   }
   return { inicio, totalCargos, totalAbonos, rows };
+}
+
+/* ---------- cartola de la cuenta: solo las compras con la tarjeta de débito ---------- */
+export const CUENTA_PREFIX = "bicecta:";
+const MESES = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, sept: 9, oct: 10, nov: 11, dic: 12 };
+const LONG_DATE_RE = /^(\d{1,2})\s+([a-z]{3,4})\.?\s+(\d{4})$/i;
+const PERIODO_RE = /^(\d{1,2}\s+[a-z]{3,4}\.?\s+\d{4})\s+-\s+(\d{1,2}\s+[a-z]{3,4}\.?\s+\d{4})$/i;
+// "Cargo por Compra en HIP LIDER NUNOA   El 23/10/2026  a las  13:37:48., Monto 20.780"
+const COMPRA_CTA_RE = /^Cargo por Compra en\s+(.+?)\s+El\s+(\d{2}\/\d{2}\/\d{4})\s+a las\s+(\d{2}:\d{2})/i;
+
+const longDate = (s) => {
+  const m = String(s || "").trim().match(LONG_DATE_RE);
+  const mes = m && MESES[m[2].toLowerCase()];
+  return mes ? `${m[3]}-${String(mes).padStart(2, "0")}-${m[1].padStart(2, "0")}` : null;
+};
+
+/* Devuelve {desde, hasta, totalCargos, cargos, omitidos, rows} o null si el texto no es una cartola de cuenta.
+   rows: compras con débito, con la fecha y hora de la compra; omitidos: los demás movimientos. */
+export function parseCuenta(text) {
+  const lines = String(text).replace(/^﻿/, "").split(/\r?\n/).map((l) => l.split(";").map((c) => c.trim()));
+  let desde = null, hasta = null, totalCargos = null, head = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const c = lines[i], first = c.find(Boolean) || "";
+    const p = first.match(PERIODO_RE);
+    if (p) [desde, hasta] = [longDate(p[1]), longDate(p[2])].sort();
+    if (/^total cargos$/i.test(first) && lines[i + 1]) totalCargos = clpInt(lines[i + 1].find(Boolean));
+    if (c.includes("Fecha") && c.some((h) => /^Descripci/i.test(h))) { head = i; break; }
+  }
+  if (head < 0) return null;
+  const hc = lines[head], iFec = hc.indexOf("Fecha"), iDes = hc.findIndex((h) => /^Descripci/i.test(h));
+  const iCat = hc.findIndex((h) => /^Categor/i.test(h)), iMon = hc.findIndex((h) => h.startsWith("Monto"));
+  if (iMon < 0) return null;
+
+  const rows = [], seen = {};
+  let cargos = 0, omitidos = 0;
+  for (const c of lines.slice(head + 1)) {
+    const fechaCta = longDate(c[iFec]), monto = clpInt(c[iMon]);
+    if (!fechaCta || monto === null) continue;
+    const cargo = iCat < 0 || /^cargo/i.test(c[iCat] || "");
+    if (cargo) cargos += monto;
+    const detalle = (c[iDes] || "").replace(/\s+/g, " ").trim();
+    const m = cargo && (c[iDes] || "").match(COMPRA_CTA_RE);
+    if (!m) { omitidos++; continue; }
+    const base = `${detalle}|${monto}`;
+    seen[base] = (seen[base] || 0) + 1;
+    rows.push({
+      bancoId: `${CUENTA_PREFIX}${base}#${seen[base]}`,
+      fecha: isoDate(m[2]) || fechaCta, hora: m[3], comercio: m[1].trim(), detalle,
+      tipo: "Compra", monto, cuota: null, cuotas: null, pendiente: false, catBanco: null,
+    });
+  }
+  return { desde, hasta, totalCargos, cargos, omitidos, rows };
 }
 
 const dayDiff = (a, b) => Math.abs(Date.parse(a) - Date.parse(b)) / 864e5;

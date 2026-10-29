@@ -1,7 +1,7 @@
 // Lincoyán: Worker que protege el sitio, guarda tus datos en D1 y hace de proxy al modelo.
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import { parseVisaAlert } from "./alertas.js";
-import { parseCartola, planConciliation } from "./cartola.js";
+import { parseCartola, parseCuenta, planConciliation } from "./cartola.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -87,40 +87,55 @@ async function storeRawEmail(message, env) {
   return { raw, inboxId: inserted.meta.last_row_id };
 }
 
-/* ---------- cartola BICE: importa las filas y las concilia con las alertas ---------- */
+/* ---------- cartola BICE: importa las filas y las concilia con las alertas ----------
+   Tarjeta de crédito: todas las filas, unidas a alertas de tarjetas que no son de débito.
+   Cuenta: solo las compras con débito, unidas a alertas de tarjetas de débito. */
 async function importCartola(request, env) {
   const text = await request.text();
   if (!text || text.length > 2 * 1024 * 1024) return json({ error: "bad_body" }, 400);
-  const parsed = parseCartola(text);
-  if (!parsed || !parsed.rows.length) return json({ error: "not_cartola" }, 400);
+  const credito = parseCartola(text);
+  const parsed = credito || parseCuenta(text);
+  if (!parsed || (credito && !parsed.rows.length)) return json({ error: "not_cartola" }, 400);
 
   const desde = parsed.rows.reduce((a, r) => (r.fecha < a ? r.fecha : a), "9999-12-31");
-  const existing = await env.DB.prepare(
-    "SELECT id, fecha, monto, moneda, fuente, banco_id FROM movimientos WHERE fecha >= date(?, '-5 days')"
-  ).bind(desde).all();
-  const plan = planConciliation(parsed.rows, existing.results);
+  const [existing, fin] = await env.DB.batch([
+    env.DB.prepare(
+      "SELECT id, fecha, monto, moneda, fuente, banco_id, tarjeta FROM movimientos WHERE fecha >= date(?, '-5 days')"
+    ).bind(desde),
+    env.DB.prepare("SELECT data FROM lib WHERE key = 'fin'"),
+  ]);
+  // Tipo de tarjeta de cada alerta según lib.fin.cards; sin tipo cuenta como crédito
+  const cards = fin.results[0] ? JSON.parse(fin.results[0].data).values?.cards || {} : {};
+  const debit = new Set(Object.keys(cards).filter((k) => cards[k]?.kind === "debito"));
+  const plan = planConciliation(parsed.rows, existing.results.filter((e) => e.banco_id || debit.has(e.tarjeta) !== !!credito));
+  // Filas nuevas de la cuenta: con la tarjeta de débito si hay una sola
+  const tarjeta = !credito && debit.size === 1 ? [...debit][0] : "";
 
   const refresh = env.DB.prepare("UPDATE movimientos SET pendiente = ?, cat_banco = ? WHERE banco_id = ?");
   const link = env.DB.prepare(
     "UPDATE movimientos SET banco_id = ?, detalle_banco = ?, cat_banco = ?, cuota = ?, cuotas = ?, pendiente = ? WHERE id = ?"
   );
   const insert = env.DB.prepare(
-    "INSERT OR IGNORE INTO movimientos (id, fecha, comercio, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado) " +
-    "VALUES (?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'cartola', ?, ?, ?, ?, ?, ?, 1)"
+    "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado) " +
+    "VALUES (?, ?, ?, ?, 'CHL', ?, ?, 'CLP', ?, 'cartola', ?, ?, ?, ?, ?, ?, 1)"
   );
   const stmts = [
     ...plan.refresh.map((r) => refresh.bind(r.pendiente ? 1 : 0, r.catBanco, r.bancoId)),
     ...plan.update.map(([id, r]) => link.bind(r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0, id)),
     ...plan.insert.map((r) =>
-      insert.bind(r.bancoId, r.fecha, r.comercio, r.tipo, r.monto, r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0)
+      insert.bind(r.bancoId, r.fecha, r.hora || null, r.comercio, tarjeta, r.tipo, r.monto, r.bancoId, r.detalle, r.catBanco, r.cuota, r.cuotas, r.pendiente ? 1 : 0)
     ),
   ];
   for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
 
-  const cargos = parsed.rows.reduce((s, r) => s + (r.monto > 0 ? r.monto : 0), 0);
+  const cargos = credito ? parsed.rows.reduce((s, r) => s + (r.monto > 0 ? r.monto : 0), 0) : parsed.cargos;
   return json({
     ok: true,
-    inicio: parsed.inicio,
+    tipo: credito ? "credito" : "cuenta",
+    inicio: parsed.inicio || null,
+    desde: parsed.desde || null,
+    hasta: parsed.hasta || null,
+    omitidos: parsed.omitidos || 0,
     filas: parsed.rows.length,
     nuevos: plan.insert.length,
     conciliados: plan.update.length,

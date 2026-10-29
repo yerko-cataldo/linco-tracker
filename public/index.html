@@ -1138,7 +1138,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- FINANZAS -->
   <section class="tab" id="tab-finanzas">
-    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta de crédito: llegan solas desde las alertas de Visa y se concilian con la cartola de BICE.</p></div></div>
+    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta de crédito y débito: llegan solas desde las alertas de Visa, y las de crédito se concilian con la cartola de BICE.</p></div></div>
     <div class="panel" id="finInboxPanel" hidden>
       <div class="item-head"><h3 id="finInboxHead">Por revisar</h3><span class="act"><button class="btn small" data-action="fin-inbox-all">Marcar todo como revisado</button></span></div>
       <div id="finInbox"></div>
@@ -1172,8 +1172,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     </div>
     <div class="grid g2 mt">
       <div class="panel">
-        <div class="item-head"><h3>Ciclo de facturación</h3><span class="act"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label></span></div>
-        <div class="small muted" id="cartolaStatus"></div>
+        <h3>Ciclo de facturación</h3>
         <div id="finCycle"></div>
       </div>
       <div class="panel"><h3>Gastos recurrentes</h3><div id="finRecur"></div></div>
@@ -1192,6 +1191,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
         <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"></select></div>
         <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
+        <div class="field w10" hidden><span class="sr">Filtrar por tarjeta</span><select id="finCardF"><option value="">Todas las tarjetas</option><option value="credito">Solo crédito</option><option value="debito">Solo débito</option></select></div>
       </div>
       <div id="finList"></div>
     </div>
@@ -1204,6 +1204,12 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <p class="small muted" style="margin:10px 0 0">Con texto, la IA separa los productos y copia los números que escribiste. Con foto (hasta 3, para una boleta larga), la IA solo transcribe las líneas tal cual y el código las lee: el código de barras abre un producto, una línea sin monto continúa su nombre, "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990" es su cantidad, "2 KG" o "250G" en el nombre es el contenido del envase y un monto negativo es un descuento del producto anterior, con su misma categoría. Después la IA solo escribe nombres legibles y elige alimento y categoría. Si las líneas no suman el TOTAL impreso, la boleta se lee una segunda vez y queda la lectura que cuadra; si ninguna cuadra, o el TOTAL no coincide con la compra, te avisa. Lo que leyó la IA se ve bajo la tabla. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
     </div>
     <div class="panel mt"><h3>Precios por producto</h3><div id="finPrices"></div></div>
+    <div class="panel mt">
+      <div class="item-head"><h3>Tarjetas</h3><span class="act"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label></span></div>
+      <div class="small muted" id="cartolaStatus"></div>
+      <div id="finCards" class="mt"></div>
+      <p class="small muted" style="margin:10px 0 0">Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa. Una tarjeta sin tipo cuenta como de crédito. El gasto del mes suma todas las tarjetas; el ciclo de facturación y las cuotas usan solo las de crédito. "Importar cartola" acepta el CSV de BICE de la tarjeta de crédito o el de la cuenta: la de crédito se concilia con las alertas de crédito y la de la cuenta con las de débito.</p>
+    </div>
     <div class="grid g2 mt">
       <div class="panel">
         <h3>Reglas de categoría</h3>
@@ -1222,7 +1228,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     </div>
     <p class="small muted">El gasto suma las compras en pesos; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%.</p>
     <p class="small muted">Categoría de cada compra, en este orden: la que elegiste para ese comercio, una regla que calce con su nombre, la sugerida por comercios parecidos que ya categorizaste y, al final, la del banco.</p>
-    <p class="small muted">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
+    <p class="small muted">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. De la cartola de la cuenta solo entran las compras con débito ("Cargo por Compra en…"), con la fecha y hora de la compra; transferencias, pagos de cuentas, el pago de la tarjeta de crédito e intereses quedan fuera. Una alerta de débito queda marcada si es del periodo de las cartolas de la cuenta importadas, hasta 5 días antes de su cierre, y no aparece en ellas. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
   </section>
 
   <!-- COACH -->
@@ -2814,7 +2820,8 @@ function renderMetrics(m){
   setHTML($("#metDomain"), dom);
 }
 /* Finanzas: movimientos de tarjeta (S.movs: alertas de Visa y cartola BICE).
-   lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto}} */
+   lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto},
+              cards: {últimos 4 dígitos: {name, kind: "credito" | "debito"}}, cuentaDesde, cuentaHasta} */
 const FIN_CATS = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Otros"];
 const BANK_CATS = {"Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros"};
 const FIN_SRC = {comercio: "", regla: "regla", base: "regla base", sugerida: "sugerida", banco: "banco"};
@@ -2842,6 +2849,15 @@ function finBaseRule(comercio){
   return null;
 }
 const finCfg = () => Object.assign({budget: null, cats: {}, rules: [], catBudgets: {}, reviews: {}}, S.lib.fin || {});
+// Tarjetas: tipo por últimos 4 dígitos; una fila de la cartola de la cuenta es de débito, una de la cartola de crédito es de crédito
+// y una tarjeta sin tipo cuenta como crédito
+const FIN_KIND = {credito: "crédito", debito: "débito"};
+const finCards = () => finCfg().cards || {};
+const finCardKind = m => m.banco_id ? (m.banco_id.startsWith("bicecta:") ? "debito" : "credito") : (finCards()[m.tarjeta] || {}).kind || "credito";
+const finCardLabel = m => (finCards()[m.tarjeta] || {}).name || `${FIN_KIND[finCardKind(m)]}${m.tarjeta ? " ··" + m.tarjeta : ""}`;
+// Tarjetas conocidas: las configuradas y las que aparecen en alguna alerta
+const finCardList = () => [...new Set([...Object.keys(finCards()), ...S.movs.filter(m => m.tarjeta).map(m => m.tarjeta)])].sort();
+const finMultiCard = () => finCardList().length > 1;
 // Clave de comercio: sin tildes, mayúsculas ni signos ("MERPAGO*X" y "MERPAGOX" coinciden)
 const finKey = s => norm(s).replace(/[^a-z0-9]/g, "");
 const finTokens = s => norm(s).replace(/^(merpago\*?|payu\s+|mp\s*\*)/, "").split(/[^a-z0-9]+/).filter(t => t.length >= 4 && !["compras", "ltda", "chile"].includes(t));
@@ -2935,7 +2951,7 @@ function renderFin(){
 
   renderFinList();
   renderFinTrend(c); renderFinMerch(c); renderFinPattern(c); renderFinAnom(c);
-  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinReview(); renderFinDet(); renderFinPrices();
+  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinCards(); renderFinReview(); renderFinDet(); renderFinPrices();
 }
 /* Comparación: mes anterior, promedio de 3 meses completos, mismo mes del año pasado o un mes elegido.
    En el mes en curso, cada mes comparado se cuenta hasta el mismo día. */
@@ -3008,13 +3024,14 @@ function renderFinSummary(c, tree, cmp){
   const ups = diffs.filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 3), downs = diffs.filter(x => x.d < 0).sort((a, b) => a.d - b.d).slice(0, 2);
   const big = c.buys.reduce((a, m) => m.monto > a.monto ? m : a, c.buys[0]);
   const top = Object.entries(tree).sort((a, b) => b[1].v - a[1].v)[0];
+  const deb = sum(c.buys.filter(m => finCardKind(m) === "debito"), m => m.monto);
   const li = x => `<li><strong>${esc(x.cat)}</strong> <span class="muted">(${esc(x.g)})</span>: ${x.d > 0 ? "+" : "−"}${fmtClp(Math.abs(x.d))} <span class="muted">(${fmtClp(x.v)} frente a ${fmtClp(x.b)})</span></li>`;
   const d = cmp.has ? c.total - cmp.total : null;
   setHTML($("#finSummary"), `<p style="margin:0 0 8px">Llevas <strong>${fmtClp(c.total)}</strong> en ${c.buys.length} ${c.buys.length === 1 ? "compra" : "compras"}${c.isCur ? ` al día ${c.dayCut}` : ""}${top ? `; el grupo más grande es <strong>${esc(top[0])}</strong> (${fmt(top[1].v / c.total * 100)}%)` : ""}.</p>
     ${d !== null ? `<p style="margin:0 0 8px">Son <strong class="${d > 0 ? "fin-up" : "fin-down"}">${fmtClp(Math.abs(d))} ${d > 0 ? "más" : "menos"}</strong> que ${esc(cmp.label)}${cmp.total ? ` (${d > 0 ? "+" : "−"}${fmt(Math.abs(d) / cmp.total * 100)}%)` : ""}.${cmp.partial ? ` <span class="small muted">Ojo: la comparación tiene ${esc(cmp.partial)}.</span>` : ""}</p>` : `<p class="muted" style="margin:0 0 8px">${esc(cmp.none)}</p>`}
     ${ups.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde más subió</p><ul style="margin:0;padding-left:18px">${ups.map(li).join("")}</ul>` : ""}
     ${downs.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde bajó</p><ul style="margin:0;padding-left:18px">${downs.map(li).join("")}</ul>` : ""}
-    <p class="small muted" style="margin:10px 0 0">Compra más grande: ${esc(big.comercio)}, ${fmtClp(big.monto)} el ${fmtShort(big.fecha)}. Ticket promedio ${fmtClp(c.total / c.buys.length)}; promedio diario ${fmtClp(c.daily)}.</p>`);
+    <p class="small muted" style="margin:10px 0 0">Compra más grande: ${esc(big.comercio)}, ${fmtClp(big.monto)} el ${fmtShort(big.fecha)}. Ticket promedio ${fmtClp(c.total / c.buys.length)}; promedio diario ${fmtClp(c.daily)}.${deb ? ` Con crédito ${fmtClp(c.total - deb)} y con débito ${fmtClp(deb)}.` : ""}</p>`);
 }
 
 /* KPI del mes: gasto frente al presupuesto, proyección, recurrentes y cuotas */
@@ -3313,16 +3330,18 @@ function renderFinAnom(c){
 
 /* Lista de movimientos del mes con búsqueda (comercio, detalle del banco o producto) y filtro de categoría */
 function renderFinList(){
-  const ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value, gf = $("#finGroupF").value;
+  const multi = finMultiCard(), ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value, gf = $("#finGroupF").value;
+  $("#finCardF").parentElement.hidden = !multi;
+  const kf = multi ? $("#finCardF").value : "";
   const all = S.movs.filter(m => m.fecha.startsWith(ym));
   // con destino elegido: solo compras con una parte en ese destino, y se muestra esa parte
   const part = m => gf ? (isPurchase(m) ? finSplitGroups(m)[gf] : 0) : m.monto;
   const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
-    && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0));
+    && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0) && (!kf || finCardKind(m) === kf));
   const shown = sum(list.filter(isPurchase), part);
-  setHTML($("#finList"), list.length ? `${q || cf || gf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${gf.toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
+  setHTML($("#finList"), list.length ? `${q || cf || gf || kf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${gf.toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
-      <td>${esc(m.comercio)}${m.ciudad ? `<div class="small muted">${esc(m.ciudad)}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
+      <td>${esc(m.comercio)}${m.ciudad || multi ? `<div class="small muted">${[m.ciudad, multi && finCardLabel(m)].filter(Boolean).map(esc).join(" · ")}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
       <td>${finCatSelect(m)}</td>
       <td class="n">${gf && part(m) !== m.monto ? `${fmtClp(part(m))}<div class="small muted">de ${fmtClp(m.monto)}</div>` : m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${finAmountNote(m)}</td>
     </tr>`).join("")}</tbody></table></div>`
@@ -3341,8 +3360,9 @@ function finAmountNote(m){
 function finStatusHtml(m){
   if (m.banco_id) return m.pendiente ? `<div class="small muted">en cartola, por confirmar</div>` : "";
   if (m.fuente !== "alerta") return "";
-  const al = finCfg().cartolaAl;
-  if (al && m.fecha <= addDays(al, -3)) return `<div class="small" style="color:var(--danger)">no aparece en la cartola <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
+  const cfg = finCfg(), al = cfg.cartolaAl;
+  const gone = finCardKind(m) === "debito" ? cfg.cuentaHasta && m.fecha >= cfg.cuentaDesde && m.fecha <= addDays(cfg.cuentaHasta, -5) : al && m.fecha <= addDays(al, -3);
+  if (gone) return `<div class="small" style="color:var(--danger)">no aparece en la cartola <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
   return `<div class="small muted">solo alerta</div>`;
 }
 
@@ -3356,7 +3376,8 @@ function renderFinInbox(){
   renderFinBadge();
   $("#finInboxPanel").hidden = !list.length;
   $("#finInboxHead").textContent = `Por revisar (${list.length})`;
-  setHTML($("#finInbox"), list.map(m => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:10px 0">
+  const fresh = finMultiCard() ? [...new Set(list.filter(m => m.tarjeta && !(finCards()[m.tarjeta] || {}).kind).map(m => m.tarjeta))] : [];
+  setHTML($("#finInbox"), (fresh.length ? `<p class="small" style="margin:0 0 8px">Llegaron compras con ${fresh.length === 1 ? "una tarjeta sin tipo" : "tarjetas sin tipo"} (${fresh.map(t => "··" + esc(t)).join(", ")}). Elige si es de crédito o débito en Tarjetas, más abajo.</p>` : "") + list.map(m => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:10px 0">
       <div><strong>${esc(m.comercio)}</strong> <span class="muted">${fmtShort(m.fecha)}${m.hora ? " " + esc(m.hora) : ""}</span>${finDetSummary(m)}</div>
       <div class="row"><strong>${fmtClp(m.monto)}</strong>${finCatSelect(m)}
         <button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">Detallar</button>
@@ -3398,10 +3419,9 @@ function finInstallments(){
   }).filter(g => g.left > 0);
 }
 function renderFinCycle(){
-  const cfg = finCfg(), rg = finCycleRange(today());
-  $("#cartolaStatus").textContent = cfg.cartolaAl ? `Última cartola importada el ${fmtShort(cfg.cartolaAl)}.` : "Importa la cartola de BICE (CSV) para conciliar las alertas y ver el ciclo y las cuotas.";
-  if (!rg){ setHTML($("#finCycle"), ""); return; }
-  const inCyc = S.movs.filter(m => m.fecha >= rg.start && m.fecha <= rg.end && m.moneda === "CLP");
+  const rg = finCycleRange(today());
+  if (!rg){ setHTML($("#finCycle"), `<p class="empty">Importa la cartola de la tarjeta de crédito en Tarjetas para ver el ciclo y las cuotas.</p>`); return; }
+  const inCyc = S.movs.filter(m => m.fecha >= rg.start && m.fecha <= rg.end && m.moneda === "CLP" && finCardKind(m) === "credito");
   const cargos = sum(inCyc.filter(m => m.monto > 0), m => m.monto), pagos = -sum(inCyc.filter(m => m.monto < 0), m => m.monto);
   const inst = finInstallments(), pend = sum(inst, g => g.pending);
   setHTML($("#finCycle"), `<dl class="mt">
@@ -3419,13 +3439,19 @@ async function importCartola(file){
   try {
     const buf = await file.arrayBuffer();
     let text; try { text = new TextDecoder("utf-8", {fatal: true}).decode(buf); } catch { text = new TextDecoder("windows-1252").decode(buf); }
-    const r = await finApi("POST", "cartola", text);
-    saveLib("fin", () => ({...finCfg(), cicloInicio: r.inicio || finCfg().cicloInicio, cartolaAl: today()}));
+    const r = await finApi("POST", "cartola", text), cuenta = r.tipo === "cuenta";
+    saveLib("fin", () => {
+      const c = finCfg();
+      if (!cuenta) return {...c, cicloInicio: r.inicio || c.cicloInicio, cartolaAl: today()};
+      // periodo cubierto por las cartolas de la cuenta importadas
+      return {...c, cuentaDesde: [c.cuentaDesde, r.desde].filter(Boolean).sort()[0] || null, cuentaHasta: [c.cuentaHasta, r.hasta].filter(Boolean).sort().pop() || null};
+    });
     await loadState(); renderAll();
-    toast(`Cartola: ${r.filas} filas; ${r.nuevos} nuevas, ${r.conciliados} unidas a alertas, ${r.actualizados} ya estaban.`);
-    if (r.cuadra === false) st.textContent = "Ojo: la suma de las filas no coincide con el total de cargos de la cartola.";
+    toast(cuenta ? `Cartola de la cuenta: ${r.filas} ${r.filas === 1 ? "compra" : "compras"} con débito; ${r.nuevos} nuevas, ${r.conciliados} unidas a alertas, ${r.actualizados} ya estaban. ${r.omitidos} movimientos que no son compras quedaron fuera.`
+      : `Cartola de crédito: ${r.filas} filas; ${r.nuevos} nuevas, ${r.conciliados} unidas a alertas, ${r.actualizados} ya estaban.`);
+    if (r.cuadra === false) st.textContent = "Ojo: la suma de los cargos no coincide con el total de cargos de la cartola.";
   } catch (e) {
-    st.textContent = e.message === "not_cartola" ? "El archivo no parece una cartola de BICE en CSV." : "No se pudo importar: " + e.message;
+    st.textContent = e.message === "not_cartola" ? "El archivo no parece una cartola de BICE en CSV (de la tarjeta de crédito o de la cuenta)." : "No se pudo importar: " + e.message;
   } finally { $("#cartolaFile").value = ""; }
 }
 
@@ -3459,6 +3485,22 @@ function renderFinRecur(){
     : `<p class="empty">Aún no hay cobros que se repitan con regularidad.</p>`);
 }
 
+/* Tarjetas: nombre y tipo por últimos 4 dígitos (lib.fin.cards) */
+function renderFinCards(){
+  const cards = finCards(), list = finCardList(), cfg = finCfg();
+  $("#cartolaStatus").textContent = [
+    cfg.cartolaAl ? `Cartola de crédito importada el ${fmtShort(cfg.cartolaAl)}.` : "Sin cartola de crédito.",
+    cfg.cuentaHasta ? `Cartola de la cuenta del ${fmtShort(cfg.cuentaDesde)} al ${fmtShort(cfg.cuentaHasta)}.` : Object.values(cards).some(c => c.kind === "debito") ? "Sin cartola de la cuenta." : ""
+  ].filter(Boolean).join(" ");
+  setHTML($("#finCards"), list.length ? `<div class="scroll"><table><thead><tr><th>Tarjeta</th><th>Nombre</th><th>Tipo</th><th class="n">Movimientos</th><th>Último</th></tr></thead><tbody>${list.map(t => {
+    const c = cards[t] || {}, ms = S.movs.filter(m => m.tarjeta === t), last = ms.reduce((a, m) => m.fecha > a ? m.fecha : a, "");
+    return `<tr><td>··${esc(t)}</td>
+      <td><input data-card="${esc(t)}" data-f="name" value="${esc(c.name || "")}" placeholder="${esc(FIN_KIND[c.kind || "credito"])}" aria-label="Nombre de la tarjeta ··${esc(t)}"></td>
+      <td><select data-card="${esc(t)}" data-f="kind" aria-label="Tipo de la tarjeta ··${esc(t)}"><option value=""${c.kind ? "" : " selected"}>sin tipo (crédito)</option>${Object.entries(FIN_KIND).map(([k, v]) => `<option value="${k}"${c.kind === k ? " selected" : ""}>${v}</option>`).join("")}</select></td>
+      <td class="n">${ms.length}</td><td>${last ? fmtShort(last) : "—"}</td></tr>`; }).join("")}</tbody></table></div>`
+    : `<p class="empty">Aún no llega ninguna alerta de Visa.</p>`);
+}
+
 /* Reglas de categoría: lib.fin.rules = [{pat, cat}] */
 function renderFinRules(){
   const rules = finCfg().rules || [];
@@ -3475,6 +3517,7 @@ function finMonthFacts(ym){
   const byMerch = {}; for (const m of cur) byMerch[m.comercio] = (byMerch[m.comercio] || 0) + m.monto;
   return {
     mes: ym, gasto: sum(cur, m => m.monto), compras: cur.length, gastoMesAnterior: sum(prev, m => m.monto),
+    gastoPorTipoDeTarjeta: Object.fromEntries(Object.keys(FIN_KIND).map(k => [k, sum(cur.filter(m => finCardKind(m) === k), m => m.monto)])),
     porCategoria: Object.entries(cc).sort((a, b) => b[1] - a[1]).map(([c, v]) => ({categoria: c, monto: v, mesAnterior: pc[c] || 0, tope: finCfg().catBudgets[c] || null})),
     principalesComercios: Object.entries(byMerch).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c, v]) => ({comercio: c, monto: v})),
     comerciosNuevos: [...new Set(cur.filter(m => !seenBefore.has(finKey(m.comercio))).map(m => m.comercio))].slice(0, 10),
@@ -3492,7 +3535,7 @@ async function finReview(){
   if (!facts.compras){ st.textContent = "No hay compras en este mes."; return; }
   st.innerHTML = `<span class="spin"></span> Escribiendo…`; S.finReviewing = true;
   try {
-    const r = await S.sample(`Escribe un resumen breve de mis gastos con tarjeta de crédito del mes ${ym}, en español de Chile, tuteando.
+    const r = await S.sample(`Escribe un resumen breve de mis gastos con tarjeta de crédito y débito del mes ${ym}, en español de Chile, tuteando.
 Usa solo estas cifras, ya calculadas; no calcules cifras nuevas ni inventes datos. Montos en pesos chilenos.
 ${JSON.stringify(facts)}
 Formato: 4 a 6 viñetas en markdown. Destaca lo que cambió frente al mes anterior, las categorías sobre su tope, los recurrentes que subieron y los comercios nuevos. Termina con una sugerencia concreta.`, {onText: ({text}) => setHTML($("#finReviewOut"), md(text))});
@@ -5867,6 +5910,12 @@ function wireUI(){
   $("#finCatF").addEventListener("change", renderFinList);
   $("#finGroupF").innerHTML = `<option value="">Todos los grupos</option>` + FIN_TREE.map(([g]) => `<option value="${esc(g)}">Solo ${esc(g.toLowerCase())}</option>`).join("");
   $("#finGroupF").addEventListener("change", renderFinList);
+  $("#finCardF").addEventListener("change", renderFinList);
+  $("#finCards").addEventListener("change", e => {
+    const t = e.target, k = t.dataset.card, f = t.dataset.f; if (!k) return;
+    const v = t.value.trim(); t.blur();
+    saveLib("fin", () => { const c = finCfg(), card = {...(c.cards || {})[k]}; if (v) card[f] = v; else delete card[f]; return {...c, cards: {...c.cards, [k]: card}}; });
+  });
   $("#finCmp").addEventListener("change", renderFin);
   $("#finDetItems").addEventListener("change", e => {
     const t = e.target, d = S.finDraft; if (!t.classList.contains("fin-in") || !d) return;

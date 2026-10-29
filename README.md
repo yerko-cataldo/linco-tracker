@@ -13,7 +13,7 @@ La interfaz está en español de Chile.
 | **Entreno** | Checklist de series con descansos, 1RM estimado, récords, series efectivas por músculo, sugerencia de progresión e ilustraciones de ejercicios. |
 | **Bajo** | Metrónomo y batería sintetizados con Web Audio, técnicas con su BPM limpio y repertorio. |
 | **Estudio** | Libros y cursos con plan por temario, ritmo, proyección y temporizador. |
-| **Finanzas** | Compras con tarjeta de crédito que llegan solas desde las alertas de Visa, conciliación con la cartola del banco, detalle de productos por compra, categorías con reglas, presupuesto y topes, recurrentes, cuotas, gráficos de distribución y evolución, gasto diario en comida y resumen del mes con IA. |
+| **Finanzas** | Compras con tarjeta de crédito y débito que llegan solas desde las alertas de Visa, conciliación con la cartola del banco, detalle de productos por compra, categorías con reglas, presupuesto y topes, recurrentes, cuotas, gráficos de distribución y evolución, gasto diario en comida y resumen del mes con IA. |
 | **Coach** | Revisión semanal y chat con el contexto de tu perfil y tus registros. |
 | **Perfil y metas** | Perfil, metas, importación y exportación, y un link de solo lectura para compartir algunas áreas con amigos. |
 | **Métricas** | Uso frente a los límites gratis de Cloudflare, uso del modelo y vencimiento del dominio. |
@@ -94,15 +94,17 @@ Abre la app, entra con el código que llega a tu correo y ve a **Perfil y metas 
 Las compras llegan por correo y se concilian con la cartola del banco.
 
 1. **Email Routing.** En el panel del dominio, activa **Email → Email Routing**. Crea una dirección difícil de adivinar (por ejemplo `alertas-<algo-aleatorio>@tu-dominio.cl`) con la acción **Send to a Worker → lincoyan**. No actives una regla *catch-all* hacia el Worker.
-2. **Alertas de Visa.** En [Visa Purchase Alerts](https://purchasealerts.visa.com), registra tu tarjeta, usa esa dirección como correo de contacto y activa las alertas de todas las compras, sin monto mínimo. El código de verificación llega a la tabla `inbox_raw`; léelo desde la consola de D1:
+2. **Alertas de Visa.** En [Visa Purchase Alerts](https://purchasealerts.visa.com), registra tus tarjetas (crédito y débito), usa esa dirección como correo de contacto y activa las alertas de todas las compras, sin monto mínimo. El código de verificación llega a la tabla `inbox_raw`; léelo desde la consola de D1:
 
    ```sql
    SELECT id, subject, substr(raw, -3000) FROM inbox_raw ORDER BY id DESC LIMIT 3;
    ```
 
-3. **Cartola.** Descarga el CSV de movimientos de la tarjeta e impórtalo en **Finanzas → Importar cartola**. La app une cada fila con su alerta, agrega lo que falte, marca las alertas que no aparecen (posibles compras anuladas) y toma de ahí el ciclo de facturación y las cuotas.
+   Cuando llegue la primera compra con una tarjeta de débito, márcala como débito en **Finanzas → Tarjetas**. Una tarjeta sin tipo cuenta como de crédito.
 
-El Worker solo acepta alertas con remitente de `visa.com` y firmas DKIM y DMARC válidas. El lector de la cartola sigue el formato del CSV de BICE (`src/cartola.js`). Otro banco requiere adaptar ese archivo.
+3. **Cartolas.** Descarga el CSV de movimientos de la tarjeta de crédito, o el de la cuenta, e impórtalo en **Finanzas → Tarjetas → Importar cartola**; la app reconoce cuál es. Une cada fila con su alerta, agrega lo que falte y marca las alertas que no aparecen (posibles compras anuladas). De la cartola de crédito toma el ciclo de facturación y las cuotas; de la cuenta, solo las compras con débito.
+
+El Worker solo acepta alertas con remitente de `visa.com` y firmas DKIM y DMARC válidas. Los lectores de las cartolas siguen el formato de los CSV de BICE (`src/cartola.js`). Otro banco requiere adaptar ese archivo.
 
 ### 6. IA con Anthropic (opcional)
 
