@@ -1,7 +1,8 @@
 // Lincoyán: Worker que protege el sitio, guarda tus datos en D1 y hace de proxy al modelo.
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import { parseVisaAlert } from "./alertas.js";
-import { parseCartola, parseCuenta, planConciliation } from "./cartola.js";
+import { parseCartola, parseCuenta, planConciliation, rutOrigen } from "./cartola.js";
+import { parseBankMail } from "./correos.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -56,6 +57,7 @@ async function processEmail(message, env) {
 
   const res = parseVisaAlert(raw, message.from);
   if (!res.ok) {
+    if (res.reason === "remitente") return processBankMail(raw, message, env, inboxId);
     console.log(`correo descartado: ${res.reason}`);
     return;
   }
@@ -64,6 +66,34 @@ async function processEmail(message, env) {
     "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'alerta', ?)"
   )
     .bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.ciudad, mv.pais, mv.tarjeta, mv.tipo, mv.moneda, mv.monto, inboxId)
+    .run();
+}
+
+/* Comprobante de transferencia de BICE reenviado por el titular (FORWARD_FROM): crea el movimiento sin tarjeta, por revisar. */
+async function processBankMail(raw, message, env, inboxId) {
+  const row = await env.DB.prepare(
+    "SELECT detalle_banco FROM movimientos WHERE banco_id LIKE 'bicecta:Transferencia de%' AND detalle_banco IS NOT NULL LIMIT 1"
+  ).first();
+  const res = parseBankMail(raw, message.from, env.FORWARD_FROM, row ? rutOrigen(row.detalle_banco) : null);
+  if (!res.ok) {
+    console.log(`correo descartado: ${res.reason}`);
+    return;
+  }
+  const mv = res.mov;
+  // Una transferencia que la cartola de la cuenta ya trajo no se duplica
+  const dup = await env.DB.prepare(
+    "SELECT " +
+    "(SELECT COUNT(*) FROM movimientos WHERE fuente = 'cartola' AND banco_id LIKE 'bicecta:%' AND tipo = 'Transferencia' AND fecha = ?1 AND monto = ?2 AND lower(comercio) = lower(?3)) AS cartola, " +
+    "(SELECT COUNT(*) FROM movimientos WHERE fuente = 'correo' AND tipo = 'Transferencia' AND fecha = ?1 AND monto = ?2 AND lower(comercio) = lower(?3)) AS correo"
+  ).bind(mv.fecha, mv.monto, mv.comercio).first();
+  if (dup.cartola > dup.correo) {
+    console.log("correo descartado: ya está en la cartola");
+    return;
+  }
+  await env.DB.prepare(
+    "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id, revisado) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'correo', ?, 0)"
+  )
+    .bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.tipo, mv.monto, inboxId)
     .run();
 }
 
@@ -101,14 +131,14 @@ async function importCartola(request, env) {
   const desde = parsed.rows.reduce((a, r) => (r.fecha < a ? r.fecha : a), "9999-12-31");
   const [existing, fin] = await env.DB.batch([
     env.DB.prepare(
-      "SELECT id, fecha, monto, moneda, fuente, banco_id, tarjeta FROM movimientos WHERE fecha >= date(?, '-5 days')"
+      "SELECT id, fecha, monto, moneda, fuente, banco_id, tarjeta, tipo, comercio FROM movimientos WHERE fecha >= date(?, '-5 days')"
     ).bind(desde),
     env.DB.prepare("SELECT data FROM lib WHERE key = 'fin'"),
   ]);
   // Tipo de tarjeta de cada alerta según lib.fin.cards; sin tipo cuenta como crédito
   const cards = fin.results[0] ? JSON.parse(fin.results[0].data).values?.cards || {} : {};
   const debit = new Set(Object.keys(cards).filter((k) => cards[k]?.kind === "debito"));
-  const plan = planConciliation(parsed.rows, existing.results.filter((e) => e.banco_id || debit.has(e.tarjeta) !== !!credito));
+  const plan = planConciliation(parsed.rows, existing.results.filter((e) => e.banco_id || (e.fuente === "correo" ? !credito : debit.has(e.tarjeta) !== !!credito)));
   // Compras nuevas de la cuenta: con la tarjeta de débito si hay una sola
   const debitCard = !credito && debit.size === 1 ? [...debit][0] : "";
   const compra = (r) => r.tipo === "Compra" || r.tipo === "Cuota" || r.tipo === "Abono";

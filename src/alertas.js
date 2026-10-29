@@ -61,7 +61,7 @@ export function parseVisaAlert(raw, envelopeFrom) {
 }
 
 /* Valor de una cabecera (la primera que aparece), con las líneas plegadas unidas. */
-function headerValue(head, name) {
+export function headerValue(head, name) {
   const unfolded = head.replace(/\r?\n[ \t]+/g, " ");
   const m = unfolded.match(new RegExp(`^${name}:[ \\t]*(.*)$`, "im"));
   return m ? m[1].trim() : null;
@@ -78,7 +78,7 @@ function decodeBody(body, encoding) {
   return new TextDecoder("utf-8").decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 }
 
-function htmlToText(html) {
+export function htmlToText(html) {
   return html
     .replace(/<head[\s\S]*?<\/head>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")

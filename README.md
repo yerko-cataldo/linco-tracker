@@ -104,7 +104,9 @@ Las compras llegan por correo y se concilian con la cartola del banco.
 
 3. **Cartolas.** Descarga el CSV de movimientos de la tarjeta de crédito, o el de la cuenta, e impórtalo en **Finanzas → Tarjetas → Importar cartola**; la app reconoce cuál es. Une cada fila con su alerta, agrega lo que falte y marca las alertas que no aparecen (posibles compras anuladas). De la cartola de crédito toma el ciclo de facturación y las cuotas; de la cuenta, las compras con débito, las transferencias a otras personas, los pagos de cuentas, los cargos del banco y las transferencias que recibes, que puedes marcar como devolución de una compra (sin el sueldo, sin el pago de la tarjeta y sin transferencias entre tus cuentas).
 
-El Worker solo acepta alertas con remitente de `visa.com` y firmas DKIM y DMARC válidas. Los lectores de las cartolas siguen el formato de los CSV de BICE (`src/cartola.js`). Otro banco requiere adaptar ese archivo.
+4. **Transferencias al momento (opcional).** En tu correo, crea una regla que reenvíe a la dirección de alertas los correos de BICE con asunto "Hicimos la transferencia". En el panel del Worker (**Settings → Variables and Secrets**), agrega el secreto `FORWARD_FROM` con el correo desde el que reenvías (varios, separados por coma). Cada transferencia a otra persona aparece en Finanzas → Por revisar; al importar la cartola de la cuenta se une a su fila, sin duplicarse. Las transferencias a tus propias cuentas se descartan.
+
+El Worker solo acepta alertas con remitente de `visa.com` y firmas DKIM y DMARC válidas, y reenvíos de BICE desde un correo de `FORWARD_FROM` con DKIM y DMARC válidos para su dominio. Los lectores de las cartolas siguen el formato de los CSV de BICE (`src/cartola.js`). Otro banco requiere adaptar ese archivo.
 
 ### 6. IA con Anthropic (opcional)
 

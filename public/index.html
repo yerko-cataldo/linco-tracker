@@ -2859,7 +2859,7 @@ const FIN_KIND = {credito: "crédito", debito: "débito"};
 const FIN_MEDIO = {...FIN_KIND, cuenta: "transferencias y pagos"};
 const finCards = () => finCfg().cards || {};
 const finCardKind = m => m.banco_id && m.banco_id.startsWith("bicecta:") ? (norm(m.tipo) === "compra" ? "debito" : "cuenta")
-  : m.banco_id ? "credito" : (finCards()[m.tarjeta] || {}).kind || "credito";
+  : m.fuente === "correo" ? "cuenta" : m.banco_id ? "credito" : (finCards()[m.tarjeta] || {}).kind || "credito";
 const finCardLabel = m => finCardKind(m) === "cuenta" ? m.tipo.toLowerCase() : (finCards()[m.tarjeta] || {}).name || `${FIN_KIND[finCardKind(m)]}${m.tarjeta ? " ··" + m.tarjeta : ""}`;
 // Tarjetas conocidas: las configuradas y las que aparecen en alguna alerta
 const finCardList = () => [...new Set([...Object.keys(finCards()), ...S.movs.filter(m => m.tarjeta).map(m => m.tarjeta)])].sort();
@@ -3417,6 +3417,7 @@ function finAmountNote(m){
 // Estado frente a la cartola: en cartola, por confirmar, solo alerta o no aparece (posible anulación)
 function finStatusHtml(m){
   if (m.banco_id) return m.pendiente ? `<div class="small muted">en cartola, por confirmar</div>` : "";
+  if (m.fuente === "correo") return `<div class="small muted">del correo del banco, aún no está en la cartola</div>`;
   if (m.fuente !== "alerta") return "";
   const cfg = finCfg(), al = cfg.cartolaAl;
   const gone = finCardKind(m) === "debito" ? cfg.cuentaHasta && m.fecha >= cfg.cuentaDesde && m.fecha <= addDays(cfg.cuentaHasta, -5) : al && m.fecha <= addDays(al, -3);
