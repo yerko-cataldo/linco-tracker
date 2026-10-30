@@ -3844,6 +3844,8 @@ function finDetSave(){
   const doc = {text: $("#finDetText").value.trim(), items};
   S.movDet[m.id] = doc; S.finDraft = null; finDetClearPhoto(); renderFin();
   Store.write("movdet/" + encodeURIComponent(m.id), doc);
+  // describir la compra ya es revisarla
+  if (!m.revisado) finMarkReviewed([m.id]);
   toast("Detalle guardado.");
 }
 function renderCoach(){
