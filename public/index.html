@@ -3682,7 +3682,7 @@ function renderFinDet(){
       <td><button class="btn ghost small danger" data-action="fin-det-del" data-i="${i}" aria-label="Quitar ${esc(it.name)}">Quitar</button></td>
     </tr>`).join("")}</tbody></table></div>
     <p class="small" style="margin:10px 0 0">Suma de productos: <strong>${fmtClp(c.sum)}</strong> de ${fmtClp(m.monto)}${Math.abs(c.diff) >= 1 ? `; <span style="color:var(--danger)">${c.diff > 0 ? "faltan" : "sobran"} ${fmtClp(Math.abs(c.diff))}</span>` : ", cuadra"}.</p>${finTranscriptHtml(d)}`
-    : `<p class="empty">Sin productos. Escribe qué compraste o sube la foto de la boleta y sepáralo con IA, o agrégalos a mano.</p>${finTranscriptHtml(d)}`);
+    : `<p class="empty">Sin productos. Escribe qué compraste o sube la foto de la boleta y sepáralo con IA, o agrégalos a mano. Si solo quieres anotar qué fue, escríbelo y toca "Guardar detalle".</p>${finTranscriptHtml(d)}`);
 }
 function finTranscriptHtml(d){
   return d.lines && d.lines.length ? `<details class="mt"><summary class="small">Ver lo que leyó la IA en la boleta (${d.lines.length} líneas)</summary><pre class="small" style="white-space:pre-wrap;margin:8px 0 0">${esc(d.lines.join("\n"))}</pre></details>` : "";
@@ -3816,7 +3816,7 @@ async function finDetAI(){
     return;
   }
   try {
-    const r = await S.sample.json(`Separa en productos lo que compró esta persona. Compra: ${m.comercio}, ${m.fecha}, total ${m.monto} pesos chilenos.
+    const r = await S.sample.json(`Separa en productos lo que compró esta persona. Si es un servicio o una sola cosa (por ejemplo "evaluación personal trainer"), devuelve un solo ítem con ese nombre. Compra: ${m.comercio}, ${m.fecha}, total ${m.monto} pesos chilenos.
 Mis alimentos: ${JSON.stringify(foodsForPrompt())}
 Reglas:
 - Un ítem por producto distinto.
@@ -3830,8 +3830,9 @@ Reglas:
 - cat: una de ${JSON.stringify(FIN_CATS)}.
 Texto: ${text || "(solo foto)"}
 Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]}`, {modelTier: "default"});
-    const items = finItemsFromAI(r.items);
-    if (!items.length){ st.textContent = "No pude identificar productos. Escribe el detalle con más precisión."; return; }
+    let items = finItemsFromAI(r.items);
+    // un servicio o algo que no se separa en productos queda como un solo ítem por el total
+    if (!items.length) items = [{name: text, foodId: null, qty: 1, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: m.monto, cat: ""}];
     S.finDraft = {...d, items}; st.textContent = "Revisa cantidades y precios antes de guardar.";
     renderFinDet();
   } catch (e) { st.textContent = aiErr(e); }
