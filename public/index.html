@@ -981,7 +981,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="panel stack no-share">
         <h3>Actividad del día</h3>
         <div class="row">
-          <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option><option value="core">Core</option></select></div>
+          <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option><option value="core">Core</option><option value="torsoA">Torso A</option><option value="piernaA">Pierna A</option><option value="torsoB">Torso B</option><option value="piernaB">Pierna B</option></select></div>
           <div class="field w5">Minutos<input id="aGymMin" inputmode="numeric" placeholder="40"></div>
         </div>
         <p class="small muted" id="aGymNote" style="margin:0" hidden>Con series registradas, los minutos de gimnasio se estiman: 15 s de preparación más 3 s por repetición en cada serie (en las planchas, 1 s por repetición), y entre series el descanso medido acotado a 2–3 min, o 2 min 30 s si no se midió (en los ejercicios de core, 60–90 s, o 75 s). Si escribes otro número, ese reemplaza al estimado; bórralo para volver al estimado.</p>
@@ -1244,7 +1244,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="panel">
         <h3>Pregúntale algo</h3>
         <div class="chips" style="margin-bottom:12px">
-          <button class="chip" data-action="chat-chip">Distribuye mi Push/Pull/Legs esta semana sin chocar con el tenis del sábado</button>
+          <button class="chip" data-action="chat-chip">Distribuye mis sesiones de gimnasio esta semana sin chocar con el tenis</button>
           <button class="chip" data-action="chat-chip">Rutina de movilidad de 10 minutos para después de estar todo el día en el computador</button>
           <button class="chip" data-action="chat-chip">Calentamiento de 8 minutos antes del tenis</button>
           <button class="chip" data-action="chat-chip">¿Cómo va mi microbiota esta semana? ¿Qué alimentos nuevos me convendría sumar?</button>
@@ -1396,7 +1396,9 @@ const DATA_START = "2026-09-28", WALK_DAILY_MIN = 60;
 const walkMin = () => profile().walkMin ?? WALK_DAILY_MIN; // profile.walkMin: caminata diaria fija; 0 en instancias sin paseo
 const walkOf = date => date >= DATA_START && date <= today() ? walkMin() : 0;
 const fmtDur = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`; };
-const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body", core:"Core"};
+const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body", core:"Core", torsoA:"Torso A", piernaA:"Pierna A", torsoB:"Torso B", piernaB:"Pierna B"};
+/* Rotación de Torso/Pierna ×2: cada sesión le pasa el turno a la siguiente */
+const TL_CYCLE = ["torsoA", "piernaA", "torsoB", "piernaB"];
 // Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
 // los marcados "revisar" dependen de la marca o del corte y conviene corregirlos con la etiqueta.
 const FOOD_SEED = [
@@ -2373,11 +2375,12 @@ function renderAct(){
   setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)"));
   const wSets = ws.st.flatMap(s => s.d.act.sets), wDone = selWk.filter(x => x <= tdy);
   const actDays = wDone.filter(x => dayStats(x).actMin >= g.activeMin).length;
-  const nextGym = (() => { const done = ["push","pull","legs"].map(k => [k, ws.gym[k] || 0]).sort((x, y) => x[1] - y[1]); return GYM_LABEL[done[0][0]]; })();
+  const lastSplit = allDatesAsc().filter(x => x <= tdy && ["push", "pull", "legs", ...TL_CYCLE].includes(day(x).act.gym)).map(x => day(x).act.gym).pop(), tl = TL_CYCLE.includes(lastSplit);
+  const nextGym = tl ? GYM_LABEL[TL_CYCLE[(TL_CYCLE.indexOf(lastSplit) + 1) % TL_CYCLE.length]] : (() => { const done = ["push","pull","legs"].map(k => [k, ws.gym[k] || 0]).sort((x, y) => x[1] - y[1]); return GYM_LABEL[done[0][0]]; })();
   setHTML($("#actWeek"), `<div class="kpi flat c-act" style="padding-top:0"><dl style="margin:0">
     <dt>Semana</dt><dd>${wkLabel(selWk[0], selWk[6])}</dd>
     <dt>Días con la meta de minutos activos</dt><dd>${actDays} de ${wDone.length}</dd>
-    <dt>Push / Pull / Legs</dt><dd>${ws.gym.push||0} / ${ws.gym.pull||0} / ${ws.gym.legs||0}</dd>
+    ${tl ? `<dt>Torso / Pierna</dt><dd>${(ws.gym.torsoA||0) + (ws.gym.torsoB||0)} / ${(ws.gym.piernaA||0) + (ws.gym.piernaB||0)}</dd>` : `<dt>Push / Pull / Legs</dt><dd>${ws.gym.push||0} / ${ws.gym.pull||0} / ${ws.gym.legs||0}</dd>`}
     <dt>Le toca al siguiente día de gimnasio</dt><dd>${nextGym}</dd>
     <dt>Tenis</dt><dd>${fmt(ws.tennisMin)} min</dd>
     <dt>Series de gimnasio</dt><dd>${wSets.length}</dd>
@@ -2399,8 +2402,10 @@ const WARMUP = {
   pull: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Colgarte de la barra: 20–30 s", "Jalón con agarre ancho muy liviano: 15 reps, apretando las escápulas abajo", APPROACH]},
   legs: {min: 4, bike: true, steps: ["Sentadilla con peso corporal: 10 reps lentas", "Puente de glúteos: 12 reps", "Balanceo de piernas adelante-atrás y de lado: 10 por pierna", APPROACH]},
   full: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Sentadilla con peso corporal: 10 reps", "Flexiones apoyando las rodillas: 8 reps", APPROACH]},
-  core: {min: 4, steps: ["Gato-camello en cuatro apoyos: 8 reps lentas", "Bicho muerto lento: 5 por lado", "Puente de glúteos: 10 reps", "Plancha suave: 20 s"]}
+  core: {min: 4, steps: ["Gato-camello en cuatro apoyos: 8 reps lentas", "Bicho muerto lento: 5 por lado", "Puente de glúteos: 10 reps", "Plancha suave: 20 s"]},
+  torsoA: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Face pull o rotación externa en polea liviana: 15 reps", "Flexiones apoyando las rodillas: 8 reps", APPROACH]}
 };
+WARMUP.torsoB = WARMUP.torsoA; WARMUP.piernaA = WARMUP.piernaB = WARMUP.legs;
 const wKey = (date, k, i) => i === undefined ? `${date}|${k}` : `${date}|${k}|${i}`;
 const HABIT_SESSIONS = 3, DEFAULT_SETS = 3;
 /* Entreno cerrado: con series y marcado como terminado, o de un día anterior; "Retomar entreno" lo reabre */
@@ -2410,7 +2415,11 @@ const DEFAULT_ROUTINE = {
   pull: ["Jalón al pecho con polea", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo"],
   legs: ["Sentadilla hack", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones", "Aductores en máquina", "Abductores en máquina"],
   full: ["Sentadilla", "Press banca", "Remo en polea", "Press militar", "Curl femoral"],
-  core: ["Elevación de piernas", "Crunch inverso", "Plancha", "Plancha lateral", "Bicho muerto"]
+  core: ["Elevación de piernas", "Crunch inverso", "Plancha", "Plancha lateral", "Bicho muerto"],
+  torsoA: ["Press banca", "Jalón al pecho con polea", "Press inclinado con barra", "Remo en máquina", "Elevaciones laterales", "Curl con barra Z", "Extensión de tríceps"],
+  piernaA: ["Sentadilla hack", "Peso muerto rumano", "Curl femoral sentado", "Extensión de cuádriceps", "Elevación de talones", "Crunch en polea", "Pallof press"],
+  torsoB: ["Press militar", "Remo en polea", "Press de pecho en máquina", "Jalón con agarre estrecho", "Face pull", "Elevaciones laterales", "Curl martillo", "Extensión de tríceps sobre la cabeza"],
+  piernaB: ["Hip thrust", "Prensa", "Curl femoral", "Aductores en máquina", "Abductores en máquina", "Elevación de talones sentado", "Elevación de piernas", "Plancha lateral"]
 };
 /* Orden ideal de los pendientes: 0 multiarticulares, 1 aislamiento de músculos grandes, 2 de músculos chicos, 3 core.
    Multiarticular: involucra al menos dos de cuádriceps, glúteo e isquios, o un músculo del tronco junto con bíceps o tríceps. */
@@ -4922,7 +4931,7 @@ function slotFromForm(v){
    3. Serie "kg x reps", "N7x12" o "nivel 7x12" (máquina por nivel), "50 lb x 8" o "12 reps" sin carga; "a/b" reparte entre los ejercicios en paralelo.
    4. Descanso después de la serie: "2min", "2min30s", "90s" o "1:30".
    Sin fecha, las series van al día seleccionado. */
-const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full", core: "core", abs: "core"};
+const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full", core: "core", abs: "core", "torso a": "torsoA", "torso b": "torsoB", "pierna a": "piernaA", "pierna b": "piernaB", "upper a": "torsoA", "upper b": "torsoB", "lower a": "piernaA", "lower b": "piernaB"};
 const RT_DATE = /^(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?(?:\s+(.+))?$/;
 const RT_REST = /^(?:descanso\s*)?(?:(\d+)\s*(?:min|mins|minutos?|m|')\s*(?:(\d+)\s*(?:s|seg|segundos?|")?)?|(\d+)\s*(?:s|seg|segundos?)|(\d+):(\d{2}))$/;
 function rtSet(part){
@@ -5611,7 +5620,7 @@ Otras reglas: El paseo diario con el galgo no se registra. Si una técnica no ex
 Texto: """${text}"""
 Responde solo con este JSON:
 {"meals":[{"time":"HH:MM" o null,"desc":string,"items":${ITEMS_SCHEMA}}],
- "act":{"gym":"push"|"pull"|"legs"|"full"|"core"|null,"gymMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
+ "act":{"gym":"push"|"pull"|"legs"|"full"|"core"|"torsoA"|"piernaA"|"torsoB"|"piernaB"|null,"gymMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
  "bassMinutes": number o null,
  "bassLogs":[{"techId":string o null,"techName":string o null,"bpm":number,"clean":boolean}],
  "songsPracticed":[songId],
@@ -5703,7 +5712,7 @@ async function coachReview(){
 
 Datos (JSON): ${JSON.stringify(contextData())}
 
-Haz la revisión semanal en markdown con estas secciones: "Lo que funcionó", "Lo que se estancó", "Plan para los próximos 7 días" (exactamente 4 acciones concretas y medibles: una de nutrición, una de entreno con la distribución de Push/Pull/Legs por día, una de bajo y una de estudio) y "Una pregunta para ti". Máximo 300 palabras.`,
+Haz la revisión semanal en markdown con estas secciones: "Lo que funcionó", "Lo que se estancó", "Plan para los próximos 7 días" (exactamente 4 acciones concretas y medibles: una de nutrición, una de entreno con la distribución de sesiones de gimnasio por día (Push/Pull/Legs o Torso/Pierna, según lo que esté usando), una de bajo y una de estudio) y "Una pregunta para ti". Máximo 300 palabras.`,
       {modelTier: "complex", cache: false, onText: ({text}) => { out.innerHTML = md(text); }});
     out.innerHTML = md(r.text); st.textContent = "";
     saveLib("coach", l => { l.push({date: today(), text: r.text}); return l.slice(-12); });
