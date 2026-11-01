@@ -129,6 +129,32 @@ p.lede{color:var(--muted);margin:0 0 24px;max-width:66ch;font-size:.98rem;line-h
 .day7 .dw{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .day7 .dk{font-family:var(--display);font-stretch:112%;font-weight:700;font-size:1.3rem;line-height:1.2}
 .day7 .dp{font-size:.8rem;color:var(--muted)}
+.gwt{table-layout:fixed;min-width:700px}
+.gwt th{text-align:center;padding:6px 4px}
+.gwt th:first-child{text-align:left;width:116px}
+.gwt th:last-child{width:150px;text-align:left}
+.gwt td{padding:5px 3px;vertical-align:middle;border-bottom:1px solid var(--line)}
+.gwt td:first-child{font-size:.82rem;color:var(--muted);white-space:nowrap;padding-left:8px}
+.gwt td:last-child{font-size:.8rem;line-height:1.4;padding-left:10px}
+.gwt td.gw{height:60px;cursor:pointer;text-align:center;border-radius:6px}
+.gwt td.gw:hover{background:var(--sunken)}
+.gwt td.gw.today{outline:1.5px dashed var(--act);outline-offset:-3px}
+.gwt td.gw.sel{box-shadow:inset 0 0 0 2px var(--act)}
+.gwt tr.selwk td{background:color-mix(in srgb,var(--act) 5%,var(--surface))}
+.gwt tr.selwk td.gw:hover{background:var(--sunken)}
+.gwt tr.selwk td:first-child{color:var(--ink);font-weight:600}
+.gwt td.gw.fut{opacity:.35;cursor:default}
+.gwt td.gw.out>div{opacity:.45}
+.gw-nav{align-items:center;gap:8px!important}
+.gwt .gw-gym,.gwt .gw-bike{border-radius:6px;padding:4px 2px;line-height:1.2;font-size:.78rem}
+.gwt .gw-gym{background:color-mix(in srgb,var(--act) 16%,var(--surface));color:var(--act)}
+.gwt .gw-gym small,.gwt .gw-bike small{display:block;font-size:.72rem;opacity:.85}
+.gwt .gw-bike{background:color-mix(in srgb,var(--study) 16%,var(--surface));color:var(--study);margin-top:3px}
+.gwt .gw-gym:first-child{margin-top:0}
+.gwt .gw-gym+.gw-bike{padding:2px}
+.gwt .tot b{font-family:var(--display)}
+.gwt .tot.met b{color:var(--ok)}
+.gw-scroll{overflow-x:auto}
 .gw-legend{display:flex;gap:16px;font-size:.82rem;color:var(--muted);margin:-4px 0 10px}
 .gw-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 @media (max-width:560px){.days7{gap:4px}.day7{padding:8px 2px}.day7 .dk{font-size:1rem}.day7 .dw{font-size:.62rem}}
@@ -736,9 +762,6 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <symbol id="i-bass" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5.5l10-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></g></symbol>
   <symbol id="i-study" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 21H20M8.5 7.5h7"/></g></symbol>
   <symbol id="i-bike" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="16" r="3.5"/><circle cx="18.5" cy="16" r="3.5"/><path d="M5.5 16l4-7.5h6.5M18.5 16l-3.5-10h-2.5M9.5 8.5l3.5 7.5h-7.5"/></g></symbol>
-  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g></symbol>
-  <symbol id="i-sets" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></g></symbol>
-  <symbol id="i-tennis" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2.5 3 8.5 0 11M18.5 6.5c-3 2.5-3 8.5 0 11"/></g></symbol>
   <symbol id="i-fin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><path d="M2.5 9.5h19M6.5 15h4"/></g></symbol>
   <symbol id="i-coach" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5a2 2 0 0 1-2 2H8.5L4 20.5V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z"/><path d="M8 8.5h8M8 12h5"/></g></symbol>
   <symbol id="i-metricas" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></g></symbol>
@@ -995,7 +1018,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <!-- ENTRENO -->
   <section class="tab" id="tab-entreno">
     <div class="page-head c-act"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-act"/></svg></span><div><h2>Entreno</h2><p class="lede" id="actLede"></p></div></div>
-    <div class="panel hw-sum" id="gymWeeks"></div>
+    <div class="panel"><div class="item-head"><h3>Gimnasio y bici por semana</h3><span class="act gw-nav" id="gwNav"></span></div><div id="gymWeeks"></div></div>
     <div class="panel wk-panel mt no-share" id="workout">
       <div class="item-head" style="margin-bottom:14px"><h3 id="wkTitle">Entrenar hoy</h3><div class="chips wk-types" id="wkTypes"></div></div>
       <div id="wkBody"></div>
@@ -2187,18 +2210,17 @@ function finDaySpend(dt){
   const tot = finCatTotals([...S.movs.filter(m => m.fecha === dt && isPurchase(m)), ...finRefundList().filter(m => m.fecha === dt)]);
   return {all: sum(Object.values(tot), v => v), food: sum(FIN_FOOD_CATS, c => tot[c])};
 }
-// Mes que muestran los calendarios (Resumen y Entreno): el del día elegido, salvo que lo hayas cambiado con las flechas sin cambiar de día
+// Mes que muestran el calendario del Resumen y la tabla de Entreno: el del día elegido, salvo que lo hayas cambiado con las flechas sin cambiar de día
 const hoyMonth = () => S.hoyNav && S.hoyNav.at === S.date ? S.hoyNav.ym : S.date.slice(0, 7);
 const clpK = x => x >= 1000 ? `$${fmt(x / 1000, x < 9950 ? 1 : 0)}k` : fmtClp(x);
-// Días del mes con lo que usan los calendarios; prIds (récords) solo si se pide
-function monthDays(ym, {spend, prIds} = {}){
+// Días del mes con lo que usa el calendario
+function monthDays(ym, {spend} = {}){
   const [y, mo] = ym.split("-").map(Number), n = new Date(y, mo, 0).getDate();
   return Array.from({length: n}, (_, i) => {
     const dt = `${ym}-${pad(i + 1)}`, st = dayStats(dt), a = st.d.act, r = {dt, st};
     r.gym = a.gym || a.sets.length ? {lbl: GYM_LABEL[a.gym] || "Gimnasio", min: gymDur(a)} : null;
     r.bike = a.bikeMin || a.bikeKm ? {min: a.bikeMin || 0, km: a.bikeKm || 0} : null;
     r.spend = spend ? finDaySpend(dt) : null;
-    if (prIds){ const gs = groupSets(a.sets); r.sets = {work: sum(gs, x => x.work.length), vol: sum(a.sets, volOf), prs: a.sets.filter(s => prIds.has(s.id)).length}; }
     return r;
   });
 }
@@ -2208,18 +2230,8 @@ function hmRows(rs, keys, wk){
   const one = rs[0], t = today(), g = goals(), out = {};
   const gym = rs.filter(r => r.gym), bike = rs.filter(r => r.bike), fed = rs.filter(r => r.st.meals);
   const studyMin = sum(rs, r => r.st.studyMin), studyGoal = sum(rs, r => r.dt <= t ? r.st.studyGoal : 0);
-  const pl = (n, a, b) => `${fmt(n)} ${n === 1 ? a : b}`;
-  out.active = wk ? {b: `${fmt(sum(rs, r => r.st.actMin))}′`, i: `${rs.filter(r => r.st.actMin >= g.activeMin).length}/${rs.length} días`}
-    : {b: `${fmt(one.st.actMin)}′`, i: `de ${fmt(g.activeMin)}`, ok: one.st.actMin >= g.activeMin};
   out.gym = gym.length ? {b: `${fmt(sum(gym, r => r.gym.min))}′`, i: wk ? `${gym.length} de ${g.gymWeek}` : one.st.d.act.gym ? one.gym.lbl : "", ok: wk && gym.length >= g.gymWeek} : null;
-  if (keys.includes("sets") || keys.includes("pr")){
-    const work = sum(rs, r => r.sets.work), vol = sum(rs, r => r.sets.vol), prs = sum(rs, r => r.sets.prs);
-    out.sets = work ? {b: pl(work, "serie", "series"), i: vol ? `${fmt(vol / 1000, 1)} t` : ""} : null;
-    out.pr = prs ? {b: pl(prs, "récord", "récords")} : null;
-  }
   out.bike = bike.length ? {b: `${fmt(sum(bike, r => r.bike.min))}′`, i: sum(bike, r => r.bike.km) ? `${fmt(sum(bike, r => r.bike.km), 1)} km` : ""} : null;
-  const tennis = sum(rs, r => r.st.d.act.tennisMin);
-  out.tennis = tennis ? {b: `${fmt(tennis)}′`} : null;
   out.food = fed.length ? {b: fmt(sum(fed, r => r.st.kcal) / fed.length), i: `${fmt(sum(fed, r => r.st.p) / fed.length)} P`, ok: !wk && one.st.pct.food >= .95} : null;
   out.study = studyMin ? {b: `${fmt(studyMin)}′`, i: studyGoal ? `de ${fmt(studyGoal)}` : wk ? "" : "día libre", ok: studyGoal > 0 && studyMin >= studyGoal}
     : !wk && one.st.d.study.length ? {b: "avance", i: "sin min"} : null;
@@ -2228,8 +2240,7 @@ function hmRows(rs, keys, wk){
   return keys.map(k => [k, out[k]]);
 }
 // Fila: área (color), ícono y nombre en la leyenda
-const HM_ROW = {active: ["act", "clock", "minutos activos"], gym: ["act", "act", "gimnasio"], sets: ["act", "sets", "series y toneladas levantadas"], pr: ["act", "trophy", "récords"],
-  bike: ["act", "bike", "bici"], tennis: ["act", "tennis", "tenis"], food: ["food", "food", "kcal y proteína (g)"], study: ["study", "study", "estudio"], money: ["fin", "fin", "gasto"]};
+const HM_ROW = {gym: ["act", "act", "gimnasio"], bike: ["act", "bike", "bici"], food: ["food", "food", "kcal y proteína (g)"], study: ["study", "study", "estudio"], money: ["fin", "fin", "gasto"]};
 const hmRow = ([k, x]) => !x ? "" : `<span class="r k-${k}${x.ok ? " ok" : ""}" style="--c:var(--${HM_ROW[k][0]})"><svg class="ico" aria-label="${HM_ROW[k][2]}"><use href="#i-${HM_ROW[k][1]}"/></svg><b>${esc(x.b)}</b>${x.i ? `<i>${esc(x.i)}</i>` : ""}</span>`;
 const hmBar = p => p === null ? "" : `<span class="bar"><i style="width:${clamp(p * 100, 0, 100)}%;background:var(--c)"></i></span>`;
 const hmTile = (area, ico, label, v, p, s) => `<div class="hw-tile c-${area}"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-${ico}"/></svg>${label}</span><span class="v">${v}</span>${hmBar(p)}<span class="s">${s}</span></div>`;
@@ -2304,30 +2315,6 @@ function renderMonthSum(){
     tools: money ? `<button class="btn small" data-action="money-toggle">${hide ? "Mostrar dinero" : "Ocultar dinero"}</button>` : "",
     legend: keys.includes("money") ? `<span>segundo monto: en comida</span>` : "",
     note: keys.includes("money") ? " El gasto sale de Finanzas (compras, transferencias y pagos, menos devoluciones); en comida suma supermercado, delivery y restaurantes." : ""}));
-}
-/* Entreno: el mismo calendario con minutos activos, gimnasio, series y volumen, récords, bici y tenis */
-function renderActMonth(){
-  const ym = hoyMonth(), t = today(), g = goals(), {prIds} = liftStats();
-  const rows = monthDays(ym, {prIds}), past = rows.filter(r => r.dt <= t), nPast = past.length;
-  const gym = past.filter(r => r.gym), bike = past.filter(r => r.bike), gymGoal = Math.round(g.gymWeek * nPast / 7);
-  const okDays = past.filter(r => r.st.actMin >= g.activeMin).length, work = sum(past, r => r.sets.work), vol = sum(past, r => r.sets.vol), prs = sum(past, r => r.sets.prs);
-  const tennis = sum(past, r => r.st.d.act.tennisMin), bikeKm = sum(bike, r => r.bike.km);
-  const types = Object.entries(gym.reduce((o, r) => (o[r.gym.lbl] = (o[r.gym.lbl] || 0) + 1, o), {})).map(([k, n]) => `${k} ${n}`).join(" · ");
-  const tiles = !nPast ? "" : [
-    hmTile("act", "act", "Gimnasio", `${gym.length} <small>${gym.length === 1 ? "sesión" : "sesiones"}</small>`, gymGoal ? gym.length / gymGoal : null,
-      `${gymGoal ? `de ${gymGoal} esperadas a la fecha · ` : ""}${fmt(sum(gym, r => r.gym.min))} min${types ? `<br>${esc(types)}` : ""}`),
-    hmTile("act", "clock", "Minutos activos", `${fmt(sum(past, r => r.st.actMin) / nPast)} <small>min/día</small>`, okDays / nPast,
-      `${okDays} de ${days_(nPast)} con la meta de ${fmt(g.activeMin)} min`),
-    hmTile("act", "sets", "Series y volumen", `${fmt(work)} <small>series</small>`, null,
-      `${fmt(vol)} kg levantados (kg × reps)${prs ? ` · ${prs} ${prs === 1 ? "récord" : "récords"}` : ""}`),
-    hmTile("act", "bike", "Bici y tenis", `${fmt(sum(bike, r => r.bike.min))} <small>min de bici</small>`, null,
-      `${bike.length ? `${days_(bike.length)}${bikeKm ? `, ${fmt(bikeKm, 1)} km` : ""}` : "sin bici"}${tennis ? ` · tenis ${fmt(tennis)} min` : ""}`)
-  ].join("");
-  const tip = r => [fmtLong(r.dt), `${fmt(r.st.actMin)} min activos`,
-    r.gym && `${r.gym.lbl}: ${fmt(r.gym.min)} min`, r.sets.work && `${r.sets.work} series, ${fmt(r.sets.vol)} kg`, r.sets.prs && `${r.sets.prs} ${r.sets.prs === 1 ? "récord" : "récords"}`,
-    r.bike && `bici: ${fmt(r.bike.min)} min${r.bike.km ? `, ${fmt(r.bike.km, 1)} km` : ""}`, r.st.d.act.tennisMin && `tenis: ${fmt(r.st.d.act.tennisMin)} min`].filter(Boolean).join("\n");
-  setHTML($("#gymWeeks"), monthCal(ym, rows, ["active", "gym", "sets", "pr", "bike", "tennis"], {tiles, tip,
-    note: ` Los minutos activos suman gimnasio, bici, tenis${walkMin() ? ` y ${walkMin()} min de paseo diario` : ""}; las series no cuentan las de aproximación.`}));
 }
 // Anillo de progreso: pct en 0..1 (se recorta), con texto opcional al centro
 function ring(pct, color, size = 56, sw = 6, label = null, sub = null){
@@ -2526,7 +2513,21 @@ function renderAct(){
   setVal("#aGym", a.gym); setVal("#aGymMin", a.sets.length ? gymDur(a) : a.gymMin || ""); $("#aGymNote").hidden = !a.sets.length; setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
   const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
   const selWk = weekDates(S.date), tdy = today();
-  renderActMonth();
+  // Semanas del mes elegido (hoyMonth(), con las flechas), de la más reciente a la más antigua
+  const ym = hoyMonth(), mEnd = addDays(shiftMonth(ym, 1) + "-01", -1), ymTitle = fmtMonth(ym);
+  const wk0 = weekStart(mEnd < tdy ? mEnd : tdy), wkFirst = weekStart(ym + "-01"), WD = ["L","Ma","Mi","J","V","S","D"];
+  const wkIdx = []; for (let w = wk0; w >= DATA_START && w >= wkFirst; w = addDays(w, -7)) wkIdx.push(wkIdx.length);
+  const wkRows = wkIdx.map(i => {
+    const ds = weekDates(addDays(wk0, -7 * i)), all = ds.map(x => day(x).act), acts = all.filter(x => x.gym), bikes = all.filter(x => x.bikeMin || x.bikeKm);
+    const cells = ds.map((x, j) => { const a = all[j], bike = a.bikeMin || a.bikeKm;
+      const gymTxt = a.gym ? `<div class="gw-gym"><strong>${esc(GYM_LABEL[a.gym] || a.gym)}</strong><small>${fmtDur(gymDur(a))}</small></div>` : "";
+      const bikeTxt = bike ? `<div class="gw-bike"><strong>${a.bikeKm ? fmt(a.bikeKm, 1) + " km" : "Bici"}</strong>${a.bikeMin ? `<small>${fmtDur(a.bikeMin)}</small>` : ""}</div>` : "";
+      return `<td class="gw${x === tdy ? " today" : ""}${x.slice(0, 7) !== ym ? " out" : ""}${x === S.date ? " sel" : ""}${x > tdy ? " fut" : ""}"${x > tdy ? "" : ` data-action="day-open" data-d="${x}"`}>${gymTxt}${bikeTxt}</td>`; }).join("");
+    const gymTot = acts.length ? fmtDur(sum(acts, gymDur)) : "–", bikeKm = sum(bikes, x => x.bikeKm);
+    return `<tr${ds[0] === selWk[0] ? ' class="selwk"' : ""}><td>${wkLabel(ds[0], ds[6])}</td>${cells}<td class="tot${acts.length >= g.gymWeek ? " met" : ""}"><b>${acts.length}/${g.gymWeek}</b> gym · ${gymTot}${bikes.length ? `<br><b>${bikes.length}</b> bici${bikeKm ? " · " + fmt(bikeKm, 1) + " km" : ""}` : ""}</td></tr>`;
+  }).join("");
+  setHTML($("#gymWeeks"), `<div class="gw-legend"><span><i style="background:var(--act)"></i>Gimnasio</span><span><i style="background:var(--study)"></i>Bici</span><span><i style="outline:1.5px dashed var(--act);outline-offset:-1px"></i>Hoy</span></div><div class="gw-scroll"><table class="gwt"><thead><tr><th>Semana</th>${WD.map(x => `<th>${x}</th>`).join("")}<th>Total semana</th></tr></thead><tbody>${wkRows || `<tr><td colspan="9" class="muted">Sin registros este mes.</td></tr>`}</tbody></table></div>`);
+  setHTML($("#gwNav"), `<button class="btn small" data-action="hm-shift" data-n="-1" aria-label="Mes anterior">‹</button><strong>${ymTitle.charAt(0).toUpperCase() + ymTitle.slice(1)}</strong><button class="btn small" data-action="hm-shift" data-n="1" aria-label="Mes siguiente"${ym >= tdy.slice(0, 7) ? " disabled" : ""}>›</button>`);
   setHTML($("#actToday"), meter("Minutos activos", st.actMin, g.activeMin, "min", "var(--act)"));
   const wSets = ws.st.flatMap(s => s.d.act.sets), wDone = selWk.filter(x => x <= tdy);
   const actDays = wDone.filter(x => dayStats(x).actMin >= g.activeMin).length;
@@ -5258,7 +5259,7 @@ const actions = {
     syncThemeBtn();
   },
   "pick-date": el => setDate(el.dataset.date),
-  "hm-shift": el => { S.hoyNav = {ym: shiftMonth(hoyMonth(), +el.dataset.n), at: S.date}; renderMonthSum(); renderActMonth(); },
+  "hm-shift": el => { S.hoyNav = {ym: shiftMonth(hoyMonth(), +el.dataset.n), at: S.date}; renderMonthSum(); renderAct(); },
   "money-toggle": () => saveLib("profile", p => ({...(p || {}), hideMoney: !(p && p.hideMoney)})),
 
   "meal-add": () => {
