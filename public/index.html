@@ -222,22 +222,25 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 .scroll{overflow-x:auto}
 .c-food{--c:var(--food)}.c-bass{--c:var(--bass)}.c-study{--c:var(--study)}.c-act{--c:var(--act)}
 
-/* Resumen: rango + tablatura */
-.hero{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;margin-bottom:16px}
-@media (max-width:860px){.hero{grid-template-columns:1fr}}
-.tabstaff{display:flex;flex-direction:column}
-.tabstaff svg{margin-block:auto!important}
-.tabstaff svg{width:100%;height:auto;display:block;margin-top:4px}
-.tabstaff g.col{cursor:pointer}
-.tabstaff g.col:hover rect.hit{fill:var(--hl)}
-.rank{display:flex;flex-direction:column;justify-content:center}
-.rank{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px;align-content:start}
-.rank>:not(.meter){grid-column:1/-1}
-.rank>div[style]{margin-bottom:4px}
-.rank .tier{font-weight:750;font-size:2.1rem;line-height:1;margin:4px 0 4px;letter-spacing:-.03em}
-.rank .meter{margin-top:12px}
-.rank .pts{font-family:var(--display);color:var(--muted);font-weight:600}
-.rank svg{width:76px;height:76px;flex:none}
+/* Resumen: semana por día */
+.hw-sum{margin-bottom:16px}
+.hw-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:4px 0 14px}
+.hw-tile{background:var(--sunken);border-radius:var(--r-sm);padding:10px 12px;box-shadow:inset 3px 0 0 var(--c,var(--line-strong))}
+.hw-tile .k{font-size:.76rem;color:var(--muted);font-weight:600}
+.hw-tile .v{font-family:var(--display);font-weight:650;font-size:1.35rem;line-height:1.15;margin-top:2px}
+.hw-tile .s{font-size:.8rem;color:var(--muted)}
+.hm-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.hm-dow{font-size:.74rem;font-weight:600;color:var(--muted);text-align:center;padding-bottom:2px}
+.hm-day{min-height:76px;padding:5px 6px;border-radius:var(--r-sm);background:var(--sunken);cursor:pointer;display:flex;flex-direction:column;gap:1px;font-size:.76rem;line-height:1.25;font-variant-numeric:tabular-nums;overflow:hidden;border:1px solid transparent}
+.hm-day:hover{border-color:var(--line-strong)}
+.hm-day.sel{background:var(--hl)}
+.hm-day.now{border-color:var(--ink)}
+.hm-day.future{opacity:.4}
+.hm-day .d{font-weight:700;font-size:.8rem;margin-bottom:2px}
+.hm-day .l{border-left:2px solid var(--c,var(--line-strong));padding-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-day em{font-style:normal;color:var(--muted)}
+.hm-day .sh{display:none}
+@media (max-width:640px){.hm-cal{gap:3px}.hm-day{padding:4px 3px;font-size:.68rem;min-height:64px}.hm-day .l{padding-left:2px}.hm-day .lg{display:none}.hm-day .sh{display:inline}}
 /* KPI */
 .kpi{position:relative;transition:border-color .15s}
 .kpi h3{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted);font-weight:600;font-family:"Hanken Grotesk",system-ui,sans-serif;font-stretch:100%;letter-spacing:0}
@@ -561,7 +564,7 @@ button.link{background:none;border:0;padding:0;color:inherit;font:inherit;text-d
 .wk-src{margin:-4px 0 12px}
 /* Vista compartida: sin edición ni secciones privadas; solo quedan las acciones de navegación */
 body.share .no-share,body.share .nav-sec,body.share nav.tabs button[hidden],body.share main > section[hidden]{display:none!important}
-body.share [data-action]:not([data-action="day-prev"]):not([data-action="day-next"]):not([data-action="day-today"]):not([data-action="day-open"]):not([data-action="pick-date"]):not([data-action="theme-toggle"]):not([data-action="cat-g"]):not([data-action="ex-sel"]):not([data-action="week-shift"]):not([data-action="wk-open"]){display:none!important}
+body.share [data-action]:not([data-action="day-prev"]):not([data-action="day-next"]):not([data-action="day-today"]):not([data-action="day-open"]):not([data-action="pick-date"]):not([data-action="theme-toggle"]):not([data-action="cat-g"]):not([data-action="ex-sel"]):not([data-action="week-shift"]):not([data-action="wk-open"]):not([data-action="hm-shift"]){display:none!important}
 .wk-warm{margin:0 0 12px;border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;font-size:13px}
 .wk-warm summary{cursor:pointer;color:var(--muted);font-weight:600}
 .wk-warm p{margin:8px 0 0}
@@ -805,10 +808,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <!-- RESUMEN -->
   <section class="tab on" id="tab-hoy">
     <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-hoy"/></svg></span><div><h2>Resumen</h2><p class="lede" id="hoyLede"></p></div></div>
-    <div class="hero">
-      <div class="panel tabstaff" id="staff"></div>
-      <div class="panel rank" id="rank"></div>
-    </div>
+    <div class="panel hw-sum" id="hoyWeek"></div>
     <div class="panel quick ai-only" id="quickPanel" hidden>
       <h3>Registro rápido</h3>
       <label class="sr" for="quickText">Cuéntame qué hiciste</label>
@@ -1502,7 +1502,7 @@ const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"lis
 const SHARE = (location.pathname.match(/^\/s\/([A-Za-z0-9_-]{20,64})\/?$/) || [])[1] || null;
 const SHARE_AREAS = [["act", "Entreno", "entreno"], ["bass", "Bajo", "bajo"], ["study", "Estudio", "estudio"], ["food", "Nutrición", "nutricion"]];
 const SHARE_DEFAULT = ["act", "bass", "study"];
-const SHARE_ACTIONS = new Set(["day-prev", "day-next", "day-today", "day-open", "pick-date", "theme-toggle", "cat-g", "ex-sel", "week-shift", "wk-open"]);
+const SHARE_ACTIONS = new Set(["day-prev", "day-next", "day-today", "day-open", "pick-date", "theme-toggle", "cat-g", "ex-sel", "week-shift", "wk-open", "hm-shift"]);
 /* Áreas que cuentan en la constancia y el rango: las cuatro, o solo las compartidas en la vista compartida */
 let AREAS = ["food", "act", "bass", "study"];
 
@@ -2172,52 +2172,72 @@ function fillSelect(sel, opts, placeholder){
 }
 function renderAll(){
   setVal("#datePick", S.date);
-  renderStaff(); renderRank(); renderKpis(); renderHeat(); renderNutrition(); renderAct(); renderBass(); renderStudy(); if (S.tab === "finanzas") renderFin(); else renderFinBadge(); renderCoach(); renderProfile();
+  renderMonthSum(); renderKpis(); renderHeat(); renderNutrition(); renderAct(); renderBass(); renderStudy(); if (S.tab === "finanzas") renderFin(); else renderFinBadge(); renderCoach(); renderProfile();
 }
 
-/* Tablatura semanal: 4 cuerdas, traste 12 = meta */
-function renderStaff(){
-  const dates = weekDates(S.date), t = today();
-  const strings = [["G","Estudio","study","var(--study)"],["D","Bajo","bass","var(--bass)"],["A","Nutrición","food","var(--food)"],["E","Entreno","act","var(--act)"]].map(r => AREAS.includes(r[2]) ? r : [r[0], "", r[2], r[3]]);
-  const narrow = window.innerWidth < 640, W = narrow ? 360 : 760, L = narrow ? 90 : 128, colW = (W - L - 6) / 7, fs = narrow ? 13 : 14;
-  const y0 = 58, gap = narrow ? 30 : 32, ys = strings.map((_, i) => y0 + i * gap), H = ys[3] + 26;
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Avance de la semana como tablatura de bajo" style="font-family:'Hanken Grotesk',system-ui,sans-serif">`;
-  s += `<text font-size="${fs+2}" font-weight="700" fill="var(--muted)"><tspan x="${L-22}" y="${ys[0]+12}">T</tspan><tspan x="${L-22}" y="${ys[1]+20}">A</tspan><tspan x="${L-22}" y="${ys[2]+28}">B</tspan></text>`;
-  strings.forEach((r, i) => {
-    s += `<line x1="${L-30}" x2="${W-4}" y1="${ys[i]}" y2="${ys[i]}" stroke="var(--muted)" stroke-opacity=".55" stroke-width="${1 + i * .45}"/>`;
-    s += `<text x="0" y="${ys[i]+5}" font-size="${fs}" font-weight="500" fill="var(--ink)"><tspan font-weight="700" fill="${r[3]}">${r[0]}</tspan> ${r[1]}</text>`;
-  });
-  s += `<line x1="${L-30}" x2="${L-30}" y1="${ys[0]}" y2="${ys[3]}" stroke="var(--ink)" stroke-width="2"/><line x1="${W-4}" x2="${W-4}" y1="${ys[0]}" y2="${ys[3]}" stroke="var(--ink)" stroke-width="2"/>`;
-  dates.forEach((dt, j) => {
-    const cx = L + colW * j + colW / 2, st = dayStats(dt), future = dt > t, sel = dt === S.date;
-    s += `<g class="col" data-action="pick-date" data-date="${dt}" opacity="${future ? .35 : 1}"><rect class="hit" x="${cx - colW/2 + 2}" y="4" width="${colW - 4}" height="${H - 8}" rx="8" fill="${sel ? "var(--hl)" : "transparent"}"/>`;
-    s += `<text x="${cx}" y="22" text-anchor="middle" font-size="${fs-2}" fill="var(--muted)">${DOW[j]}</text><text x="${cx}" y="${22+fs+2}" text-anchor="middle" font-size="${fs}" font-weight="${dt === t ? 700 : 500}" fill="var(--ink)">${parseYmd(dt).getDate()}</text>`;
-    strings.forEach((r, i) => {
-      const p = st.pct[r[2]]; if (p === null || !AREAS.includes(r[2])) return;
-      const fret = Math.round(12 * Math.min(1, p)), full = fret === 12;
-      const w = String(fret).length * (fs * .62) + 8;
-      s += `<rect x="${cx - w/2}" y="${ys[i] - fs/2 - 2}" width="${w}" height="${fs + 4}" rx="4" fill="${sel ? "var(--hl)" : "var(--surface)"}"/>`;
-      s += `<text x="${cx}" y="${ys[i] + fs/2 - 2}" text-anchor="middle" font-size="${fs+1}" font-weight="${full ? 700 : 500}" fill="${full ? r[3] : "var(--ink)"}">${fret}</text>`;
-    });
-    s += `<title>${fmtLong(dt)}</title></g>`;
-  });
-  s += "</svg>";
-  setHTML($("#staff"), `<div class="item-head"><h3>Semana del ${fmtShort(dates[0])} al ${fmtShort(dates[6])}</h3></div>${s}
-    <p class="small muted" style="margin:6px 0 0">Cada número es un traste: 12 es la octava, meta cumplida. Toca un día para ${SHARE ? "verlo" : "editarlo"}.</p>`);
+/* Resumen del mes en calendario: gimnasio y bici, kcal y proteína, estudio y, si no está oculto, el gasto total y en comida (Finanzas) */
+const FIN_FOOD_CATS = ["Supermercado", "Comida y delivery", "Restaurantes y bares"];
+function finDaySpend(dt){
+  const tot = finCatTotals([...S.movs.filter(m => m.fecha === dt && isPurchase(m)), ...finRefundList().filter(m => m.fecha === dt)]);
+  return {all: sum(Object.values(tot), v => v), food: sum(FIN_FOOD_CATS, c => tot[c])};
 }
-function renderRank(){
-  const w = weekStats(S.date), tr = tierOf(w.score);
-  const toNext = tr.next ? `${tr.next[0] - w.score} pts para ${tr.next[1]}` : "Rango máximo";
-  const facets = 3 + tr.i;
-  const pts = Array.from({length: facets}, (_, k) => { const a = -Math.PI/2 + k * 2 * Math.PI / facets; return `${(42 + 34*Math.cos(a)).toFixed(1)},${(42 + 34*Math.sin(a)).toFixed(1)}`; }).join(" ");
-  const part = (lbl, v, c) => `<div class="meter"><div class="lab"><span>${lbl}</span><span>${fmt(v*100)}%</span></div><div class="bar"><i style="width:${clamp(v*100,0,100)}%;background:${c}"></i></div></div>`;
-  setHTML($("#rank"), `<div class="item-head"><h3>Rango semanal</h3></div>
-    <div style="display:flex;align-items:center;gap:14px">
-      <svg viewBox="0 0 84 84" aria-hidden="true"><polygon points="${pts}" fill="none" stroke="var(--bass)" stroke-width="3"/><polygon points="${pts}" fill="var(--bass)" opacity="${.12 + tr.i * .06}" transform="translate(42 42) scale(.62) translate(-42 -42)"/></svg>
-      <div><div class="tier">${tr.name}</div><div class="pts">${w.score} pts</div><div class="small muted">${toNext}</div></div>
-    </div>
-    ${[["food", "Nutrición"], ["act", "Entreno"], ["bass", "Bajo"], ["study", "Estudio"]].filter(([k]) => AREAS.includes(k)).map(([k, l]) => part(l, w.parts[k], `var(--${k})`)).join("")}
-    <p class="small muted" style="margin:8px 0 0">Promedio del cumplimiento de ${AREAS.length === 4 ? "las cuatro áreas" : "las áreas compartidas"}, prorrateado a los días transcurridos.</p>`);
+// Mes que muestra el calendario: el del día elegido, salvo que lo hayas cambiado con las flechas sin cambiar de día
+const hoyMonth = () => S.hoyNav && S.hoyNav.at === S.date ? S.hoyNav.ym : S.date.slice(0, 7);
+const clpK = x => x >= 1000 ? `$${fmt(x / 1000, x < 9950 ? 1 : 0)}k` : fmtClp(x);
+function renderMonthSum(){
+  const ym = hoyMonth(), t = today(), g = goals(), [y, mo] = ym.split("-").map(Number);
+  const nDays = new Date(y, mo, 0).getDate(), dates = Array.from({length: nDays}, (_, i) => `${ym}-${pad(i + 1)}`);
+  const showAct = AREAS.includes("act"), showFood = AREAS.includes("food"), showStudy = AREAS.includes("study");
+  const money = !SHARE && S.movs.length > 0, hide = money && !!profile().hideMoney;
+  if (money){ FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null; }
+  const rows = dates.map(dt => {
+    const st = dayStats(dt), a = st.d.act;
+    return {dt, st, gym: a.gym || a.sets.length ? {lbl: GYM_LABEL[a.gym] || "Gimnasio", min: gymDur(a)} : null,
+      bike: a.bikeMin || a.bikeKm ? {min: a.bikeMin || 0, km: a.bikeKm || 0} : null,
+      spend: money ? finDaySpend(dt) : null};
+  });
+  const past = rows.filter(r => r.dt <= t), fed = past.filter(r => r.st.meals > 0), nPast = past.length;
+  const gymDays = past.filter(r => r.gym), bikeDays = past.filter(r => r.bike);
+  const kcalAvg = fed.length ? sum(fed, r => r.st.kcal) / fed.length : null, protAvg = fed.length ? sum(fed, r => r.st.p) / fed.length : null;
+  const foodOk = fed.filter(r => r.st.pct.food >= .95).length;
+  const studyMin = sum(past, r => r.st.studyMin), studyGoal = sum(past, r => r.st.studyGoal);
+  const spendAll = money ? sum(rows, r => r.spend.all) : 0, spendFood = money ? sum(rows, r => r.spend.food) : 0;
+  const budget = finCfg().budget, isCur = ym === t.slice(0, 7), proj = isCur && nPast >= 7 ? spendAll / nPast * nDays : null;
+  const gymGoal = Math.round(g.gymWeek * nPast / 7);
+  const tile = (cls, k, v, sub) => `<div class="hw-tile ${cls}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+  const tiles = !nPast ? "" : [
+    showAct && tile("c-act", "Gimnasio y bici", `${gymDays.length + bikeDays.length} ${gymDays.length + bikeDays.length === 1 ? "sesión" : "sesiones"}`,
+      `gimnasio ${gymDays.length}${gymGoal ? ` de ${gymGoal} a la fecha` : ""}, ${fmt(sum(gymDays, r => r.gym.min))} min · bici ${bikeDays.length} ${bikeDays.length === 1 ? "día" : "días"}, ${fmt(sum(bikeDays, r => r.bike.min))} min${sum(bikeDays, r => r.bike.km) ? `, ${fmt(sum(bikeDays, r => r.bike.km), 1)} km` : ""}`),
+    showFood && tile("c-food", "Calorías y proteína", kcalAvg === null ? "—" : `${fmt(kcalAvg)} kcal`,
+      kcalAvg === null ? "sin comidas registradas" : `promedio de ${days_(fed.length)} con ${fmt(protAvg)} g de proteína (meta ${fmt(g.kcal)} kcal, ${fmt(g.protein)} g); ${foodOk} en meta`),
+    showStudy && tile("c-study", "Estudio", `${fmt(studyMin)} min`, studyGoal ? `de ${fmt(studyGoal)} min planificados a la fecha (${fmt(studyMin / studyGoal * 100)}%)` : "sin estudio planificado a la fecha"),
+    money && tile("", "Gasto", hide ? "$ ••••" : fmtClp(spendAll), hide ? "oculto" : `${fmtClp(spendFood)} en comida${budget ? ` · presupuesto ${fmtClp(budget)}` : ""}${proj ? ` · proyección al cierre ${fmtClp(proj)}` : ""}`)
+  ].filter(Boolean).join("");
+  // Una línea por dato, con el color de su área; la etiqueta larga se ve en pantallas anchas y la corta en móvil
+  const ln = (c, long, short, v) => `<span class="l"${c ? ` style="--c:var(--${c})"` : ""}><em class="lg">${long}</em><em class="sh">${short}</em>${v}</span>`;
+  const cell = r => {
+    const st = r.st, tip = [fmtLong(r.dt)];
+    let s = "";
+    if (showAct && r.gym){ s += ln("act", "gim ", "g ", `${fmt(r.gym.min)}′`); tip.push(`${r.gym.lbl}: ${fmt(r.gym.min)} min`); }
+    if (showAct && r.bike){ s += ln("act", "bici ", "b ", `${fmt(r.bike.min)}′`); tip.push(`bici: ${fmt(r.bike.min)} min${r.bike.km ? `, ${fmt(r.bike.km, 1)} km` : ""}`); }
+    if (showFood && st.meals){ s += ln("food", "", "", fmt(st.kcal)) + ln("food", "P ", "P", fmt(st.p)); tip.push(`${fmt(st.kcal)} kcal, ${fmt(st.p)} g de proteína`); }
+    if (showStudy && st.studyMin){ s += ln("study", "est ", "e ", `${fmt(st.studyMin)}′`); tip.push(`estudio: ${fmt(st.studyMin)} min`); }
+    if (money && !hide && r.spend.all){
+      s += ln("", "", "", clpK(r.spend.all)) + (r.spend.food ? ln("", "com ", "c ", clpK(r.spend.food)) : "");
+      tip.push(`gasto: ${fmtClp(r.spend.all)}${r.spend.food ? `, ${fmtClp(r.spend.food)} en comida` : ""}`);
+    }
+    const cls = ["hm-day", r.dt === S.date && "sel", r.dt === t && "now", r.dt > t && "future"].filter(Boolean).join(" ");
+    return `<div class="${cls}" data-action="pick-date" data-date="${r.dt}" title="${esc(tip.join("\n"))}"><span class="d">${+r.dt.slice(8)}</span>${s}</div>`;
+  };
+  const lead = (parseYmd(dates[0]).getDay() + 6) % 7;
+  const title = fmtMonth(ym);
+  setHTML($("#hoyWeek"), `<div class="item-head"><button class="btn small" data-action="hm-shift" data-n="-1" aria-label="Mes anterior">‹</button>
+      <h3>${title.charAt(0).toUpperCase() + title.slice(1)}</h3>
+      <button class="btn small" data-action="hm-shift" data-n="1" aria-label="Mes siguiente"${ym >= t.slice(0, 7) ? " disabled" : ""}>›</button>
+      ${money ? `<span class="act"><button class="btn small" data-action="money-toggle">${hide ? "Mostrar dinero" : "Ocultar dinero"}</button></span>` : ""}</div>
+    ${tiles ? `<div class="hw-tiles">${tiles}</div>` : `<p class="empty">Este mes todavía no empieza.</p>`}
+    <div class="hm-cal">${DOW.map(d => `<div class="hm-dow">${d}</div>`).join("")}${'<div class="hm-pad"></div>'.repeat(lead)}${rows.map(cell).join("")}</div>
+    <p class="small muted" style="margin:8px 0 0">Toca un día para ${SHARE ? "verlo" : "editarlo"}; mantén el puntero encima para ver el detalle. Totales del mes hasta hoy.${money ? " El gasto sale de Finanzas: compras, transferencias y pagos, menos devoluciones; en comida suma supermercado, delivery y restaurantes." : ""}</p>`);
 }
 // Anillo de progreso: pct en 0..1 (se recorta), con texto opcional al centro
 function ring(pct, color, size = 56, sw = 6, label = null, sub = null){
@@ -2240,7 +2260,7 @@ function renderKpis(){
   const g = goals(), st = dayStats(S.date), ws = weekStats(S.date), lbl = S.date === today() ? "hoy" : fmtShort(S.date);
   const lastTech = (() => { for (const dt of allDatesAsc().reverse()){ const l = day(dt).bass.logs.filter(x => x.clean); if (l.length){ const x = l[l.length-1]; const t = S.lib.techniques.find(t => t.id === x.techId); return t ? `${t.name} ${x.bpm}` : null; } } return null; })();
   const topBook = S.lib.books.filter(b => !b.archived).sort((a,b) => (b.current/b.total||0)-(a.current/a.total||0))[0];
-  $("#hoyLede").textContent = `${fmtLong(S.date)}. ${SHARE ? "Rango de esta semana:" : "Esta semana vas en rango"} ${tierOf(ws.score).name} con ${ws.score} pts.`;
+  $("#hoyLede").textContent = `${fmtLong(S.date)}.`;
   const blocks = {
     food: () => kpiBlock("c-food", `Nutrición ${lbl}`, fmt(st.kcal), fmt(g.kcal), "kcal", st.kcal / g.kcal * 100, [
       ["Proteína", `${fmt(st.p)} / ${fmt(g.protein)} g`], ["Fibra", `${fmt(st.fib)} / ${fmt(g.fiber)} g`],
@@ -5159,6 +5179,8 @@ const actions = {
     syncThemeBtn();
   },
   "pick-date": el => setDate(el.dataset.date),
+  "hm-shift": el => { S.hoyNav = {ym: shiftMonth(hoyMonth(), +el.dataset.n), at: S.date}; renderMonthSum(); },
+  "money-toggle": () => saveLib("profile", p => ({...(p || {}), hideMoney: !(p && p.hideMoney)})),
 
   "meal-add": () => {
     const desc = $("#mDesc").value.trim(), kcal = num($("#mKcal").value);
@@ -6075,7 +6097,7 @@ function wireUI(){
     const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT|BUTTON/.test(a.tagName)) return;
     e.preventDefault(); Metro.toggle();
   });
-  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderStaff(); renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFin(); }, 150); });
+  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFin(); }, 150); });
   Metro.drawBeats(); Metro.setBpm(80);
 }
 init();
