@@ -226,48 +226,66 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 
 /* Resumen: calendario del mes */
 .hw-sum{margin-bottom:16px;container-type:inline-size}
-.hw-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:6px 0 14px}
-.hw-tile{display:flex;flex-direction:column;gap:4px;background:var(--sunken);border-radius:var(--r-sm);padding:12px 14px;box-shadow:inset 3px 0 0 var(--c)}
-.hw-tile .k{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);font-weight:600}
-.hw-tile .k .ico{width:15px;height:15px;color:var(--c)}
-.hw-tile .v{font-family:var(--display);font-weight:650;font-size:1.4rem;line-height:1.15;font-variant-numeric:tabular-nums}
-.hw-tile .v small{font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:.8rem;font-weight:500;color:var(--muted)}
-.hw-tile .bar{margin:2px 0;background:var(--line)}
-.hw-tile .s{font-size:.8rem;color:var(--muted);line-height:1.35}
-.hm-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0 0 10px}
-.hm-legend span{display:inline-flex;align-items:center;gap:4px}
-.hm-legend .ico{width:13px;height:13px;color:var(--c)}
-.hm-legend .okc{color:var(--ok)}
-.hm-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) minmax(0,1.1fr);gap:6px}
-.hm-dow{font-size:.74rem;font-weight:600;color:var(--muted);text-align:center}
-.hm-day,.hm-wk{padding:7px 8px 8px;border-radius:var(--r-sm);display:flex;flex-direction:column;gap:2px;font-variant-numeric:tabular-nums;min-width:0}
-.hm-day{background:var(--sunken);cursor:pointer;border:1.5px solid transparent}
-.hm-day:hover{border-color:var(--line-strong)}
-.hm-day.now{border-color:var(--ink)}
-.hm-day.sel{background:var(--hl)}
-.hm-day.future{opacity:.45}
-.hm-day .d{font-size:.8rem;font-weight:700;margin-bottom:2px}
-.hm-day,.hm-wk{min-height:96px}
-.hm-wk{border:1px dashed var(--line-strong);padding-top:27px}
-.hm-cal .r,.hm-list .r{display:flex;flex-wrap:wrap;align-items:center;gap:1px 5px;min-height:19px;font-size:.8rem;line-height:1.2;white-space:nowrap;overflow:hidden;min-width:0}
-.r .ico{width:13px;height:13px;flex:none;color:var(--c)}
-.r b{font-weight:700;flex:none}
-.r i{font-style:normal;color:var(--muted);font-size:.74rem;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.r.k-money i{color:var(--food)}
-.r.ok b{color:var(--ok)}
-.hm-list{display:none}
-@container (max-width:860px){.hw-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.hm-cal{grid-template-columns:repeat(7,minmax(0,1fr))}.hm-wkc{display:none}.hm-cal .r{flex-wrap:wrap;height:auto;row-gap:1px;margin-bottom:3px}.hm-cal .r i{flex-basis:100%;padding-left:18px}}
+.mc-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:6px 0 14px}
+.mc-card{display:flex;flex-direction:column;gap:4px;background:var(--sunken);border-radius:var(--r-sm);padding:12px 14px;box-shadow:inset 3px 0 0 var(--c)}
+.mc-card .k{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);font-weight:600}
+.mc-card .k .ico{width:15px;height:15px;color:var(--c)}
+.mc-card .v{font-family:var(--display);font-weight:650;font-size:1.5rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.mc-card .v small{font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:.8rem;font-weight:500;color:var(--muted)}
+.mc-card .bar{margin:2px 0;background:var(--line)}
+.mc-card .s{font-size:.8rem;color:var(--muted);line-height:1.35}
+.mc-dl{font-size:.78rem;font-weight:600;color:var(--muted);margin-top:2px}
+.mc-dl.up{color:var(--ok)}.mc-dl.down{color:var(--danger)}
+.mc-legend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:0 0 10px}
+.mc-legend>span{display:inline-flex;align-items:center;gap:6px}
+.mc-legend .okc{color:var(--ok)}
+.mc-hi{color:var(--danger)}
+.mc-lg-bar{display:inline-block;width:28px;height:5px;border-radius:9px;background:var(--line);overflow:hidden}
+.mc-lg-bar i{display:block;width:70%;height:100%;background:var(--food)}
+.mc-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) minmax(0,1.05fr);gap:6px}
+.mc-dow{font-size:.74rem;font-weight:600;color:var(--muted);text-align:center}
+.mc-day,.mc-wk{border-radius:var(--r-sm);padding:7px 8px 8px;display:flex;flex-direction:column;gap:5px;min-height:104px;min-width:0;font-variant-numeric:tabular-nums}
+.mc-day{background:var(--sunken);cursor:pointer;border:1.5px solid transparent}
+.mc-day:hover{border-color:var(--line-strong)}
+.mc-day.now{border-color:var(--ink)}
+.mc-day.sel{background:var(--hl)}
+.mc-day.future{opacity:.45}
+.mc-day .d{font-size:.8rem;font-weight:700;line-height:1}
+.mc-chips{display:flex;flex-wrap:wrap;gap:3px}
+.mc-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:999px;font-size:.74rem;font-weight:700;line-height:1.3;white-space:nowrap;color:var(--c);background:color-mix(in srgb,var(--c) 17%,transparent)}
+.mc-chip em{font-style:normal;font-weight:600;opacity:.85}
+.mc-chip .ico{width:12px;height:12px}
+.mc-chip.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 17%,transparent)}
+.mc-food{display:flex;flex-direction:column;gap:2px}
+.mc-k{font-size:.74rem;color:var(--muted)}
+.mc-k b{font-size:.86rem;color:var(--ink)}
+.mc-bar{display:block;height:5px;border-radius:9px;background:var(--line);overflow:hidden}
+.mc-bar i{display:block;height:100%;border-radius:9px;background:var(--food)}
+.mc-food.ok .mc-bar i{background:var(--ok)}
+.mc-food.ok .mc-k b{color:var(--ok)}
+.mc-p{font-size:.72rem;color:var(--muted)}
+.mc-money{margin-top:auto;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 5px;font-size:.84rem}
+.mc-money span{font-size:.72rem;color:var(--muted)}
+.mc-money.hi b{color:var(--danger)}
+.mc-wk{border:1px dashed var(--line-strong);padding-top:24px;gap:7px}
+.mc-wl{font-size:.76rem;color:var(--muted);line-height:1.25}
+.mc-wl b{font-size:.86rem;color:var(--ink)}
+.mc-wl span{display:block;font-size:.72rem}
+.mc-wl.ok b{color:var(--ok)}
+.mc-list{display:none}
+@container (max-width:860px){.mc-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.mc-cal{grid-template-columns:repeat(7,minmax(0,1fr))}.mc-wkc{display:none}.mc-chip{padding:2px 5px}.mc-day{padding:6px}}
 @container (max-width:600px){
-  .hm-cal{display:none}
-  .hm-list{display:flex;flex-direction:column}
-  .hm-li{display:flex;gap:12px;align-items:flex-start;padding:9px 4px;border-bottom:1px solid var(--line);cursor:pointer}
-  .hm-li.sel{background:var(--hl)}
-  .hm-li .dl{flex:none;width:44px;font-size:.88rem}
-  .hm-li .rs{display:flex;flex-wrap:wrap;gap:4px 14px;min-width:0}
-  .hm-li .r{height:auto;font-size:.86rem}
-  .hm-lw{cursor:default;background:var(--sunken);border-radius:var(--r-sm);border-bottom:0;margin-top:10px;padding:9px 10px}
-  .hm-lw .dl{width:auto;flex-basis:100%;font-weight:600;font-size:.8rem;color:var(--muted)}
-  .hm-lw{flex-wrap:wrap;gap:4px}
+  .mc-cal{display:none}
+  .mc-list{display:flex;flex-direction:column}
+  .mc-li{display:flex;gap:12px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+  .mc-li.sel{background:var(--hl)}
+  .mc-li .dl{flex:none;width:42px;font-size:.88rem;padding-top:2px}
+  .mc-lr{flex:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(64px,auto);grid-template-areas:"a b c";gap:4px 10px;align-items:start;min-width:0}
+  .mc-lr .mc-chips{grid-area:a}.mc-lr .mc-food{grid-area:b}
+  .mc-lr .mc-money{grid-area:c;margin:0;flex-direction:column;align-items:flex-end;text-align:right}
+  .mc-lw{cursor:default;background:var(--sunken);border-radius:var(--r-sm);border-bottom:0;margin-top:10px;padding:10px;flex-wrap:wrap;gap:6px}
+  .mc-lw .dl{width:auto;flex-basis:100%;font-weight:600;font-size:.8rem;color:var(--muted);padding:0}
+  .mc-lwr{display:flex;flex-wrap:wrap;gap:6px 16px}
 }
 /* KPI */
 .kpi{position:relative;transition:border-color .15s}
@@ -2224,98 +2242,112 @@ function monthDays(ym, {spend} = {}){
     return r;
   });
 }
-/* Filas de un día (o de una semana, con wk), siempre en el mismo orden.
-   Cada fila: valor (b), detalle (i) y ok = meta cumplida. null = sin dato. */
-function hmRows(rs, keys, wk){
-  const one = rs[0], t = today(), g = goals(), out = {};
-  const gym = rs.filter(r => r.gym), bike = rs.filter(r => r.bike), fed = rs.filter(r => r.st.meals);
-  const studyMin = sum(rs, r => r.st.studyMin), studyGoal = sum(rs, r => r.dt <= t ? r.st.studyGoal : 0);
-  out.gym = gym.length ? {b: `${fmt(sum(gym, r => r.gym.min))}′`, i: wk ? `${gym.length} de ${g.gymWeek}` : one.st.d.act.gym ? one.gym.lbl : "", ok: wk && gym.length >= g.gymWeek} : null;
-  out.bike = bike.length ? {b: `${fmt(sum(bike, r => r.bike.min))}′`, i: sum(bike, r => r.bike.km) ? `${fmt(sum(bike, r => r.bike.km), 1)} km` : ""} : null;
-  out.food = fed.length ? {b: fmt(sum(fed, r => r.st.kcal) / fed.length), i: `${fmt(sum(fed, r => r.st.p) / fed.length)} P`, ok: !wk && one.st.pct.food >= .95} : null;
-  out.study = studyMin ? {b: `${fmt(studyMin)}′`, i: studyGoal ? `de ${fmt(studyGoal)}` : wk ? "" : "día libre", ok: studyGoal > 0 && studyMin >= studyGoal}
-    : !wk && one.st.d.study.length ? {b: "avance", i: "sin min"} : null;
-  const all = one.spend ? sum(rs, r => r.spend.all) : 0, food = one.spend ? sum(rs, r => r.spend.food) : 0;
-  out.money = all ? {b: clpK(all), i: food ? clpK(food) : ""} : null;
-  return keys.map(k => [k, out[k]]);
+/* Resumen del mes: qué entrenaste, qué comiste y cuánto gastaste, para leerlo de un vistazo.
+   Cada día: chips de entreno y estudio, kcal con su barra frente a la meta (verde = en meta) y el gasto (rojo = más del doble de tu gasto diario habitual).
+   Arriba, el mes a la fecha comparado con el mes anterior hasta el mismo día; a la derecha, el total de cada semana. */
+function monthStats(rows, upto){
+  const past = rows.filter(r => r.dt <= upto), fed = past.filter(r => r.st.meals), gym = past.filter(r => r.gym), bike = past.filter(r => r.bike);
+  return {n: past.length, gym: gym.length, gymMin: sum(gym, r => r.gym.min), bike: bike.length, bikeMin: sum(bike, r => r.bike.min), bikeKm: sum(bike, r => r.bike.km),
+    fed: fed.length, kcal: fed.length ? sum(fed, r => r.st.kcal) / fed.length : null, prot: fed.length ? sum(fed, r => r.st.p) / fed.length : null,
+    foodOk: fed.filter(r => r.st.pct.food >= .95).length, study: sum(past, r => r.st.studyMin), studyGoal: sum(past, r => r.st.studyGoal),
+    spend: past[0] && past[0].spend ? sum(past, r => r.spend.all) : 0, spendFood: past[0] && past[0].spend ? sum(past, r => r.spend.food) : 0,
+    any: past.some(r => r.gym || r.bike || r.st.meals || r.st.studyMin || (r.spend && r.spend.all))};
 }
-// Fila: área (color), ícono y nombre en la leyenda
-const HM_ROW = {gym: ["act", "act", "gimnasio"], bike: ["act", "bike", "bici"], food: ["food", "food", "kcal y proteína (g)"], study: ["study", "study", "estudio"], money: ["fin", "fin", "gasto"]};
-const hmRow = ([k, x]) => !x ? "" : `<span class="r k-${k}${x.ok ? " ok" : ""}" style="--c:var(--${HM_ROW[k][0]})"><svg class="ico" aria-label="${HM_ROW[k][2]}"><use href="#i-${HM_ROW[k][1]}"/></svg><b>${esc(x.b)}</b>${x.i ? `<i>${esc(x.i)}</i>` : ""}</span>`;
-const hmBar = p => p === null ? "" : `<span class="bar"><i style="width:${clamp(p * 100, 0, 100)}%;background:var(--c)"></i></span>`;
-const hmTile = (area, ico, label, v, p, s) => `<div class="hw-tile c-${area}"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-${ico}"/></svg>${label}</span><span class="v">${v}</span>${hmBar(p)}<span class="s">${s}</span></div>`;
-/* Calendario del mes: flechas, recuadros, leyenda, calendario con la semana a la derecha y, en pantalla angosta, lista de días.
-   Las filas sin ningún dato en el mes no se muestran. */
-function monthCal(ym, rows, keys, {tiles = "", tools = "", legend = "", note = "", tip}){
-  const t = today();
-  keys = keys.filter(k => rows.some(r => r.dt <= t && hmRows([r], [k])[0][1]));
+// Gasto diario habitual: promedio de los 90 días anteriores al mes (desde el primer movimiento registrado)
+function spendBaseline(ym){
+  const end = addDays(ym + "-01", -1), start = [addDays(ym + "-01", -90), finDataStart()].sort()[1];
+  if (start > end) return null;
+  const n = daysBetween(start, end) + 1; let s = 0;
+  for (let d = start; d <= end; d = addDays(d, 1)) s += finDaySpend(d).all;
+  return n >= 14 ? s / n : null;
+}
+const mcChip = (area, ico, txt, ok, title) => `<span class="mc-chip${ok ? " ok" : ""}" style="--c:var(--${area})"${title ? ` title="${esc(title)}"` : ""}>${ico ? `<svg class="ico" aria-hidden="true"><use href="#i-${ico}"/></svg>` : ""}${txt}</span>`;
+function mcDay(r, o){
+  const st = r.st, a = st.d.act, g = o.g;
+  const chips = [
+    r.gym && mcChip("act", a.gym ? "" : "act", `${a.gym ? esc(r.gym.lbl) + " " : ""}<em>${fmt(r.gym.min)}′</em>`, false, `${r.gym.lbl}: ${fmt(r.gym.min)} min`),
+    r.bike && mcChip("act", "bike", `<em>${fmt(r.bike.min)}′</em>`, false, `bici: ${fmt(r.bike.min)} min${r.bike.km ? `, ${fmt(r.bike.km, 1)} km` : ""}`),
+    o.study && st.studyMin && mcChip("study", "study", `<em>${fmt(st.studyMin)}′</em>`, st.studyGoal && st.studyMin >= st.studyGoal, `estudio: ${fmt(st.studyMin)} de ${fmt(st.studyGoal)} min`)
+  ].filter(Boolean).join("");
+  const ok = st.pct.food >= .95;
+  const food = o.food && st.meals ? `<div class="mc-food${ok ? " ok" : ""}" title="${esc(`${fmt(st.kcal)} de ${fmt(g.kcal)} kcal, ${fmt(st.p)} de ${fmt(g.protein)} g de proteína${ok ? " (en meta)" : ""}`)}">
+      <span class="mc-k"><b>${fmt(st.kcal)}</b> kcal</span><span class="mc-bar"><i style="width:${clamp(st.kcal / g.kcal * 100, 4, 100)}%"></i></span><span class="mc-p">${fmt(st.p)} g prot.</span></div>` : "";
+  const sp = r.spend && r.spend.all, hi = sp && o.base && sp > 2 * o.base;
+  const money = sp ? `<div class="mc-money${hi ? " hi" : ""}" title="${esc(`gasto: ${fmtClp(sp)}${r.spend.food ? `, ${fmtClp(r.spend.food)} en comida` : ""}${hi ? `; más del doble de tu promedio diario (${fmtClp(o.base)})` : ""}`)}"><b>${clpK(sp)}</b>${r.spend.food ? `<span>comida ${clpK(r.spend.food)}</span>` : ""}</div>` : "";
+  return {chips, food, money, empty: !chips && !food && !money};
+}
+function mcWeek(rs, o){
+  if (!rs.length) return "";
+  const s = monthStats(rs, "9999"), g = o.g, gymOk = s.gym >= g.gymWeek;
+  return `${o.act ? `<div class="mc-wl${gymOk ? " ok" : ""}"><b>${s.gym}/${g.gymWeek}</b> gimnasio${s.bike ? `<span>+ ${s.bike} bici</span>` : ""}</div>` : ""}
+    ${o.food && s.kcal !== null ? `<div class="mc-wl"><b>${fmt(s.kcal)}</b> kcal/día<span>${s.foodOk} de ${days_(s.fed)} en meta</span></div>` : ""}
+    ${o.study && s.study ? `<div class="mc-wl"><b>${fmt(s.study)}′</b> estudio</div>` : ""}
+    ${o.money && s.spend ? `<div class="mc-wl"><b>${clpK(s.spend)}</b> gasto${s.spendFood ? `<span>${clpK(s.spendFood)} en comida</span>` : ""}</div>` : ""}`;
+}
+function renderMonthSum(){
+  const ym = hoyMonth(), t = today(), g = goals();
+  const act = AREAS.includes("act"), food = AREAS.includes("food"), study = AREAS.includes("study");
+  const hasMoney = !SHARE && S.movs.length > 0, hide = hasMoney && !!profile().hideMoney, money = hasMoney && !hide;
+  if (hasMoney){ FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null; }
+  const rows = monthDays(ym, {spend: money}), cur = monthStats(rows, t);
+  // Mes anterior hasta el mismo día del mes
+  const pym = shiftMonth(ym, -1), prows = cur.n ? monthDays(pym, {spend: money}) : [], prev = cur.n ? monthStats(prows, prows[Math.min(cur.n, prows.length) - 1].dt) : null;
+  const pName = MES[+pym.slice(5) - 1], cmp = prev && prev.any;
+  const delta = (d, txt, good) => !cmp || !isFinite(d) || Math.abs(d) < 1e-9 ? ""
+    : `<span class="mc-dl ${good === null ? "" : (d > 0) === good ? "up" : "down"}">${d > 0 ? "▲" : "▼"} ${txt} que en ${pName}</span>`;
+  const o = {g, act, food, study, money, base: money ? spendBaseline(ym) : null};
+  const gymGoal = Math.round(g.gymWeek * cur.n / 7);
+  const card = (area, ico, label, v, p, s, dl) => `<div class="mc-card c-${area}"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-${ico}"/></svg>${label}</span><span class="v">${v}</span>${hmBar(p)}<span class="s">${s}</span>${dl || ""}</div>`;
+  const cards = !cur.n ? "" : [
+    act && card("act", "act", "Entrenaste", `${cur.gym} <small>${cur.gym === 1 ? "sesión" : "sesiones"} de gimnasio</small>`, gymGoal ? cur.gym / gymGoal : null,
+      `${gymGoal ? `de ${gymGoal} esperadas a la fecha` : "sin meta"} · ${fmt(cur.gymMin)} min${cur.bike ? ` · ${cur.bike} ${cur.bike === 1 ? "día" : "días"} de bici` : ""}`,
+      delta(cur.gym - prev.gym, `${Math.abs(cur.gym - prev.gym)} ${Math.abs(cur.gym - prev.gym) === 1 ? "sesión" : "sesiones"} ${cur.gym > prev.gym ? "más" : "menos"}`, true)),
+    food && card("food", "food", "Comiste", cur.kcal === null ? "—" : `${fmt(cur.kcal)} <small>kcal al día</small>`, cur.fed ? cur.foodOk / cur.fed : null,
+      cur.kcal === null ? "sin comidas registradas" : `${fmt(cur.prot)} g de proteína al día · ${cur.foodOk} de ${days_(cur.fed)} en meta`,
+      cur.kcal !== null && prev && prev.kcal !== null ? delta(cur.kcal - prev.kcal, `${fmt(Math.abs(cur.kcal - prev.kcal))} kcal ${cur.kcal > prev.kcal ? "más" : "menos"}`, null) : ""),
+    hasMoney && (hide ? card("fin", "fin", "Gastaste", "••••", null, "oculto")
+      : card("fin", "fin", "Gastaste", fmtClp(cur.spend), cur.spend ? cur.spendFood / cur.spend : null, `${fmtClp(cur.spendFood)} en comida${cur.spend ? ` (${fmt(cur.spendFood / cur.spend * 100)}%)` : ""}`,
+        prev && prev.spend ? delta(cur.spend - prev.spend, `${fmt(Math.abs(cur.spend - prev.spend) / prev.spend * 100)}% ${cur.spend > prev.spend ? "más" : "menos"}`, false) : "")),
+    study && card("study", "study", "Estudiaste", `${fmt(cur.study)} <small>min</small>`, cur.studyGoal ? cur.study / cur.studyGoal : null,
+      cur.studyGoal ? `de ${fmt(cur.studyGoal)} min planificados a la fecha` : "sin estudio planificado",
+      delta(cur.study - prev.study, `${fmt(Math.abs(cur.study - prev.study))} min ${cur.study > prev.study ? "más" : "menos"}`, true))
+  ].filter(Boolean).join("");
+  // Calendario (lunes a domingo) con la semana a la derecha; en pantalla angosta, lista de días del más reciente al más antiguo
   const cls = r => [r.dt === S.date && "sel", r.dt === t && "now", r.dt > t && "future"].filter(Boolean).join(" ");
   const lead = (parseYmd(rows[0].dt).getDay() + 6) % 7, slots = [...Array(lead).fill(null), ...rows];
   while (slots.length % 7) slots.push(null);
   const weeks = []; for (let i = 0; i < slots.length; i += 7) weeks.push(slots.slice(i, i + 7));
-  let cal = DOW.map(d => `<div class="hm-dow">${d}</div>`).join("") + `<div class="hm-dow hm-wkc">Semana</div>`;
+  let cal = DOW.map(d => `<div class="mc-dow">${d}</div>`).join("") + `<div class="mc-dow mc-wkc">Semana</div>`, list = "";
   for (const wk of weeks){
-    const done = wk.filter(r => r && r.dt <= t);
-    cal += wk.map(r => !r ? `<div class="hm-pad"></div>`
-      : `<div class="hm-day ${cls(r)}" data-action="pick-date" data-date="${r.dt}" title="${esc(tip(r))}"><span class="d">${+r.dt.slice(8)}</span>${r.dt > t ? "" : hmRows([r], keys).map(hmRow).join("")}</div>`).join("");
-    cal += `<div class="hm-wk hm-wkc">${done.length ? hmRows(done, keys, true).map(hmRow).join("") : ""}</div>`;
+    cal += wk.map(r => { if (!r) return `<div></div>`;
+      const x = r.dt > t ? null : mcDay(r, o);
+      return `<div class="mc-day ${cls(r)}" data-action="pick-date" data-date="${r.dt}"><span class="d">${+r.dt.slice(8)}</span>${x ? `${x.chips ? `<div class="mc-chips">${x.chips}</div>` : ""}${x.food}${x.money}` : ""}</div>`; }).join("");
+    cal += `<div class="mc-wk mc-wkc">${mcWeek(wk.filter(r => r && r.dt <= t), o)}</div>`;
   }
-  let list = "";
   for (const wk of [...weeks].reverse()){
     const done = wk.filter(r => r && r.dt <= t).reverse(); if (!done.length) continue;
-    const w = hmRows(done, keys, true).filter(([, x]) => x);
-    list += `<div class="hm-li hm-lw"><span class="dl">Semana del ${fmtShort(done[done.length - 1].dt)}</span><span class="rs">${w.length ? w.map(hmRow).join("") : `<span class="muted small">sin registros</span>`}</span></div>`;
+    list += `<div class="mc-li mc-lw"><span class="dl">Semana del ${fmtShort(done[done.length - 1].dt)}</span><div class="mc-lwr">${mcWeek(done, o)}</div></div>`;
     for (const r of done){
-      const x = hmRows([r], keys).filter(([, v]) => v);
-      list += `<div class="hm-li ${cls(r)}" data-action="pick-date" data-date="${r.dt}"><span class="dl"><b>${DOW[(parseYmd(r.dt).getDay() + 6) % 7]}</b> ${+r.dt.slice(8)}</span><span class="rs">${x.length ? x.map(hmRow).join("") : `<span class="muted small">sin registros</span>`}</span></div>`;
+      const x = mcDay(r, o);
+      list += `<div class="mc-li ${cls(r)}" data-action="pick-date" data-date="${r.dt}"><span class="dl"><b>${DOW[(parseYmd(r.dt).getDay() + 6) % 7]}</b> ${+r.dt.slice(8)}</span>
+        ${x.empty ? `<span class="muted small">sin registros</span>` : `<div class="mc-lr">${x.chips ? `<div class="mc-chips">${x.chips}</div>` : ""}${x.food}${x.money}</div>`}</div>`;
     }
   }
   const title = fmtMonth(ym);
-  return `<div class="item-head"><button class="btn small" data-action="hm-shift" data-n="-1" aria-label="Mes anterior">‹</button>
+  const legend = [act && `${mcChip("act", "", "Pull <em>60′</em>")} ${mcChip("act", "act", "<em>60′</em>")} gimnasio (con o sin tipo de sesión)`, act && `${mcChip("act", "bike", "")} bici`, study && `${mcChip("study", "study", "")} estudio`,
+    food && `<span class="mc-lg-bar"><i></i></span> kcal frente a la meta, <b class="okc">verde</b> = en meta`,
+    money && `<b class="mc-hi">$</b> más del doble de tu gasto diario habitual`].filter(Boolean).map(x => `<span>${x}</span>`).join("");
+  setHTML($("#hoyWeek"), `<div class="item-head"><button class="btn small" data-action="hm-shift" data-n="-1" aria-label="Mes anterior">‹</button>
       <h3>${title.charAt(0).toUpperCase() + title.slice(1)}</h3>
       <button class="btn small" data-action="hm-shift" data-n="1" aria-label="Mes siguiente"${ym >= t.slice(0, 7) ? " disabled" : ""}>›</button>
-      ${tools ? `<span class="act">${tools}</span>` : ""}</div>
-    ${tiles ? `<div class="hw-tiles">${tiles}</div>` : `<p class="empty">Este mes todavía no empieza.</p>`}
-    <div class="hm-legend small muted">${keys.map(k => `<span style="--c:var(--${HM_ROW[k][0]})"><svg class="ico" aria-hidden="true"><use href="#i-${HM_ROW[k][1]}"/></svg>${HM_ROW[k][2]}</span>`).join("")}<span><b class="okc">verde</b> meta cumplida</span>${legend}<span>′ = minutos</span></div>
-    <div class="hm-cal">${cal}</div>
-    <div class="hm-list">${list}</div>
-    <p class="small muted" style="margin:10px 0 0">Toca un día para ${SHARE ? "verlo" : "abrirlo"}.${note}</p>`;
+      ${hasMoney ? `<span class="act"><button class="btn small" data-action="money-toggle">${hide ? "Mostrar dinero" : "Ocultar dinero"}</button></span>` : ""}</div>
+    ${cards ? `<div class="mc-cards">${cards}</div>` : `<p class="empty">Este mes todavía no empieza.</p>`}
+    <div class="mc-legend small muted">${legend}</div>
+    <div class="mc-cal">${cal}</div>
+    <div class="mc-list">${list}</div>
+    <p class="small muted" style="margin:10px 0 0">Toca un día para ${SHARE ? "verlo" : "abrirlo"}.${cmp ? ` La comparación es con ${pName} hasta el mismo día del mes.` : ""}${money ? " El gasto sale de Finanzas (compras, transferencias y pagos, menos devoluciones); «comida» suma supermercado, delivery y restaurantes." : ""}</p>`);
 }
-function renderMonthSum(){
-  const ym = hoyMonth(), t = today(), g = goals();
-  const showAct = AREAS.includes("act"), showFood = AREAS.includes("food"), showStudy = AREAS.includes("study");
-  const money = !SHARE && S.movs.length > 0, hide = money && !!profile().hideMoney;
-  if (money){ FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null; }
-  const rows = monthDays(ym, {spend: money && !hide}), nDays = rows.length;
-  const past = rows.filter(r => r.dt <= t), fed = past.filter(r => r.st.meals > 0), nPast = past.length;
-  const gymN = past.filter(r => r.gym).length, bikeN = past.filter(r => r.bike).length, gymGoal = Math.round(g.gymWeek * nPast / 7);
-  const actMin = sum(past, r => (r.gym ? r.gym.min : 0) + (r.bike ? r.bike.min : 0));
-  const kcalAvg = fed.length ? sum(fed, r => r.st.kcal) / fed.length : null, protAvg = fed.length ? sum(fed, r => r.st.p) / fed.length : null;
-  const foodOk = fed.filter(r => r.st.pct.food >= .95).length;
-  const studyMin = sum(past, r => r.st.studyMin), studyGoal = sum(past, r => r.st.studyGoal);
-  const spendAll = money && !hide ? sum(rows, r => r.spend.all) : 0, spendFood = money && !hide ? sum(rows, r => r.spend.food) : 0;
-  const budget = finCfg().budget, proj = ym === t.slice(0, 7) && nPast >= 7 ? spendAll / nPast * nDays : null;
-  const tiles = !nPast ? "" : [
-    showAct && hmTile("act", "act", "Entreno", `${gymN} <small>gimnasio</small> · ${bikeN} <small>bici</small>`, gymGoal ? gymN / gymGoal : null,
-      `${gymGoal ? `${gymN} de ${gymGoal} sesiones de gimnasio esperadas a la fecha` : "sin meta de gimnasio"} · ${fmt(actMin)} min en total`),
-    showFood && hmTile("food", "food", "Calorías y proteína", kcalAvg === null ? "—" : `${fmt(kcalAvg)} <small>kcal/día</small>`, fed.length ? foodOk / fed.length : null,
-      kcalAvg === null ? "sin comidas registradas" : `${fmt(protAvg)} g de proteína al día · ${foodOk} de ${days_(fed.length)} en meta`),
-    showStudy && hmTile("study", "study", "Estudio", `${fmt(studyMin)} <small>min</small>`, studyGoal ? studyMin / studyGoal : null,
-      studyGoal ? `de ${fmt(studyGoal)} min planificados a la fecha` : "sin estudio planificado a la fecha"),
-    money && (hide ? hmTile("fin", "fin", "Gasto", "••••", null, "oculto")
-      : hmTile("fin", "fin", "Gasto", fmtClp(spendAll), budget ? spendAll / budget : spendAll ? spendFood / spendAll : null,
-        `${fmtClp(spendFood)} en comida${budget ? ` · presupuesto ${fmtClp(budget)}` : spendAll ? ` (${fmt(spendFood / spendAll * 100)}%)` : ""}${proj ? ` · al cierre ${fmtClp(proj)}` : ""}`))
-  ].filter(Boolean).join("");
-  const keys = [...(showAct ? ["gym", "bike"] : []), ...(showFood ? ["food"] : []), ...(showStudy ? ["study"] : []), ...(money && !hide ? ["money"] : [])];
-  const tip = r => [fmtLong(r.dt),
-    r.gym && `${r.gym.lbl}: ${fmt(r.gym.min)} min`, r.bike && `bici: ${fmt(r.bike.min)} min${r.bike.km ? `, ${fmt(r.bike.km, 1)} km` : ""}`,
-    r.st.meals && `${fmt(r.st.kcal)} kcal, ${fmt(r.st.p)} g de proteína`, r.st.studyMin && `estudio: ${fmt(r.st.studyMin)} min`,
-    r.spend && r.spend.all && `gasto: ${fmtClp(r.spend.all)}${r.spend.food ? `, ${fmtClp(r.spend.food)} en comida` : ""}`].filter(Boolean).join("\n");
-  setHTML($("#hoyWeek"), monthCal(ym, rows, keys, {tiles, tip,
-    tools: money ? `<button class="btn small" data-action="money-toggle">${hide ? "Mostrar dinero" : "Ocultar dinero"}</button>` : "",
-    legend: keys.includes("money") ? `<span>segundo monto: en comida</span>` : "",
-    note: keys.includes("money") ? " El gasto sale de Finanzas (compras, transferencias y pagos, menos devoluciones); en comida suma supermercado, delivery y restaurantes." : ""}));
-}
+const hmBar = p => p === null ? "" : `<span class="bar"><i style="width:${clamp(p * 100, 0, 100)}%;background:var(--c)"></i></span>`;
 // Anillo de progreso: pct en 0..1 (se recorta), con texto opcional al centro
 function ring(pct, color, size = 56, sw = 6, label = null, sub = null){
   const r = (size - sw) / 2, C = 2 * Math.PI * r, p = clamp(isFinite(pct) ? pct : 0, 0, 1), c = size / 2;
