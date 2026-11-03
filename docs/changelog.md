@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-02
+- Entreno: drop sets. En la serie activa, "drop set" la marca como seguida de la anterior y propone el 75% de la carga; "+ drop set" agrega una al final de un ejercicio terminado. No cuentan para récords ni para la progresión, valen media serie efectiva por músculo y no suman descanso a la duración estimada.
+- Entreno: superseries. "Superserie con el siguiente" junta dos o más ejercicios para alternarlos sin descanso entre ellos (etiquetas A1, A2…); la serie activa va alternando y la duración estimada cuenta 15 s de cambio dentro de la vuelta. La próxima sesión del mismo tipo las propone de nuevo, y "Pegar rutina" guarda como superserie los ejercicios escritos con "/".
+
 ## 2026-10-29
 - Finanzas: tarjeta de débito. Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa y se marca como crédito o débito en el nuevo panel Tarjetas (una sin tipo cuenta como crédito). El gasto del mes suma ambas; cada movimiento muestra su tarjeta, la lista tiene filtro por tipo y "Lo más importante" separa crédito y débito. El ciclo de facturación y las cuotas son solo de crédito. Si llega una compra con una tarjeta sin tipo, "Por revisar" lo avisa.
 - Finanzas: "Importar cartola" (ahora en Tarjetas) acepta también la cartola de la cuenta BICE. Importa solo las compras con débito, con la fecha y hora de la compra, y las concilia con las alertas de débito; deja fuera transferencias, pagos de cuentas, el pago de la tarjeta e intereses. Avisa si los cargos no suman el total impreso.

@@ -641,6 +641,14 @@ button.chk:hover{border-color:var(--act);color:color-mix(in srgb,var(--act) 45%,
 button.wk-val.plain{background:none;border:0;padding:6px 0;color:inherit;cursor:pointer;text-align:left}
 button.wk-val.plain:hover{color:var(--act)}
 .wk-tag{font-size:.74rem;color:var(--muted);border:1px dashed var(--line-strong);border-radius:999px;padding:0 7px}
+.wk-tag.drop{color:var(--act);border-color:color-mix(in srgb,var(--act) 55%,var(--line))}
+.wk-row.drop{padding-left:18px}
+.wk-row.drop .chk{width:28px;height:28px}
+.wk-edit .chip.wk-drop{padding:4px 10px;font-size:.8rem}
+.wk-ex.ss{border-left:3px solid var(--act)}
+.wk-ex.ss-cont{margin-top:4px}
+.wk-ss{flex:none;font-family:var(--display);font-stretch:106%;font-weight:700;font-size:.78rem;color:var(--act);border:1px solid var(--act);border-radius:999px;padding:1px 7px}
+.wk-foot{flex-wrap:wrap}
 .wk-edit{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
 .stepper{display:inline-flex;align-items:center;gap:4px}
 .stepper>button:not(.wk-unit){width:38px;height:38px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);font-size:1.25rem;line-height:1;cursor:pointer;padding:0}
@@ -1052,7 +1060,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <details class="manual" id="rtBox">
         <summary>Pegar rutina desde tus notas</summary>
         <div class="stack" style="margin-top:12px">
-          <p class="small muted" style="margin:0">Una línea por dato: la fecha con el tipo de sesión ("14/10 Legs") o con el primer ejercicio, el nombre del ejercicio, cada serie como carga×reps ("50x8"; "N7x12" si la máquina va por nivel; "12 reps" sin carga) y el descanso que siguió ("2min30s"). Dos ejercicios en paralelo van con "/" ("Crunch/reverse crunch" y luego "12/8 reps"). Sin fecha, se guarda en el día seleccionado.</p>
+          <p class="small muted" style="margin:0">Una línea por dato: la fecha con el tipo de sesión ("14/10 Legs") o con el primer ejercicio, el nombre del ejercicio, cada serie como carga×reps ("50x8"; "N7x12" si la máquina va por nivel; "12 reps" sin carga) y el descanso que siguió ("2min30s"). Dos ejercicios en paralelo van con "/" ("Crunch/reverse crunch" y luego "12/8 reps") y quedan como superserie. Sin fecha, se guarda en el día seleccionado.</p>
           <div class="field">Notas<textarea id="rtText" rows="8" placeholder="14/10 Legs&#10;Hack slide&#10;30x10&#10;2min&#10;50x8&#10;2min30s"></textarea></div>
           <div class="row"><button class="btn" data-action="rt-parse">Revisar antes de guardar</button></div>
           <div id="rtPreview"></div>
@@ -1838,17 +1846,23 @@ const kgStep = (kg, unit) => unit === "nivel" ? 1 : unit === "lb" ? 5 : kg < 20 
 /* Series de aproximación: las iniciales con carga y menos del 75% de la carga más alta del ejercicio en el día */
 const WARM_RATIO = .75;
 function warmIds(sets){
-  const top = Math.max(0, ...sets.map(loadOf)), out = new Set();
+  const top = Math.max(0, ...sets.filter(s => !s.drop).map(loadOf)), out = new Set();
   if (!top) return out;
-  for (const s of sets){ if (!loadOf(s) || loadOf(s) >= WARM_RATIO * top) break; out.add(s.id); }
+  for (const s of sets){ if (s.drop || !loadOf(s) || loadOf(s) >= WARM_RATIO * top) break; out.add(s.id); }
   return out;
 }
-/* Grupo por ejercicio: series, aproximaciones, series de trabajo y mejor serie */
+/* Drop set (drop: true): sigue a la serie anterior sin descanso y con menos carga. Cuenta como media serie efectiva y no es récord. */
+const DROP_RATIO = .75, DROP_EFF = .5, DROP_SEC = 10;
+const dropKg = (kg, unit) => { const r = kgStep(kg, unit); return Math.max(0, Math.min(kg - r, Math.round(kg * DROP_RATIO / r) * r)); };
+/* Superserie: ejercicios que se alternan sin descanso entre ellos; act.ss guarda los grupos como listas de exKey */
+const SS_SEC = 15;
+const ssLetter = i => String.fromCharCode(65 + i);
+/* Grupo por ejercicio: series, aproximaciones, drop sets, series de trabajo y mejor serie */
 function groupSets(sets){
   const gs = [];
   sets.forEach(s => { const k = exKey(s.ex); let g = gs.find(x => x.k === k); if (!g) gs.push(g = {k, ex: exName(s.ex), sets: []}); g.sets.push(s); });
   gs.forEach(g => {
-    g.info = exInfo(g.ex); g.warm = warmIds(g.sets); g.work = g.sets.filter(s => !g.warm.has(s.id));
+    g.info = exInfo(g.ex); g.warm = warmIds(g.sets); g.drop = g.sets.filter(s => s.drop); g.work = g.sets.filter(s => !g.warm.has(s.id) && !s.drop);
     const w = g.work.length ? g.work : g.sets;
     g.top = w.reduce((a, s) => e1rm(s) > e1rm(a) || (e1rm(s) === e1rm(a) && s.reps > a.reps) ? s : a);
   });
@@ -1860,7 +1874,7 @@ function liftStats(until){
   for (const dt of allDatesAsc()){
     if (until && dt >= until) break;
     const top = {};
-    for (const s of day(dt).act.sets){ const k = exKey(s.ex), v = e1rm(s); if (k && v && (!top[k] || v > top[k].v)) top[k] = {s, v}; }
+    for (const s of day(dt).act.sets){ if (s.drop) continue; const k = exKey(s.ex), v = e1rm(s); if (k && v && (!top[k] || v > top[k].v)) top[k] = {s, v}; }
     for (const [k, {s, v}] of Object.entries(top)){
       if (best[k] && v > best[k].e1rm + 1e-9) prIds.add(s.id);
       if (!best[k] || v > best[k].e1rm) best[k] = {ex: exName(s.ex), e1rm: v, kg: s.kg, reps: s.reps, unit: s.unit, date: dt};
@@ -1873,13 +1887,13 @@ function lastSession(ex, before){
   for (const dt of allDatesAsc().reverse()){ if (dt >= before) continue; const sets = day(dt).act.sets.filter(s => exKey(s.ex) === k); if (sets.length) return {date: dt, sets}; }
   return null;
 }
-/* Series efectivas por músculo: 1 por serie si es principal, 0,5 si es secundario; sin aproximaciones */
+/* Series efectivas por músculo: 1 por serie si es principal, 0,5 si es secundario; sin aproximaciones; cada drop set vale media serie */
 const MUSCLE_RANGE = [10, 20];
 function muscleSets(dates){
   const out = {};
   for (const dt of dates) for (const g of groupSets(day(dt).act.sets)){
     if (!g.info) continue;
-    const n = g.work.length;
+    const n = g.work.length + DROP_EFF * g.drop.length;
     g.info.m.forEach(k => out[k] = (out[k] || 0) + n);
     g.info.m2.forEach(k => out[k] = (out[k] || 0) + n / 2);
   }
@@ -2535,7 +2549,7 @@ function renderNutDash(){
 function saveAct(){
   const gym = $("#aGym").value, min = num($("#aGymMin").value);
   saveDay(S.date, d => {
-    const a = d.act, est = a.sets.length ? sessionMin(a.sets) : 0;
+    const a = d.act, est = a.sets.length ? sessionMin(a.sets, a.ss) : 0;
     Object.assign(a, {gym, gymMin: gym ? (est ? a.gymMin : min || 40) : 0, gymMinManual: gym && est && min && min !== est ? min : 0, tennisMin: num($("#aTennis").value) || 0, bikeMin: num($("#aBike").value) || 0, bikeKm: num($("#aBikeKm").value) || 0});
   });
 }
@@ -2638,28 +2652,41 @@ function workoutPlan(date){
   [...done.map(g => g.ex), ...hab.names, ...extra].forEach(n => { const k = exKey(n); if (!keys.includes(k)){ keys.push(k); names[k] = exName(n); } });
   const pend = keys.filter(k => !done.some(g => g.k === k) && !hidden.includes(k)), base = [...pend].sort((a, b) => exTier(names[a]) - exTier(names[b]));
   const rank = k => order.includes(k) ? order.indexOf(k) : order.length + base.indexOf(k);
-  const exs = [...done.map(g => g.k), ...pend.sort((a, b) => rank(a) - rank(b))].map(k => {
+  const flat = [...done.map(g => g.k), ...pend.sort((a, b) => rank(a) - rank(b))];
+  /* Superseries: las del día o, sin ellas, las de la última sesión del tipo; cada grupo queda junto, en la posición de su primer ejercicio */
+  const ss = (d.act.ss || (hab.from ? day(hab.from[hab.from.length - 1]).act.ss : null) || []).map(g => g.filter(k => flat.includes(k))).filter(g => g.length > 1);
+  const seq = [];
+  flat.forEach(k => { const g = ss.find(x => x.includes(k)); (g || [k]).forEach(x => { if (!seq.includes(x)) seq.push(x); }); });
+  const exs = seq.map(k => {
     const dg = done.find(g => g.k === k), name = dg ? dg.ex : names[k];
     const prev = lastSession(name, date), pg = prev ? groupSets(prev.sets)[0] : null;
     const step = pg ? nextStep(pg) : null;
-    let plan = pg ? pg.sets.map(s => ({kg: Number(s.kg) || 0, reps: s.reps, unit: s.unit || "", rest: s.rest || 0, warm: pg.warm.has(s.id)})) : Array.from({length: DEFAULT_SETS}, () => ({kg: 0, reps: ISO_EX.map(exKey).includes(k) ? ISO_START_SEC : 10, unit: "", rest: 0, warm: false}));
-    if (step && step.kind !== "keep") plan = plan.map(p => !p.warm && p.kg === step.top ? {...p, kg: step.kg, reps: step.reps} : p);
+    let plan = pg ? pg.sets.map(s => ({kg: Number(s.kg) || 0, reps: s.reps, unit: s.unit || "", rest: s.rest || 0, warm: pg.warm.has(s.id), drop: !!s.drop})) : Array.from({length: DEFAULT_SETS}, () => ({kg: 0, reps: ISO_EX.map(exKey).includes(k) ? ISO_START_SEC : 10, unit: "", rest: 0, warm: false, drop: false}));
+    if (step && step.kind !== "keep") plan = plan.map(p => !p.warm && !p.drop && p.kg === step.top ? {...p, kg: step.kg, reps: step.reps} : p);
     const sets = dg ? dg.sets : [], n = ended ? sets.length : Math.max(sets.length, plan.length + (W.more[wKey(date, k)] || 0));
     const rows = Array.from({length: n}, (_, i) => {
-      if (sets[i]) return {done: true, set: sets[i], warm: dg.warm.has(sets[i].id)};
+      if (sets[i]) return {done: true, set: sets[i], warm: dg.warm.has(sets[i].id), drop: !!sets[i].drop};
       const last = sets[sets.length - 1], tmpl = plan[i] || (last ? {kg: Number(last.kg) || 0, reps: last.reps, unit: last.unit || "", rest: last.rest || 0} : plan[plan.length - 1]);
-      return {done: false, ...tmpl, ...(plan[i] ? {} : {warm: false}), ...(W.draft[wKey(date, k, i)] || {})};
+      return {done: false, ...tmpl, ...(plan[i] ? {} : {warm: false, drop: false}), ...(W.draft[wKey(date, k, i)] || {})};
     });
-    return {k, name, info: exInfo(name), step, rows};
+    const gi = ss.findIndex(g => g.includes(k));
+    return {k, name, info: exInfo(name), step, rows, ss: gi < 0 ? null : {g: gi, i: ss[gi].indexOf(k), n: ss[gi].length, tag: ssLetter(gi) + (ss[gi].indexOf(k) + 1)}};
   });
-  return {type, from: hab.from, exs, ended};
+  return {type, from: hab.from, exs, ended, ss};
 }
+/* Serie activa: la elegida; si no, el drop set pendiente de la última serie marcada; si no, el primer ejercicio con series pendientes.
+   En una superserie va al ejercicio del grupo con menos series hechas, así se alternan. */
 function wFocus(P){
   const f = W.focus && W.focus.date === S.date ? W.focus : null;
   const e = f && P.exs.find(x => x.k === f.k);
   if (e && e.rows[f.i] && !e.rows[f.i].done) return f;
-  for (const x of P.exs){ const i = x.rows.findIndex(r => !r.done); if (i >= 0) return {date: S.date, k: x.k, i}; }
-  return null;
+  const last = day(S.date).act.sets.filter(s => s.t).sort((a, b) => b.t - a.t)[0], le = last && P.exs.find(x => x.k === exKey(last.ex));
+  const li = le ? le.rows.findIndex(r => !r.done) : -1;
+  if (li > 0 && le.rows[li].drop && le.rows[li - 1].done) return {date: S.date, k: le.k, i: li};
+  const nDone = x => x.rows.filter(r => r.done).length, open = x => x.rows.some(r => !r.done);
+  const x = P.exs.find(open); if (!x) return null;
+  const y = x.ss ? P.exs.filter(z => z.ss && z.ss.g === x.ss.g && open(z)).reduce((a, b) => nDone(b) < nDone(a) ? b : a) : x;
+  return {date: S.date, k: y.k, i: y.rows.findIndex(r => !r.done)};
 }
 function wRow(k, i){ const e = workoutPlan(S.date).exs.find(x => x.k === k); return e && e.rows[i] ? {e, r: e.rows[i]} : null; }
 const numIn = v => String(Number(v) || 0).replace(".", ",");
@@ -2674,28 +2701,34 @@ function renderWorkout(){
     const a = `data-k="${esc(e.k)}" data-i="${i}" data-f="${fld}"`, kg = fld === "kg";
     return `<span class="stepper"><button data-action="wk-step" ${a} data-v="-1" aria-label="${kg ? "Menos carga" : "Una rep menos"}">−</button><input class="wk-num" ${a} inputmode="${kg ? "decimal" : "numeric"}" value="${kg ? numIn(r.kg) : r.reps}" aria-label="${kg ? "Carga" : "Repeticiones"}"><button data-action="wk-step" ${a} data-v="1" aria-label="${kg ? "Más carga" : "Una rep más"}">+</button>${kg ? `<button class="wk-unit" data-action="wk-unit" data-k="${esc(e.k)}" data-i="${i}" title="Cambiar unidad">${unitLbl(r.unit)}</button>` : `<span class="wk-u">reps</span>`}</span>`;
   };
+  const tags = r => `${r.warm ? `<span class="wk-tag">aprox.</span>` : ""}${r.drop ? `<span class="wk-tag drop">drop</span>` : ""}`;
   const row = (e, r, i) => {
     if (r.done){
       const pr = prIds.has(r.set.id);
-      return `<li class="wk-row done"><span class="chk on" aria-hidden="true">${CHECK}</span><span class="wk-val">${esc(setTxt(r.set))}</span>${r.warm ? `<span class="wk-tag">aprox.</span>` : ""}${pr ? `<span class="badge">${TROPHY}récord</span>` : ""}<button class="wk-x" data-action="wk-undo" data-id="${r.set.id}" aria-label="Borrar serie ${esc(setTxt(r.set))}" title="Borrar serie">×</button></li>`;
+      return `<li class="wk-row done${r.drop ? " drop" : ""}"><span class="chk on" aria-hidden="true">${CHECK}</span><span class="wk-val">${esc(setTxt(r.set))}</span>${tags(r)}${pr ? `<span class="badge">${TROPHY}récord</span>` : ""}<button class="wk-x" data-action="wk-undo" data-id="${r.set.id}" aria-label="Borrar serie ${esc(setTxt(r.set))}" title="Borrar serie">×</button></li>`;
     }
     const on = f && f.k === e.k && f.i === i, next = e.rows.findIndex(x => !x.done) === i, txt = r.kg ? `${wTxt(r.kg, r.unit)} × ${r.reps}` : `${r.reps} reps`;
-    return `<li class="wk-row${on ? " focus" : ""}">${next ? `<button class="chk" data-action="wk-done" data-k="${esc(e.k)}" data-i="${i}" aria-label="Marcar hecha: ${esc(txt)}">${CHECK}</button>` : `<span class="chk wait" aria-hidden="true"></span>`}${on ? `<span class="wk-edit">${stepper(e, i, r, "kg")}${stepper(e, i, r, "reps")}</span>` : `<button class="wk-val plain" data-action="wk-focus" data-k="${esc(e.k)}" data-i="${i}">${esc(txt)}</button>`}${r.warm ? `<span class="wk-tag">aprox.</span>` : ""}</li>`;
+    const dropBtn = i > 0 ? `<button class="chip wk-drop${r.drop ? " sel" : ""}" data-action="wk-drop-row" data-k="${esc(e.k)}" data-i="${i}" aria-pressed="${!!r.drop}" title="Drop set: sin descanso, con menos carga que la serie anterior">drop set</button>` : "";
+    return `<li class="wk-row${on ? " focus" : ""}${r.drop ? " drop" : ""}">${next ? `<button class="chk" data-action="wk-done" data-k="${esc(e.k)}" data-i="${i}" aria-label="Marcar hecha: ${esc(txt)}">${CHECK}</button>` : `<span class="chk wait" aria-hidden="true"></span>`}${on ? `<span class="wk-edit">${stepper(e, i, r, "kg")}${stepper(e, i, r, "reps")}${dropBtn}</span>` : `<button class="wk-val plain" data-action="wk-focus" data-k="${esc(e.k)}" data-i="${i}">${esc(txt)}</button>${tags(r)}`}</li>`;
   };
-  const card = e => {
+  const card = (e, j) => {
     const nd = e.rows.filter(r => r.done).length, hint = e.step && e.step.kind !== "keep" && !nd, live = !P.ended, pend = live && !nd;
     const rm = live ? `<button class="wk-x" data-action="wk-hide" data-k="${esc(e.k)}" aria-label="Quitar ${esc(e.name)} de hoy" title="${nd ? "Quitar ejercicio y borrar sus series" : "Quitar ejercicio de hoy"}">×</button>` : "";
     const more = live ? `<button class="btn small ghost" data-action="wk-more" data-k="${esc(e.k)}">+ serie</button>` : "";
+    const drop = live && nd && nd === e.rows.length ? `<button class="btn small ghost" data-action="wk-drop" data-k="${esc(e.k)}" title="Agrega una serie con menos carga, sin descanso">+ drop set</button>` : "";
+    const nx = P.exs[j + 1], link = live && nx && (!e.ss || e.ss.i === e.ss.n - 1) && !(nx.ss && e.ss && nx.ss.g === e.ss.g) ? `<button class="btn small ghost" data-action="wk-ss-link" data-k="${esc(e.k)}" title="Alterna este ejercicio con ${esc(nx.name)}, sin descanso entre ellos">Superserie con el siguiente</button>` : "";
+    const split = live && e.ss ? `<button class="btn small ghost" data-action="wk-ss-split" data-k="${esc(e.k)}">Sacar de la superserie</button>` : "";
     const grip = pend || nd ? `<button class="wk-grip" data-k="${esc(e.k)}" aria-label="Mover ${esc(e.name)}: arrastra o usa las flechas" title="Arrastra para cambiar el orden">${GRIP}</button>` : "";
-    const zone = pend ? " pend" : nd ? " donex" : "";
-    if (nd === e.rows.length && !W.open[wKey(date, e.k)]) return `<div class="wk-ex closed${zone}" data-k="${esc(e.k)}"><div class="wk-head">${grip}${exPic(e.name) || exFig(e.info)}<strong class="grow">${esc(e.name)}</strong><span class="wk-ok">${CHECK}${nd} ${nd === 1 ? "serie" : "series"}</span>${more}<button class="btn small ghost" data-action="wk-open" data-k="${esc(e.k)}">ver</button></div></div>`;
-    return `<div class="wk-ex${zone}" data-k="${esc(e.k)}"><div class="wk-head">${grip}${exPic(e.name) || exFig(e.info)}<span class="grow"><strong>${esc(e.name)}</strong><span class="mus" title="${esc(e.info ? e.info.tip : "")}">${esc(muDetail(e.info))}</span>${hint ? `<span class="wk-hint ${e.step.kind}">${e.step.kind === "up" ? "↑" : "↓"} ${esc(e.step.txt)}</span>` : ""}</span><span class="wk-count">${nd}/${e.rows.length}</span>${rm}</div>
+    const zone = (pend ? " pend" : nd ? " donex" : "") + (e.ss ? ` ss${e.ss.i ? " ss-cont" : ""}` : "");
+    const tag = e.ss ? `<span class="wk-ss" title="Superserie ${ssLetter(e.ss.g)}: alterna sus ejercicios sin descanso y descansa al terminar la vuelta">${e.ss.tag}</span>` : "";
+    if (nd === e.rows.length && !W.open[wKey(date, e.k)]) return `<div class="wk-ex closed${zone}" data-k="${esc(e.k)}"><div class="wk-head">${grip}${tag}${exPic(e.name) || exFig(e.info)}<strong class="grow">${esc(e.name)}</strong><span class="wk-ok">${CHECK}${nd} ${nd === 1 ? "serie" : "series"}</span>${more}${drop}<button class="btn small ghost" data-action="wk-open" data-k="${esc(e.k)}">ver</button></div></div>`;
+    return `<div class="wk-ex${zone}" data-k="${esc(e.k)}"><div class="wk-head">${grip}${tag}${exPic(e.name) || exFig(e.info)}<span class="grow"><strong>${esc(e.name)}</strong><span class="mus" title="${esc(e.info ? e.info.tip : "")}">${esc(muDetail(e.info))}</span>${hint ? `<span class="wk-hint ${e.step.kind}">${e.step.kind === "up" ? "↑" : "↓"} ${esc(e.step.txt)}</span>` : ""}</span><span class="wk-count">${nd}/${e.rows.length}</span>${rm}</div>
       <ol class="wk-rows">${e.rows.map((r, i) => row(e, r, i)).join("")}</ol>
-      <div class="wk-foot">${more}${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}${nd && e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-finish" data-k="${esc(e.k)}">Terminar ejercicio</button>` : ""}${nd === e.rows.length ? `<button class="btn small ghost" data-action="wk-close" data-k="${esc(e.k)}">Cerrar</button>` : ""}</div></div>`;
+      <div class="wk-foot">${more}${drop}${e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-less" data-k="${esc(e.k)}">− serie</button>` : ""}${nd && e.rows.length > nd ? `<button class="btn small ghost" data-action="wk-finish" data-k="${esc(e.k)}">Terminar ejercicio</button>` : ""}${nd === e.rows.length ? `<button class="btn small ghost" data-action="wk-close" data-k="${esc(e.k)}">Cerrar</button>` : ""}${link}${split}</div></div>`;
   };
   const a = day(date).act, gs = groupSets(a.sets), nPr = a.sets.filter(s => prIds.has(s.id)).length, nWork = sum(gs, g => g.work.length);
   const head = P.ended ? `<div class="wk-sum"><span class="wk-ok">${CHECK}Entreno guardado</span><span class="small muted grow">${gs.length} ${gs.length === 1 ? "ejercicio" : "ejercicios"} · ${nWork} ${nWork === 1 ? "serie" : "series"} · ${fmtDur(gymDur(a))}${nPr ? ` · ${nPr} ${nPr === 1 ? "récord" : "récords"}` : ""}</span><button class="btn small ghost" data-action="wk-resume">Retomar entreno</button></div>`
-    : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Van en orden ideal: primero los multiarticulares, después el aislamiento de músculos grandes, luego el de músculos chicos y el core al final; dentro de cada grupo, en tu orden habitual. Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde.</p>` : "";
+    : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Van en orden ideal: primero los multiarticulares, después el aislamiento de músculos grandes, luego el de músculos chicos y el core al final; dentro de cada grupo, en tu orden habitual. Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde. "Superserie con el siguiente" junta dos ejercicios para alternarlos sin descanso entre ellos; "drop set", en la serie activa, la hace seguida de la anterior y con menos carga.</p>` : "";
   const warm = P.type && !P.ended && !a.sets.length && WARMUP[P.type] ? `<details class="wk-warm"${W.warmOpen ? " open" : ""}><summary>Calentamiento · ~${WARMUP[P.type].min} min</summary>${WARMUP[P.type].bike ? `<p class="muted">Llegas en bici, así que ya vienes con el cuerpo caliente; esto prepara las articulaciones de la sesión. Si pasan más de 15 min antes de empezar, suma 5 min de bici o elíptica suave.</p>` : ""}<ol>${WARMUP[P.type].steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></details>` : "";
   const foot = !P.ended && a.sets.length ? `<div class="wk-end"><span class="small muted grow">Cada serie queda guardada al marcarla. Al terminar el entreno se quitan los ejercicios que no hiciste y se detiene el cronómetro.</span><button class="btn primary" data-action="wk-end">Terminar entreno</button></div>` : "";
   $("#workout .wk-add").hidden = P.ended;
@@ -2751,13 +2784,19 @@ const SET_SEC = 30, REST_MAX = 600, REST_RESUME = 30 * 60000;
 const REP_SEC = 3, SET_PREP_SEC = 15, REST_LO = 120, REST_HI = 180, ISO_EX = ["Plancha", "Plancha lateral"], ISO_START_SEC = 30;
 /* Los ejercicios de core usan descansos más cortos: 60–90 s */
 const CORE_REST_LO = 60, CORE_REST_HI = 90;
-function sessionMin(sets){
+/* Antes de un drop set van DROP_SEC; después de un ejercicio de superserie que no cierra la vuelta, SS_SEC */
+function sessionMin(sets, ss = []){
   const iso = ISO_EX.map(exKey), isCore = x => (exInfo(x.ex) || {}).t === "core";
+  const chained = x => { const k = exKey(x.ex), g = ss.find(y => y.includes(k)); return !!g && g[g.length - 1] !== k; };
   const exec = sum(sets, x => SET_PREP_SEC + (Number(x.reps) || 0) * (iso.includes(exKey(x.ex)) ? 1 : REP_SEC));
-  const rest = sum(sets.slice(0, -1), x => { const [lo, hi] = isCore(x) ? [CORE_REST_LO, CORE_REST_HI] : [REST_LO, REST_HI]; return clamp(x.rest || (lo + hi) / 2, lo, hi); });
+  let rest = 0;
+  for (let i = 1; i < sets.length; i++){
+    const x = sets[i - 1], [lo, hi] = isCore(x) ? [CORE_REST_LO, CORE_REST_HI] : [REST_LO, REST_HI];
+    rest += sets[i].drop ? DROP_SEC : chained(x) ? SS_SEC : clamp(x.rest || (lo + hi) / 2, lo, hi);
+  }
   return Math.max(1, Math.round((exec + rest) / 60));
 }
-const gymDur = a => a.sets.length ? a.gymMinManual || sessionMin(a.sets) : a.gymMin || 40;
+const gymDur = a => a.sets.length ? a.gymMinManual || sessionMin(a.sets, a.ss) : a.gymMin || 40;
 
 /* Mapa muscular de la semana seleccionada */
 const REGIONS = [["piernas", ["cuadriceps", "isquio", "gluteo", "gemelo", "aductor", "abductor"]], ["empuje", ["pecho", "hombro", "triceps"]], ["tirón", ["dorsal", "espalda", "hombroPost", "biceps", "trapecio"]], ["core", ["abdomen", "oblicuos", "lumbar"]]];
@@ -2779,7 +2818,7 @@ function renderMuscles(label){
     <div class="mu-side">
       ${ses ? `<p class="mu-sum">${hit.length ? `Esta semana trabajaste ${listEs(hit)}.` : "Esta semana no hay series con músculos asignados."}${miss.length ? ` <span class="muted">Falta ${listEs(miss)}.</span>` : ""}</p>
       <div class="mu-chips">${done.map(k => `<span class="mu-chip"><i style="background:${lvl(ms[k])}"></i>${MUSCLES[k]}</span>`).join("")}</div>` : `<p class="empty">Sin series registradas esta semana.</p>`}
-      <details class="manual mt"><summary>Cómo se calcula</summary><p class="small muted" style="margin:10px 0 0">Cada serie suma 1 al músculo principal del ejercicio y 0,5 a los secundarios. No cuentan las de aproximación: las primeras series con menos del 75% de la carga más alta del ejercicio ese día. "En rango" es desde ${lo} series por músculo a la semana (referencia de ${lo} a ${hi}); "medio", de 5 a ${lo - 1}; "poco", menos de 5. Pasa el cursor por un músculo para ver su número.</p></details>
+      <details class="manual mt"><summary>Cómo se calcula</summary><p class="small muted" style="margin:10px 0 0">Cada serie suma 1 al músculo principal del ejercicio y 0,5 a los secundarios. No cuentan las de aproximación: las primeras series con menos del 75% de la carga más alta del ejercicio ese día. Cada drop set vale media serie. "En rango" es desde ${lo} series por músculo a la semana (referencia de ${lo} a ${hi}); "medio", de 5 a ${lo - 1}; "poco", menos de 5. Pasa el cursor por un músculo para ver su número.</p></details>
     </div>
   </div>`);
 }
@@ -5154,7 +5193,7 @@ const RT_NAME_SET = /^(.*?[^\d\s/].*?)\s+((?:n|nivel)?\s*\d+(?:[.,]\d+)?\s*(?:kg
 function parseRoutine(text){
   const sessions = [], bad = [];
   let ses = null, cur = null;
-  const newSession = date => { ses = sessions.find(s => s.date === date) || null; if (!ses) sessions.push(ses = {date, type: "", exs: []}); cur = null; };
+  const newSession = date => { ses = sessions.find(s => s.date === date) || null; if (!ses) sessions.push(ses = {date, type: "", exs: [], ss: []}); cur = null; };
   const item = raw => {
     const key = exKey(raw); let e = ses.exs.find(x => x.k === key);
     if (!e) ses.exs.push(e = {k: key, raw, name: exName(raw), info: exInfo(raw), sets: []});
@@ -5165,6 +5204,8 @@ function parseRoutine(text){
     if (sets.length !== cur.names.length && sets.length !== 1){ bad.push(`${line}: no coincide con los ejercicios de "${cur.raw}"`); return; }
     if (sets.length === 1 && cur.names.length > 1){ bad.push(`${line}: "${cur.raw}" son ${cur.names.length} ejercicios; escribe una serie por ejercicio separadas por "/"`); return; }
     cur.last = sets.map((s, i) => { const x = {...s}; item(cur.names[i]).sets.push(x); return x; });
+    const g = [...new Set(cur.names.map(exKey))];
+    if (g.length > 1 && !ses.ss.some(y => y.join("|") === g.join("|"))) ses.ss.push(g);
   };
   const setsOf = line => { const sets = line.split("/").map(rtSet); return sets.every(Boolean) ? sets : null; };
   for (const line of String(text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean)){
@@ -5188,7 +5229,7 @@ function parseRoutine(text){
     s.exs = s.exs.filter(e => e.sets.length);
     s.exs.forEach(e => { e.unit = e.sets.some(x => x.unit === "nivel") ? "nivel" : e.sets.some(x => x.unit === "lb") ? "lb" : e.sets.every(x => !x.kg) ? "pc" : "kg"; });
     s.type = s.type || inferGym(s.exs);
-    s.min = sessionMin(s.exs.flatMap(e => e.sets.map(x => ({...x, ex: e.name}))));
+    s.min = sessionMin(s.exs.flatMap(e => e.sets.map(x => ({...x, ex: e.name}))), s.ss);
   });
   return {sessions: sessions.filter(s => s.exs.length).sort((a, b) => a.date.localeCompare(b.date)), bad};
 }
@@ -5487,16 +5528,43 @@ const actions = {
     const i = +el.dataset.i, w = wRow(el.dataset.k, i); if (!w) return;
     const {e, r} = w, k = e.k, now = Date.now();
     if (!(r.reps > 0)){ toast("Indica las repeticiones."); return; }
-    const s = {id: uid(), ex: e.name, kg: Number(r.kg) || 0, reps: r.reps, ...(r.kg && (r.unit === "lb" || r.unit === "nivel") ? {unit: r.unit} : {}), t: now};
-    const before = liftStats(S.date).best[k], todayTop = Math.max(0, ...day(S.date).act.sets.filter(x => exKey(x.ex) === k).map(e1rm));
+    const s = {id: uid(), ex: e.name, kg: Number(r.kg) || 0, reps: r.reps, ...(r.kg && (r.unit === "lb" || r.unit === "nivel") ? {unit: r.unit} : {}), ...(r.drop ? {drop: true} : {}), t: now};
+    const before = liftStats(S.date).best[k], todayTop = Math.max(0, ...day(S.date).act.sets.filter(x => exKey(x.ex) === k && !x.drop).map(e1rm));
+    const ss = workoutPlan(S.date).ss;
     saveDay(S.date, d => {
       const prev = d.act.sets.filter(x => x.t).sort((a, b) => b.t - a.t)[0];
       if (prev && !prev.rest){ const gap = Math.round((now - prev.t) / 1000) - SET_SEC; if (gap > 0 && gap <= REST_MAX) prev.rest = gap; }
       d.act.sets.push(s);
+      if (!d.act.ss && ss.length) d.act.ss = ss;
     });
     delete W.draft[wKey(S.date, k, i)]; W.focus = null;
-    if (before && e1rm(s) > before.e1rm + 1e-9 && e1rm(s) > todayTop + 1e-9) toast(`Récord en ${e.name}: ${setTxt(s)}.`);
+    if (!s.drop && before && e1rm(s) > before.e1rm + 1e-9 && e1rm(s) > todayTop + 1e-9) toast(`Récord en ${e.name}: ${setTxt(s)}.`);
     Rest.start(now);
+  },
+  "wk-drop-row": el => {
+    const i = +el.dataset.i, w = wRow(el.dataset.k, i); if (!w || !i) return;
+    const key = wKey(S.date, w.e.k, i), p = w.e.rows[i - 1], {drop, kg, unit, ...rest} = W.draft[key] || {};
+    W.draft[key] = w.r.drop ? {...rest, drop: false} : {...rest, drop: true, kg: dropKg(Number(p.done ? p.set.kg : p.kg) || 0, p.done ? p.set.unit || "" : p.unit), unit: p.done ? p.set.unit || "" : p.unit, reps: p.done ? p.set.reps : p.reps};
+    W.focus = {date: S.date, k: w.e.k, i}; renderWorkout();
+  },
+  "wk-drop": el => {
+    const e = workoutPlan(S.date).exs.find(x => x.k === el.dataset.k); if (!e) return;
+    const last = [...e.rows].reverse().find(r => r.done); if (!last) return;
+    const key = wKey(S.date, e.k), i = e.rows.length, s = last.set;
+    W.more[key] = (W.more[key] || 0) + 1; W.open[key] = true;
+    W.draft[wKey(S.date, e.k, i)] = {drop: true, kg: dropKg(Number(s.kg) || 0, s.unit || ""), unit: s.unit || "", reps: s.reps, warm: false};
+    W.focus = {date: S.date, k: e.k, i}; renderWorkout();
+  },
+  "wk-ss-link": el => {
+    const P = workoutPlan(S.date), j = P.exs.findIndex(x => x.k === el.dataset.k), a = P.exs[j], b = P.exs[j + 1]; if (!a || !b) return;
+    const ss = P.ss.map(g => [...g]), ga = ss.find(g => g.includes(a.k)), gb = ss.find(g => g.includes(b.k));
+    if (ga && gb){ if (ga !== gb){ ga.push(...gb); ss.splice(ss.indexOf(gb), 1); } }
+    else if (ga) ga.push(b.k); else if (gb) gb.unshift(a.k); else ss.push([a.k, b.k]);
+    W.focus = null; saveDay(S.date, d => { d.act.ss = ss; });
+  },
+  "wk-ss-split": el => {
+    const k = el.dataset.k, ss = workoutPlan(S.date).ss.map(g => g.filter(x => x !== k)).filter(g => g.length > 1);
+    W.focus = null; saveDay(S.date, d => { d.act.ss = ss; });
   },
   "wk-undo": el => saveDay(S.date, d => { d.act.sets = d.act.sets.filter(s => s.id !== el.dataset.id); }),
   "wk-less": el => { const key = wKey(S.date, el.dataset.k); W.more[key] = (W.more[key] || 0) - 1; W.focus = null; renderWorkout(); },
@@ -5547,7 +5615,7 @@ const actions = {
         const u = e.unit === "pc" ? "" : field("unit", i, j).value;
         return e.sets.map(x => ({id: uid(), ex: e.name, kg: x.kg, reps: x.reps, ...(Number(x.kg) && (u === "lb" || u === "nivel") ? {unit: u} : {}), ...(x.rest ? {rest: x.rest} : {})}));
       });
-      saveDay(s.date, d => { d.act.sets = sets; if (type) d.act.gym = type; });
+      saveDay(s.date, d => { d.act.sets = sets; d.act.ss = s.ss; if (type) d.act.gym = type; });
       saved.push(s.date);
     });
     S.rt = null; $("#rtText").value = ""; $("#rtBox").open = false;
@@ -5870,7 +5938,7 @@ function contextData(){
   for (let i = 13; i >= 0; i--){
     const dt = addDays(t, -i), s = dayStats(dt), d = s.d;
     dias.push({fecha: dt, dia: parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}), kcal: Math.round(s.kcal), prot_g: Math.round(s.p), fibra_g: Math.round(s.fib), comidas: d.meals.map(m => m.desc), peso: d.weight, agua: d.water,
-      gimnasio: d.act.gym || null, series: d.act.sets.map(x => `${exName(x.ex)} ${setTxt(x)}${x.rest ? `, descanso ${mmss(x.rest)}` : ""}`), tenis_min: d.act.tennisMin, bici_km: d.act.bikeKm,
+      gimnasio: d.act.gym || null, series: d.act.sets.map(x => `${exName(x.ex)} ${setTxt(x)}${x.drop ? " (drop set)" : ""}${x.rest ? `, descanso ${mmss(x.rest)}` : ""}`), superseries: (d.act.ss || []).map(g => g.map(exName).join(" + ")), tenis_min: d.act.tennisMin, bici_km: d.act.bikeKm,
       bajo_min: s.bassMin, tecnicas: d.bass.logs.map(l => ({t: (S.lib.techniques.find(x => x.id === l.techId) || {}).name, bpm: l.bpm, limpio: l.clean})),
       canciones: d.bass.songs.map(id => (S.lib.songs.find(x => x.id === id) || {}).title).filter(Boolean),
       estudio_min: s.studyMin, estudio: d.study.map(x => ({item: (S.lib.books.find(b => b.id === x.itemId) || {}).title, avance: x.amount}))});
