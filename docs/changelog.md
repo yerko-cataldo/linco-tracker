@@ -1,6 +1,10 @@
 # Changelog
 
 ## 2026-11-02
+- Nutrición: los alimentos tienen versión cruda y cocida. Al registrar una compra de carne, pollo o pescado que no está en tu base (carne molida, pechuga cruda), se agregan las dos versiones con valores de referencia. "Agregar un alimento" busca solo los valores: del catálogo, o los estima la IA para que los revises. Si un alimento del armado de comida no está, se agrega desde ahí mismo.
+- Precios de los alimentos: cada alimento tiene precio por kg con su fuente, desde tu última compra detallada (lo comprado crudo o seco se ajusta por la cocción) o, si nunca lo compraste, desde Unimarc (producto, precio, link y fecha de consulta). Costo de cada comida, del día, de las comidas frecuentes y de la lista de compras. Nuevo endpoint `/api/precio` y colección `prices`.
+- Finanzas: rediseño. Arriba, cómo vas en el mes en una frase, lo que pide atención y lo que cuesta comer; el resto en secciones plegables. El detalle de una compra es una ventana con una tarjeta por producto.
+- Secciones plegables en todas las pestañas, que recuerdan si quedaron abiertas en cada dispositivo.
 - Entreno: drop sets. En la serie activa, "drop set" la marca como seguida de la anterior y propone el 75% de la carga; "+ drop set" agrega una al final de un ejercicio terminado. No cuentan para récords ni para la progresión, valen media serie efectiva por músculo y no suman descanso a la duración estimada.
 - Entreno: superseries. "Superserie con el siguiente" junta dos o más ejercicios para alternarlos sin descanso entre ellos (etiquetas A1, A2…); la serie activa va alternando y la duración estimada cuenta 15 s de cambio dentro de la vuelta. La próxima sesión del mismo tipo las propone de nuevo, y "Pegar rutina" guarda como superserie los ejercicios escritos con "/".
 

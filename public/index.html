@@ -477,8 +477,7 @@ pre.formula{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-siz
 .fincum rect.hit:hover{fill:var(--hl);fill-opacity:.7}
 .fin-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 0 0;font-size:.84rem;color:var(--ink)}
 .fin-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-#finDist rect.seg:hover,.fin-chart rect.seg:hover{opacity:.8}
-.fin-chart g.day:hover>rect:first-child{fill:var(--hl)}
+.fin-chart rect.seg:hover{opacity:.8}
 .fin-tot{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 10px}
 .fin-tot .big{font-family:var(--display);font-weight:750;font-size:1.9rem;letter-spacing:-.02em}
 .fin-row{display:grid;grid-template-columns:minmax(150px,1.3fr) minmax(90px,2fr) 100px 100px 82px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:.92rem}
@@ -756,6 +755,36 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 .wstats.w4{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media (max-width:560px){.wstats strong{font-size:1.2rem}.wstats.w4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Secciones desplegables */
+.grid>details.sec{align-self:start}
+.sheet{width:min(860px,96vw);max-height:92vh;overflow:auto;padding:22px 24px}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.sheet-head h3{margin:0}
+.sheet-foot{position:sticky;bottom:-22px;background:var(--surface);padding:12px 0;margin-top:12px;border-top:1px solid var(--line);align-items:center}
+.pc{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg);padding:10px 12px;margin-top:8px}
+.pc.disc{background:transparent;border-style:dashed}
+.pc-top{display:flex;gap:10px;align-items:center}
+.pc-top .pc-name{flex:1;min-width:0;font-weight:600;font-size:1rem;color:var(--ink);border:1px solid transparent;background:transparent;padding:4px 6px;border-radius:6px}
+.pc-top .pc-name:hover,.pc-top .pc-name:focus{border-color:var(--line-strong);background:var(--surface);outline:none}
+.pc-amt{font-family:var(--display);white-space:nowrap}
+.pc-q{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:6px;font-size:.84rem;color:var(--muted)}
+.pc-q label{display:inline-flex;gap:5px;align-items:center}
+.pc .fin-in:not(.pc-name){border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 6px;font-size:.9rem;min-height:32px}
+.pc-food{margin-top:8px;font-size:.86rem;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.pc-food .new{color:var(--ok);font-weight:600}
+.fin-hero-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.fin-big{font-family:var(--display);font-weight:750;font-size:2.4rem;letter-spacing:-.02em;line-height:1.05}
+.fin-verdict{margin:8px 0 12px;max-width:72ch}
+.watch{list-style:none;margin:0;padding:0}
+.watch li{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--line);font-size:.92rem}
+.watch li:first-child{border-top:0;padding-top:0}
+.eat dl{margin:0}
+details.cost>summary{cursor:pointer;list-style:none;white-space:nowrap;text-decoration:underline dotted;text-underline-offset:3px}
+details.cost>summary::-webkit-details-marker{display:none}
+.cost-pop{text-align:left;min-width:15em;font-size:.8rem;margin-top:6px;white-space:normal;font-weight:400}
+.cost-pop>div{display:grid;grid-template-columns:1fr auto;gap:0 8px;padding:3px 0;border-top:1px solid var(--line)}
+.cost-pop small{grid-column:1/-1;color:var(--muted)}
+.cost-pop a{color:inherit}
+.cost-pop p{margin:4px 0 0;color:var(--muted)}
 details.sec{padding:0}
 details.sec>summary{list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px 24px;cursor:pointer;border-radius:var(--r);transition:background .15s}
 details.sec>summary:hover{background:color-mix(in srgb,var(--sunken) 40%,transparent)}
@@ -875,11 +904,13 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div id="quickPreview"></div>
     </div>
     <div class="grid g4 mt" id="kpis"></div>
-    <div class="panel mt">
-      <div class="item-head"><h3>Constancia</h3><span class="small muted" id="heatInfo"></span></div>
+    <details class="panel sec mt" id="heatSec" open>
+      <summary><h3>Constancia</h3><span class="hint" id="heatInfo"></span></summary>
+      <div class="sec-body">
       <div class="scroll heat" id="heat"></div>
       <p class="small muted" id="heatNote" style="margin:8px 0 0">Cada cuadro es un día. Mientras más intenso, más metas cumpliste: es el promedio del cumplimiento de las cuatro áreas, con tope de 100% por área. Toca un día para abrirlo.</p>
-    </div>
+      </div>
+    </details>
   </section>
 
   <!-- NUTRICIÓN -->
@@ -923,6 +954,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <button class="btn" data-action="build-add">Añadir</button>
         </div>
         <datalist id="foodList"></datalist>
+        <div id="fdMiss"></div>
         <div id="buildBox"></div>
         <details class="manual">
           <summary>Ingresar totales a mano (sin ingredientes)</summary>
@@ -1028,9 +1060,12 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <summary><h3>Mis alimentos y comidas frecuentes</h3><span class="hint" id="foodSum"></span></summary>
       <div class="sec-body">
         <div class="row" style="margin-bottom:12px">
-          <button class="btn small" data-action="food-new">Agregar alimento</button>
-          <label class="btn small ai-only" hidden>Leer etiqueta (foto)<input type="file" id="labelPhoto" accept="image/*" class="sr"></label>
+          <div class="field grow">Agregar un alimento: escribe qué es y busco sus valores<input id="foodAsk" placeholder="Ej: carne molida, pechuga de pollo cruda, quinoa cocida" autocomplete="off"></div>
+          <button class="btn primary" data-action="food-ask">Agregar</button>
+          <label class="btn ai-only" hidden>Leer etiqueta (foto)<input type="file" id="labelPhoto" accept="image/*" class="sr"></label>
+          <button class="btn ghost small" data-action="food-new">Formulario vacío</button>
         </div>
+        <p class="small muted" id="foodAskStatus" style="margin:-4px 0 10px"></p>
         <p class="small muted" style="margin:0 0 10px">Valores por 100 g (o 100 ml) del alimento tal como lo comes: cocido si lo comes cocido. Los que dicen "revisar" dependen de la marca o la receta: corrígelos con la etiqueta. <span id="labelStatus"></span></p>
         <div class="row" style="margin-bottom:8px"><div class="field grow"><span class="sr">Filtrar alimentos</span><input id="foodFilter" placeholder="Filtrar alimentos"></div></div>
         <div class="scroll" id="foodTable"></div>
@@ -1067,19 +1102,21 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
       </details>
     </div>
-    <div class="panel mt">
-      <div class="item-head" style="margin-bottom:14px"><h3>Músculos de la semana</h3><span class="small muted" id="muscleSub"></span></div>
-      <div id="muscleMap"></div>
-    </div>
-    <div class="panel mt">
-      <h3>Progreso por ejercicio</h3>
+    <details class="panel sec mt" id="muscleSec">
+      <summary><h3>Músculos de la semana</h3><span class="hint" id="muscleSub"></span></summary>
+      <div class="sec-body" id="muscleMap"></div>
+    </details>
+    <details class="panel sec mt" id="progSec">
+      <summary><h3>Progreso por ejercicio</h3><span class="hint">carga, series y reps por sesión</span></summary>
+      <div class="sec-body">
       <div id="progDetail"></div>
       <div id="progCards" class="prog-grid mt"></div>
       <details class="manual mt">
         <summary>Cómo se calcula</summary>
         <p class="small muted" style="margin:10px 0 0">El número de arriba es el 1RM estimado de la mejor serie de la sesión, con la fórmula de Epley: carga × (1 + reps / 30). Las libras se convierten a kg; en máquinas por nivel se aplica la misma fórmula al nivel; sin carga externa se cuentan las reps totales. El cambio se compara con la sesión anterior. Debajo, "Series y reps" toma las 3 últimas series de trabajo de cada sesión: la línea blanca es la carga de cada serie y la barra sus reps, sobre un riel hasta la meta de 12. Bajo cada barra va el cambio frente a la misma serie de la sesión anterior: en kg si cambió el peso, en reps si no. El veredicto da prioridad al peso: una serie progresa si subió la carga, o si con la misma carga subieron las reps; "mixto" es cuando unas series suben y otras bajan. El checklist propone la carga con doble progresión en 8 a 12 reps: con 12 o más en todas las series a la carga más alta, sube la carga (2,5 kg bajo 40 kg, 5 kg desde 40 kg, 5 o 10 lb, o un nivel) y parte en 8; si ninguna llega a 6 reps, baja cerca de un 10%; si no, mantiene la carga.</p>
       </details>
-    </div>
+      </div>
+    </details>
     <details class="panel sec mt" id="catBox">
       <summary><h3>Ejercicios</h3><span class="hint">qué trabaja cada uno</span></summary>
       <div class="sec-body">
@@ -1088,9 +1125,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <ul class="cat-list" id="catList"></ul>
       </div>
     </details>
-    <div class="grid g2 mt">
-      <div class="panel stack no-share">
-        <h3>Actividad del día</h3>
+    <details class="panel sec mt no-share" id="actDaySec" open>
+      <summary><h3>Actividad del día</h3><span class="hint">gimnasio, tenis y bici</span></summary>
+      <div class="sec-body stack">
         <div class="row">
           <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option><option value="core">Core</option><option value="torsoA">Torso A</option><option value="piernaA">Pierna A</option><option value="torsoB">Torso B</option><option value="piernaB">Pierna B</option></select></div>
           <div class="field w5">Minutos<input id="aGymMin" inputmode="numeric" placeholder="40"></div>
@@ -1106,8 +1143,11 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
         <div id="actToday"></div>
       </div>
-      <div class="panel"><h3>Semana</h3><div id="actWeek"></div></div>
-    </div>
+    </details>
+    <details class="panel sec mt" id="actWeekSec">
+      <summary><h3>Semana de actividad</h3><span class="hint">minutos por día</span></summary>
+      <div class="sec-body" id="actWeek"></div>
+    </details>
     <details class="panel sec mt">
       <summary><h3>Historial y récords</h3><span class="hint">sesiones anteriores y mejores marcas</span></summary>
       <div class="sec-body">
@@ -1194,15 +1234,15 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
         <div id="bassToday"></div>
       </div>
-      <div class="panel">
-        <div class="item-head"><h3>Técnicas</h3><span class="act"><button class="btn small" data-action="tech-new">Nueva técnica</button></span></div>
-        <ul class="list" id="techList"></ul>
-      </div>
+      <details class="panel sec" id="techSec" open>
+        <summary><h3>Técnicas</h3><span class="hint">bpm por técnica</span></summary>
+        <div class="sec-body"><div class="row" style="margin-bottom:6px"><button class="btn small" data-action="tech-new">Nueva técnica</button></div><ul class="list" id="techList"></ul></div>
+      </details>
     </div>
-    <div class="panel mt">
-      <div class="item-head"><h3>Repertorio</h3><span class="act"><button class="btn small" data-action="song-new">Nueva canción</button></span></div>
-      <ul class="list" id="songList"></ul>
-    </div>
+    <details class="panel sec mt" id="songSec">
+      <summary><h3>Repertorio</h3><span class="hint">canciones y su tempo</span></summary>
+      <div class="sec-body"><div class="row" style="margin-bottom:6px"><button class="btn small" data-action="song-new">Nueva canción</button></div><ul class="list" id="songList"></ul></div>
+    </details>
   </section>
 
   <!-- ESTUDIO -->
@@ -1223,7 +1263,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
         <div id="studyToday"></div>
       </div>
-      <div class="panel"><h3>Minutos de estudio en la semana</h3><div id="studyChart"></div></div>
+      <details class="panel sec" id="studyWeekSec" open><summary><h3>Minutos de estudio en la semana</h3><span class="hint">frente a tu meta</span></summary><div class="sec-body" id="studyChart"></div></details>
     </div>
     <div id="studyPlans"></div>
     <div class="panel mt focus no-share">
@@ -1249,97 +1289,104 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- FINANZAS -->
   <section class="tab" id="tab-finanzas">
-    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta de crédito y débito, que llegan solas desde las alertas de Visa, y transferencias, pagos de cuentas y devoluciones desde la cartola de la cuenta BICE.</p></div></div>
-    <div class="panel" id="finInboxPanel" hidden>
-      <div class="item-head"><h3 id="finInboxHead">Por revisar</h3><span class="act"><button class="btn small" data-action="fin-inbox-all">Marcar todo como revisado</button></span></div>
-      <div id="finInbox"></div>
-      <p class="small muted" style="margin:10px 0 0">Al marcar una compra como revisada, su categoría queda guardada para ese comercio.</p>
-    </div>
+    <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta, transferencias y pagos de la cuenta BICE, y lo que te cuesta comer.</p></div></div>
+    <details class="panel sec" id="finInboxPanel" open hidden>
+      <summary><h3 id="finInboxHead">Por revisar</h3><span class="hint">elige la categoría y detalla lo que compraste</span></summary>
+      <div class="sec-body">
+        <div class="row" style="justify-content:flex-end;margin-bottom:4px"><button class="btn small" data-action="fin-inbox-all">Marcar todo como revisado</button></div>
+        <div id="finInbox"></div>
+        <p class="small muted" style="margin:10px 0 0">Al marcar una compra como revisada, su categoría queda guardada para ese comercio.</p>
+      </div>
+    </details>
     <div class="item-head mt"><h3 id="finMonthLbl"></h3><span class="act"><button class="btn small" data-action="fin-prev" aria-label="Mes anterior">‹</button><button class="btn small" data-action="fin-next" aria-label="Mes siguiente">›</button></span></div>
-    <div class="grid g4" id="finKpis"></div>
+    <div class="panel fin-hero" id="finHero"></div>
     <div class="grid g2 mt">
-      <div class="panel"><h3>Gasto acumulado</h3><div id="finCum"></div></div>
-      <div class="panel"><h3>Lo más importante</h3><div id="finSummary"></div></div>
+      <div class="panel"><h3>Para mirar</h3><div id="finWatch"></div></div>
+      <div class="panel"><h3>Lo que cuesta comer</h3><div id="finEat"></div></div>
     </div>
     <div class="panel mt">
       <div class="item-head"><h3>En qué gastaste</h3><span class="act"><label class="small muted" for="finCmp">Comparar con</label> <select id="finCmp"></select></span></div>
       <div id="finTree"></div>
-      <p class="small muted" style="margin:10px 0 0">Toca un grupo para ver sus categorías y una categoría para ver productos (en compras detalladas) o comercios. La barra es lo gastado; la marca vertical, la comparación. En el mes en curso, cada mes comparado se cuenta hasta el mismo día. El promedio de 3 meses usa solo meses con datos completos.</p>
+      <p class="small muted" style="margin:10px 0 0">Toca un grupo para ver sus categorías y una categoría para ver productos (en compras detalladas) o comercios. La barra es lo gastado; la marca vertical, la comparación.</p>
     </div>
-    <div class="panel mt"><h3>Distribución del gasto</h3><div id="finDist"></div></div>
-    <div class="panel mt"><h3>Evolución mensual</h3><div id="finEvo"></div></div>
-    <div class="panel mt"><h3>Comida por día</h3><div id="finFood"></div></div>
-    <div class="grid g2 mt">
-      <div class="panel">
-        <h3>Por categoría</h3>
-        <div id="finCats"></div>
-        <details class="mt" id="finCatBudBox"><summary class="small">Topes por categoría</summary><div id="finCatBudgets" class="mt"></div></details>
+    <details class="panel sec mt" id="finListSec">
+      <summary><h3>Movimientos</h3><span class="hint" id="finListSum"></span></summary>
+      <div class="sec-body">
+        <div class="row" style="margin-bottom:10px">
+          <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
+          <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"></select></div>
+          <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
+          <div class="field w10" hidden><span class="sr">Filtrar por medio de pago</span><select id="finCardF"><option value="">Todas las tarjetas</option><option value="credito">Solo crédito</option><option value="debito">Solo débito</option><option value="cuenta">Solo transferencias y pagos</option></select></div>
+        </div>
+        <div id="finList"></div>
       </div>
-      <div class="panel">
-        <h3>Presupuesto mensual</h3>
-        <div class="row"><div class="field w10">Monto en pesos<input id="finBudget" inputmode="numeric"></div></div>
-        <div id="finBudgetInfo"></div>
+    </details>
+    <details class="panel sec mt" id="finPriceSec">
+      <summary><h3>Precios de tus alimentos</h3><span class="hint" id="finPriceSum"></span></summary>
+      <div class="sec-body">
+        <div class="row" style="margin-bottom:10px"><button class="btn small primary" data-action="price-refs">Buscar precios de referencia en Unimarc</button><span class="small muted" id="priceStatus"></span></div>
+        <div id="finPrices"></div>
+        <details class="manual mt"><summary>Historial de precios por producto</summary><div id="finPriceHist" class="mt"></div></details>
+        <p class="small muted" style="margin:10px 0 0">El precio de cada alimento es por kg (o litro) tal como lo comes. Sale de tu última compra detallada de ese alimento o de su versión cruda o seca; lo que se cocina se ajusta por la cocción (arroz ×0,4, fideos ×0,43, pollo ×1,33, carne ×1,4, legumbres ×0,4): un kg de pechuga cocida necesita 1,33 kg cruda. Si nunca lo compraste, usa el precio de referencia de Unimarc: el producto más parecido de su catálogo (si hay varios igual de parecidos, el de precio del medio), que puedes cambiar. El costo de una comida suma gramos × precio de cada ingrediente; los que no tienen precio quedan fuera y se avisa.</p>
       </div>
-    </div>
-    <div class="grid g2 mt">
-      <div class="panel">
-        <h3>Ciclo de facturación</h3>
-        <div id="finCycle"></div>
+    </details>
+    <details class="panel sec mt" id="finEvoSec">
+      <summary><h3>Evolución mensual</h3><span class="hint">12 meses por categoría</span></summary>
+      <div class="sec-body" id="finEvo"></div>
+    </details>
+    <details class="panel sec mt" id="finRecurSec">
+      <summary><h3>Recurrentes y cuotas</h3><span class="hint" id="finRecurSum"></span></summary>
+      <div class="sec-body">
+        <div class="grid g2"><div><h3>Gastos recurrentes</h3><div id="finRecur"></div></div><div><h3>Ciclo de facturación</h3><div id="finCycle"></div></div></div>
       </div>
-      <div class="panel"><h3>Gastos recurrentes</h3><div id="finRecur"></div></div>
-    </div>
-    <div class="grid g2 mt">
-      <div class="panel"><h3>Tendencia por categoría</h3><div id="finTrend"></div></div>
-      <div class="panel"><h3>Dónde gastas</h3><div id="finMerch"></div></div>
-    </div>
-    <div class="grid g2 mt">
-      <div class="panel"><h3>Patrones</h3><div id="finPattern"></div></div>
-      <div class="panel"><h3>Fuera de lo normal</h3><div id="finAnom"></div><p class="small muted" style="margin:8px 0 0">Compras de más de 2,5 veces lo habitual en ese comercio (con 3 compras previas o más) o de más de 3 veces una compra típica de su categoría (con 5 o más, y solo si la categoría la elegiste tú: por comercio o con una regla).</p></div>
-    </div>
-    <div class="panel mt">
-      <h3>Movimientos</h3>
-      <div class="row" style="margin-bottom:10px">
-        <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
-        <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"></select></div>
-        <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
-        <div class="field w10" hidden><span class="sr">Filtrar por medio de pago</span><select id="finCardF"><option value="">Todas las tarjetas</option><option value="credito">Solo crédito</option><option value="debito">Solo débito</option><option value="cuenta">Solo transferencias y pagos</option></select></div>
-      </div>
-      <div id="finList"></div>
-    </div>
-    <div class="panel mt" id="finDetPanel" hidden>
-      <div class="item-head"><h3 id="finDetHead">Detalle de la compra</h3><span class="act"><button class="btn ghost small" data-action="fin-det-close">Cerrar</button></span></div>
-      <div class="field"><span class="sr">Qué compraste</span><textarea id="finDetText" rows="2" placeholder="3 bidones de agua de 20 L, 8 plátanos a $2.100 el kg"></textarea></div>
-      <div class="row" style="margin-top:10px"><label class="btn ai-only" hidden>Foto de la boleta<input type="file" id="finDetPhoto" accept="image/*" multiple class="sr"></label><span class="small muted" id="finDetPhotoName"></span><button class="btn primary ai-only" data-action="fin-det-ai" hidden>Separar con IA</button><button class="btn" data-action="fin-det-add">Agregar producto</button><span class="small muted" id="finDetStatus"></span></div>
-      <div id="finDetItems" class="mt"></div>
-      <div class="row" style="margin-top:12px"><button class="btn primary" data-action="fin-det-save">Guardar detalle</button></div>
-      <p class="small muted" style="margin:10px 0 0">Con texto, la IA separa los productos y copia los números que escribiste. Con foto (hasta 3, para una boleta larga), la IA solo transcribe las líneas tal cual y el código las lee: el código de barras abre un producto, una línea sin monto continúa su nombre, "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990" es su cantidad, "2 KG" o "250G" en el nombre es el contenido del envase y un monto negativo es un descuento del producto anterior, con su misma categoría. Después la IA solo escribe nombres legibles y elige alimento y categoría. Si las líneas no suman el TOTAL impreso, la boleta se lee una segunda vez y queda la lectura que cuadra; si ninguna cuadra, o el TOTAL no coincide con la compra, te avisa. Lo que leyó la IA se ve bajo la tabla. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen. Si el peso sale de la porción típica del alimento (por ejemplo, un plátano de 120 g), queda marcado como estimado y no entra al historial de precios.</p>
-    </div>
-    <div class="panel mt"><h3>Precios por producto</h3><div id="finPrices"></div></div>
-    <div class="panel mt">
-      <div class="item-head"><h3>Tarjetas</h3><span class="act"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label></span></div>
-      <div class="small muted" id="cartolaStatus"></div>
-      <div id="finCards" class="mt"></div>
-      <p class="small muted" style="margin:10px 0 0">Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa. Una tarjeta sin tipo cuenta como de crédito. El gasto del mes suma todas las tarjetas y las transferencias y pagos de la cuenta; el ciclo de facturación y las cuotas usan solo las tarjetas de crédito. "Importar cartola" acepta el CSV de BICE de la tarjeta de crédito o el de la cuenta: la de crédito se concilia con las alertas de crédito y la de la cuenta con las de débito.</p>
-    </div>
-    <div class="grid g2 mt">
-      <div class="panel">
-        <h3>Reglas de categoría</h3>
-        <div id="finRules"></div>
-        <div class="row mt">
-          <div class="field w10">Si el comercio contiene<input id="finRulePat" placeholder="uber eats"></div>
-          <div class="field w10">Categoría<select id="finRuleCat"></select></div>
-          <button class="btn" data-action="fin-rule-add">Agregar regla</button>
+    </details>
+    <details class="panel sec mt" id="finBudSec">
+      <summary><h3>Presupuesto, topes y reglas</h3><span class="hint" id="finBudSum"></span></summary>
+      <div class="sec-body">
+        <div class="grid g2">
+          <div>
+            <h3>Presupuesto mensual</h3>
+            <div class="row"><div class="field w10">Monto en pesos<input id="finBudget" inputmode="numeric"></div></div>
+            <h3 class="mt">Topes por categoría</h3>
+            <div id="finCatBudgets"></div>
+          </div>
+          <div>
+            <h3>Reglas de categoría</h3>
+            <div id="finRules"></div>
+            <div class="row mt">
+              <div class="field w10">Si el comercio contiene<input id="finRulePat" placeholder="uber eats"></div>
+              <div class="field w10">Categoría<select id="finRuleCat"></select></div>
+              <button class="btn" data-action="fin-rule-add">Agregar regla</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="panel ai-only" hidden>
-        <div class="item-head"><h3>Resumen del mes</h3><span class="act"><button class="btn small primary" data-action="fin-review">Escribir resumen</button></span></div>
-        <div class="small muted" id="finReviewStatus"></div>
-        <div class="md" id="finReviewOut"></div>
+    </details>
+    <details class="panel sec mt" id="finCardSec">
+      <summary><h3>Tarjetas y cartolas</h3><span class="hint" id="finCardSum"></span></summary>
+      <div class="sec-body">
+        <div class="row"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label><span class="small muted" id="cartolaStatus"></span></div>
+        <div id="finCards" class="mt"></div>
+        <p class="small muted" style="margin:10px 0 0">Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa. Una tarjeta sin tipo cuenta como de crédito. "Importar cartola" acepta el CSV de BICE de la tarjeta de crédito o el de la cuenta: la de crédito se concilia con las alertas de crédito y la de la cuenta con las de débito.</p>
       </div>
-    </div>
-    <p class="small muted">El gasto suma las compras en pesos y las transferencias, pagos de cuentas y cargos del banco de la cuenta; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%.</p>
-    <p class="small muted">Categoría de cada compra, en este orden: la que elegiste para ese comercio, una regla que calce con su nombre, la sugerida por comercios parecidos que ya categorizaste y, al final, la del banco.</p>
-    <p class="small muted">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. De la cartola de la cuenta entran los cargos: compras con débito ("Cargo por Compra en…"), transferencias a otras personas (el destinatario hace de comercio: su categoría se elige una vez), pagos de cuentas por internet y cargos del banco (intereses, impuestos, comisiones), con la fecha y hora de la operación. También entran las transferencias que recibes de otras personas e instituciones (por ejemplo, la isapre), que no suman hasta que eliges qué son: la devolución de una compra (resta en la fecha, la categoría y el medio de pago de esa compra, y la compra muestra tu parte) o una devolución en una categoría (resta en la fecha del abono). La compra sugerida es la de otros abonos de ±2 días que ya marcaste o, si no hay, la más grande de los 10 días anteriores que duplique el abono. Quedan fuera las remuneraciones, el pago de la tarjeta de crédito (sus compras ya están en la cartola de crédito) y las transferencias entre tus cuentas (mismo RUT). Una transferencia sin categoría va a "Transferencias". Una alerta de débito queda marcada si es del periodo de las cartolas de la cuenta importadas, hasta 5 días antes de su cierre, y no aparece en ellas. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
+    </details>
+    <details class="panel sec mt ai-only" id="finReviewSec" hidden>
+      <summary><h3>Resumen del mes con IA</h3><span class="hint">redacta las cifras ya calculadas</span></summary>
+      <div class="sec-body">
+        <div class="row"><button class="btn small primary" data-action="fin-review">Escribir resumen</button><span class="small muted" id="finReviewStatus"></span></div>
+        <div class="md mt" id="finReviewOut"></div>
+      </div>
+    </details>
+    <details class="panel sec mt" id="finHowSec">
+      <summary><h3>Cómo se calcula</h3><span class="hint">fórmulas y reglas</span></summary>
+      <div class="sec-body small muted">
+        <p style="margin:0 0 8px">El gasto suma las compras en pesos y las transferencias, pagos de cuentas y cargos del banco de la cuenta; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%. En "En qué gastaste", en el mes en curso cada mes comparado se cuenta hasta el mismo día, y el promedio de 3 meses usa solo meses con datos completos.</p>
+        <p style="margin:0 0 8px">"Para mirar" muestra solo lo que pide atención: categorías sobre el ritmo de su tope, categorías que subieron más de 20% (y más de $10.000) frente a la comparación, compras de más de 2,5 veces lo habitual en ese comercio (con 3 compras previas o más) o de más de 3 veces una compra típica de su categoría (con 5 o más, y solo si la categoría la elegiste tú), recurrentes que subieron o no se cobraron, alertas que no aparecen en la cartola, compras de supermercado sin detallar y compras bajo $5.000 cuando suman más del 15% del mes.</p>
+        <p style="margin:0 0 8px">"Lo que cuesta comer" separa lo comprado en comida (en casa: Supermercado y productos detallados con un alimento; fuera: Comida y delivery y Restaurantes y bares) del costo de lo que registraste en Nutrición, que sale de los precios de tus alimentos. La proteína más barata es el costo de 10 g de proteína: precio por kg ÷ gramos de proteína por 100 g.</p>
+        <p style="margin:0 0 8px">Categoría de cada compra, en este orden: la que elegiste para ese comercio, una regla que calce con su nombre, la sugerida por comercios parecidos que ya categorizaste y, al final, la del banco.</p>
+        <p style="margin:0">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. De la cartola de la cuenta entran los cargos: compras con débito ("Cargo por Compra en…"), transferencias a otras personas (el destinatario hace de comercio: su categoría se elige una vez), pagos de cuentas por internet y cargos del banco (intereses, impuestos, comisiones), con la fecha y hora de la operación. También entran las transferencias que recibes de otras personas e instituciones (por ejemplo, la isapre), que no suman hasta que eliges qué son: la devolución de una compra (resta en la fecha, la categoría y el medio de pago de esa compra, y la compra muestra tu parte) o una devolución en una categoría (resta en la fecha del abono). La compra sugerida es la de otros abonos de ±2 días que ya marcaste o, si no hay, la más grande de los 10 días anteriores que duplique el abono. Quedan fuera las remuneraciones, el pago de la tarjeta de crédito (sus compras ya están en la cartola de crédito) y las transferencias entre tus cuentas (mismo RUT). Una transferencia sin categoría va a "Transferencias". Una alerta de débito queda marcada si es del periodo de las cartolas de la cuenta importadas, hasta 5 días antes de su cierre, y no aparece en ellas. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
+      </div>
+    </details>
   </section>
 
   <!-- COACH -->
@@ -1384,8 +1431,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <section class="tab" id="tab-perfil">
     <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-perfil"/></svg></span><div><h2>Perfil y metas</h2><p class="lede">El coach usa tu perfil en cada respuesta. Las metas definen los indicadores, la tablatura y el rango semanal.</p></div></div>
     <div class="grid g2">
-      <div class="panel stack">
-        <h3>Perfil</h3>
+      <details class="panel sec" id="profSec">
+        <summary><h3>Perfil</h3><span class="hint">lo que el coach sabe de ti</span></summary>
+        <div class="sec-body stack">
         <div class="row">
           <div class="field w7">Sexo<select id="pSex"><option value="hombre">Hombre</option><option value="mujer">Mujer</option></select></div>
           <div class="field w5">Edad<input id="pAge" inputmode="numeric"></div>
@@ -1398,10 +1446,12 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div class="field">Alimentos que prefiero<textarea id="pFoods" rows="5"></textarea></div>
         <div class="field">Otras consideraciones<textarea id="pNotes" rows="2"></textarea></div>
         <div><button class="btn primary" data-action="profile-save">Guardar perfil</button></div>
-      </div>
+        </div>
+      </details>
       <div class="stack">
-        <div class="panel stack">
-          <h3>Calcular metas de nutrición</h3>
+        <details class="panel sec" id="calcSec">
+          <summary><h3>Calcular metas de nutrición</h3><span class="hint">metabolismo y fase</span></summary>
+          <div class="sec-body stack">
           <div class="row">
             <div class="field grow">Nivel de actividad<select id="cPal">
               <option value="1.4">Liviano (1,4)</option><option value="1.55" selected>Moderado (1,55)</option><option value="1.7">Alto (1,7)</option><option value="1.85">Muy alto (1,85)</option></select></div>
@@ -1410,9 +1460,11 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           </div>
           <div class="calc" id="calcOut"></div>
           <div><button class="btn" data-action="calc-apply">Usar como metas</button></div>
-        </div>
-        <div class="panel stack">
-          <h3>Metas</h3>
+          </div>
+        </details>
+        <details class="panel sec" id="goalSec" open>
+          <summary><h3>Metas</h3><span class="hint">nutrición, entreno, bajo, estudio y peso</span></summary>
+          <div class="sec-body stack">
           <div class="row">
             <div class="field w5">kcal/día<input id="gKcal" inputmode="numeric"></div>
             <div class="field w5">Prot. g<input id="gProt" inputmode="numeric"></div>
@@ -1444,9 +1496,11 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           </div>
           <p class="small muted" id="gWInfo" style="margin:0"></p>
           <div><button class="btn primary" data-action="goals-save">Guardar metas</button></div>
-        </div>
-        <div class="panel stack">
-          <h3>Tus datos</h3>
+          </div>
+        </details>
+        <details class="panel sec" id="dataSec">
+          <summary><h3>Tus datos</h3><span class="hint">exportar e importar</span></summary>
+          <div class="sec-body stack">
           <p class="small muted" id="dataInfo"></p>
           <div class="row">
             <button class="btn" data-action="export" id="exportBtn">Exportar JSON</button>
@@ -1454,17 +1508,29 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
             <label class="btn">Importar JSON<input type="file" id="importFile" accept="application/json,.json" class="sr"></label>
           </div>
           <p class="small muted" id="importStatus"></p>
-        </div>
-        <div class="panel stack">
-          <h3>Compartir con amigos</h3>
+          </div>
+        </details>
+        <details class="panel sec" id="shareSec">
+          <summary><h3>Compartir con amigos</h3><span class="hint">link de solo lectura</span></summary>
+          <div class="sec-body stack">
           <p class="small muted" style="margin:0">Un link de solo lectura que no pide login. Muestra solo las áreas que marques; tu peso, tu perfil, el InBody y el coach nunca se comparten. Si el link se filtra, cámbialo y el anterior deja de funcionar.</p>
           <div id="shareBox"></div>
-        </div>
+          </div>
+        </details>
       </div>
     </div>
   </section>
 </main>
 
+<dialog id="finDetDlg" class="sheet" aria-labelledby="finDetHead">
+  <div class="sheet-head"><div><h3 id="finDetHead">Detalle de la compra</h3><p class="small muted" id="finDetSub" style="margin:2px 0 0"></p></div><button class="btn ghost small" data-action="fin-det-close">Cerrar</button></div>
+  <div class="field">Cuéntame qué compraste o sube la foto de la boleta<textarea id="finDetText" rows="2" placeholder="Ej: 1 kg de carne molida, 1,2 kg de asiento y 2 kg de pechuga"></textarea></div>
+  <div class="row" style="margin-top:10px"><label class="btn ai-only" hidden>Foto de la boleta<input type="file" id="finDetPhoto" accept="image/*" multiple class="sr"></label><span class="small muted" id="finDetPhotoName"></span><button class="btn primary ai-only" data-action="fin-det-ai" hidden>Leer la compra</button><button class="btn" data-action="fin-det-add">Agregar producto a mano</button></div>
+  <p class="small muted" id="finDetStatus" style="margin:8px 0 0"></p>
+  <div id="finDetItems" class="mt"></div>
+  <div class="row sheet-foot"><button class="btn primary" data-action="fin-det-save">Guardar detalle</button><span class="small" id="finDetSum"></span></div>
+  <details class="manual mt"><summary>Cómo lee la compra</summary><p class="small muted" style="margin:10px 0 0">Con texto, la IA separa los productos y copia los números que escribiste. Con foto (hasta 3, para una boleta larga), la IA solo transcribe las líneas tal cual y el código las lee: el código de barras abre un producto, una línea sin monto continúa su nombre, "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990" es su cantidad, "2 KG" o "250G" en el nombre es el contenido del envase y un monto negativo es un descuento del producto anterior, con su misma categoría. Después la IA solo escribe nombres legibles y elige el alimento de tu base y la categoría. Lo que compras sin cocinar (carne, pollo, pescado) se asocia a su versión cruda; si no la tienes, se agrega a tu base con valores de referencia (USDA aprox.) junto con su versión cocida. Si las líneas no suman el TOTAL impreso, la boleta se lee una segunda vez y queda la lectura que cuadra; si ninguna cuadra, o el TOTAL no coincide con la compra, te avisa. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen, y pasa a ser el precio de ese alimento.</p></details>
+</dialog>
 <dialog id="dlg"><form method="dialog"><h3 id="dlgTitle"></h3><div class="fields" id="dlgFields"></div><div class="row"><button class="btn primary" value="ok" id="dlgOk">Guardar</button><button class="btn" value="cancel" formnovalidate>Cancelar</button></div></form></dialog>
 <div class="toast" id="toast" role="status"></div>
 
@@ -1544,14 +1610,14 @@ const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[\u030
 const r1 = x => Math.round((Number(x) || 0) * 10) / 10;
 const S = {
   date: today(), tab: "hoy", days: {},
-  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: [], share: {}, optim: {}, fin: {}},
+  lib: {goals: {...DEFAULT_GOALS}, profile: {...DEFAULT_PROFILE}, techniques: [], songs: [], books: [], coach: [], foods: clone(FOOD_SEED), combos: [], share: {}, optim: {}, fin: {}, prices: {}},
   movs: [], movDet: {}, finMonth: null, finDraft: null,
-  build: [],
+  build: [], fdMiss: null,
   weekFrom: null,
   mode: "loading", readOnly: false, sample: null, downloads: null, imagesOk: false, chat: [], parsed: null, nutDash: null, plan: null, planMeals: 0, planNote: "",
   opt: {skip: [], pin: {}, fix: {}, no: {}, keep: null, open: null, prev: null, sel: 0, page: 0} // optimizador: tus cambios de esta sesión
 };
-const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list", share:"values", optim:"values", fin:"values"};
+const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"list", books:"list", coach:"reviews", foods:"list", combos:"list", share:"values", optim:"values", fin:"values", prices:"values"};
 /* Vista compartida (/s/<código>): solo lectura, sin login, con las áreas que elegiste en "Compartir con amigos".
    El Worker filtra los datos; acá solo se ocultan la edición y las secciones no compartidas. */
 const SHARE = (location.pathname.match(/^\/s\/([A-Za-z0-9_-]{20,64})\/?$/) || [])[1] || null;
@@ -2456,10 +2522,10 @@ function renderNutrition(){
   const sl = optCfg().slots;
   if (document.activeElement !== $("#mSlot")) fillSelect($("#mSlot"), sl.map(s => ({v: s.name, t: s.name})), "Según la hora");
   const slotTag = m => { const i = mealSlotIdx(sl, m, d.meals); return i < 0 ? "" : `<div class="small${m.slot ? "" : " muted"}">${esc(sl[i].name.toLowerCase())}</div>`; };
-  setHTML($("#mealsTable"), meals.length ? `<table><thead><tr><th>Hora</th><th>Comida</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
-    ${meals.map(m => `<tr><td>${esc(m.time||"")}${slotTag(m)}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.items||[]).length ? `<div class="small muted">${esc(m.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))}</div>` : (m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td>
+  setHTML($("#mealsTable"), meals.length ? `<table><thead><tr><th>Hora</th><th>Comida</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th class="n">Costo</th><th></th></tr></thead><tbody>
+    ${meals.map(m => `<tr><td>${esc(m.time||"")}${slotTag(m)}</td><td>${esc(m.desc)}${m.ai ? ' <span class="tag">estimado</span>' : ""}${(m.items||[]).length ? `<div class="small muted">${esc(m.items.map(i => `${i.name} ${fmt(i.g)} g`).join(", "))}</div>` : (m.plants||[]).length ? `<div class="small muted">${esc(m.plants.join(", "))}</div>` : ""}</td><td class="n">${fmt(m.kcal)}</td><td class="n">${fmt(m.p)}</td><td class="n">${fmt(m.c)}</td><td class="n">${fmt(m.f)}</td><td class="n">${fmt(m.fib)}</td><td class="n">${costHtml(m.items)}</td>
       <td class="n"><button class="btn small ghost" data-action="meal-edit" data-id="${m.id}">Editar</button><button class="btn small ghost danger" data-action="meal-del" data-id="${m.id}">Borrar</button></td></tr>`).join("")}
-    </tbody><tfoot><tr><td></td><td>Total</td><td class="n">${fmt(st.kcal)}</td><td class="n">${fmt(st.p)}</td><td class="n">${fmt(st.c)}</td><td class="n">${fmt(st.f)}</td><td class="n">${fmt(st.fib)}</td><td></td></tr></tfoot></table>`
+    </tbody><tfoot><tr><td></td><td>Total</td><td class="n">${fmt(st.kcal)}</td><td class="n">${fmt(st.p)}</td><td class="n">${fmt(st.c)}</td><td class="n">${fmt(st.f)}</td><td class="n">${fmt(st.fib)}</td><td class="n">${costHtml(meals.flatMap(m => m.items || []))}</td><td></td></tr></tfoot></table>`
     : `<p class="empty">Sin comidas registradas este día. Agrega la primera arriba o usa el registro rápido del resumen.</p>`);
   setHTML($("#bodyBox"), `<div class="row">
       <div class="field w7">Peso kg<input id="wInput" inputmode="decimal" value="${d.weight ?? ""}"></div>
@@ -3213,35 +3279,20 @@ function finMonthCtx(){
 const fmtClpShort = v => Math.abs(v) >= 1e6 ? `$${fmt(v / 1e6, 1)} M` : Math.abs(v) >= 1e3 ? `$${fmt(v / 1e3)} mil` : fmtClp(v);
 function renderFin(){
   if (SHARE) return;
-  FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null;
-  const c = finMonthCtx(), {ym, lastDay, isCur, dayCut, buys, total, prevSame, daily, proj} = c;
+  FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null; PRICE_IDX = null;
+  const c = finMonthCtx(), cfg = finCfg();
   $("#finMonthLbl").textContent = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
-  renderFinKpis(c); renderFinCum(c);
-  const top = finTopCats(c.ym);
-  renderFinDist(c, top); renderFinEvo(c, top); renderFinFood(c);
-  const cmp = finCmpBase(c), tree = finTreeOf(buys);
-  renderFinTree(c, tree, cmp); renderFinSummary(c, tree, cmp);
-
-  const byCat = finCatTotals(buys);
-  const cfg = finCfg(), buds = cfg.catBudgets || {}, pace = dayCut / lastDay * 100;
-  for (const c of Object.keys(buds)) if (buds[c] && !(c in byCat)) byCat[c] = 0;
-  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-  setHTML($("#finCats"), cats.length ? cats.map(([c, v]) => {
-    const b = buds[c];
-    if (b){
-      const pct = v / b * 100, over = pct > pace + 10;
-      return `<div class="meter"><div class="lab"><span><strong>${esc(c)}</strong> ${fmtClp(v)} de ${fmtClp(b)}</span><span${over ? ` style="color:var(--danger)"` : ""}>${fmt(pct)}%${isCur ? `, ritmo ${fmt(pace)}%` : ""}</span></div><div class="bar"><i style="width:${clamp(pct, 0, 100)}%;background:${over ? "var(--danger)" : "var(--fin)"}"></i></div></div>`;
-    }
-    const pct = total ? v / total * 100 : 0;
-    return `<div class="meter"><div class="lab"><span><strong>${esc(c)}</strong> ${fmtClp(v)}</span><span>${fmt(pct)}% del mes</span></div><div class="bar"><i style="width:${clamp(pct, 0, 100)}%;background:var(--fin)"></i></div></div>`; }).join("")
-    : `<p class="empty">Sin compras en este mes.</p>`);
-  setHTML($("#finCatBudgets"), `<div class="row">${FIN_CATS.map(c => `<div class="field w10">${esc(c)}<input data-catbud="${esc(c)}" inputmode="numeric" value="${buds[c] ? buds[c] : ""}"></div>`).join("")}</div>`);
-
+  const cmp = finCmpBase(c), tree = finTreeOf(c.buys);
+  renderFinHero(c); renderFinWatch(c, tree, cmp); renderFinEat(c); renderFinTree(c, tree, cmp);
+  renderFinEvo(c, finTopCats(c.ym));
+  const buds = cfg.catBudgets || {};
   setVal("#finBudget", cfg.budget ?? "");
-  setHTML($("#finBudgetInfo"), cfg.budget ? usageMeter("Gastado", total, cfg.budget, fmtClp, isCur ? `proyección al cierre: ${fmtClp(proj)}` : "") : `<p class="empty">Sin presupuesto definido.</p>`);
-
+  setHTML($("#finCatBudgets"), `<div class="row">${FIN_CATS.map(x => `<div class="field w10">${esc(x)}<input data-catbud="${esc(x)}" inputmode="numeric" value="${buds[x] ? buds[x] : ""}"></div>`).join("")}</div>`);
+  const nb = Object.values(buds).filter(Boolean).length, nr = (cfg.rules || []).length;
+  $("#finBudSum").textContent = `${cfg.budget ? "presupuesto " + fmtClp(cfg.budget) : "sin presupuesto"} · ${nb} ${nb === 1 ? "tope" : "topes"} · ${nr} ${nr === 1 ? "regla" : "reglas"}`;
+  const rec = finRecurring(), inst = finInstallments();
+  $("#finRecurSum").textContent = `${rec.length} ${rec.length === 1 ? "recurrente" : "recurrentes"}, ${fmtClp(sum(rec, r => r.monthly))} al mes · cuotas por pagar ${fmtClp(sum(inst, g => g.pending))}`;
   renderFinList();
-  renderFinTrend(c); renderFinMerch(c); renderFinPattern(c); renderFinAnom(c);
   renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinCards(); renderFinReview(); renderFinDet(); renderFinPrices();
 }
 /* Comparación: mes anterior, promedio de 3 meses completos, mismo mes del año pasado o un mes elegido.
@@ -3304,41 +3355,60 @@ function renderFinTree(c, tree, cmp){
   }
   setHTML(el, h + (cmp.partial ? `<p class="small muted" style="margin:8px 0 0">La comparación tiene ${esc(cmp.partial)}.</p>` : ""));
 }
-/* Lo más importante: total, diferencia con la comparación, categorías que más subieron y bajaron, compra más grande */
-function renderFinSummary(c, tree, cmp){
-  const buys = c.buys.filter(m => m.monto > 0), back = -sum(c.buys.filter(m => m.monto < 0), m => m.monto);
-  if (!buys.length){ setHTML($("#finSummary"), `<p class="empty">Sin compras en este mes.</p>`); return; }
-  const diffs = [];
-  for (const [g, cs] of FIN_TREE) for (const cat of cs){
-    const v = (((tree[g] || {}).cats || {})[cat] || {}).v || 0, b = cmp.val(g, cat);
-    if (b !== null && (v || b)) diffs.push({g, cat, v, b, d: v - b});
+/* Cómo vas: gasto del mes, frente al mes anterior al mismo día, proyección y presupuesto, con el gasto acumulado */
+function renderFinHero(c){
+  const b = finCfg().budget, mes = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long"});
+  if (!c.buys.length){ setHTML($("#finHero"), `<p class="empty">Sin gastos registrados en ${esc(mes)}.</p>`); return; }
+  const prevOk = finBuysOf(c.prevYm).length > 0 && !finPartialNote(c.prevYm), d = c.total - c.prevSame;
+  const vs = !prevOk ? `<span class="muted">Aún no hay un mes anterior completo para comparar.</span>`
+    : Math.abs(d) < 1000 ? `Vas igual que el mes anterior${c.isCur ? " a esta altura" : ""}.`
+    : `Son <strong class="${d > 0 ? "fin-up" : "fin-down"}">${fmtClp(Math.abs(d))} ${d > 0 ? "más" : "menos"}</strong> que el mes anterior${c.isCur ? " a esta altura" : ""}${c.prevSame ? ` (${d > 0 ? "+" : "−"}${fmt(Math.abs(d) / c.prevSame * 100)}%)` : ""}.`;
+  const end = c.isCur
+    ? `A este ritmo (${fmtClp(c.daily)} al día) cierras el mes en <strong>${fmtClp(c.proj)}</strong>${b ? `, ${fmtClp(Math.abs(c.proj - b))} ${c.proj > b ? "sobre" : "bajo"} tu presupuesto de ${fmtClp(b)}` : ""}.`
+    : b ? `Tu presupuesto era ${fmtClp(b)}: ${c.total > b ? `te pasaste por ${fmtClp(c.total - b)}` : `te sobraron ${fmtClp(b - c.total)}`}.` : "";
+  const over = b && (c.isCur ? c.proj : c.total) > b;
+  setHTML($("#finHero"), `<div class="fin-hero-top"><div><div class="small muted">Gastado ${c.isCur ? `al ${c.dayCut} de ${esc(mes)}` : `en ${esc(mes)}`}</div><div class="fin-big">${fmtClp(c.total)}</div>
+      <p class="fin-verdict">${vs} ${end}</p></div>
+      ${b ? ring(c.total / b, over ? "var(--danger)" : "var(--fin)", 78, 7, fmt(c.total / b * 100) + "%", "del presupuesto") : ""}</div>
+    <div id="finCum"></div>`);
+  renderFinCum(c);
+}
+/* Para mirar: solo lo que pide atención, ordenado por importancia (máximo 6) */
+const finGone = m => {
+  if (m.banco_id || m.fuente !== "alerta") return false;
+  const cfg = finCfg(), al = cfg.cartolaAl;
+  return !!(finCardKind(m) === "debito" ? cfg.cuentaHasta && m.fecha >= cfg.cuentaDesde && m.fecha <= addDays(cfg.cuentaHasta, -5) : al && m.fecha <= addDays(al, -3));
+};
+function renderFinWatch(c, tree, cmp){
+  const out = [], cfg = finCfg(), buds = cfg.catBudgets || {}, pace = c.dayCut / c.lastDay * 100, byCat = finCatTotals(c.buys);
+  for (const [cat, b] of Object.entries(buds)){
+    if (!b) continue;
+    const v = byCat[cat] || 0, pct = v / b * 100;
+    if (pct > 100 || (c.isCur && pct > pace + 10)) out.push({cat, w: 3 + pct / 100, t: `<strong>${esc(cat)}</strong> va en ${fmt(pct)}% de su tope (${fmtClp(v)} de ${fmtClp(b)})${c.isCur ? `, con ${fmt(pace)}% del mes transcurrido` : ""}.`});
   }
-  const ups = diffs.filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 3), downs = diffs.filter(x => x.d < 0).sort((a, b) => a.d - b.d).slice(0, 2);
-  const big = buys.reduce((a, m) => m.monto > a.monto ? m : a, buys[0]);
-  const top = Object.entries(tree).sort((a, b) => b[1].v - a[1].v)[0];
-  const byMedio = Object.keys(FIN_MEDIO).map(k => [k, sum(c.buys.filter(m => finCardKind(m.refundOf || m) === k), m => m.monto)]).filter(x => x[1]);
-  const li = x => `<li><strong>${esc(x.cat)}</strong> <span class="muted">(${esc(x.g)})</span>: ${x.d > 0 ? "+" : "−"}${fmtClp(Math.abs(x.d))} <span class="muted">(${fmtClp(x.v)} frente a ${fmtClp(x.b)})</span></li>`;
-  const d = cmp.has ? c.total - cmp.total : null;
-  setHTML($("#finSummary"), `<p style="margin:0 0 8px">Llevas <strong>${fmtClp(c.total)}</strong> en ${buys.length} ${buys.length === 1 ? "compra" : "compras"}${back ? `, ya descontados ${fmtClp(back)} que te devolvieron` : ""}${c.isCur ? ` al día ${c.dayCut}` : ""}${top ? `; el grupo más grande es <strong>${esc(top[0])}</strong> (${fmt(top[1].v / c.total * 100)}%)` : ""}.</p>
-    ${d !== null ? `<p style="margin:0 0 8px">Son <strong class="${d > 0 ? "fin-up" : "fin-down"}">${fmtClp(Math.abs(d))} ${d > 0 ? "más" : "menos"}</strong> que ${esc(cmp.label)}${cmp.total ? ` (${d > 0 ? "+" : "−"}${fmt(Math.abs(d) / cmp.total * 100)}%)` : ""}.${cmp.partial ? ` <span class="small muted">Ojo: la comparación tiene ${esc(cmp.partial)}.</span>` : ""}</p>` : `<p class="muted" style="margin:0 0 8px">${esc(cmp.none)}</p>`}
-    ${ups.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde más subió</p><ul style="margin:0;padding-left:18px">${ups.map(li).join("")}</ul>` : ""}
-    ${downs.length ? `<p class="small muted" style="margin:10px 0 2px">Dónde bajó</p><ul style="margin:0;padding-left:18px">${downs.map(li).join("")}</ul>` : ""}
-    <p class="small muted" style="margin:10px 0 0">Compra más grande: ${esc(big.comercio)}, ${fmtClp(big.monto)} el ${fmtShort(big.fecha)}. Ticket promedio ${fmtClp(c.total / buys.length)}; promedio diario ${fmtClp(c.daily)}.${byMedio.length > 1 ? ` Por medio de pago: ${byMedio.map(([k, v]) => `${FIN_MEDIO[k]} ${fmtClp(v)}`).join(", ")}.` : ""}</p>`);
-}
-
-/* KPI del mes: gasto frente al presupuesto, proyección, recurrentes y cuotas */
-function finKpi(title, big, sub, side = ""){
-  return `<div class="panel kpi c-fin"><h3><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg>${title}</h3><div class="kpi-top"><div class="big">${big}${sub ? `<div class="small muted" style="font-weight:500;letter-spacing:0">${sub}</div>` : ""}</div>${side}</div></div>`;
-}
-function renderFinKpis(c){
-  const b = finCfg().budget, rec = finRecurring(), inst = finInstallments(), over = b && c.total > b;
-  setHTML($("#finKpis"), [
-    finKpi("Gasto del mes", fmtClpShort(c.total), b ? `de ${fmtClp(b)}` : "sin presupuesto", b ? ring(c.total / b, over ? "var(--danger)" : "var(--c)", 58, 6, fmt(c.total / b * 100) + "%") : ""),
-    c.isCur ? finKpi("Proyección al cierre", fmtClpShort(c.proj), b ? (c.proj > b ? `${fmtClp(c.proj - b)} sobre el presupuesto` : `${fmtClp(b - c.proj)} bajo el presupuesto`) : `al ritmo de ${fmtClp(c.daily)} al día`)
-      : finKpi("Promedio diario", fmtClpShort(c.daily), `${c.lastDay} días`),
-    finKpi("Recurrentes al mes", fmtClpShort(sum(rec, r => r.monthly)), `${rec.length} ${rec.length === 1 ? "cobro" : "cobros"}`),
-    finKpi("Cuotas por pagar", fmtClpShort(sum(inst, g => g.pending)), `${inst.length} ${inst.length === 1 ? "compra" : "compras"}`)
-  ].join(""));
+  if (cmp.has){
+    const ups = [];
+    for (const [g, cs] of FIN_TREE) for (const cat of cs){
+      const v = (((tree[g] || {}).cats || {})[cat] || {}).v || 0, b0 = cmp.val(g, cat) || 0, dd = v - b0;
+      if (dd > 10000 && (!b0 || dd > .2 * b0) && !out.some(x => x.cat === cat)) ups.push({w: 2 + dd / 1e6, t: `<strong>${esc(cat)}</strong> subió ${fmtClp(dd)} frente ${cmp.label.startsWith("el ") ? "al " + esc(cmp.label.slice(3)) : "a " + esc(cmp.label)}: ${fmtClp(v)}${b0 ? ` contra ${fmtClp(b0)}` : ", sin gasto antes"}.`});
+    }
+    out.push(...ups.sort((a, b) => b.w - a.w).slice(0, 3));
+  }
+  finAnomalies(c).slice(0, 2).forEach(a => out.push({w: 2, t: `<strong>${esc(a.m.comercio)}</strong> cobró ${fmtClp(a.m.monto)} el ${fmtShort(a.m.fecha)}: ${fmt(a.x, 1)} veces ${esc(a.ref)}.`}));
+  for (const r of finRecurring()){
+    if (r.up) out.push({w: 1.5, t: `<strong>${esc(r.name)}</strong> subió ${fmt(r.up)}% en su último cobro (${fmtClp(r.last.monto)}, ${r.freq}).`});
+    else if (r.late) out.push({w: 1, t: `<strong>${esc(r.name)}</strong> no se cobra desde el ${fmtShort(r.last.fecha)}: ¿lo cancelaste?`});
+  }
+  const gone = c.buys.filter(finGone).length;
+  if (gone) out.push({w: 2.5, t: `${gone === 1 ? "Una compra no aparece" : gone + " compras no aparecen"} en la cartola: ${gone === 1 ? "puede estar anulada" : "pueden estar anuladas"}. Están marcadas en Movimientos.`});
+  const und = c.buys.filter(m => m.monto > 0 && finCat(m) === "Supermercado" && !((S.movDet[m.id] || {}).items || []).length);
+  if (und.length) out.push({w: .8, t: `${und.length === 1 ? "Una compra" : und.length + " compras"} de supermercado sin detallar (${fmtClp(sum(und, m => m.monto))}): detallarlas da el precio de cada alimento.`,
+    act: `<button class="btn small" data-action="fin-det" data-id="${esc(und[und.length - 1].id)}">Detallar ${esc(und[und.length - 1].comercio)}</button>`});
+  const small = c.buys.filter(m => m.monto > 0 && m.monto < FIN_SMALL), smallT = sum(small, m => m.monto);
+  if (c.total > 0 && smallT / c.total > .15) out.push({w: .6, t: `Las compras bajo ${fmtClp(FIN_SMALL)} suman ${fmtClp(smallT)} (${small.length} compras, ${fmt(smallT / c.total * 100)}% del mes).`});
+  const list = out.sort((a, b) => b.w - a.w).slice(0, 6);
+  setHTML($("#finWatch"), list.length ? `<ul class="watch">${list.map(x => `<li><span>${x.t}</span>${x.act || ""}</li>`).join("")}</ul>`
+    : `<p class="empty">${c.buys.length ? "Nada que pida atención este mes." : "Sin compras en este mes."}</p>`);
 }
 
 /* Gasto acumulado día a día: este mes, el mes anterior y el ritmo del presupuesto (recta de 0 al tope) */
@@ -3395,20 +3465,6 @@ function finGroup(tot, top){
   return g;
 }
 const finLegend = (g, total) => `<div class="fin-legend">${g.filter(x => x.v > 0).map(x => `<span><i style="background:${x.color}"></i>${esc(x.cat)} <strong>${fmtClp(x.v)}</strong>${total ? ` <span class="muted">${fmt(x.v / total * 100)}%</span>` : ""}</span>`).join("")}</div>`;
-
-/* Distribución del mes: barra 100% apilada por categoría */
-function renderFinDist(c, top){
-  const g = finGroup(finCatTotals(c.buys), top), total = sum(g, x => x.v);
-  if (!total){ setHTML($("#finDist"), `<p class="empty">Sin compras en este mes.</p>`); return; }
-  const W = 600, H = 30, gap = 2, parts = g.filter(x => x.v > 0), avail = W - gap * (parts.length - 1);
-  let x = 0, s = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Distribución del gasto del mes por categoría" style="display:block;width:100%;height:${H}px"><defs><clipPath id="finDistClip"><rect width="${W}" height="${H}" rx="6"/></clipPath></defs><g clip-path="url(#finDistClip)">`;
-  for (const p of parts){
-    const w = avail * p.v / total;
-    s += `<rect class="seg" x="${x.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${H}" fill="${p.color}"><title>${esc(p.cat)}: ${fmtClp(p.v)} (${fmt(p.v / total * 100)}%)</title></rect>`;
-    x += w + gap;
-  }
-  setHTML($("#finDist"), s + `</g></svg>` + finLegend(g, total));
-}
 
 /* Evolución mensual: 12 meses apilados por categoría; el mes en curso muestra además su proyección */
 function finEvoChart(c, top, width){
@@ -3509,95 +3565,36 @@ function finFoodSplit(m){
   const kb = kind(base); if (kb && (rest > 0 || m.monto < 0)) r[kb] += rest;
   return r;
 }
-function finFoodDaily(ym, n){
-  const days = Array.from({length: n + 1}, () => ({casa: 0, fuera: 0}));
-  for (const m of finBuysOf(ym)){ const d = +m.fecha.slice(8), f = finFoodSplit(m); if (d <= n){ days[d].casa += f.casa; days[d].fuera += f.fuera; } }
-  return days;
-}
-function finFoodChart(c, days, avg, width){
-  const n = c.lastDay, W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 190 : 220, L = 56, R = 12, T = 14, B = 26;
-  const top_ = Math.max(...days.slice(1).map(d => d.casa + d.fuera), avg, 1), raw = top_ / 4, p10 = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map(k => k * p10).find(k => k >= raw), max = Math.ceil(top_ * 1.04 / step) * step;
-  const slot = (W - L - R) / n, bw = Math.max(3, slot * .64), y = v => T + (H - T - B) * (1 - v / max), hpx = v => (H - T - B) * v / max;
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gasto diario en comida, en casa y fuera" style="font-family:'Hanken Grotesk',system-ui,sans-serif"><defs>`;
-  for (let d = 1; d <= n; d++) s += `<clipPath id="finFood${d}"><rect x="${L + slot * (d - 1) + (slot - bw) / 2}" y="${T}" width="${bw}" height="${H - T - B + 6}" rx="${Math.min(4, bw / 2)}"/></clipPath>`;
-  s += `</defs>`;
-  for (let v = 0; v <= max + 1e-9; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmtClpShort(v)}</text>`;
-  for (let d = 1; d <= n; d++){
-    const x0 = L + slot * (d - 1) + (slot - bw) / 2, v = days[d], tot = v.casa + v.fuera;
-    s += `<g class="day"><rect x="${L + slot * (d - 1)}" y="${T}" width="${slot}" height="${H - T - B}" fill="transparent"/>`;
-    if (tot){
-      s += `<g clip-path="url(#finFood${d})">`;
-      if (v.casa) s += `<rect x="${x0}" y="${y(v.casa).toFixed(1)}" width="${bw}" height="${hpx(v.casa).toFixed(1)}" fill="var(--cat1)"/>`;
-      if (v.fuera) s += `<rect x="${x0}" y="${y(tot).toFixed(1)}" width="${bw}" height="${Math.max(0, hpx(v.fuera) - (v.casa ? 2 : 0)).toFixed(1)}" fill="var(--cat2)"/>`;
-      s += `</g>`;
-    }
-    s += `<title>Día ${d}: ${fmtClp(tot)}${tot ? ` (en casa ${fmtClp(v.casa)}, fuera ${fmtClp(v.fuera)})` : ""}</title></g>`;
-  }
-  for (const d of [1, 8, 15, 22, n]) s += `<text x="${L + slot * (d - .5)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${d}</text>`;
-  if (avg) s += `<line x1="${L}" x2="${W - R}" y1="${y(avg)}" y2="${y(avg)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="5 4"/><text x="${W - R}" y="${y(avg) - 5}" text-anchor="end" font-size="11" font-weight="600" fill="var(--ink)">promedio ${fmtClp(avg)}</text>`;
-  return s + "</svg>";
-}
-function renderFinFood(c){
-  const el = $("#finFood"), days = finFoodDaily(c.ym, c.lastDay), upto = days.slice(1, c.dayCut + 1);
-  const casa = sum(upto, d => d.casa), fuera = sum(upto, d => d.fuera), tot = casa + fuera, avg = c.dayCut ? tot / c.dayCut : 0;
-  const prevN = new Date(c.y, c.mo - 1, 0).getDate(), prev = finFoodDaily(c.prevYm, prevN).slice(1), prevAvg = sum(prev, d => d.casa + d.fuera) / prevN;
-  const withFood = upto.filter(d => d.casa + d.fuera > 0).length, maxD = upto.reduce((b, d, i) => d.casa + d.fuera > b.v ? {v: d.casa + d.fuera, d: i + 1} : b, {v: 0, d: 0});
-  if (!tot){ setHTML(el, `<p class="empty">Sin gasto en comida este mes. Cuenta lo que esté en Supermercado, Comida y delivery o Restaurantes y bares, y los productos detallados que tengan un alimento asociado.</p>`); return; }
-  setHTML(el, `<div class="grid g2"><div><div class="wchart fin-chart">${finFoodChart(c, days, avg, el.clientWidth / 2)}</div>
-      <div class="fin-legend"><span><i style="background:var(--cat1)"></i>En casa <strong>${fmtClp(casa)}</strong> <span class="muted">${fmt(casa / tot * 100)}%</span></span><span><i style="background:var(--cat2)"></i>Fuera <strong>${fmtClp(fuera)}</strong> <span class="muted">${fmt(fuera / tot * 100)}%</span></span></div></div>
-    <dl>
-      <dt>Promedio diario</dt><dd>${fmtClp(avg)}</dd>
-      <dt>Mes anterior</dt><dd>${finPartialNote(c.prevYm) ? `<span class="muted">${finPartialNote(c.prevYm)}, sin comparar</span>` : prevAvg ? `${fmtClp(prevAvg)} al día (${avg > prevAvg ? "+" : ""}${fmt((avg - prevAvg) / prevAvg * 100)}%)` : "—"}</dd>
-      <dt>Total del mes</dt><dd>${fmtClp(tot)}</dd>
-      <dt>Días con compras de comida</dt><dd>${withFood} de ${c.dayCut}</dd>
-      <dt>Día de mayor gasto</dt><dd>${maxD.d ? `${maxD.d}: ${fmtClp(maxD.v)}` : "—"}</dd>
-      ${c.isCur ? `<dt>Proyección del mes</dt><dd>${fmtClp(avg * c.lastDay)}</dd>` : ""}
-    </dl></div>
-    <p class="small muted" style="margin:8px 0 0">El promedio divide lo gastado en comida entre los días transcurridos del mes, incluidos los días sin compras. En casa: Supermercado y productos detallados con un alimento asociado. Fuera: Comida y delivery y Restaurantes y bares. Una compra de supermercado sin detallar cuenta completa, aunque incluya cosas que no son comida.</p>`);
-}
-
-/* Tendencia por categoría: últimos 6 meses; el mes en curso se compara proyectado */
-function renderFinTrend(c){
-  const months = [5, 4, 3, 2, 1, 0].map(i => shiftMonth(c.ym, -i)), tot = months.map(ym => finCatTotals(finBuysOf(ym)));
-  const has = tot.map(o => Object.values(o).some(v => v > 0)), k = c.isCur ? c.lastDay / c.dayCut : 1;
-  const prior = [2, 3, 4].filter(i => has[i]);
-  const rows = [...new Set(tot.flatMap(o => Object.keys(o)))].map(cat => {
-    const vals = tot.map(o => o[cat] || 0), avg = prior.length ? sum(prior, i => vals[i]) / prior.length : null, now = vals[5] * k;
-    return {cat, vals, avg, var: avg ? (now - avg) / avg * 100 : null};
-  }).filter(r => r.vals.some(v => v)).sort((a, b) => b.vals[5] - a.vals[5] || sum(b.vals, v => v) - sum(a.vals, v => v));
-  const mlab = ym => new Date(+ym.slice(0, 4), +ym.slice(5) - 1, 1).toLocaleDateString("es-CL", {month: "short"}).replace(".", "");
-  setHTML($("#finTrend"), rows.length ? `<div class="scroll"><table><thead><tr><th>Categoría</th><th>6 meses</th><th class="n">${esc(mlab(c.ym))}</th><th class="n">Promedio 3 meses</th><th class="n">Variación</th></tr></thead><tbody>${rows.map(r => `<tr>
-      <td>${esc(r.cat)}</td><td>${sparkline(r.vals, "var(--fin)")}</td><td class="n">${fmtClp(r.vals[5])}</td>
-      <td class="n">${r.avg === null ? "—" : fmtClp(r.avg)}</td>
-      <td class="n"${r.var !== null && r.var > 20 ? ` style="color:var(--danger)"` : ""}>${r.var === null ? "—" : `${r.var > 0 ? "+" : ""}${fmt(r.var)}%`}</td></tr>`).join("")}</tbody></table></div>
-    <p class="small muted" style="margin:8px 0 0">El promedio usa los 3 meses anteriores al elegido que tienen compras${prior.length ? "" : " (aún no hay)"}.${c.isCur ? ` La variación del mes en curso usa su proyección: lo gastado × ${c.lastDay} / ${c.dayCut} días.` : ""} En rojo, alzas sobre 20%.</p>`
-    : `<p class="empty">Sin compras en los últimos 6 meses.</p>`);
-}
-
-/* Comercios del mes: total, visitas y ticket promedio */
-function renderFinMerch(c){
-  const by = {};
-  for (const m of c.buys){ if (m.monto < 0) continue; const k = finKey(m.comercio), g = by[k] || (by[k] = {name: m.comercio, n: 0, total: 0}); g.n++; g.total += m.monto; }
-  const top = Object.values(by).sort((a, b) => b.total - a.total).slice(0, 8);
-  setHTML($("#finMerch"), top.length ? `<div class="scroll"><table><thead><tr><th>Comercio</th><th class="n">Visitas</th><th class="n">Ticket</th><th class="n">Total</th><th class="n">Del mes</th></tr></thead><tbody>${top.map(g => `<tr><td>${esc(g.name)}</td><td class="n">${g.n}</td><td class="n">${fmtClp(g.total / g.n)}</td><td class="n">${fmtClp(g.total)}</td><td class="n">${fmt(g.total / c.total * 100)}%</td></tr>`).join("")}</tbody></table></div>`
-    : `<p class="empty">Sin compras en este mes.</p>`);
-}
-
-/* Patrones: gasto promedio por día de la semana (8 semanas), compras chicas y fin de semana */
 const FIN_SMALL = 5000;
-function renderFinPattern(c){
-  const t = today(), from = addDays(t, -55), recent = S.movs.filter(m => isPurchase(m) && m.fecha >= from && m.fecha <= t);
-  const byDow = [0, 0, 0, 0, 0, 0, 0];
-  for (const m of recent) byDow[(parseYmd(m.fecha).getDay() + 6) % 7] += m.monto;
-  const avg = byDow.map(v => Math.round(v / 8)), weekend = byDow[5] + byDow[6], all = sum(byDow, v => v);
-  const small = c.buys.filter(m => m.monto > 0 && m.monto < FIN_SMALL), smallT = sum(small, m => m.monto);
-  setHTML($("#finPattern"), recent.length ? `<p class="small muted" style="margin:0 0 6px">Gasto promedio por día de la semana, últimas 8 semanas</p>
-    ${barChart(avg, DOW, null, "var(--fin)", "pesos", (parseYmd(t).getDay() + 6) % 7)}
-    <dl class="mt">
-      <dt>Fin de semana</dt><dd>${all ? fmt(weekend / all * 100) : 0}% del gasto (2 de 7 días)</dd>
-      <dt>Compras bajo ${fmtClp(FIN_SMALL)} este mes</dt><dd>${small.length} por ${fmtClp(smallT)} (${c.total ? fmt(smallT / c.total * 100) : 0}%)</dd>
-    </dl>` : `<p class="empty">Sin compras en las últimas 8 semanas.</p>`);
+/* Lo que cuesta comer: compras de comida del mes (en casa y fuera) y costo de lo registrado en Nutrición, con los precios de tus alimentos */
+function renderFinEat(c){
+  let casa = 0, fuera = 0;
+  for (const m of c.buys){ const f = finFoodSplit(m); casa += f.casa; fuera += f.fuera; }
+  const sl = optCfg().slots, bySlot = {}, byFood = {};
+  let tot = 0, nDays = 0, gAll = 0, gK = 0, noItems = 0;
+  for (let d = 1; d <= c.dayCut; d++){
+    const dd = day(`${c.ym}-${pad(d)}`); if (!dd.meals.length) continue;
+    nDays++;
+    for (const m of dd.meals){
+      if (!(m.items || []).length){ noItems++; continue; }
+      const k = itemsCost(m.items), i = mealSlotIdx(sl, m, dd.meals), name = i < 0 ? "Otra" : sl[i].name;
+      tot += k.cost; gAll += k.gAll; gK += k.gKnown;
+      const b = bySlot[name] || (bySlot[name] = {cost: 0, n: 0, i}); b.cost += k.cost; b.n++;
+      for (const l of k.lines) if (l.cost) byFood[l.it.foodId] = (byFood[l.it.foodId] || 0) + l.cost;
+    }
+  }
+  const prot = foods().filter(f => f.p >= 8 && !isRawFood(f)).map(f => ({f, pr: foodPrice(f)})).filter(x => x.pr).map(x => ({...x, v: x.pr.perKg / x.f.p})).sort((a, b) => a.v - b.v).slice(0, 4);
+  const topF = Object.entries(byFood).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const share = gAll ? gK / gAll : 0;
+  setHTML($("#finEat"), `<div class="eat"><dl class="kpi flat" style="display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:6px 12px;font-size:.92rem">
+      <dt class="muted">Compraste en comida</dt><dd style="margin:0;text-align:right"><strong>${fmtClp(casa + fuera)}</strong><div class="small muted">en casa ${fmtClp(casa)} · fuera ${fmtClp(fuera)}</div></dd>
+      <dt class="muted">Costo de lo que comiste</dt><dd style="margin:0;text-align:right">${tot ? `<strong>${share < .98 ? "≈ " : ""}${fmtClp(tot)}</strong><div class="small muted">${fmtClp(tot / nDays)} al día en ${days_(nDays)} con registro</div>` : "—"}</dd>
+    </dl>
+    ${tot ? `<p class="small muted" style="margin:8px 0 0">${fmt(share * 100)}% de los gramos registrados tiene precio${noItems ? `; ${noItems} ${noItems === 1 ? "comida sin ingredientes no tiene" : "comidas sin ingredientes no tienen"} costo` : ""}.</p>
+      <p class="opt-h">Por comida, en promedio</p><ul class="shop">${Object.entries(bySlot).sort((a, b) => a[1].i - b[1].i).map(([n, b]) => `<li><span>${esc(n)} <span class="muted small">${b.n} ${b.n === 1 ? "vez" : "veces"}</span></span><span>${fmtClp(b.cost / b.n)}</span></li>`).join("")}</ul>
+      ${topF.length ? `<p class="opt-h">En qué se va</p><ul class="shop">${topF.map(([id, v]) => `<li><span>${esc((foodOf(id) || {}).name || "Otro")}</span><span>${fmt(v / tot * 100)}% · ${fmtClp(v)}</span></li>`).join("")}</ul>` : ""}`
+    : `<p class="small muted" style="margin:10px 0 0">Para saber cuánto te cuesta lo que comes, detalla tus compras de supermercado o busca precios de referencia en "Precios de tus alimentos".</p>`}
+    ${prot.length ? `<p class="opt-h">Proteína más barata, por 10 g</p><ul class="shop">${prot.map(x => `<li><span>${esc(x.f.name)} <span class="muted small">${esc(x.pr.label)}</span></span><span>${fmtClp(x.v)}</span></li>`).join("")}</ul>` : ""}</div>`);
 }
 
 /* Fuera de lo normal: más de 2,5 veces la mediana del comercio (3 compras previas o más)
@@ -3614,12 +3611,6 @@ function finAnomalies(c){
   }
   return out.sort((a, b) => b.x - a.x);
 }
-function renderFinAnom(c){
-  const list = finAnomalies(c);
-  setHTML($("#finAnom"), list.length ? list.map(a => `<div style="border-top:1px solid var(--line);padding:8px 0"><strong>${esc(a.m.comercio)}</strong> ${fmtClp(a.m.monto)} <span class="muted">${fmtShort(a.m.fecha)}</span><div class="small muted">${fmt(a.x, 1)} veces ${esc(a.ref)}</div></div>`).join("")
-    : `<p class="empty">Nada fuera de lo normal este mes.</p>`);
-}
-
 /* Lista de movimientos del mes con búsqueda (comercio, detalle del banco o producto) y filtro de categoría */
 function renderFinList(){
   const multi = finMultiCard(), ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value, gf = $("#finGroupF").value;
@@ -3631,6 +3622,7 @@ function renderFinList(){
   const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
     && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0) && (!kf || finCardKind(m) === kf));
   const shown = sum(list.filter(isPurchase), part);
+  $("#finListSum").textContent = `${all.length} ${all.length === 1 ? "movimiento" : "movimientos"} en el mes`;
   setHTML($("#finList"), list.length ? `${q || cf || gf || kf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${gf.toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
       <td>${esc(m.comercio)}${m.ciudad || multi ? `<div class="small muted">${[m.ciudad, multi && finCardLabel(m)].filter(Boolean).map(esc).join(" · ")}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
@@ -3655,9 +3647,7 @@ function finStatusHtml(m){
   if (m.banco_id) return m.pendiente ? `<div class="small muted">en cartola, por confirmar</div>` : "";
   if (m.fuente === "correo") return `<div class="small muted">del correo del banco, aún no está en la cartola</div>`;
   if (m.fuente !== "alerta") return "";
-  const cfg = finCfg(), al = cfg.cartolaAl;
-  const gone = finCardKind(m) === "debito" ? cfg.cuentaHasta && m.fecha >= cfg.cuentaDesde && m.fecha <= addDays(cfg.cuentaHasta, -5) : al && m.fecha <= addDays(al, -3);
-  if (gone) return `<div class="small" style="color:var(--danger)">no aparece en la cartola <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
+  if (finGone(m)) return `<div class="small" style="color:var(--danger)">no aparece en la cartola <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
   return `<div class="small muted">solo alerta</div>`;
 }
 
@@ -3672,7 +3662,7 @@ function renderFinInbox(){
   $("#finInboxPanel").hidden = !list.length;
   $("#finInboxHead").textContent = `Por revisar (${list.length})`;
   const fresh = finMultiCard() ? [...new Set(list.filter(m => m.tarjeta && !(finCards()[m.tarjeta] || {}).kind).map(m => m.tarjeta))] : [];
-  setHTML($("#finInbox"), (fresh.length ? `<p class="small" style="margin:0 0 8px">Llegaron compras con ${fresh.length === 1 ? "una tarjeta sin tipo" : "tarjetas sin tipo"} (${fresh.map(t => "··" + esc(t)).join(", ")}). Elige si es de crédito o débito en Tarjetas, más abajo.</p>` : "") + list.map(m => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:10px 0">
+  setHTML($("#finInbox"), (fresh.length ? `<p class="small" style="margin:0 0 8px">Llegaron compras con ${fresh.length === 1 ? "una tarjeta sin tipo" : "tarjetas sin tipo"} (${fresh.map(t => "··" + esc(t)).join(", ")}). Elige si es de crédito o débito en Tarjetas y cartolas, más abajo.</p>` : "") + list.map(m => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:10px 0">
       <div><strong>${esc(m.comercio)}</strong> <span class="muted">${fmtShort(m.fecha)}${m.hora ? " " + esc(m.hora) : ""}</span>${finDetSummary(m)}</div>
       <div class="row"><strong>${m.monto < 0 ? `te transfirió ${fmtClp(-m.monto)}` : fmtClp(m.monto)}</strong>${isIncoming(m) ? finRefundSelect(m) : finCatSelect(m)}
         <button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">Detallar</button>
@@ -3787,6 +3777,7 @@ function renderFinRecur(){
 /* Tarjetas: nombre y tipo por últimos 4 dígitos (lib.fin.cards) */
 function renderFinCards(){
   const cards = finCards(), list = finCardList(), cfg = finCfg();
+  $("#finCardSum").textContent = `${list.length} ${list.length === 1 ? "tarjeta" : "tarjetas"}${cfg.cartolaAl ? ` · cartola de crédito del ${fmtShort(cfg.cartolaAl)}` : ""}${cfg.cuentaHasta ? ` · cuenta al ${fmtShort(cfg.cuentaHasta)}` : ""}`;
   $("#cartolaStatus").textContent = [
     cfg.cartolaAl ? `Cartola de crédito importada el ${fmtShort(cfg.cartolaAl)}.` : "Sin cartola de crédito.",
     cfg.cuentaHasta ? `Cartola de la cuenta del ${fmtShort(cfg.cuentaDesde)} al ${fmtShort(cfg.cuentaHasta)}.` : Object.values(cards).some(c => c.kind === "debito") ? "Sin cartola de la cuenta." : ""
@@ -3892,7 +3883,7 @@ function finItemsFromAI(list){
   const signed = v => typeof v === "number" && isFinite(v) ? v : null;
   return (Array.isArray(list) ? list : []).filter(x => x && typeof x.name === "string" && x.name.trim()).map(x => ({
     name: x.name.trim(),
-    foodId: foodOf(x.foodId) ? x.foodId : null,
+    foodId: typeof x.foodId === "string" ? x.foodId : null, food: x.comida === false ? false : undefined,
     qty: n(x.qty), unit: x.unit in FIN_UNITS ? x.unit : "un",
     each: n(x.each), eachUnit: x.eachUnit === "ml" ? "ml" : "g",
     price: n(x.price), per: FIN_PER.includes(x.per) ? x.per : null,
@@ -3900,25 +3891,35 @@ function finItemsFromAI(list){
   }));
 }
 function renderFinDet(){
-  const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), p = $("#finDetPanel");
-  p.hidden = !m; if (!m) return;
-  $("#finDetHead").textContent = `${m.comercio}, ${fmtShort(m.fecha)}: ${fmtClp(m.monto)}`;
-  const c = finCalc(d.items, m.monto), fl = foods();
+  const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id), dlg = $("#finDetDlg");
+  if (!m){ if (dlg.open) dlg.close(); return; }
+  if (!dlg.open) dlg.showModal();
+  $("#finDetHead").textContent = `${m.comercio}: ${fmtClp(m.monto)}`;
+  $("#finDetSub").textContent = `${fmtLong(m.fecha)}${m.hora ? ", " + m.hora : ""}`;
+  const c = finCalc(d.items, m.monto);
   const opt = (vals, cur, lbl = v => v) => vals.map(v => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(lbl(v))}</option>`).join("");
-  const inp = (i, f, v, w = 5) => `<input class="fin-in" data-i="${i}" data-f="${f}" value="${esc(v ?? "")}" inputmode="decimal" style="width:${w}em">`;
-  setHTML($("#finDetItems"), d.items.length ? `<div class="scroll"><table><thead><tr><th>Producto</th><th>Alimento</th><th>Cantidad</th><th>Contenido c/u</th><th>Precio</th><th class="n">Total</th><th class="n">$/kg o L</th><th>Categoría</th><th></th></tr></thead><tbody>${c.items.map((it, i) => `<tr>
-      <td><input class="fin-in" data-i="${i}" data-f="name" value="${esc(it.name)}" style="width:10em"></td>
-      <td><select class="fin-in" data-i="${i}" data-f="foodId"><option value="">—</option>${fl.map(f => `<option value="${esc(f.id)}"${f.id === it.foodId ? " selected" : ""}>${esc(f.name)}</option>`).join("")}</select></td>
-      <td>${inp(i, "qty", it.qty === null ? "" : String(it.qty).replace(".", ","), 4)} <select class="fin-in" data-i="${i}" data-f="unit">${opt(Object.keys(FIN_UNITS), it.unit)}</select></td>
-      <td>${it.unit === "un" ? `${inp(i, "each", it.each, 5)} <select class="fin-in" data-i="${i}" data-f="eachUnit">${opt(["g", "ml"], it.eachUnit)}</select>` : `<span class="muted">—</span>`}</td>
-      <td>${inp(i, "price", it.price, 6)} <select class="fin-in" data-i="${i}" data-f="per"><option value="">—</option>${opt(FIN_PER, it.per, v => "por " + v)}</select></td>
-      <td class="n"><input class="fin-in" data-i="${i}" data-f="total" value="${esc(it.total ?? "")}" placeholder="${it.amt === null ? "" : esc(fmt(it.amt))}" inputmode="numeric" style="width:6em">${it.rest ? `<div class="small muted">lo que falta</div>` : ""}${it.g && !it.gEst ? `<div class="small muted">${fmt(it.g / 1000, 2)} ${finLiquid(it) ? "L" : "kg"}</div>` : ""}</td>
-      <td class="n">${it.perKg ? `${fmtClp(it.perKg)}/${finLiquid(it) ? "L" : "kg"}${it.gEst ? `<div class="small muted">estimado</div>` : ""}` : "—"}</td>
-      <td><select class="fin-in" data-i="${i}" data-f="cat"><option value="">del comercio</option>${opt(FIN_CATS, it.cat)}</select></td>
-      <td><button class="btn ghost small danger" data-action="fin-det-del" data-i="${i}" aria-label="Quitar ${esc(it.name)}">Quitar</button></td>
-    </tr>`).join("")}</tbody></table></div>
-    <p class="small" style="margin:10px 0 0">Suma de productos: <strong>${fmtClp(c.sum)}</strong> de ${fmtClp(m.monto)}${Math.abs(c.diff) >= 1 ? `; <span style="color:var(--danger)">${c.diff > 0 ? "faltan" : "sobran"} ${fmtClp(Math.abs(c.diff))}</span>` : ", cuadra"}.</p>${finTranscriptHtml(d)}`
-    : `<p class="empty">Sin productos. Escribe qué compraste o sube la foto de la boleta y sepáralo con IA, o agrégalos a mano. Si solo quieres anotar qué fue, escríbelo y toca "Guardar detalle".</p>${finTranscriptHtml(d)}`);
+  const inp = (i, f, v, w = 5, ph = "") => `<input class="fin-in" data-i="${i}" data-f="${f}" value="${esc(v ?? "")}" placeholder="${esc(ph)}" inputmode="decimal" style="width:${w}em">`;
+  const foodLine = (it, i) => {
+    if (it.ref && !it.foodId) return `<span class="new">Nuevo en tu base: ${esc(refName(it.ref))}</span><span class="muted">y su versión ${it.ref.endsWith(":raw") ? "cocida" : "cruda"}, con valores de referencia</span><button class="btn ghost small" data-action="fin-det-noref" data-i="${i}">No agregar</button>`;
+    const fd = foodOf(it.foodId);
+    return `<label>Alimento <input class="fin-in" data-i="${i}" data-f="food" list="foodList" value="${esc(fd ? fd.name : "")}" placeholder="${it.food === false ? "no es comida" : "elige de tu base"}" style="width:16em"></label>${!fd && it.food !== false ? `<button class="btn ghost small" data-action="fin-det-food-new" data-i="${i}">Agregarlo a mi base</button>` : ""}`;
+  };
+  setHTML($("#finDetItems"), d.items.length ? c.items.map((it, i) => it.disc || it.of != null
+    ? `<div class="pc disc"><div class="pc-top"><input class="fin-in pc-name" data-i="${i}" data-f="name" value="${esc(it.name)}" aria-label="Nombre"><strong class="pc-amt">${fmtClp(it.amt || 0)}</strong><button class="btn ghost small danger" data-action="fin-det-del" data-i="${i}" aria-label="Quitar ${esc(it.name)}">×</button></div><div class="pc-q">descuento${it.of != null && c.items[it.of] ? ` de ${esc(c.items[it.of].name.toLowerCase())}` : ""} <label>Monto ${inp(i, "total", it.total, 6)}</label></div></div>`
+    : `<div class="pc"><div class="pc-top"><input class="fin-in pc-name" data-i="${i}" data-f="name" value="${esc(it.name)}" aria-label="Nombre del producto"><strong class="pc-amt">${it.amt === null ? "—" : fmtClp(it.amt)}</strong><button class="btn ghost small danger" data-action="fin-det-del" data-i="${i}" aria-label="Quitar ${esc(it.name)}">×</button></div>
+      <div class="pc-q">
+        <label>Cantidad ${inp(i, "qty", it.qty === null ? "" : String(it.qty).replace(".", ","), 4)}<select class="fin-in" data-i="${i}" data-f="unit">${opt(Object.keys(FIN_UNITS), it.unit)}</select></label>
+        ${it.unit === "un" ? `<label>de ${inp(i, "each", it.each, 4)}<select class="fin-in" data-i="${i}" data-f="eachUnit">${opt(["g", "ml"], it.eachUnit)}</select> c/u</label>` : ""}
+        <label>Precio ${inp(i, "price", it.price, 5)}<select class="fin-in" data-i="${i}" data-f="per"><option value="">—</option>${opt(FIN_PER, it.per, v => "por " + v)}</select></label>
+        <label>Total ${inp(i, "total", it.total, 6, it.amt === null ? "" : fmt(it.amt))}</label>
+        ${it.rest ? `<span>lo que falta para cuadrar</span>` : ""}
+        ${it.perKg ? `<span>${fmtClp(it.perKg)}/${finLiquid(it) ? "L" : "kg"}${it.gEst ? " estimado" : ""}</span>` : ""}
+        <select class="fin-in" data-i="${i}" data-f="cat" aria-label="Categoría"><option value="">categoría del comercio</option>${opt(FIN_CATS, it.cat)}</select>
+      </div>
+      <div class="pc-food">${foodLine(it, i)}</div></div>`).join("") + finTranscriptHtml(d)
+    : `<p class="empty">Sin productos. Escribe qué compraste o sube la foto de la boleta y presiona "Leer la compra", o agrégalos a mano. Si solo quieres anotar qué fue, escríbelo y toca "Guardar detalle".</p>${finTranscriptHtml(d)}`);
+  const nNew = new Set(d.items.filter(it => it.ref && !it.foodId).map(it => it.ref.split(":")[0])).size;
+  setHTML($("#finDetSum"), d.items.length ? `Suma <strong>${fmtClp(c.sum)}</strong> de ${fmtClp(m.monto)}${Math.abs(c.diff) >= 1 ? `: <span style="color:var(--danger)">${c.diff > 0 ? "faltan" : "sobran"} ${fmtClp(Math.abs(c.diff))}</span>` : ", cuadra"}.${nNew ? ` Al guardar agrego ${nNew === 1 ? "1 alimento" : nNew + " alimentos"} a tu base, con su versión cruda y cocida.` : ""}` : "");
 }
 function finTranscriptHtml(d){
   return d.lines && d.lines.length ? `<details class="mt"><summary class="small">Ver lo que leyó la IA en la boleta (${d.lines.length} líneas)</summary><pre class="small" style="white-space:pre-wrap;margin:8px 0 0">${esc(d.lines.join("\n"))}</pre></details>` : "";
@@ -3937,8 +3938,17 @@ function finPriceRows(){
   return Object.values(by).sort((a, b) => a.name.localeCompare(b.name, "es"));
 }
 function renderFinPrices(){
-  const rows = finPriceRows();
-  setHTML($("#finPrices"), rows.length ? `<div class="scroll"><table><thead><tr><th>Producto</th><th class="n">Último</th><th class="n">Mínimo</th><th class="n">Compras</th><th>Última compra</th></tr></thead><tbody>${rows.map(r => {
+  const rows = foods().map(fd => ({fd, p: foodPrice(fd)})).sort((a, b) => a.fd.name.localeCompare(b.fd.name, "es")), refs = priceRefs();
+  const nC = rows.filter(r => r.p && r.p.kind === "compra").length, nU = rows.filter(r => r.p && r.p.kind === "unimarc").length;
+  $("#finPriceSum").textContent = `${nC + nU} de ${rows.length} alimentos con precio · ${nC} de tus compras, ${nU} de Unimarc`;
+  setHTML($("#finPrices"), `<div class="scroll"><table><thead><tr><th>Alimento</th><th class="n">Precio</th><th>Fuente</th><th class="n">10 g de proteína</th></tr></thead><tbody>${rows.map(({fd, p}) => {
+    const r = refs[fd.id], alts = p && p.kind === "unimarc" && r.items.length > 1
+      ? `<select data-ref-pick="${esc(fd.id)}" aria-label="Producto de referencia de ${esc(fd.name)}">${r.items.map((it, i) => `<option value="${i}"${i === (r.pick || 0) ? " selected" : ""}>${esc(it.name)}: ${fmtClp(refPerKg(fd, it, r.k))}/${p.u}</option>`).join("")}</select>` : "";
+    return `<tr><td>${esc(fd.name)}</td><td class="n">${p ? `${fmtClp(p.perKg)}/${p.u}` : `<span class="muted">sin precio</span>`}</td>
+      <td class="small">${p ? `${priceSrc(p)}<div class="muted">${esc(p.detail)}</div>${alts}` : r && !r.items.length ? `<span class="muted">Unimarc no tiene un producto parecido (busqué "${esc(r.q)}")</span>` : ""}</td>
+      <td class="n">${p && fd.p >= 5 ? fmtClp(p.perKg / fd.p) : "—"}</td></tr>`; }).join("")}</tbody></table></div>`);
+  const hist = finPriceRows();
+  setHTML($("#finPriceHist"), hist.length ? `<div class="scroll"><table><thead><tr><th>Producto</th><th class="n">Último</th><th class="n">Mínimo</th><th class="n">Compras</th><th>Última compra</th></tr></thead><tbody>${hist.map(r => {
     const last = r.pts[r.pts.length - 1], min = Math.min(...r.pts.map(p => p.v)), u = r.liq ? "L" : "kg";
     return `<tr><td>${esc(r.name)}</td><td class="n">${fmtClp(last.v)}/${u}</td><td class="n">${fmtClp(min)}/${u}</td><td class="n">${r.pts.length}</td><td>${fmtShort(last.fecha)} <span class="small muted">${esc(last.comercio)}</span></td></tr>`;
   }).join("")}</tbody></table></div>` : `<p class="empty">Aún no hay precios. Aparecen al detallar compras con peso o volumen.</p>`);
@@ -4016,21 +4026,22 @@ async function finReceiptItems(m, photos, note){
   if (!rec.items.length) return {items: [], total: rec.total, lines, tries};
   const prods = rec.items.map((it, i) => ({i, linea: it.name, desc: it.disc})).filter(x => !x.desc).map(({i, linea}) => ({i, linea}));
   const r = await S.sample.json(`Estos productos vienen de una boleta de ${m.comercio}, con nombres abreviados.
-Mis alimentos: ${JSON.stringify(foodsForPrompt())}
+Alimentos: ${JSON.stringify(buyCatalog())}
 Para cada producto:
 - name: nombre completo y legible en español ("TIRITAS POLLO FUND" es "Tiritas de pollo", "LECHE S LACTOSA DE" es "Leche sin lactosa descremada"). Sin códigos ni montos.
-- foodId: id del alimento de la lista que es ese producto; si hay versión cruda o seca, elige esa; si no está, null.
+${BUY_FOOD_RULES}
 - cat: para qué es el producto, una de ${JSON.stringify(FIN_CATS)}. Comida y bebida para preparar o consumir en casa: "Supermercado" (nunca "Comida y delivery" ni "Restaurantes y bares", que son para comer fuera). Aseo, limpieza, papel, cocina y artículos de la casa: "Hogar". Farmacia y cuidado personal: "Salud". Alimento y cosas de mascotas: "Mascotas".
 ${note ? `Nota de la persona: ${note}\n` : ""}Productos: ${JSON.stringify(prods)}
-Responde solo con este JSON: {"items": [{"i": number, "name": string, "foodId": string o null, "cat": string}]}`, {modelTier: "default", maxTokens: 2000});
+Responde solo con este JSON: {"items": [{"i": number, "name": string, "foodId": string o null, "comida": boolean, "cat": string}]}`, {modelTier: "default", maxTokens: 2000});
   const byI = new Map((Array.isArray(r.items) ? r.items : []).map(x => [x && x.i, x || {}]));
   const items = rec.items.map((it, i) => {
     const x = byI.get(i) || {};
-    return {name: typeof x.name === "string" && x.name.trim() ? x.name.trim() : it.name, foodId: foodOf(x.foodId) ? x.foodId : null,
+    return {name: typeof x.name === "string" && x.name.trim() ? x.name.trim() : it.name, foodId: typeof x.foodId === "string" ? x.foodId : null, food: x.comida === false ? false : undefined,
       qty: it.qty, unit: it.unit, each: it.each, eachUnit: it.eachUnit, price: it.price, per: it.per, total: it.total, cat: FIN_CATS.includes(x.cat) ? x.cat : "", of: it.disc ? it.of : null, pkg: it.unit === "un"};
   });
   // cada descuento toma la categoría del producto al que se aplica
   rec.items.forEach((it, i) => { if (it.disc && it.of !== null){ items[i].cat = items[it.of].cat; items[i].name = "Descuento " + items[it.of].name.toLowerCase(); } });
+  items.forEach(finFixFood);
   return {items, total: rec.total, lines, tries};
 }
 async function finDetAI(){
@@ -4053,7 +4064,7 @@ async function finDetAI(){
   }
   try {
     const r = await S.sample.json(`Separa en productos lo que compró esta persona. Si es un servicio o una sola cosa (por ejemplo "evaluación personal trainer"), devuelve un solo ítem con ese nombre. Compra: ${m.comercio}, ${m.fecha}, total ${m.monto} pesos chilenos.
-Mis alimentos: ${JSON.stringify(foodsForPrompt())}
+Alimentos: ${JSON.stringify(buyCatalog())}
 Reglas:
 - Un ítem por producto distinto.
 - Copia solo los números que aparecen en el texto; usa null si no están. No calcules ni estimes montos ni pesos.
@@ -4062,27 +4073,31 @@ Reglas:
 - each y eachUnit: contenido de cada unidad si el texto lo dice, en "g" o "ml" ("bidón de 20 L" es each 20000, eachUnit "ml"); si no, null.
 - price y per: precio informado y su base, "un", "kg" o "L" ("$2.100 el kg" es price 2100, per "kg").
 - total: lo pagado por ese producto, solo si el texto lo dice.
-- foodId: id del alimento de la lista que es ese producto; si hay versión cruda o seca, elige esa; si no está, null.
+${BUY_FOOD_RULES}
 - cat: una de ${JSON.stringify(FIN_CATS)}.
 Texto: ${text || "(solo foto)"}
-Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]}`, {modelTier: "default"});
-    let items = finItemsFromAI(r.items);
+Responde solo con este JSON: {"items": [{"name": string, "foodId": string o null, "comida": boolean, "qty": number o null, "unit": string, "each": number o null, "eachUnit": "g" o "ml", "price": number o null, "per": string o null, "total": number o null, "cat": string}]}`, {modelTier: "default"});
+    let items = finItemsFromAI(r.items).map(finFixFood);
     // un servicio o algo que no se separa en productos queda como un solo ítem por el total
     if (!items.length) items = [{name: text, foodId: null, qty: 1, unit: "un", each: null, eachUnit: "g", price: null, per: null, total: m.monto, cat: ""}];
-    S.finDraft = {...d, items}; st.textContent = "Revisa cantidades y precios antes de guardar.";
+    const nNew = items.filter(it => it.ref).length;
+    S.finDraft = {...d, items}; st.textContent = `Revisa cantidades y precios antes de guardar.${nNew ? ` ${nNew === 1 ? "Un producto no estaba" : nNew + " productos no estaban"} en tu base: los agrego al guardar.` : ""}`;
     renderFinDet();
   } catch (e) { st.textContent = aiErr(e); }
 }
 function finDetSave(){
   const d = S.finDraft, m = d && S.movs.find(x => x.id === d.id); if (!m) return;
+  const keys = d.items.filter(it => it.ref && !it.foodId).map(it => it.ref);
+  const made = keys.length ? refEnsure(keys) : {ids: {}, added: []};
+  d.items.forEach(it => { if (it.ref && !it.foodId) it.foodId = made.ids[it.ref] || null; });
   const c = finCalc(d.items, m.monto);
   const items = c.items.map(({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, of, pkg, amt, g, gEst, perKg, rest}) => ({name, foodId, qty, unit, each, eachUnit, price, per, total, cat, of: of ?? null, pkg: !!pkg, amt, g, gEst, perKg, rest}));
   const doc = {text: $("#finDetText").value.trim(), items};
-  S.movDet[m.id] = doc; S.finDraft = null; finDetClearPhoto(); renderFin();
+  S.movDet[m.id] = doc; S.finDraft = null; PRICE_IDX = null; finDetClearPhoto(); renderAll(); renderFin();
   Store.write("movdet/" + encodeURIComponent(m.id), doc);
   // describir la compra ya es revisarla
   if (!m.revisado) finMarkReviewed([m.id]);
-  toast("Detalle guardado.");
+  toast(made.added.length ? `Detalle guardado. Agregué a tu base: ${made.added.join(", ")}.` : "Detalle guardado.");
 }
 function renderCoach(){
   const revs = S.lib.coach || [];
@@ -4138,7 +4153,8 @@ function renderCalc(){
 const foods = () => S.lib.foods || [];
 function findFood(q){
   const n = norm(q); if (!n) return null;
-  const all = foods();
+  // ante un nombre parcial, primero la versión cocida
+  const all = [...foods()].sort((a, b) => isRawFood(a) - isRawFood(b));
   return all.find(f => norm(f.name) === n) || all.find(f => (f.aliases || []).some(a => norm(a) === n))
     || all.find(f => norm(f.name).startsWith(n)) || all.find(f => norm(f.name).includes(n)) || null;
 }
@@ -4161,6 +4177,22 @@ function mealFromItems(items, desc, time){
     plants: [...new Set(items.filter(i => i.plant).map(i => plantKey(i.name)))], items: clone(items), ai: items.some(i => i.ai)};
 }
 function foodsForPrompt(){ return foods().map(f => ({id: f.id, nombre: f.name, alias: f.aliases, porcion: f.unit ? `1 ${f.unit} = ${f.unitG} g` : undefined})); }
+// Alimentos para asociar una compra: tu base más las versiones del catálogo que no tienes (id "ref:clave:raw|cooked")
+const buyCatalog = () => [...foods().map(f => ({id: f.id, nombre: f.name})), ...FOOD_REF.flatMap(e => ["raw", "cooked"].filter(v => !refExisting(e, v)).map(v => ({id: `ref:${e.key}:${v}`, nombre: e[v][0]})))];
+const BUY_FOOD_RULES = `- foodId: id del alimento de la lista que es ese producto, o null si no está. La carne, el pollo y el pescado se compran crudos: elige la versión que dice "(cruda)" o "(crudo)". El arroz, los fideos y las legumbres se compran secos: si no hay versión seca, elige la cocida.
+- comida: true si es algo para comer o beber; false si no (aseo, hogar, mascotas, farmacia).`;
+// Ajusta el alimento de un producto comprado: id del catálogo, carne comprada cruda asociada a su versión cocida, o sin alimento pero nombrado en el catálogo
+function finFixFood(it){
+  if (typeof it.foodId === "string" && it.foodId.startsWith("ref:")){ it.ref = it.foodId.slice(4); it.foodId = null; }
+  if (it.foodId && !foodOf(it.foodId)) it.foodId = null;
+  const fd = foodOf(it.foodId), cooked = PRICE_COOKED.test(norm(it.name));
+  if (fd && !cooked && !isRawFood(fd) && /cocid/.test(norm(fd.name))){
+    const r = refFind(fd.name), raw = rawOf(fd) || (r && refExisting(r.e, "raw"));
+    if (raw) it.foodId = raw.id; else if (r){ it.ref = r.e.key + ":raw"; it.foodId = null; }
+  }
+  if (!it.foodId && !it.ref && it.food !== false){ const r = refFind(it.name); if (r) it.ref = `${r.e.key}:${r.state === "cooked" || cooked ? "cooked" : "raw"}`; }
+  return it;
+}
 const ITEMS_SCHEMA = `[{"foodId": string o null, "name": string, "g": number, "kcal": number o null, "p": number o null, "c": number o null, "f": number o null, "fib": number o null, "plant": boolean}]`;
 const ITEMS_RULES = `Descompón cada comida en ingredientes sin omitir ninguno (incluye aceites, aderezos, salsas y bebidas si se mencionan). Si el plato completo está en mis alimentos, usa ese foodId como un solo ingrediente. Si no, un plato preparado o una comida típica nunca va como un solo ingrediente: sepáralo en sus componentes con las cantidades habituales. Por ejemplo, un completo italiano es pan de completo (~70 g), vienesa (~50 g), tomate (~40 g), palta (~40 g) y mayonesa (~20 g); un churrasco italiano es pan frica, carne de vacuno, tomate, palta y mayonesa; una cazuela es carne, papa, zapallo, choclo, arroz y verduras. Para cada ingrediente estima los gramos tal como se come (si está cocido, gramos del alimento cocido). Si el ingrediente corresponde a uno de mis alimentos, pon su foodId y deja kcal, p, c, f y fib en null: esos valores los calcula la app. Si no corresponde a ninguno, pon foodId null y estima kcal, p, c, f y fib para esos gramos, usando valores de alimento cocido cuando corresponda. "plant" es true para vegetales, frutas, legumbres, cereales integrales, frutos secos y semillas.`;
 
@@ -4170,28 +4202,199 @@ function renderBuild(){
   const chip = c => `<button class="chip" data-action="combo-load" data-id="${c.id}">${c.time && tpl.includes(c) ? esc(c.time) + " · " : ""}${esc(c.name)}</button>`;
   setHTML($("#comboChips"), (tpl.length ? `<span class="small muted" style="align-self:center">Plan de ${KIND_LABEL[kind]}:</span>` + tpl.map(chip).join("") : "")
     + (rest.length ? `<span class="small muted" style="align-self:center">${tpl.length ? "Otras frecuentes:" : "Frecuentes:"}</span>` + rest.map(chip).join("") : ""));
+  const miss = S.fdMiss;
+  setHTML($("#fdMiss"), miss ? `<div class="opt-note"><span>«${esc(miss.name)}» no está en tu base.</span><span class="plate-act"><button class="btn small primary" data-action="fd-miss-add">Agregarlo${miss.g ? " y sumarlo" : ""}</button><button class="btn small ghost" data-action="fd-miss-close">Cerrar</button></span></div><p class="small muted" id="fdMissStatus" style="margin:4px 0 0"></p>` : "");
   if (!items.length){ setHTML($("#buildBox"), `<p class="small muted" style="margin:0">Busca un alimento y su cantidad, elige una comida frecuente o desglosa con IA.</p>`); return; }
   const t = mealFromItems(items);
   setHTML($("#buildBox"), `<div class="scroll"><table class="build"><thead><tr><th>Ingrediente</th><th class="n">g</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th></th></tr></thead><tbody>
-    ${items.map(i => `<tr><td>${esc(i.name)} ${i.ai ? '<span class="tag">estimado IA</span>' : ""}</td><td class="n">${fmt(i.g)}</td><td class="n">${fmt(i.kcal)}</td><td class="n">${fmt(i.p)}</td><td class="n">${fmt(i.c)}</td><td class="n">${fmt(i.f)}</td><td class="n">${fmt(i.fib)}</td>
+    ${items.map(i => `<tr><td>${esc(i.name)} ${i.ai ? `<span class="tag">estimado IA</span> <button class="btn ghost small" data-action="build-to-base" data-id="${i.id}">Agregar a mi base</button>` : ""}</td><td class="n">${fmt(i.g)}</td><td class="n">${fmt(i.kcal)}</td><td class="n">${fmt(i.p)}</td><td class="n">${fmt(i.c)}</td><td class="n">${fmt(i.f)}</td><td class="n">${fmt(i.fib)}</td>
       <td class="n"><button class="btn small ghost" data-action="build-edit" data-id="${i.id}">Gramos</button><button class="btn small ghost danger" data-action="build-del" data-id="${i.id}" aria-label="Quitar">×</button></td></tr>`).join("")}
     </tbody><tfoot><tr><td>Total</td><td></td><td class="n">${fmt(t.kcal)}</td><td class="n">${fmt(t.p)}</td><td class="n">${fmt(t.c)}</td><td class="n">${fmt(t.f)}</td><td class="n">${fmt(t.fib)}</td><td></td></tr></tfoot></table></div>
+    <div class="small" style="margin-top:6px">Costo: ${costHtml(items)}</div>
     <div class="row" style="margin-top:8px"><button class="btn primary" data-action="build-save">Registrar comida</button><button class="btn" data-action="combo-save">Guardar como frecuente</button><button class="btn ghost small" data-action="build-clear">Vaciar</button></div>`);
 }
 function renderFoods(){
   const q = norm($("#foodFilter").value), list = foods().filter(f => !q || norm(f.name).includes(q) || (f.aliases || []).some(a => norm(a).includes(q))).sort((a, b) => a.name.localeCompare(b.name, "es"));
   $("#foodList").innerHTML = foods().map(f => `<option value="${esc(f.name)}">`).join("");
-  setHTML($("#foodTable"), list.length ? `<table><thead><tr><th>Alimento (por 100 g)</th><th>Grupo</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th>Porción</th><th>Fuente</th><th></th></tr></thead><tbody>
-    ${list.map(f => `<tr><td>${esc(f.name)}</td><td class="small"><span class="fg-dot" style="--c:var(--fg-${groupOf(f)})"></span>${esc(FG_LABEL[groupOf(f)])}${f.group ? "" : ` <span class="muted">(auto)</span>`}</td><td class="n">${fmt(f.kcal)}</td><td class="n">${fmt(f.p, 1)}</td><td class="n">${fmt(f.c, 1)}</td><td class="n">${fmt(f.f, 1)}</td><td class="n">${fmt(f.fib, 1)}</td>
+  setHTML($("#foodTable"), list.length ? `<table><thead><tr><th>Alimento (por 100 g)</th><th>Grupo</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th><th class="n">Precio</th><th>Porción</th><th>Fuente</th><th></th></tr></thead><tbody>
+    ${list.map(f => `<tr><td>${esc(f.name)}</td><td class="small"><span class="fg-dot" style="--c:var(--fg-${groupOf(f)})"></span>${esc(FG_LABEL[groupOf(f)])}${f.group ? "" : ` <span class="muted">(auto)</span>`}</td><td class="n">${fmt(f.kcal)}</td><td class="n">${fmt(f.p, 1)}</td><td class="n">${fmt(f.c, 1)}</td><td class="n">${fmt(f.f, 1)}</td><td class="n">${fmt(f.fib, 1)}</td><td class="n small">${(p => p ? `${fmtClp(p.perKg)}/${p.u}<div class="muted">${priceSrc(p)}</div>` : `<span class="muted">—</span>`)(foodPrice(f))}</td>
       <td class="small">${f.unit ? `1 ${esc(f.unit)} = ${fmt(f.unitG)} g` : "—"}</td><td><span class="tag" style="${/revisar/.test(f.source || "") ? "border-color:var(--food);color:var(--food)" : ""}">${esc(f.source || "")}</span></td>
       <td class="n"><button class="btn small ghost" data-action="food-edit" data-id="${f.id}">Editar</button><button class="btn small ghost danger" data-action="food-del" data-id="${f.id}">Borrar</button></td></tr>`).join("")}</tbody></table>`
     : `<p class="empty">No hay alimentos que coincidan. Agrega uno o lee una etiqueta.</p>`);
-  setHTML($("#comboList"), (S.lib.combos || []).length ? `<ul class="list">${S.lib.combos.map(c => { const m = mealFromItems(comboItems(c)); return `<li class="item-head"><strong>${esc(c.name)}</strong><span class="small muted">${c.time ? esc(c.time) + " · " : ""}${fmt(m.kcal)} kcal, ${fmt(m.p)} g proteína, ${c.items.length} ingredientes</span><span class="act"><span class="chips">${["tele", "ofi"].map(k => `<button class="chip${c.day === k ? " sel" : ""}" data-action="combo-day" data-id="${c.id}" data-v="${k}" aria-pressed="${c.day === k}">${KIND_LABEL[k]}</button>`).join("")}</span><button class="btn small" data-action="combo-load" data-id="${c.id}">Usar</button><button class="btn small ghost danger" data-action="combo-del" data-id="${c.id}">Borrar</button></span></li>`; }).join("")}</ul>`
+  setHTML($("#comboList"), (S.lib.combos || []).length ? `<ul class="list">${S.lib.combos.map(c => { const m = mealFromItems(comboItems(c)); return `<li class="item-head"><strong>${esc(c.name)}</strong><span class="small muted">${c.time ? esc(c.time) + " · " : ""}${fmt(m.kcal)} kcal, ${fmt(m.p)} g proteína, ${c.items.length} ingredientes${(k => k.any ? `, ${k.missing.length ? "≈ " : ""}${fmtClp(Math.round(k.cost))}` : "")(itemsCost(comboItems(c)))}</span><span class="act"><span class="chips">${["tele", "ofi"].map(k => `<button class="chip${c.day === k ? " sel" : ""}" data-action="combo-day" data-id="${c.id}" data-v="${k}" aria-pressed="${c.day === k}">${KIND_LABEL[k]}</button>`).join("")}</span><button class="btn small" data-action="combo-load" data-id="${c.id}">Usar</button><button class="btn small ghost danger" data-action="combo-del" data-id="${c.id}">Borrar</button></span></li>`; }).join("")}</ul>`
     : `<p class="empty">Arma una comida con ingredientes y presiona "Guardar como frecuente" para reutilizarla con un clic.</p>`);
   $("#comboHint").hidden = !(S.lib.combos || []).length;
   $("#foodSum").textContent = `${foods().length} alimentos · ${(S.lib.combos || []).length} comidas frecuentes`;
 }
 function comboItems(c){ return (c.items || []).map(it => { const fd = it.foodId && foods().find(f => f.id === it.foodId); return fd ? itemFromFood(fd, it.g) : {...it, id: uid()}; }); }
+
+
+/* ---------- crudo y cocido ----------
+   FOOD_REF: carnes y pescados con su versión cruda y cocida, valores por 100 g. Al registrar uno que no está en tu base,
+   se agregan las dos versiones. La relación entre ambas es k de PREP: gramos crudos por gramo cocido. */
+const FOOD_REF = [
+  ["pechuga", ["pechuga de pollo", "pechuga deshuesada", "pechuga", "filetitos de pollo", "filete de pollo"], ["Pechuga de pollo (cruda)", 120, 22.5, 0, 2.6, "USDA aprox."], ["Pechuga de pollo cocida", 165, 31, 0, 3.6, "USDA aprox."]],
+  ["trutro", ["trutro de pollo", "trutro deshuesado", "trutro"], ["Trutro de pollo deshuesado (crudo)", 121, 19.7, 0, 4.1, "USDA aprox."], ["Trutro de pollo deshuesado cocido", 179, 24.8, 0, 8.2, "USDA aprox."]],
+  ["molida", ["carne molida", "molida", "carne picada", "vacuno molido"], ["Carne molida de vacuno 10% grasa (cruda)", 176, 20, 0, 10, "USDA aprox."], ["Carne molida de vacuno 10% grasa cocida", 217, 26.1, 0, 11.7, "USDA aprox."]],
+  ["asiento", ["asiento"], ["Asiento (crudo)", 150, 21, 0, 7, "aprox., revisar"], ["Asiento cocido", 190, 28, 0, 8, "USDA aprox., revisar"]],
+  ["posta", ["posta rosada", "posta"], ["Posta rosada (cruda)", 130, 21, 0, 4, "aprox., revisar"], ["Posta rosada cocida", 180, 30, 0, 6, "USDA aprox., revisar"]],
+  ["lomo", ["lomo liso", "lomo vetado", "lomo"], ["Lomo liso (crudo)", 190, 22, 0, 11, "aprox., revisar"], ["Lomo liso cocido", 200, 29, 0, 9, "USDA aprox., revisar"]],
+  ["chuleta", ["chuleta de cerdo", "chuleta"], ["Chuleta de cerdo (cruda)", 172, 19.5, 0, 10.4, "aprox., revisar"], ["Chuleta de cerdo cocida", 230, 25, 0, 14, "USDA aprox., revisar"]],
+  ["salmon", ["filete de salmon", "salmon"], ["Salmón (crudo)", 208, 20.4, 0, 13.4, "USDA aprox."], ["Salmón cocido", 206, 22.1, 0, 12.4, "USDA aprox."]]
+].map(([key, alias, raw, cooked]) => ({key, alias, raw, cooked}));
+const RAW_TAG = /\s*\((crud[oa]s?|sec[oa]s?)\)/;
+const COOKED_WORDS = /\b(cocid[oa]s?|asad[oa]s?|a la plancha|guisad[oa]s?|horneado|al horno|frit[oa]s?|preparad[oa]s?)\b/;
+// Nombre sin "(cruda)" ni "cocido": "Pechuga de pollo (cruda)" y "Pechuga de pollo cocida" comparten "pechuga de pollo"
+const baseName = name => norm(name).replace(RAW_TAG, "").replace(/\s+(cocid[oa]s?|al vapor)\b.*$/, "").trim();
+const isRawFood = fd => RAW_TAG.test(norm(fd.name));
+// Versión cruda o seca de un alimento cocido de tu base
+function rawOf(fd){ const b = baseName(fd.name); return foods().find(f => f !== fd && isRawFood(f) && baseName(f.name) === b) || null; }
+// Entrada del catálogo que nombra el texto (el alias más largo) y si el texto dice crudo o cocido
+function refFind(text){
+  const t = norm(text); let best = null;
+  for (const e of FOOD_REF) for (const a of e.alias){ const n = norm(a); if (new RegExp(`(^|[^a-z])${n}([^a-z]|$)`).test(t) && (!best || n.length > best.n)) best = {e, n}; }
+  return best && {e: best.e, state: /\bcrud[oa]s?\b/.test(t) ? "raw" : COOKED_WORDS.test(t) ? "cooked" : null};
+}
+const refName = k => { const [key, v] = k.split(":"), e = FOOD_REF.find(x => x.key === key); return e ? e[v][0] : ""; };
+function refExisting(e, v){
+  const n = norm(e[v][0]), b = baseName(e.raw[0]);
+  return foods().find(f => norm(f.name) === n) || foods().find(f => baseName(f.name) === b && (v === "raw" ? isRawFood(f) : !isRawFood(f) && /cocid/.test(norm(f.name)))) || null;
+}
+const refFood = (e, v) => { const [name, kcal, p, c, f, source] = e[v]; return {name, aliases: [], kcal, p, c, f, fib: 0, unit: null, unitG: null, plant: false, group: "prot", source}; };
+// Agrega a la base las versiones que falten de cada par pedido ("molida:raw") y devuelve el id de la versión pedida
+function refEnsure(keys){
+  const ids = {}, add = [];
+  for (const k of new Set(keys)){
+    const [key, v] = k.split(":"), e = FOOD_REF.find(x => x.key === key); if (!e || !e[v]) continue;
+    for (const w of ["raw", "cooked"]) if (!refExisting(e, w) && !add.some(a => a.ref === key + ":" + w)) add.push({id: "f-" + uid(), ...refFood(e, w), ref: key + ":" + w});
+    ids[k] = (refExisting(e, v) || add.find(a => a.ref === k)).id;
+  }
+  if (add.length) saveLib("foods", l => { add.forEach(({ref, ...f}) => l.push(f)); });
+  return {ids, added: add.map(a => a.name)};
+}
+
+/* ---------- agente de alimentos ----------
+   Busca el alimento en el catálogo (FOOD_REF); si no está, la IA propone sus valores por 100 g y quedan marcados para revisar.
+   ctx "eat": por defecto la versión cocida; ctx "buy": la cruda. done(id) recibe el alimento ya guardado. */
+async function foodAgent(text, ctx, st, done){
+  const r = refFind(text);
+  if (r){
+    const {ids, added} = refEnsure([`${r.e.key}:${r.state || (ctx === "buy" ? "raw" : "cooked")}`]), id = Object.values(ids)[0];
+    if (st) st.textContent = added.length ? `Agregué a tu base ${added.join(" y ")}, con valores de referencia (${r.e.raw[5]}). Corrígelos si tu corte es distinto.` : `${foodOf(id).name} ya estaba en tu base.`;
+    done(id); return;
+  }
+  const form = f => openDialog("Nuevo alimento (revisa los valores)", FOOD_FIELDS(f), v => { const id = "f-" + uid(); saveLib("foods", l => { l.push({id, ...foodFromForm(v)}); }); done(id); });
+  if (!S.sample){ form({name: text}); return; }
+  if (st) st.innerHTML = `<span class="spin"></span> Buscando los valores de ${esc(text)}…`;
+  try {
+    const x = await S.sample.json(`Valores nutricionales de este alimento tal como se come, por 100 g (o 100 ml si es líquido), según tablas de referencia (USDA o la tabla chilena de composición de alimentos).
+Alimento: ${text}
+Si no dice si está crudo o cocido y es algo que se cocina (carnes, pescados, arroz, fideos, legumbres), usa la versión ${ctx === "buy" ? "cruda y nómbrala \"... (crudo)\" o \"... (cruda)\"" : "cocida y nómbrala \"... cocido\" o \"... cocida\""}.
+Responde solo con este JSON: {"name": string (nombre corto en español de Chile, con la marca si la dice), "kcal": number, "p": number, "c": number (carbohidratos disponibles), "f": number, "fib": number, "unit": string o null (porción natural, como "unidad", "rebanada" o "pote"), "unitG": number o null, "plant": boolean (vegetal, fruta, legumbre, cereal integral, fruto seco o semilla)}`, {modelTier: "default", maxTokens: 400});
+    const n = v => typeof v === "number" && isFinite(v) && v >= 0 ? r1(v) : null;
+    if (st) st.textContent = "Valores estimados por la IA: revísalos antes de guardar.";
+    form({name: typeof x.name === "string" && x.name.trim() ? x.name.trim() : text, kcal: n(x.kcal), p: n(x.p), c: n(x.c), f: n(x.f), fib: n(x.fib), unit: typeof x.unit === "string" ? x.unit : null, unitG: n(x.unitG), plant: !!x.plant, source: "estimado IA, revisar"});
+  } catch (e) { if (st) st.textContent = aiErr(e); form({name: text}); }
+}
+
+/* ---------- precios de los alimentos ----------
+   Precio por kg (o litro) de cada alimento tal como se come, con su fuente:
+   1. la última compra detallada del alimento o de su versión cruda o seca; lo comprado sin cocinar se multiplica por k de PREP;
+   2. el precio de referencia de Unimarc (lib.prices.refs[id del alimento]: {q, date, k, items, pick});
+   3. sin precio. */
+const PRICE_COOKED = /cocid|asad|preparad|horneado|frit|ecook|listo/;
+let PRICE_IDX = null;
+function priceIdx(){
+  if (PRICE_IDX) return PRICE_IDX;
+  const idx = {};
+  for (const m of [...S.movs].sort((a, b) => a.fecha.localeCompare(b.fecha)))
+    for (const it of (S.movDet[m.id] || {}).items || []) if (it.foodId && it.perKg > 0) idx[it.foodId] = {perKg: it.perKg, fecha: m.fecha, comercio: m.comercio, name: it.name};
+  return PRICE_IDX = idx;
+}
+const prepK = fd => { const pr = prepOf(fd); return pr && pr.k !== 1 ? pr.k : 1; };
+const priceRefs = () => (S.lib.prices || {}).refs || {};
+const isLiquidFood = fd => /^(leche|jugo|bebida|kefir|agua)/.test(norm(fd.name));
+// Precio por kg o litro de un producto de Unimarc para este alimento; por unidad, con los gramos de su porción
+const refPerKg = (fd, it, k) => { const v = it.per === "un" ? (fd.unitG ? it.unitPrice / fd.unitG * 1000 : null) : it.unitPrice; return v ? v * (k || 1) : null; };
+function foodPrice(fd){
+  if (!fd) return null;
+  const idx = priceIdx(), k = prepK(fd), u = isLiquidFood(fd) ? "L" : "kg", opts = [], own = idx[fd.id];
+  if (own){ const dry = k !== 1 && !PRICE_COOKED.test(norm(own.name)); opts.push({...own, k: dry ? k : 1}); }
+  const rw = k !== 1 ? rawOf(fd) : null, rb = rw && idx[rw.id];
+  if (rb) opts.push({...rb, k, raw: rw.name});
+  const b = opts.sort((x, y) => y.fecha.localeCompare(x.fecha))[0];
+  if (b) return {perKg: b.perKg * b.k, u, kind: "compra", fecha: b.fecha, label: `tu compra en ${b.comercio}, ${fmtShort(b.fecha)}`,
+    detail: `${b.raw ? b.raw : b.name}: ${fmtClp(b.perKg)}/${u}${b.k !== 1 ? ` sin cocinar, × ${fmt(b.k, 2)} por la cocción` : ""}`};
+  const r = priceRefs()[fd.id], it = r && (r.items || [])[r.pick || 0], v = it && refPerKg(fd, it, r.k);
+  if (v) return {perKg: v, u, kind: "unimarc", fecha: r.date, url: it.url, label: `Unimarc, ${fmtShort(r.date)}`,
+    detail: `${it.name}, ${fmtClp(it.price)} (${fmtClp(it.unitPrice)} por ${it.per === "un" ? "unidad" : it.per})${r.k !== 1 ? `, × ${fmt(r.k, 2)} por la cocción` : ""}`};
+  return null;
+}
+const priceSrc = p => p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.label)}</a>` : esc(p.label);
+// Costo de una lista de ingredientes: gramos × precio de cada uno; sin precio no suman
+function itemsCost(items){
+  const lines = (items || []).map(it => { const p = foodPrice(foodOf(it.foodId)); return {it, p, cost: p && it.g ? it.g / 1000 * p.perKg : null}; });
+  const known = lines.filter(l => l.cost !== null);
+  return {lines, cost: sum(known, l => l.cost), gAll: sum(lines, l => l.it.g || 0), gKnown: sum(known, l => l.it.g || 0), missing: lines.filter(l => l.cost === null).map(l => l.it.name), any: known.length > 0};
+}
+function costHtml(items){
+  const c = itemsCost(items); if (!c.any) return `<span class="muted">—</span>`;
+  return `<details class="cost"><summary>${c.missing.length ? "≈ " : ""}${fmtClp(Math.round(c.cost))}</summary><div class="cost-pop">${c.lines.map(l => `<div><span>${esc(l.it.name)} ${fmt(l.it.g)} g</span><span>${l.cost === null ? "sin precio" : fmtClp(Math.round(l.cost))}</span>${l.p ? `<small>${fmtClp(l.p.perKg)}/${l.p.u} · ${priceSrc(l.p)}</small>` : ""}</div>`).join("")}${c.missing.length ? `<p>Sin precio: ${esc(c.missing.join(", "))}.</p>` : ""}</div></details>`;
+}
+/* Precio de referencia en Unimarc: busca el alimento (crudo o seco si se cocina) y elige el producto más parecido.
+   Parecido = parte de las palabras de la búsqueda que están en el nombre, con la primera obligatoria; suma 0,5 si el nombre
+   parte con ella; resta 0,6 por cada palabra de producto procesado que la búsqueda no tiene y 0,5 si se vende por litro
+   y el alimento no es líquido (o al revés). Entre los empatados, el de precio por kg del medio. */
+const REF_STOP = new Set(["de", "del", "la", "el", "los", "las", "con", "en", "al"]);
+const REF_NONFOOD = /^\/(hogar|mascotas|limpieza|perfumeria|cuidado|bebe|bazar|electro|libreria|automovil|tecnologia|farmacia)/;
+const REF_PROC = ["cocid", "asad", "apanad", "rebozad", "nugget", "preparad", "hamburguesa", "ahumad", "marinad", "sabor", "chocolate", "postre", "helado", "listo", "sopa",
+  "salsa", "galleta", "brownie", "chips", "compota", "cereal", "barra", "gnocchi", "instantane", "jugo", "nectar", "leche", "yoghurt", "batido", "sin gluten", "organic", " con "];
+// Palabras con que Unimarc nombra lo mismo
+const REF_SYN = [[/\bfideos\b/, "spaghetti"], [/\byogur\b/, "yoghurt"]];
+const REF_DAYS = 14;
+const refQuery = fd => {
+  let q = String(prepK(fd) !== 1 ? prepOf(fd).base : fd.name).toLowerCase().replace(RAW_TAG, "").replace(/\(.*?\)/g, " ")
+    .replace(/\b(cocid[oa]s?|crud[oa]s?|enter[oa]s?|natural)\b/g, " ").replace(/[^a-z0-9áéíóúüñ% ]/g, " ").replace(/\s+/g, " ").trim();
+  for (const [rx, w] of REF_SYN) q = q.replace(rx, w);
+  return q.split(" ").slice(0, 4).join(" ");
+};
+function refRank(fd, q, items){
+  const nq = norm(q), toks = nq.split(" ").filter(t => t.length > 1 && !REF_STOP.has(t)), want = ` ${nq} `;
+  if (!toks.length) return null;
+  const liq = isLiquidFood(fd) || /^(aceite|vinagre)/.test(norm(fd.name));
+  const sc = items.filter(it => !REF_NONFOOD.test(norm(it.cat)) && refPerKg(fd, it, 1)).map(it => {
+    const n = ` ${norm(it.name)} `; if (!n.includes(toks[0])) return null;
+    let v = toks.filter(t => n.includes(t)).length / toks.length + (n.startsWith(` ${toks[0]}`) ? .5 : 0);
+    for (const w of REF_PROC) if (n.includes(w) && !want.includes(w)) v -= .6;
+    if ((it.per === "L") !== liq && it.per !== "un") v -= .5;
+    return {it, v};
+  }).filter(x => x && x.v >= .5);
+  if (!sc.length) return null;
+  const best = Math.max(...sc.map(x => x.v)), pk = x => refPerKg(fd, x.it, 1);
+  const top = sc.filter(x => x.v >= best - 1e-9).sort((a, b) => pk(a) - pk(b)), rest = sc.filter(x => x.v < best - 1e-9).sort((a, b) => b.v - a.v);
+  return {items: [...top, ...rest].slice(0, 8).map(x => x.it), pick: Math.min(Math.floor((top.length - 1) / 2), 7)};
+}
+async function refFetch(fd){
+  const q = refQuery(fd); if (q.length < 2) return null;
+  const get = () => finApi("GET", "precio?q=" + encodeURIComponent(q));
+  const r = await get().catch(get), rk = refRank(fd, q, r.items || []);
+  return {q, date: today(), k: prepK(fd), items: rk ? rk.items : [], pick: rk ? rk.pick : 0};
+}
+// Busca en Unimarc los alimentos sin compra propia cuya referencia falta o tiene más de 14 días (o todos, con force)
+async function refFetchAll(force){
+  if (S.refBusy) return; S.refBusy = true;
+  const st = $("#priceStatus"), refs = priceRefs();
+  const list = foods().filter(fd => fd.kcal > 0 && shopOf(fd) !== "ecook" && (foodPrice(fd) || {}).kind !== "compra" && (force || !refs[fd.id] || daysBetween(refs[fd.id].date, today()) > REF_DAYS));
+  const out = {}; let done = 0, fail = 0;
+  const work = async () => { while (list.length){ const fd = list.shift(); try { const r = await refFetch(fd); if (r) out[fd.id] = r; } catch { fail++; } done++; st.innerHTML = `<span class="spin"></span> Buscando en Unimarc: ${done} de ${done + list.length}…`; } };
+  try {
+    if (!list.length){ st.textContent = "Todos tus alimentos tienen un precio reciente."; return; }
+    await Promise.all([work(), work(), work()]);
+    const found = Object.values(out).filter(r => r.items.length).length;
+    if (Object.keys(out).length) saveLib("prices", p => ({...(p || {}), refs: {...priceRefs(), ...out}}));
+    st.textContent = `Listo: ${found} con precio de referencia${Object.keys(out).length - found ? `, ${Object.keys(out).length - found} sin un producto parecido en Unimarc` : ""}${fail ? `; ${fail} búsquedas fallaron` : ""}.`;
+  } finally { S.refBusy = false; }
+}
 
 /* ---------- semana: oficina, compras y cocina ---------- */
 // Día de oficina: un día hábil con bici registrada (va en bici a la oficina) o un día de la semana marcado en profile.officeDays.
@@ -4219,7 +4422,8 @@ function planDayText(date){
 const PREP = [
   [/^arroz.*cocido/, .4, true, "crudo"], [/^fideos.*cocidos/, .43, false, "secos"], [/^pechuga de pollo cocida/, 1.33, true, "cruda"],
   [/^(posta|lomo|asiento).*cocid/, 1.4, true, "crudo"], [/^chuleta.*cocida/, 1.35, true, "cruda"], [/^papa cocida/, 1.1, true, "crudas"],
-  [/^lentejas cocidas/, .4, true, "secas"], [/^garbanzos cocidos/, .45, true, "secos"], [/^brocoli/, 1.1, true, "crudo"], [/^huevo duro/, 1, true, ""]
+  [/^lentejas cocidas/, .4, true, "secas"], [/^garbanzos cocidos/, .45, true, "secos"], [/^brocoli/, 1.1, true, "crudo"], [/^huevo duro/, 1, true, ""],
+  [/^carne molida.*cocida/, 1.35, true, "cruda"], [/^trutro.*cocido/, 1.33, true, "crudo"], [/^salmon.*cocido/, 1.25, false, "crudo"]
 ];
 function prepOf(fd){
   const n = norm(fd.name), m = PREP.find(([rx]) => rx.test(n)); if (!m) return null;
@@ -4264,7 +4468,8 @@ function weekPlan(){
   const days = dates.map(date => { const kind = dayKind(date), tpl = templateOf(kind); tpl.forEach(c => comboItems(c).forEach(it => add(it, date))); return {date, kind, n: tpl.length}; });
   const items = [...need.values()].filter(e => e.g > 0);
   const shop = {feria: [], super: [], ecook: [], despensa: []};
-  items.forEach(e => shop[shopOf(e.fd)].push({name: prepOf(e.fd) ? prepOf(e.fd).base : e.fd.name, qty: buyQty(e.fd, e.g)}));
+  items.forEach(e => { const pr = e.fd.id ? foodPrice(e.fd) : null; shop[shopOf(e.fd)].push({name: prepOf(e.fd) ? prepOf(e.fd).base : e.fd.name, qty: buyQty(e.fd, e.g), cost: pr ? e.g / 1000 * pr.perKg : null}); });
+  const listed = Object.values(shop).flat(), cost = sum(listed, x => x.cost), noPrice = listed.filter(x => x.cost === null).length;
   Object.values(shop).forEach(l => l.sort((a, b) => a.name.localeCompare(b.name, "es")));
   // Sesiones de cocina: cada día de la semana queda a cargo de la última sesión anterior o igual a él.
   const sess = dates.filter(d => cd.includes(wdOf(d))).map(d => ({date: d, dates: [], items: []}));
@@ -4281,7 +4486,7 @@ function weekPlan(){
   if (items.some(e => shopOf(e.fd) === "ecook")) daily.push("calentar el eCook");
   daily.push("armar batidos, ensaladas y colaciones");
   const shopText = items.length ? `Compras ${fmtShort(from)} a ${fmtShort(dates[6])}\n` + Object.entries(shop).filter(([, l]) => l.length).map(([k, l]) => `\n${SHOP_LABEL[k]}\n` + l.map(x => `- ${x.name}: ${x.qty}`).join("\n")).join("\n") : "";
-  return {from, dates, days, shop, sess, daily, shopText, empty: !items.length, before: dates.filter(d => !sess.some(s => s.dates.includes(d)))};
+  return {from, dates, days, shop, sess, daily, shopText, cost, noPrice, empty: !items.length, before: dates.filter(d => !sess.some(s => s.dates.includes(d)))};
 }
 function renderWeek(){
   const w = weekPlan(), od = profile().officeDays || [], cd = cookDays();
@@ -4302,8 +4507,9 @@ function renderWeek(){
     ${w.empty ? `<p class="empty">Marca tus comidas frecuentes como de teletrabajo u oficina (más abajo, en Mis alimentos) para armar la lista de compras y lo que hay que cocinar.</p>` : `
     <div class="dash">
       <div><strong class="hud">Lista de compras</strong>
-        ${Object.entries(w.shop).filter(([, l]) => l.length).map(([k, l]) => `<div class="small" style="margin:12px 0 0;font-weight:600">${SHOP_LABEL[k]}</div><ul class="shop">${l.map(x => `<li><span>${esc(x.name)}</span><span>${esc(x.qty)}</span></li>`).join("")}</ul>`).join("")}
-        <p class="small muted" style="margin:10px 0 0">Las cantidades salen de los gramos de cada plan: lo que se cocina va en crudo o seco (arroz ×0,4, fideos ×0,43, pollo ×1,33, carne ×1,4, legumbres ×0,4).</p></div>
+        ${Object.entries(w.shop).filter(([, l]) => l.length).map(([k, l]) => `<div class="small" style="margin:12px 0 0;font-weight:600">${SHOP_LABEL[k]}</div><ul class="shop">${l.map(x => `<li><span>${esc(x.name)}</span><span>${esc(x.qty)}${x.cost ? ` <span class="muted">· ${fmtClp(Math.round(x.cost / 10) * 10)}</span>` : ""}</span></li>`).join("")}</ul>`).join("")}
+        ${w.cost ? `<p class="small" style="margin:10px 0 0">Costo estimado: <strong>${fmtClp(Math.round(w.cost / 100) * 100)}</strong>${w.noPrice ? ` <span class="muted">(${w.noPrice} ${w.noPrice === 1 ? "alimento sin precio no suma" : "alimentos sin precio no suman"})</span>` : ""}.</p>` : ""}
+        <p class="small muted" style="margin:10px 0 0">Las cantidades salen de los gramos de cada plan: lo que se cocina va en crudo o seco (arroz ×0,4, fideos ×0,43, pollo ×1,33, carne ×1,4, carne molida ×1,35, legumbres ×0,4). El costo sale de los precios de tus alimentos; los que no tienen precio no suman.</p></div>
       <div><strong class="hud">Qué cocinar</strong>
         ${w.before.length ? `<p class="small" style="margin:8px 0 0">${esc(w.before.map(d => WD[wdOf(d)]).join(", "))}: antes de tu primera sesión, usa lo que tengas o cocina al día.</p>` : ""}
         ${sessHtml || `<p class="small muted">Elige al menos un día de cocina.</p>`}
@@ -5352,10 +5558,28 @@ const actions = {
   "meal-estimate": () => estimateMeal(),
   "build-add": () => {
     const fd = findFood($("#fdFood").value), q = num($("#fdQty").value);
-    if (!fd){ toast("Ese alimento no está en tu base: agrégalo en Mis alimentos o usa la IA."); return; }
+    if (!fd){ const t = $("#fdFood").value.trim(); if (!t){ toast("Escribe un alimento."); return; } S.fdMiss = {name: t, g: $("#fdUnit").value === "g" ? q : null}; renderBuild(); return; }
     if (!q){ toast("Indica la cantidad."); return; }
     const g = $("#fdUnit").value === "u" && fd.unitG ? q * fd.unitG : q;
     S.build.push(itemFromFood(fd, g)); $("#fdFood").value = ""; $("#fdQty").value = ""; updateUnits(); renderBuild(); $("#fdFood").focus();
+  },
+  "fd-miss-close": () => { S.fdMiss = null; renderBuild(); },
+  "fd-miss-add": () => {
+    const miss = S.fdMiss; if (!miss) return;
+    foodAgent(miss.name, "eat", $("#fdMissStatus"), id => {
+      const fd = foodOf(id); S.fdMiss = null; $("#fdFood").value = ""; $("#fdQty").value = ""; updateUnits();
+      if (fd && miss.g) S.build.push(itemFromFood(fd, miss.g));
+      renderBuild(); if (fd) toast(miss.g ? `${fd.name} quedó en tu base y en esta comida.` : `${fd.name} quedó en tu base: indica la cantidad.`);
+      if (fd && !miss.g){ $("#fdFood").value = fd.name; updateUnits(); $("#fdQty").focus(); }
+    });
+  },
+  "build-to-base": el => {
+    const it = S.build.find(i => i.id === el.dataset.id); if (!it) return;
+    foodAgent(it.name, "eat", null, id => { const fd = foodOf(id); if (!fd) return; S.build = S.build.map(x => x.id === it.id ? {...itemFromFood(fd, it.g), id: it.id} : x); renderBuild(); toast(`${fd.name} quedó en tu base y en esta comida.`); });
+  },
+  "food-ask": () => {
+    const t = $("#foodAsk").value.trim(); if (!t){ toast("Escribe qué alimento quieres agregar."); return; }
+    foodAgent(t, /\bcrud/.test(norm(t)) ? "buy" : "eat", $("#foodAskStatus"), id => { const fd = foodOf(id); $("#foodAsk").value = ""; if (fd){ $("#foodFilter").value = baseName(fd.name).split(" ")[0]; renderFoods(); } });
   },
   "build-del": el => { S.build = S.build.filter(i => i.id !== el.dataset.id); renderBuild(); },
   "build-clear": () => { S.build = []; $("#mDesc").value = ""; $("#mealAiNote").textContent = ""; renderBuild(); },
@@ -5479,7 +5703,7 @@ const actions = {
     const saved = S.movDet[el.dataset.id];
     S.finDraft = {id: el.dataset.id, items: clone((saved && saved.items) || [])};
     $("#finDetText").value = (saved && saved.text) || ""; $("#finDetStatus").textContent = ""; finDetClearPhoto();
-    renderFinDet(); $("#finDetPanel").scrollIntoView({behavior: "smooth", block: "start"});
+    renderFinDet();
   },
   "fin-det-close": () => { S.finDraft = null; finDetClearPhoto(); renderFinDet(); },
   "fin-det-ai": () => finDetAI(),
@@ -5492,6 +5716,12 @@ const actions = {
     renderFinDet();
   },
   "fin-det-save": () => finDetSave(),
+  "fin-det-noref": el => { const it = S.finDraft && S.finDraft.items[+el.dataset.i]; if (!it) return; it.ref = null; renderFinDet(); },
+  "fin-det-food-new": el => {
+    const it = S.finDraft && S.finDraft.items[+el.dataset.i]; if (!it) return;
+    foodAgent(it.name, "buy", $("#finDetStatus"), id => { it.foodId = id; it.ref = null; renderFinDet(); });
+  },
+  "price-refs": () => refFetchAll(false),
   "fin-inbox-ok": el => finMarkReviewed([el.dataset.id]),
   "fin-inbox-all": () => finMarkReviewed(S.movs.filter(m => !m.revisado).map(m => m.id)),
   "fin-mov-del": async el => {
@@ -6261,6 +6491,11 @@ function wireUI(){
     const it = d.items[+t.dataset.i], f = t.dataset.f; if (!it) return;
     if (f === "name") it.name = t.value.trim() || it.name;
     else if (f === "qty" || f === "each") it[f] = num(t.value);
+    else if (f === "food"){
+      const v = t.value.trim(), fd = v ? foods().find(x => norm(x.name) === norm(v)) || findFood(v) : null, r = !fd && v ? refFind(v) : null;
+      it.foodId = fd ? fd.id : null; it.ref = r ? `${r.e.key}:${r.state || "raw"}` : null;
+      if (v && !fd && !r) toast(`«${v}» no está en tu base: usa "Agregarlo a mi base".`);
+    }
     else if (f === "price" || f === "total") it[f] = clp(t.value);
     else it[f] = t.value || (f === "cat" ? "" : null);
     t.blur(); renderFinDet();
@@ -6278,8 +6513,32 @@ function wireUI(){
     e.preventDefault(); Metro.toggle();
   });
   let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFin(); }, 150); });
+  $("#finDetDlg").addEventListener("close", () => { if (S.finDraft){ S.finDraft = null; finDetClearPhoto(); } });
+  $("#finPrices").addEventListener("change", e => {
+    const id = e.target.dataset.refPick; if (!id) return;
+    const v = +e.target.value; e.target.blur();
+    saveLib("prices", pr => { const refs = {...priceRefs()}; refs[id] = {...refs[id], pick: v}; return {...(pr || {}), refs}; });
+  });
+  $("#foodAsk").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); actions["food-ask"](); } });
+  // Secciones plegables: abierta o cerrada se recuerda por dispositivo; al abrir se redibuja su pestaña
+  const secOpen = secRead();
+  document.querySelectorAll("details.sec[id]").forEach(el => { if (el.id in secOpen) el.open = secOpen[el.id]; });
+  document.addEventListener("toggle", e => {
+    const el = e.target; if (!(el instanceof HTMLDetailsElement) || !el.matches("details.sec[id]")) return;
+    secWrite(el.id, el.open); if (!el.open) return;
+    if (el.closest("#tab-finanzas")){
+      renderFin();
+      if (el.id === "finPriceSec" && S.mode === "api" && !S.refAuto && foods().some(fd => !foodPrice(fd) && !priceRefs()[fd.id])){ S.refAuto = true; refFetchAll(false); }
+    }
+    else if (el.closest("#tab-entreno")){ renderAct(); renderProgress(); }
+    else if (el.closest("#tab-estudio")) renderStudy();
+    else if (el.closest("#tab-hoy")) renderHeat();
+  }, true);
   Metro.drawBeats(); Metro.setBpm(80);
 }
+const SEC_KEY = "lincoyan-open";
+function secRead(){ try { return JSON.parse(localStorage.getItem(SEC_KEY)) || {}; } catch { return {}; } }
+function secWrite(id, open){ try { const o = secRead(); o[id] = open; localStorage.setItem(SEC_KEY, JSON.stringify(o)); } catch {} }
 init();
 </script>
 </body>

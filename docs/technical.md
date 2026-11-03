@@ -33,7 +33,37 @@ El contexto general del proyecto (stack, modelo de datos, API y principios) est�
 - Para regenerar: `py tools/ilustraciones/build.py`. El script reemplaza el objeto `ILLU` de `public/index.html` entre `/* ILLU:inicio */` y `/* ILLU:fin */`.
 - Los colores son clases (`.b`, `.m`, `.mk`…) definidas en el CSS de la app con sus tokens, así que funcionan en modo claro y oscuro.
 
+## Nutrición y precios
+
+### Agente de alimentos (`foodAgent()`)
+- Se usa en "Agregar un alimento" (Mis alimentos), cuando un alimento del armado de comida no está en la base, en "Agregar a mi base" de un ingrediente estimado por la IA y en el detalle de una compra.
+- Primero busca en `FOOD_REF` (`refFind()`: el alias más largo contenido en el texto). Si está, `refEnsure()` agrega la versión cruda y la cocida que falten, sin preguntar. Al registrar comidas devuelve la cocida; en compras, la cruda; "crudo" o "cocido" en el texto mandan.
+- Si no está, la IA propone los valores por 100 g y se abre el formulario con la fuente "estimado IA, revisar".
+- Valores de `FOOD_REF`: pechuga, trutro, carne molida 10% y salmón de USDA aprox.; asiento, posta, lomo y chuleta crudos de la tabla propia (`data/bbdd_alimentos_consolidada.md`) o aprox., marcados "revisar".
+- `findFood()` prefiere la versión cocida ante un nombre parcial: "carne molida" en el armado de comida es la cocida.
+
+### Precio de cada alimento (`foodPrice()`)
+- Compras: `priceIdx()` guarda, por alimento, la última compra detallada con `perKg`. Un alimento cocido con k ≠ 1 en `PREP` toma su compra propia × k si el nombre del producto no dice cocido (`PRICE_COOKED`), o la compra de su versión cruda (`rawOf()`) × k. Entre las dos, la más reciente.
+- Huevos y otros por unidad: el `perKg` de la compra sale de `unitG`, el mismo que se usa al registrar, así el costo por unidad es exacto.
+- Unimarc: `refFetchAll()` busca los alimentos sin compra propia cuya referencia falta o tiene más de 14 días (`REF_DAYS`), de a 3 en paralelo, con un reintento por búsqueda. Se dispara con "Buscar precios de referencia en Unimarc" y una vez por sesión al abrir "Precios de tus alimentos" si hay alimentos sin precio. Los de eCook no se buscan.
+- Búsqueda (`refQuery()`): el nombre base (crudo o seco si se cocina), con tildes (VTEX las distingue: "plátano" trae plátanos y "platano", leche con plátano), sin "(crudo)" ni "cocido", hasta 4 palabras y con los sinónimos de `REF_SYN` (fideos → spaghetti, yogur → yoghurt).
+- Elección (`refRank()`): descarta categorías que no son comida y productos sin precio por kg calculable. Puntaje = parte de las palabras presentes (la primera es obligatoria), +0,5 si el nombre parte con ella, −0,6 por cada palabra de procesado de `REF_PROC` que la búsqueda no tiene, −0,5 si se vende por litro y el alimento no es líquido (o al revés). Mínimo 0,5. Entre los de mejor puntaje, el de precio por kg del medio. El producto se puede cambiar en la tabla (`pick`).
+- Worker (`src/precios.js`): consulta `unimarc.vtexcommercestable.com.br/api/catalog_system/pub/products/search` (el dominio www.unimarc.cl bloquea pedidos automáticos). Precio por unidad de medida: `measurementUnit` "kg" es granel con `Price` por kg; `ProductData.measurement_unit_un` "Kg" o "litro" con `unit_multiplier_un` es el contenido del envase; "unidad" es la cantidad de unidades; sin datos, el contenido escrito en el nombre. El link es `https://www.unimarc.cl/product/<linkText>`.
+- Costo de una comida (`itemsCost()`, `costHtml()`): gramos × precio de cada ingrediente con alimento; los sin precio no suman y el total lleva "≈". Se muestra en Comidas del día (por comida y del día, con el detalle de cada precio y su fuente), en el armado de comida, en las comidas frecuentes y en la lista de compras (por línea y total estimado).
+
 ## Finanzas
+
+### Vista del mes
+- Visibles: Por revisar, "Cómo vas" (`renderFinHero()`: gasto, frente al mes anterior al mismo día, proyección y presupuesto, con el gasto acumulado), "Para mirar" (`renderFinWatch()`), "Lo que cuesta comer" (`renderFinEat()`) y "En qué gastaste" (árbol).
+- "Para mirar" junta lo que antes eran Lo más importante, Fuera de lo normal, Patrones y Tendencia, y muestra solo alertas, con peso para ordenarlas (máximo 6): tope pasado o sobre el ritmo + 10 puntos, alzas de una categoría de más de $10.000 y 20% frente a la comparación (máximo 3, sin repetir una categoría con tope pasado), compras fuera de lo normal (máximo 2), recurrentes que subieron o están atrasados, alertas que no aparecen en la cartola (`finGone()`), compras de supermercado sin detallar (con botón para detallar la última) y compras bajo $5.000 si suman más del 15% del mes.
+- "Lo que cuesta comer": compras de comida del mes (`finFoodSplit()`), costo de las comidas registradas del mes con precio, parte de los gramos con precio, promedio por comida del día (`mealSlotIdx()`), los 5 alimentos que más pesan y la proteína más barata (precio por kg ÷ proteína por 100 g = pesos por 10 g), sin las versiones crudas.
+- Plegables: Movimientos, Precios de tus alimentos, Evolución mensual, Recurrentes y cuotas, Presupuesto, topes y reglas, Tarjetas y cartolas, Resumen con IA y Cómo se calcula. Se quitaron la distribución apilada, la comida por día, los comercios del mes, los patrones por día de la semana y los indicadores de recurrentes y cuotas (ahora en el resumen de su sección).
+
+### Detalle de una compra
+- Es una ventana (`#finDetDlg`) con una tarjeta por producto: nombre, total, cantidad, contenido por envase, precio, categoría y alimento (campo con la lista de tu base).
+- Después de la IA, `finFixFood()` ajusta el alimento: un id `ref:clave:raw|cooked` del catálogo queda como alimento nuevo (`it.ref`); una carne comprada cruda asociada a su versión cocida pasa a la cruda (la de la base o una nueva del catálogo); un producto sin alimento cuyo nombre está en el catálogo queda como nuevo. "No agregar" lo suelta. Al guardar, `refEnsure()` crea los alimentos nuevos y el detalle queda con sus ids.
+- La IA recibe tu base más las versiones del catálogo que no tienes (`buyCatalog()`) y marca si cada producto es comida (`comida`); sin alimento, un producto de comida ofrece "Agregarlo a mi base".
+
 
 ### Tarjetas
 - Cada movimiento trae los últimos 4 dígitos de la tarjeta (`movimientos.tarjeta`) desde la alerta de Visa. El tipo y el nombre de cada tarjeta se guardan en `lib.fin.cards` (`{últimos 4: {name, kind: "credito" | "debito"}}`) y se editan en Finanzas → Tarjetas.

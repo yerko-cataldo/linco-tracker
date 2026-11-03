@@ -3,8 +3,9 @@ import { jwtVerify, createRemoteJWKSet } from "jose";
 import { parseVisaAlert } from "./alertas.js";
 import { parseCartola, parseCuenta, planConciliation, rutOrigen, nameKey } from "./cartola.js";
 import { parseBankMail } from "./correos.js";
+import { unimarcSearch } from "./precios.js";
 
-const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin"]);
+const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin", "prices"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DOC_BYTES = 256 * 1024;
 const MAX_IMAGES = 3;
@@ -360,7 +361,33 @@ async function api(request, env, url) {
 
   if (p === "/api/ai" && m === "POST") return ai(request, env);
 
+  if (p === "/api/precio" && m === "GET") return refPrice(url);
+
   return json({ error: "not_found" }, 404);
+}
+
+/* ---------- precios de referencia de Unimarc, con caché de 1 día por búsqueda ---------- */
+const PRICE_TTL = 86400;
+
+async function refPrice(url) {
+  const q = (url.searchParams.get("q") || "").trim().toLowerCase().slice(0, 80);
+  if (q.length < 2) return json({ error: "bad_query" }, 400);
+  const key = new Request(`https://precios.lincoyan/unimarc?q=${encodeURIComponent(q)}`);
+  const cache = caches.default;
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  let items;
+  try {
+    items = await unimarcSearch(q);
+  } catch (err) {
+    console.error("precio", String(err).slice(0, 200));
+    return json({ error: "upstream" }, 502);
+  }
+  const res = new Response(JSON.stringify({ q, source: "unimarc", fetched: new Date().toISOString(), items }), {
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": `private, max-age=${PRICE_TTL}` },
+  });
+  await cache.put(key, new Response(res.clone().body, { headers: { "content-type": "application/json; charset=utf-8", "cache-control": `max-age=${PRICE_TTL}` } }));
+  return res;
 }
 
 /* ---------- métricas de uso ---------- */
