@@ -95,6 +95,29 @@ El contexto general del proyecto (stack, modelo de datos, API y principios) est�
 - Aviso "no aparece en la cartola" para una alerta de débito: su fecha está entre `lib.fin.cuentaDesde` y 5 días antes de `lib.fin.cuentaHasta` (el periodo cubierto por las cartolas de la cuenta importadas) y no se unió a ninguna fila. Los 5 días cubren el desfase entre la compra y el cargo. Para crédito sigue la regla de 3 días después de la última importación (`cartolaAl`).
 - El filtro por tarjeta de la lista de movimientos y la tarjeta de cada movimiento se muestran solo cuando hay más de una tarjeta.
 
+### Transferencias recurrentes (`src/transferencias.js`, `trPeriod()`, `trState()`)
+- `lib.fin.transfers = [{id, name, freq, day, hour, amount, max, rut, banco, cuenta, since, skip}]`. `freq` es `"semanal"` (`day` con índice `getDay()`, 0 = domingo) o `"mensual"` (`day` es el día del mes; en un mes más corto, el último). `hour` en hora de Chile. `since` es la fecha en que se creó: antes de ella, un periodo sin transferencias se muestra con "—" en vez de "no se hizo". `skip` son los vencimientos omitidos.
+- Monto: entre `amount` y `max`; sin `max`, `amount` ± 10% (`trRange()`). Hecha = lo transferido en el periodo ≥ el mínimo; sobre el máximo se marca "más de lo habitual".
+- Periodo (`trPeriod()`): parte `TR_LEAD` días antes del vencimiento (3 si es semanal, 7 si es mensual) y termina el día anterior al mismo punto del siguiente. Así el arriendo pagado el 29 cuenta para el 1.
+- Destinatario (`trMatches()`): si la transferencia configurada y el movimiento tienen RUT, se compara el RUT; si no, el nombre del movimiento debe contener todas las palabras de `name` (sin tildes ni mayúsculas). El RUT y el banco de destino vienen del comprobante (`movimientos.rut_destino`, `banco_destino`); la cartola no los trae.
+- Sugeridas (`trSuggestions()`): transferencias al mismo destinatario (`finKey()`), 3 o más, con intervalo mediano de 5 a 9 días (semanal, ±3) o de 25 a 36 (mensual, ±7) y la última hace menos de 2 intervalos más 7 días. Día: el de la semana más frecuente o la mediana del día del mes; rango: mínimo y máximo de las últimas 6.
+- La regla está dos veces: en el front y en el Worker. Si cambias una, cambia la otra.
+- Avisos: el cron `0 * * * *` (`scheduled()` → `remindTransfers()`) revisa cada hora. Desde el vencimiento a su hora, y hasta 6 días después mientras siga en el mismo periodo, manda un aviso por día si falta, con el monto y la cuenta de destino (la guardada o la del último comprobante). `push_log` guarda `tr:<id>:<fecha>` para no repetirlo; si no se entregó a ningún dispositivo, borra la clave y reintenta en la hora siguiente. Al insertar una transferencia desde el correo, `notifyTransfer()` avisa que quedó registrada y la compara con el rango.
+
+### Categorías e inversiones
+- `FIN_CATS_BASE` y `FIN_TREE_BASE` son las categorías y grupos fijos; `finSyncCats()` (al inicio de cada `renderAll()`) les suma las propias de `lib.fin.myCats = [{name, group, spend}]` y recalcula `FIN_CATS`, `FIN_TREE`, `FIN_GROUP_OF`, `FIN_NOSPEND` y los selectores.
+- "Inversiones y ahorro" y las categorías propias con `spend: false` no son gasto (`finNoSpend()`): `isPurchase()` las excluye, así que no suman al mes, al presupuesto, a los recurrentes ni al calendario del Resumen. "Cómo vas" las muestra aparte (`finSavedHtml()`).
+- "+ nueva categoría…" en el selector crea la categoría con `prompt()`; si el nombre habla de inversión o ahorro, queda en Ahorro e inversión y sin contar como gasto (`finCatGuess()`). Quitar una categoría borra los comercios y reglas que la usaban.
+
+### Movimientos a mano
+- `POST /api/movs {fecha, hora?, comercio, monto, tipo}` inserta con `id = manual:<uuid>`, `fuente = 'manual'` y `revisado = 1`. `tipo`: Compra, Transferencia, Pago de cuenta o Transferencia recibida (monto negativo). La categoría elegida se guarda por comercio en `lib.fin.cats`. Su medio de pago es `cuenta`, con la etiqueta "a mano".
+
+### Notificaciones push (`src/push.js`, `public/sw.js`)
+- Web Push sin dependencias: cifrado aes128gcm (RFC 8291) con ECDH P-256 y HKDF de WebCrypto, y firma VAPID (RFC 8292) con `jose`. El secreto `VAPID_JWK` es la clave privada P-256 en JWK; la pública sale de su `x` e `y` (`vapidPublicKey()`). `PUSH_SUBJECT` (var) es el `sub` del JWT: Apple exige `mailto:` o una URL https.
+- `push_subs` guarda la suscripción de cada dispositivo (endpoint, `p256dh`, `auth`); las que el servicio responde con 404 o 410 se borran al enviar.
+- `public/sw.js` solo muestra notificaciones (no hay caché). Al tocar una, abre `/?tab=finanzas` o, si la app está abierta, la trae al frente y le pide la pestaña por `postMessage` (`goTab()`).
+- El manifest va con `crossorigin="use-credentials"`, porque sin la cookie de Access la petición del manifest recibe 403. En iPhone, las notificaciones push requieren la app agregada a la pantalla de inicio (iOS 16.4 o más).
+
 ### Correos del banco reenviados (`src/correos.js`)
 - El handler `email` prueba primero `parseVisaAlert()`; si el remitente no es de Visa, pasa a `processBankMail()` y `parseBankMail()`.
 - Validación: el remitente del sobre debe estar en `FORWARD_FROM` (secreto del Worker, correos separados por coma; sin él se descarta todo) y `Authentication-Results` debe traer `dkim=pass header.d=<dominio del remitente>` y `dmarc=pass header.from=<dominio>`. Un reenvío pierde la firma de BICE, por eso la confianza es en el reenviador y no en el banco.

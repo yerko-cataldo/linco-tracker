@@ -4,6 +4,8 @@ import { parseVisaAlert } from "./alertas.js";
 import { parseCartola, parseCuenta, planConciliation, rutOrigen, nameKey } from "./cartola.js";
 import { parseBankMail } from "./correos.js";
 import { unimarcSearch } from "./precios.js";
+import { sendPush, vapidPublicKey } from "./push.js";
+import { remindTransfers, notifyTransfer } from "./transferencias.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin", "prices"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -49,6 +51,11 @@ export default {
       console.error(err);
     }
   },
+
+  // Cron cada hora: avisos push de las transferencias semanales pendientes
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(remindTransfers(env).catch((err) => console.error(err)));
+  },
 };
 
 /* ---------- correo entrante: guarda el mensaje y registra la compra ---------- */
@@ -91,11 +98,12 @@ async function processBankMail(raw, message, env, inboxId) {
     console.log("correo descartado: ya está en la cartola");
     return;
   }
-  await env.DB.prepare(
-    "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id, revisado) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'correo', ?, 0)"
+  const ins = await env.DB.prepare(
+    "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id, revisado, rut_destino, banco_destino) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'correo', ?, 0, ?, ?)"
   )
-    .bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.tipo, mv.monto, inboxId)
+    .bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.tipo, mv.monto, inboxId, mv.rut_destino, mv.banco_destino)
     .run();
+  if (ins.meta.changes) await notifyTransfer(env, mv);
 }
 
 async function storeRawEmail(message, env) {
@@ -277,7 +285,7 @@ async function api(request, env, url) {
       env.DB.prepare("SELECT date, data FROM days ORDER BY date DESC LIMIT 400"),
       env.DB.prepare("SELECT key, data FROM lib"),
       env.DB.prepare(
-        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado " +
+        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado, rut_destino, banco_destino " +
         "FROM movimientos WHERE fecha >= date('now', '-400 days') ORDER BY fecha DESC, hora DESC"
       ),
       env.DB.prepare("SELECT mov_id, data FROM mov_detalle"),
@@ -291,6 +299,8 @@ async function api(request, env, url) {
   }
 
   if (p === "/api/cartola" && m === "POST") return importCartola(request, env);
+
+  if (p === "/api/movs" && m === "POST") return addMov(request, env);
 
   if (p === "/api/movs/revisado" && m === "PUT") {
     let body;
@@ -363,7 +373,56 @@ async function api(request, env, url) {
 
   if (p === "/api/precio" && m === "GET") return refPrice(url);
 
+  if (p.startsWith("/api/push")) return push(request, env, p, m);
+
   return json({ error: "not_found" }, 404);
+}
+
+/* ---------- movimiento agregado a mano (efectivo, inversiones, lo que no llega por correo ni cartola) ---------- */
+const MANUAL_TIPOS = ["Compra", "Transferencia", "Pago de cuenta", "Transferencia recibida"];
+
+async function addMov(request, env) {
+  let b;
+  try { b = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
+  const monto = Math.round(Number(b.monto)), comercio = String(b.comercio || "").trim().slice(0, 120);
+  const hora = /^\d{2}:\d{2}$/.test(b.hora || "") ? b.hora : null;
+  if (!DATE_RE.test(b.fecha || "") || !comercio || !(monto > 0) || !MANUAL_TIPOS.includes(b.tipo)) return json({ error: "bad_body" }, 400);
+  const mov = {
+    id: `manual:${crypto.randomUUID()}`, fecha: b.fecha, hora, comercio, ciudad: null, pais: "CHL", tarjeta: "", tipo: b.tipo, moneda: "CLP",
+    monto: b.tipo === "Transferencia recibida" ? -monto : monto, fuente: "manual", revisado: 1,
+  };
+  await env.DB.prepare(
+    "INSERT INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, revisado) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'manual', 1)"
+  ).bind(mov.id, mov.fecha, mov.hora, mov.comercio, mov.tipo, mov.monto).run();
+  return json({ ok: true, mov });
+}
+
+/* ---------- notificaciones push: clave pública, suscripción de cada dispositivo y aviso de prueba ---------- */
+async function push(request, env, p, m) {
+  if (p === "/api/push" && m === "GET") {
+    const row = await env.DB.prepare("SELECT COUNT(*) AS n FROM push_subs").first();
+    return json({ key: vapidPublicKey(env), subs: row.n });
+  }
+  if (p === "/api/push/test" && m === "POST") {
+    const sent = await sendPush(env, { title: "Notificaciones activadas", body: "Así te llegarán los avisos de tus transferencias.", tag: "test", url: "/?tab=finanzas" });
+    return json({ ok: true, sent });
+  }
+  if (p !== "/api/push/sub" || (m !== "PUT" && m !== "DELETE")) return json({ error: "not_found" }, 404);
+  let body;
+  try { body = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
+  const endpoint = typeof body.endpoint === "string" && body.endpoint.length < 1000 && body.endpoint.startsWith("https://") ? body.endpoint : null;
+  if (!endpoint) return json({ error: "bad_endpoint" }, 400);
+  if (m === "DELETE") {
+    await env.DB.prepare("DELETE FROM push_subs WHERE endpoint = ?").bind(endpoint).run();
+    return json({ ok: true });
+  }
+  const B64U = /^[A-Za-z0-9_-]{16,200}$/;
+  const { p256dh, auth } = body.keys || {};
+  if (!B64U.test(p256dh || "") || !B64U.test(auth || "")) return json({ error: "bad_keys" }, 400);
+  await env.DB.prepare(
+    "INSERT INTO push_subs (endpoint, p256dh, auth) VALUES (?, ?, ?) ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth"
+  ).bind(endpoint, p256dh, auth).run();
+  return json({ ok: true });
 }
 
 /* ---------- precios de referencia de Unimarc, con caché de 1 día por búsqueda ---------- */

@@ -27,6 +27,9 @@
 
   "ai": { "binding": "AI" },
 
+  // Cada hora: avisos push de las transferencias semanales (src/transferencias.js). Se hereda en env.jere.
+  "triggers": { "crons": ["0 * * * *"] },
+
   "vars": {
     "ACCESS_AUD": "458be877431de7f5aa728172d0beedc70a7c1c2b971075011adeec19ef17d587",
     "ACCESS_TEAM_DOMAIN": "https://autumn-bar-84fe.cloudflareaccess.com",
@@ -42,7 +45,8 @@
     "MODEL_VISION": "@cf/meta/llama-4-scout-17b-16e-instruct",
     "PROVIDER_COACH": "workers-ai",
     "PROVIDER_DEFAULT": "workers-ai",
-    "PROVIDER_VISION": "workers-ai"
+    "PROVIDER_VISION": "workers-ai",
+    "PUSH_SUBJECT": "https://tracker.yerkolincoyan.cl"
   },
 
   // Instancia de Jere: mismo código, su propio Worker (lincoyan-jere), su D1 y su subdominio.
@@ -78,7 +82,8 @@
         "MODEL_VISION": "@cf/meta/llama-4-scout-17b-16e-instruct",
         "PROVIDER_COACH": "workers-ai",
         "PROVIDER_DEFAULT": "workers-ai",
-        "PROVIDER_VISION": "workers-ai"
+        "PROVIDER_VISION": "workers-ai",
+        "PUSH_SUBJECT": "https://jere.yerkolincoyan.cl"
       }
     }
   }

@@ -6,7 +6,7 @@ Tracker personal de un solo usuario: nutrición, entreno, bajo eléctrico y estu
 
 - **Cloudflare Worker** (`src/index.js`): valida el login, expone la API y hace de proxy al modelo.
 - **Front** (`public/index.html`): un solo archivo con HTML, CSS y JS vanilla. No hay build, framework ni dependencias.
-- **D1 (SQLite)**: tablas `days`, `lib` y `ai_usage`. El esquema está en `migrations/`.
+- **D1 (SQLite)**: tablas `days`, `lib` y `ai_usage`, más las de finanzas (`movimientos`, `mov_detalle`, `inbox_raw`) y de notificaciones (`push_subs`, `push_log`). El esquema está en `migrations/`.
 - **Workers AI**: modelo por defecto `@cf/meta/llama-4-scout-17b-16e-instruct`, dentro del tier gratis de 10.000 neurons diarios. Anthropic es opcional, por variable.
 - **Cloudflare Access**: login por código al correo. El Worker valida el JWT (`cf-access-jwt-assertion`) con `jose` en cada request, salvo en `/s/*` (vista compartida), que tiene una excepción Bypass en Access. `workers_dev` y `preview_urls` están desactivados.
 
@@ -69,6 +69,11 @@ Campos opcionales: `meals[].slot` (la comida a la que corresponde, con el nombre
 | `GET /api/precio?q=` | Precios de referencia de Unimarc (`src/precios.js`): productos con precio por kg, litro o unidad y link a unimarc.cl; caché de 1 día por búsqueda |
 | `GET /api/metrics` | Uso frente a los límites gratis de Cloudflare (GraphQL Analytics), uso del modelo y vencimiento del dominio |
 | `POST /api/ai` | Proxy al modelo |
+| `GET /api/push` | Clave pública VAPID y número de dispositivos suscritos |
+| `POST /api/movs` | Agrega un movimiento a mano (`fuente = 'manual'`) |
+| `PUT`, `DELETE /api/push/sub` | Guarda o borra la suscripción push de un dispositivo (`push_subs`) |
+| `POST /api/push/test` | Manda un aviso de prueba a todos los dispositivos |
+| cron `0 * * * *` | `scheduled()`: avisos push de las transferencias recurrentes pendientes (`src/transferencias.js`) |
 | `GET /s/:token` | Vista compartida sin login: la misma app en solo lectura |
 | `GET /s/:token/data` | Datos filtrados para la vista compartida |
 

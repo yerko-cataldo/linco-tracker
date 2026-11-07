@@ -54,6 +54,8 @@ export function parseBankMail(raw, envelopeFrom, forwarders, ownRut) {
       comercio: nombre,
       tipo: "Transferencia",
       monto: Number(monto[1].replace(/\./g, "")),
+      rut_destino: rut,
+      banco_destino: destino[3].trim(),
     },
   };
 }

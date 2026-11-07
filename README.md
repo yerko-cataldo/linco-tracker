@@ -36,6 +36,9 @@ public/index.html      la app
 src/index.js           Worker: login, API, proxy al modelo y correo entrante
 src/alertas.js         lectura de las alertas de compra de Visa
 src/cartola.js         lectura de la cartola CSV del banco y conciliación con las alertas
+src/transferencias.js  transferencias recurrentes: si ya se hicieron y los avisos
+src/push.js            envío de notificaciones push (Web Push con VAPID)
+public/sw.js           service worker que muestra las notificaciones
 migrations/            esquema de D1, una migración por cambio
 wrangler.jsonc         configuración: dominio, D1, modelos y variables
 tools/ilustraciones/   generador de las ilustraciones de ejercicios (Python)
@@ -105,6 +108,14 @@ Las compras llegan por correo y se concilian con la cartola del banco.
 3. **Cartolas.** Descarga el CSV de movimientos de la tarjeta de crédito, o el de la cuenta, e impórtalo en **Finanzas → Tarjetas → Importar cartola**; la app reconoce cuál es. Une cada fila con su alerta, agrega lo que falte y marca las alertas que no aparecen (posibles compras anuladas). De la cartola de crédito toma el ciclo de facturación y las cuotas; de la cuenta, las compras con débito, las transferencias a otras personas, los pagos de cuentas, los cargos del banco y las transferencias que recibes, que puedes marcar como devolución de una compra (sin el sueldo, sin el pago de la tarjeta y sin transferencias entre tus cuentas).
 
 4. **Transferencias al momento (opcional).** En tu correo, crea una regla que reenvíe a la dirección de alertas los correos de BICE con asunto "Hicimos la transferencia". En el panel del Worker (**Settings → Variables and Secrets**), agrega el secreto `FORWARD_FROM` con el correo desde el que reenvías (varios, separados por coma). Cada transferencia a otra persona aparece en Finanzas → Por revisar; al importar la cartola de la cuenta se une a su fila, sin duplicarse. Las transferencias a tus propias cuentas se descartan.
+
+5. **Transferencias recurrentes y avisos en el celular (opcional).** Genera una clave VAPID y guárdala como secreto:
+
+   ```bash
+   node -e "crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']).then(k=>crypto.subtle.exportKey('jwk',k.privateKey)).then(j=>console.log(JSON.stringify(j)))" | npx wrangler secret put VAPID_JWK
+   ```
+
+   Ajusta `PUSH_SUBJECT` en `wrangler.jsonc` a la URL de tu sitio. En **Finanzas → Transferencias recurrentes**, agrega la transferencia (o una de las sugeridas) y toca **Activar notificaciones** en cada dispositivo. En iPhone, primero agrega la app a la pantalla de inicio (Compartir → Agregar a inicio) y actívalas desde ahí. El reconocimiento usa los correos del paso 4 o la cartola de la cuenta.
 
 El Worker solo acepta alertas con remitente de `visa.com` y firmas DKIM y DMARC válidas, y reenvíos de BICE desde un correo de `FORWARD_FROM` con DKIM y DMARC válidos para su dominio. Los lectores de las cartolas siguen el formato de los CSV de BICE (`src/cartola.js`). Otro banco requiere adaptar ese archivo.
 

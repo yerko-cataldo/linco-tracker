@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-07
+- Finanzas: transferencias recurrentes, semanales o mensuales (por ejemplo, el arriendo el 1 de cada mes), en la sección nueva del mismo nombre. Cada una tiene un monto aproximado (±10%) o un rango ("de $25.000 a $30.000"): cualquier monto dentro cuenta como hecha, sin cambiar nada a mano. El destinatario se reconoce por el RUT del comprobante o por el nombre, y el RUT y el banco se llenan solos con el último comprobante. Lo pagado unos días antes cuenta para el vencimiento (el arriendo del 29 vale para el 1). "Omitir esta vez" salta un periodo.
+- Las transferencias se agregan y se editan en la misma sección, y la app sugiere las que ya se repiten en tu historial (mismo destinatario cada semana o cada mes), con su día y su rango de montos.
+- Notificaciones push en el celular. Desde el vencimiento, a la hora elegida, llega un aviso diario mientras falte la transferencia, con el monto y la cuenta de destino. Cuando llega el correo "Hicimos la transferencia", otro aviso confirma que quedó registrada y si calza con el monto. Se activan por dispositivo; en iPhone, con la app agregada a la pantalla de inicio. La app ahora es instalable (manifest e íconos).
+- Finanzas: categoría "Inversiones y ahorro" (grupo Ahorro e inversión), que no cuenta como gasto: no suma al gasto del mes, al presupuesto ni al calendario, y "Cómo vas" la muestra aparte. Fintual, Racional, fondos mutuos, depósitos a plazo y APV caen ahí solos.
+- Finanzas: categorías propias. Se crean desde el selector de categoría de cualquier movimiento ("+ nueva categoría…") o en Presupuesto, topes y reglas → Tus categorías, con su grupo y si cuentan como gasto.
+- Finanzas: movimientos a mano (efectivo, inversiones, otra tarjeta) desde Movimientos → "Agregar un movimiento a mano", con fecha, descripción, monto, tipo y categoría. Se pueden borrar.
+
 ## 2026-11-02
 - Nutrición: los alimentos tienen versión cruda y cocida. Al registrar una compra de carne, pollo o pescado que no está en tu base (carne molida, pechuga cruda), se agregan las dos versiones con valores de referencia. "Agregar un alimento" busca solo los valores: del catálogo, o los estima la IA para que los revises. Si un alimento del armado de comida no está, se agrega desde ahí mismo.
 - Precios de los alimentos: cada alimento tiene precio por kg con su fuente, desde tu última compra detallada (lo comprado crudo o seco se ajusta por la cocción) o, si nunca lo compraste, desde Unimarc (producto, precio, link y fecha de consulta). Costo de cada comida, del día, de las comidas frecuentes y de la lista de compras. Nuevo endpoint `/api/precio` y colección `prices`.

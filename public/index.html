@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lincoyán</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
+<!-- Instalable en el celular (las notificaciones push en iPhone requieren la app instalada). crossorigin: Access exige la cookie. -->
+<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+<link rel="apple-touch-icon" href="/img/icono-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lincoyán">
 <script>try { const t = localStorage.getItem("lincoyan-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1318,6 +1323,17 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
           <div class="field w10" hidden><span class="sr">Filtrar por medio de pago</span><select id="finCardF"><option value="">Todas las tarjetas</option><option value="credito">Solo crédito</option><option value="debito">Solo débito</option><option value="cuenta">Solo transferencias y pagos</option></select></div>
         </div>
+        <details class="manual" id="finAddMov" style="margin-bottom:10px"><summary>Agregar un movimiento a mano</summary>
+          <div class="row mt">
+            <div class="field w10">Fecha<input type="date" id="finMovDate"></div>
+            <div class="field grow">Descripción<input id="finMovName" placeholder="Fintual, feria, almuerzo en efectivo"></div>
+            <div class="field w10">Monto<input id="finMovAmt" inputmode="numeric"></div>
+            <div class="field w10">Tipo<select id="finMovTipo"><option value="Compra">gasto o compra</option><option value="Transferencia">transferencia</option><option value="Pago de cuenta">pago de cuenta</option><option value="Transferencia recibida">dinero que recibí</option></select></div>
+            <div class="field w10">Categoría<select id="finMovCat"></select></div>
+          </div>
+          <div class="row mt"><button class="btn primary" data-action="fin-mov-add">Agregar movimiento</button></div>
+          <p class="small muted" style="margin:8px 0 0">Para lo que no llega por alerta, correo ni cartola: efectivo, inversiones, pagos con otra tarjeta. Si después llega también por el banco, borra uno de los dos.</p>
+        </details>
         <div id="finList"></div>
       </div>
     </details>
@@ -1340,6 +1356,16 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div class="grid g2"><div><h3>Gastos recurrentes</h3><div id="finRecur"></div></div><div><h3>Ciclo de facturación</h3><div id="finCycle"></div></div></div>
       </div>
     </details>
+    <details class="panel sec mt" id="finTrSec">
+      <summary><h3>Transferencias recurrentes</h3><span class="hint" id="finTrSum"></span></summary>
+      <div class="sec-body">
+        <div id="finTr"></div>
+        <datalist id="finTrNames"></datalist>
+        <p class="small muted" style="margin:10px 0 0">La reconozco cuando llega el correo "Hicimos la transferencia" o al importar la cartola de la cuenta: cuenta como hecha si lo transferido a ese destinatario (por RUT o por nombre) desde unos días antes del vencimiento llega al monto. Pagar el arriendo el 29 cuenta para el 1.</p>
+        <h3 class="mt">Notificaciones en este dispositivo</h3>
+        <div id="pushBox"></div>
+      </div>
+    </details>
     <details class="panel sec mt" id="finBudSec">
       <summary><h3>Presupuesto, topes y reglas</h3><span class="hint" id="finBudSum"></span></summary>
       <div class="sec-body">
@@ -1357,6 +1383,14 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
               <div class="field w10">Si el comercio contiene<input id="finRulePat" placeholder="uber eats"></div>
               <div class="field w10">Categoría<select id="finRuleCat"></select></div>
               <button class="btn" data-action="fin-rule-add">Agregar regla</button>
+            </div>
+            <h3 class="mt">Tus categorías</h3>
+            <div id="finMyCats"></div>
+            <div class="row mt">
+              <div class="field w10">Nombre<input id="finMyCatName" placeholder="Viajes de trabajo"></div>
+              <div class="field w10">Grupo<select id="finMyCatGroup"></select></div>
+              <label class="small" style="align-self:flex-end;padding-bottom:10px"><input type="checkbox" id="finMyCatSpend" checked> cuenta como gasto</label>
+              <button class="btn" data-action="fin-cat-add">Agregar categoría</button>
             </div>
           </div>
         </div>
@@ -1384,7 +1418,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <p style="margin:0 0 8px">"Para mirar" muestra solo lo que pide atención: categorías sobre el ritmo de su tope, categorías que subieron más de 20% (y más de $10.000) frente a la comparación, compras de más de 2,5 veces lo habitual en ese comercio (con 3 compras previas o más) o de más de 3 veces una compra típica de su categoría (con 5 o más, y solo si la categoría la elegiste tú), recurrentes que subieron o no se cobraron, alertas que no aparecen en la cartola, compras de supermercado sin detallar y compras bajo $5.000 cuando suman más del 15% del mes.</p>
         <p style="margin:0 0 8px">"Lo que cuesta comer" separa lo comprado en comida (en casa: Supermercado y productos detallados con un alimento; fuera: Comida y delivery y Restaurantes y bares) del costo de lo que registraste en Nutrición, que sale de los precios de tus alimentos. La proteína más barata es el costo de 10 g de proteína: precio por kg ÷ gramos de proteína por 100 g.</p>
         <p style="margin:0 0 8px">Categoría de cada compra, en este orden: la que elegiste para ese comercio, una regla que calce con su nombre, la sugerida por comercios parecidos que ya categorizaste y, al final, la del banco.</p>
-        <p style="margin:0">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. De la cartola de la cuenta entran los cargos: compras con débito ("Cargo por Compra en…"), transferencias a otras personas (el destinatario hace de comercio: su categoría se elige una vez), pagos de cuentas por internet y cargos del banco (intereses, impuestos, comisiones), con la fecha y hora de la operación. También entran las transferencias que recibes de otras personas e instituciones (por ejemplo, la isapre), que no suman hasta que eliges qué son: la devolución de una compra (resta en la fecha, la categoría y el medio de pago de esa compra, y la compra muestra tu parte) o una devolución en una categoría (resta en la fecha del abono). La compra sugerida es la de otros abonos de ±2 días que ya marcaste o, si no hay, la más grande de los 10 días anteriores que duplique el abono. Quedan fuera las remuneraciones, el pago de la tarjeta de crédito (sus compras ya están en la cartola de crédito) y las transferencias entre tus cuentas (mismo RUT). Una transferencia sin categoría va a "Transferencias". Una alerta de débito queda marcada si es del periodo de las cartolas de la cuenta importadas, hasta 5 días antes de su cierre, y no aparece en ellas. Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
+        <p style="margin:0">La cartola une cada fila con la alerta del mismo monto a 3 días o menos; si no hay, con la única alerta a 2 días o menos y monto a ±5%. Una alerta que no aparece en la cartola 3 días después de la última importación queda marcada: puede ser una compra anulada. De la cartola de la cuenta entran los cargos: compras con débito ("Cargo por Compra en…"), transferencias a otras personas (el destinatario hace de comercio: su categoría se elige una vez), pagos de cuentas por internet y cargos del banco (intereses, impuestos, comisiones), con la fecha y hora de la operación. También entran las transferencias que recibes de otras personas e instituciones (por ejemplo, la isapre), que no suman hasta que eliges qué son: la devolución de una compra (resta en la fecha, la categoría y el medio de pago de esa compra, y la compra muestra tu parte) o una devolución en una categoría (resta en la fecha del abono). La compra sugerida es la de otros abonos de ±2 días que ya marcaste o, si no hay, la más grande de los 10 días anteriores que duplique el abono. Quedan fuera las remuneraciones, el pago de la tarjeta de crédito (sus compras ya están en la cartola de crédito) y las transferencias entre tus cuentas (mismo RUT). Una transferencia sin categoría va a "Transferencias". Una alerta de débito queda marcada si es del periodo de las cartolas de la cuenta importadas, hasta 5 días antes de su cierre, y no aparece en ellas. "Inversiones y ahorro" (Fintual, Racional, fondos mutuos, depósitos a plazo, APV) y las categorías propias marcadas como que no son gasto no suman al gasto del mes ni al presupuesto: se muestran aparte en "Cómo vas". Un gasto es recurrente si el mismo comercio cobra un monto parecido (±15%) cada semana (3 cobros o más), cada mes o cada año (2 o más), con intervalos regulares (±25%).</p>
       </div>
     </details>
   </section>
@@ -1715,12 +1749,16 @@ async function init(){
   $("#coachOff").hidden = true;
   $("#mealPhotoLbl").hidden = false;
   renderAll();
+  const tab = new URLSearchParams(location.search).get("tab");
+  if (tab){ goTab(tab); history.replaceState(null, "", location.pathname); }
   document.addEventListener("visibilitychange", async () => {
     if (document.hidden || S.mode !== "api") return;
     try { await loadState(); renderAll(); } catch {}
   });
 }
 function setNotice(t){ const n = $("#modeNotice"); n.textContent = t; n.hidden = !t; }
+// Abre una pestaña por nombre (?tab=finanzas en el link de una notificación)
+function goTab(tab){ if (/^[a-z]+$/.test(tab || "")) document.querySelector(`nav.tabs button[data-tab="${tab}"]:not([hidden])`)?.click(); }
 
 /* ---------- cálculos ---------- */
 function kcalScore(kcal, g){ const tolAbs = g.kcal * g.tol / 100, dev = Math.abs(kcal - g.kcal); return dev <= tolAbs ? 1 : Math.max(0, 1 - (dev - tolAbs) / (g.kcal * .25)); }
@@ -2298,6 +2336,7 @@ function fillSelect(sel, opts, placeholder){
   if ([...sel.options].some(o => o.value === v)) sel.value = v;
 }
 function renderAll(){
+  FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null; finSyncCats();
   setVal("#datePick", S.date);
   renderMonthSum(); renderKpis(); renderHeat(); renderNutrition(); renderAct(); renderBass(); renderStudy(); if (S.tab === "finanzas") renderFin(); else renderFinBadge(); renderCoach(); renderProfile();
 }
@@ -3125,12 +3164,15 @@ function renderMetrics(m){
    lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto},
               cards: {últimos 4 dígitos: {name, kind: "credito" | "debito"}}, cuentaDesde, cuentaHasta,
               refunds: {id del abono: {of: id de la compra} | {cat: categoría}}} */
-const FIN_CATS = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Arriendo y gastos comunes", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Transferencias", "Comisiones e intereses", "Otros"];
+const FIN_CATS_BASE = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Arriendo y gastos comunes", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Transferencias", "Comisiones e intereses", "Otros", "Inversiones y ahorro"];
+// Base más las categorías propias (lib.fin.myCats); se recalcula en finSyncCats()
+let FIN_CATS = [...FIN_CATS_BASE];
 const BANK_CATS = {"Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros"};
 const FIN_SRC = {comercio: "", regla: "regla", base: "regla base", sugerida: "sugerida", banco: "banco", devolucion: "devolución"};
 // Reglas base: palabras genéricas y cadenas de Chile, en orden de prioridad (mascotas antes que salud).
 // Palabras de menos de 6 letras calzan con una palabra completa del nombre; las demás, como parte del nombre.
 const FIN_BASE_RULES = [
+  ["Inversiones y ahorro", ["fintual", "racional", "fondos mutuos", "deposito a plazo", "apv", "agf", "buda", "binance", "criptomarkt", "orionx"]],
   ["Mascotas", ["veterinaria", "veterinario", "petshop", "pet", "mascota", "superzoo", "jardin zoo"]],
   ["Arriendo y gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes", "arriendo"]],
   ["Comisiones e intereses", ["sobregiro", "intereses", "comision", "mantencion"]],
@@ -3160,9 +3202,9 @@ const finCfg = () => Object.assign({budget: null, cats: {}, rules: [], catBudget
 const FIN_KIND = {credito: "crédito", debito: "débito"};
 const FIN_MEDIO = {...FIN_KIND, cuenta: "transferencias y pagos"};
 const finCards = () => finCfg().cards || {};
-const finCardKind = m => m.banco_id && m.banco_id.startsWith("bicecta:") ? (norm(m.tipo) === "compra" ? "debito" : "cuenta")
+const finCardKind = m => m.fuente === "manual" ? "cuenta" : m.banco_id && m.banco_id.startsWith("bicecta:") ? (norm(m.tipo) === "compra" ? "debito" : "cuenta")
   : m.fuente === "correo" ? "cuenta" : m.banco_id ? "credito" : (finCards()[m.tarjeta] || {}).kind || "credito";
-const finCardLabel = m => finCardKind(m) === "cuenta" ? m.tipo.toLowerCase() : (finCards()[m.tarjeta] || {}).name || `${FIN_KIND[finCardKind(m)]}${m.tarjeta ? " ··" + m.tarjeta : ""}`;
+const finCardLabel = m => finCardKind(m) === "cuenta" ? (m.fuente === "manual" ? "a mano, " : "") + m.tipo.toLowerCase() : (finCards()[m.tarjeta] || {}).name || `${FIN_KIND[finCardKind(m)]}${m.tarjeta ? " ··" + m.tarjeta : ""}`;
 // Tarjetas conocidas: las configuradas y las que aparecen en alguna alerta
 const finCardList = () => [...new Set([...Object.keys(finCards()), ...S.movs.filter(m => m.tarjeta).map(m => m.tarjeta)])].sort();
 const finMultiCard = () => finCardList().length > 1 || S.movs.some(m => finCardKind(m) === "cuenta");
@@ -3254,7 +3296,7 @@ const finMonth = () => S.finMonth || today().slice(0, 7);
 const shiftMonth = (ym, n) => { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
 // Gasto: compras con tarjeta y, desde la cartola de la cuenta, transferencias, pagos de cuentas y cargos del banco
 const FIN_SPEND = ["compra", "transferencia", "pago de cuenta", "cargo del banco"];
-const isPurchase = m => m.moneda === "CLP" && FIN_SPEND.includes(norm(m.tipo));
+const isPurchase = m => m.moneda === "CLP" && FIN_SPEND.includes(norm(m.tipo)) && !finNoSpend(m);
 const fmtClp = x => "$" + fmt(x);
 // Gasto de un mes: compras (monto positivo) y devoluciones (negativo)
 const finBuysOf = ym => [...S.movs.filter(m => m.fecha.startsWith(ym) && isPurchase(m)), ...finRefundList().filter(m => m.fecha.startsWith(ym))];
@@ -3293,7 +3335,7 @@ function renderFin(){
   const rec = finRecurring(), inst = finInstallments();
   $("#finRecurSum").textContent = `${rec.length} ${rec.length === 1 ? "recurrente" : "recurrentes"}, ${fmtClp(sum(rec, r => r.monthly))} al mes · cuotas por pagar ${fmtClp(sum(inst, g => g.pending))}`;
   renderFinList();
-  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinRules(); renderFinCards(); renderFinReview(); renderFinDet(); renderFinPrices();
+  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinTransfers(); renderFinRules(); renderFinMyCats(); renderFinCards(); renderFinReview(); renderFinDet(); renderFinPrices();
 }
 /* Comparación: mes anterior, promedio de 3 meses completos, mismo mes del año pasado o un mes elegido.
    En el mes en curso, cada mes comparado se cuenta hasta el mismo día. */
@@ -3356,9 +3398,14 @@ function renderFinTree(c, tree, cmp){
   setHTML(el, h + (cmp.partial ? `<p class="small muted" style="margin:8px 0 0">La comparación tiene ${esc(cmp.partial)}.</p>` : ""));
 }
 /* Cómo vas: gasto del mes, frente al mes anterior al mismo día, proyección y presupuesto, con el gasto acumulado */
+// Inversiones y ahorro del mes (categorías que no son gasto)
+function finSavedHtml(ym){
+  const xs = S.movs.filter(m => m.fecha.startsWith(ym) && m.moneda === "CLP" && m.monto > 0 && FIN_SPEND.includes(norm(m.tipo)) && finNoSpend(m)), v = sum(xs, m => m.monto);
+  return v ? `<p class="small muted" style="margin:6px 0 0">Además, apartaste ${fmtClp(v)} en ${[...new Set(xs.map(finCat))].map(c => esc(c.toLowerCase())).join(" y ")}; no cuenta como gasto.</p>` : "";
+}
 function renderFinHero(c){
   const b = finCfg().budget, mes = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long"});
-  if (!c.buys.length){ setHTML($("#finHero"), `<p class="empty">Sin gastos registrados en ${esc(mes)}.</p>`); return; }
+  if (!c.buys.length){ setHTML($("#finHero"), `<p class="empty">Sin gastos registrados en ${esc(mes)}.</p>${finSavedHtml(c.ym)}`); return; }
   const prevOk = finBuysOf(c.prevYm).length > 0 && !finPartialNote(c.prevYm), d = c.total - c.prevSame;
   const vs = !prevOk ? `<span class="muted">Aún no hay un mes anterior completo para comparar.</span>`
     : Math.abs(d) < 1000 ? `Vas igual que el mes anterior${c.isCur ? " a esta altura" : ""}.`
@@ -3368,7 +3415,7 @@ function renderFinHero(c){
     : b ? `Tu presupuesto era ${fmtClp(b)}: ${c.total > b ? `te pasaste por ${fmtClp(c.total - b)}` : `te sobraron ${fmtClp(b - c.total)}`}.` : "";
   const over = b && (c.isCur ? c.proj : c.total) > b;
   setHTML($("#finHero"), `<div class="fin-hero-top"><div><div class="small muted">Gastado ${c.isCur ? `al ${c.dayCut} de ${esc(mes)}` : `en ${esc(mes)}`}</div><div class="fin-big">${fmtClp(c.total)}</div>
-      <p class="fin-verdict">${vs} ${end}</p></div>
+      <p class="fin-verdict">${vs} ${end}</p>${finSavedHtml(c.ym)}</div>
       ${b ? ring(c.total / b, over ? "var(--danger)" : "var(--fin)", 78, 7, fmt(c.total / b * 100) + "%", "del presupuesto") : ""}</div>
     <div id="finCum"></div>`);
   renderFinCum(c);
@@ -3512,7 +3559,7 @@ function renderFinEvo(c, top){
 
 /* Grupos de gasto: cada categoría pertenece a un grupo. Un producto con alimento asociado cuenta como Comida
    (categoría Supermercado) salvo que su categoría sea de Casa. Por producto si la compra está detallada; si no, por la categoría del comercio. */
-const FIN_TREE = [
+const FIN_TREE_BASE = [
   ["Comida", ["Supermercado", "Comida y delivery", "Restaurantes y bares"]],
   ["Casa", ["Arriendo y gastos comunes", "Hogar", "Servicios"]],
   ["Transporte", ["Transporte"]],
@@ -3520,9 +3567,26 @@ const FIN_TREE = [
   ["Ocio", ["Entretención", "Suscripciones", "Viajes"]],
   ["Compras", ["Compras", "Ropa", "Educación"]],
   ["Mascotas", ["Mascotas"]],
-  ["Otros", ["Transferencias", "Comisiones e intereses", "Otros", "Sin categoría"]]
+  ["Otros", ["Transferencias", "Comisiones e intereses", "Otros", "Sin categoría"]],
+  ["Ahorro e inversión", ["Inversiones y ahorro"]]
 ];
-const FIN_GROUP_OF = Object.fromEntries(FIN_TREE.flatMap(([g, cs]) => cs.map(c => [c, g])));
+/* Categorías propias: lib.fin.myCats = [{name, group (de FIN_TREE_BASE), spend}]. spend = false no cuenta como gasto, igual que "Inversiones y ahorro":
+   no suma al gasto del mes, al presupuesto ni al calendario, y se muestra aparte en "Cómo vas". */
+const FIN_NOSPEND_BASE = ["Inversiones y ahorro"];
+let FIN_TREE = FIN_TREE_BASE, FIN_GROUP_OF = {}, FIN_NOSPEND = new Set(FIN_NOSPEND_BASE);
+const finMyCats = () => (finCfg().myCats || []).filter(c => c && c.name && !FIN_CATS_BASE.includes(c.name));
+function finSyncCats(){
+  const mine = finMyCats();
+  FIN_CATS = [...FIN_CATS_BASE, ...mine.map(c => c.name)];
+  FIN_TREE = FIN_TREE_BASE.map(([g, cs]) => { const base = cs.filter(c => c !== "Sin categoría"), add = mine.filter(c => (c.group || "Otros") === g).map(c => c.name);
+    return [g, [...base, ...add, ...(cs.includes("Sin categoría") ? ["Sin categoría"] : [])]]; });
+  FIN_GROUP_OF = Object.fromEntries(FIN_TREE.flatMap(([g, cs]) => cs.map(c => [c, g])));
+  FIN_NOSPEND = new Set([...FIN_NOSPEND_BASE, ...mine.filter(c => c.spend === false).map(c => c.name)]);
+  const fill = (sel, head) => { const el = $(sel); if (!el || document.activeElement === el) return; const v = el.value; el.innerHTML = head + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join(""); el.value = FIN_CATS.includes(v) || !v || v === "-" ? v : ""; };
+  fill("#finRuleCat", ""); fill("#finCatF", `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>`);
+  fill("#finMovCat", `<option value="">según la descripción</option>`);
+}
+const finNoSpend = m => FIN_NOSPEND.has(finCat(m));
 // categoría efectiva de un producto detallado
 const finItemCat = (it, base) => { const c = it.cat || base || "Sin categoría"; return it.foodId && !["Comida", "Casa"].includes(FIN_GROUP_OF[c]) ? "Supermercado" : c; };
 const finGroupOf = cat => FIN_GROUP_OF[cat || "Sin categoría"] || "Otros";
@@ -3633,19 +3697,21 @@ function renderFinList(){
 }
 function finCatSelect(m){
   const info = finCatInfo(m);
-  return `<select data-fin-cat="${esc(finKey(m.comercio))}" aria-label="Categoría de ${esc(m.comercio)}"><option value="">Sin categoría</option>${FIN_CATS.map(x => `<option${x === info.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}</select>${FIN_SRC[info.src] ? `<div class="small muted">${FIN_SRC[info.src]}</div>` : ""}`;
+  return `<select data-fin-cat="${esc(finKey(m.comercio))}" aria-label="Categoría de ${esc(m.comercio)}"><option value="">Sin categoría</option>${FIN_CATS.map(x => `<option${x === info.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}<option value="__new">+ nueva categoría…</option></select>${FIN_SRC[info.src] ? `<div class="small muted">${FIN_SRC[info.src]}</div>` : ""}`;
 }
 function finAmountNote(m){
   const back = finRefundedOf()[m.id];
   if (back) return `<div class="small muted">te devolvieron ${fmtClp(back)}; tu parte, ${fmtClp(m.monto - back)}</div>`;
   if (m.tipo === "Cuota") return `<div class="small muted">cuota ${m.cuota} de ${m.cuotas}, no suma</div>`;
   if (m.cuotas > 1) return `<div class="small muted">en ${m.cuotas} cuotas</div>`;
+  if (m.monto > 0 && finNoSpend(m)) return `<div class="small muted">no es gasto</div>`;
   return isPurchase(m) || m.monto < 0 ? "" : `<div class="small muted">${esc(m.tipo)}, no suma</div>`;
 }
 // Estado frente a la cartola: en cartola, por confirmar, solo alerta o no aparece (posible anulación)
 function finStatusHtml(m){
   if (m.banco_id) return m.pendiente ? `<div class="small muted">en cartola, por confirmar</div>` : "";
   if (m.fuente === "correo") return `<div class="small muted">del correo del banco, aún no está en la cartola</div>`;
+  if (m.fuente === "manual") return `<div class="small muted">agregado a mano <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
   if (m.fuente !== "alerta") return "";
   if (finGone(m)) return `<div class="small" style="color:var(--danger)">no aparece en la cartola <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
   return `<div class="small muted">solo alerta</div>`;
@@ -3774,6 +3840,154 @@ function renderFinRecur(){
     : `<p class="empty">Aún no hay cobros que se repitan con regularidad.</p>`);
 }
 
+/* Transferencias recurrentes: lib.fin.transfers = [{id, name, freq: "semanal" | "mensual", day, hour, amount, max, rut, banco, cuenta, since, skip: [vencimientos]}].
+   day: getDay() si es semanal (0 = domingo); día del mes si es mensual (en un mes más corto, el último). Monto: entre amount y max; sin max, amount ± 10%.
+   Hecha: lo transferido en el periodo llega al mínimo. El periodo parte TR_LEAD días antes del vencimiento (el arriendo pagado el 29 cuenta para el 1).
+   Destinatario: el RUT del comprobante o un nombre con todas las palabras de name. El Worker usa la misma regla para los avisos (src/transferencias.js). */
+const TR_LEAD = {semanal: 3, mensual: 7};
+const finTransfers = () => finCfg().transfers || [];
+const trDueIn = (t, y, m) => `${y}-${pad(m)}-${pad(Math.min(t.day, new Date(y, m, 0).getDate()))}`;
+function trLastDue(t, s){
+  if (t.freq !== "mensual") return addDays(s, -((parseYmd(s).getDay() - t.day + 7) % 7));
+  let [y, m] = s.split("-").map(Number); const d = trDueIn(t, y, m);
+  if (d <= s) return d;
+  if (--m === 0){ m = 12; y--; }
+  return trDueIn(t, y, m);
+}
+function trNextDue(t, due){
+  if (t.freq !== "mensual") return addDays(due, 7);
+  let [y, m] = due.split("-").map(Number); if (++m === 13){ m = 1; y++; }
+  return trDueIn(t, y, m);
+}
+function trPeriod(t, s){ const lead = TR_LEAD[t.freq] ?? TR_LEAD.semanal, due = trLastDue(t, addDays(s, lead)); return {due, start: addDays(due, -lead), end: addDays(trNextDue(t, due), -lead - 1)}; }
+const trRange = t => { const a = +t.amount || 0, b = +t.max || 0; return b > a ? [a, b] : [Math.round(a * .9), Math.round(a * 1.1)]; };
+const trAmountLabel = t => +t.max > +t.amount ? `${fmtClp(t.amount)} a ${fmtClp(t.max)}` : `≈ ${fmtClp(t.amount)}`;
+const trWords = s => norm(s).split(/[^a-z0-9]+/).filter(Boolean);
+const rutK = s => String(s || "").replace(/[^0-9kK]/g, "").toUpperCase();
+const isTransfer = m => norm(m.tipo) === "transferencia";
+function trMatches(t, m){
+  if (t.rut && m.rut_destino) return rutK(t.rut) === rutK(m.rut_destino);
+  const want = trWords(t.name), have = new Set(trWords(m.comercio));
+  return want.length > 0 && want.every(w => have.has(w));
+}
+function trState(t, p){
+  const movs = S.movs.filter(m => isTransfer(m) && m.fecha >= p.start && m.fecha <= p.end && trMatches(t, m)), paid = sum(movs, m => m.monto), [lo, hi] = trRange(t);
+  return {...p, movs, paid, lo, hi, skip: (t.skip || []).includes(p.due), done: paid >= lo};
+}
+// Cuenta de destino: la guardada o la del último comprobante del banco
+function trAccount(t){
+  const last = S.movs.filter(m => isTransfer(m) && m.rut_destino && trMatches({...t, rut: null}, m)).sort((a, b) => b.fecha.localeCompare(a.fecha))[0] || {};
+  return {rut: t.rut || last.rut_destino || "", banco: t.banco || last.banco_destino || "", cuenta: t.cuenta || ""};
+}
+const trEvery = t => t.freq === "mensual" ? `el ${t.day} de cada mes` : `cada ${WD[t.day]}`;
+function trStatus(t, s){
+  const t0 = today();
+  if (s.skip) return `<span class="muted">omitida</span>`;
+  if (s.done) return `<span style="color:var(--ok)">hecha el ${fmtShort(s.movs.map(m => m.fecha).sort().pop())}</span>${s.paid > s.hi ? ` <span class="small muted">(más de lo habitual)</span>` : ""}`;
+  if (s.paid > 0) return `<span style="color:var(--danger)">faltan unos ${fmtClp(s.lo - s.paid)}</span>`;
+  if (s.due > t0) return `toca el ${fmtShort(s.due)}`;
+  if (t.since && s.start < t.since) return `<span class="muted">—</span>`;
+  return `<span style="color:var(--danger)">${s.end < t0 ? "no se hizo" : "pendiente"}</span>`;
+}
+// Periodos que se muestran: los 3 anteriores, el actual y el siguiente
+function trPeriods(t){
+  const cur = trPeriod(t, today()), out = [cur];
+  for (let i = 0; i < 3; i++) out.unshift(trPeriod(t, addDays(out[0].start, -1)));
+  out.push(trPeriod(t, addDays(cur.end, 1)));
+  return out.map(p => ({...trState(t, p), cur: p.due === cur.due}));
+}
+const trPending = t => { const s = trState(t, trPeriod(t, today())); return !s.skip && !s.done && s.due <= today(); };
+/* Sugeridas: transferencias al mismo destinatario que se repiten cada semana o cada mes (3 o más, la última reciente) y que aún no están configuradas */
+function trSuggestions(){
+  const by = {}, ts = finTransfers(), out = [];
+  for (const m of S.movs) if (isTransfer(m) && m.monto > 0) (by[finKey(m.comercio)] || (by[finKey(m.comercio)] = [])).push(m);
+  for (const xs of Object.values(by)){
+    if (xs.length < 3 || ts.some(t => trMatches(t, xs[0]))) continue;
+    const r = xs.sort((a, b) => a.fecha.localeCompare(b.fecha)).slice(-6), gaps = r.slice(1).map((m, i) => daysBetween(r[i].fecha, m.fecha)), gm = median(gaps);
+    const freq = gm >= 5 && gm <= 9 ? "semanal" : gm >= 25 && gm <= 36 ? "mensual" : null;
+    if (!freq || !gaps.every(g => Math.abs(g - gm) <= (freq === "semanal" ? 3 : 7)) || daysBetween(r[r.length - 1].fecha, today()) > 2 * gm + 7) continue;
+    const cnt = {}; r.forEach(m => { const d = parseYmd(m.fecha).getDay(); cnt[d] = (cnt[d] || 0) + 1; });
+    const day = freq === "semanal" ? +Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0] : Math.round(median(r.map(m => +m.fecha.slice(8))));
+    const lo = Math.min(...r.map(m => m.monto)), hi = Math.max(...r.map(m => m.monto)), last = r[r.length - 1];
+    out.push({name: last.comercio, freq, day, hour: 10, amount: lo, max: hi > lo * 1.02 ? hi : 0, rut: last.rut_destino || "", banco: last.banco_destino || "", n: xs.length});
+  }
+  return out;
+}
+const optsHtml = (list, sel) => list.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(sel) ? " selected" : ""}>${esc(l)}</option>`).join("");
+// Formulario en el mismo lugar de la transferencia (o arriba, si es nueva)
+function trFormHtml(t){
+  const acc = t.id ? trAccount(t) : {rut: t.rut || "", banco: t.banco || ""}, men = t.freq === "mensual";
+  return `<div class="panel mt" style="background:var(--sunken)">
+    <div class="row">
+      <div class="field grow">Destinatario<input id="trf-name" list="finTrNames" value="${esc(t.name || "")}" placeholder="como aparece en el comprobante del banco"></div>
+      <div class="field w10">Frecuencia<select id="trf-freq">${optsHtml([["semanal", "cada semana"], ["mensual", "cada mes"]], t.freq || "semanal")}</select></div>
+      <div class="field w10" id="trf-wd"${men ? " hidden" : ""}>Día<select id="trf-wday">${optsHtml([1, 2, 3, 4, 5, 6, 0].map(d => [d, WD[d]]), men ? 1 : t.day ?? 1)}</select></div>
+      <div class="field w10" id="trf-md"${men ? "" : " hidden"}>Día del mes<select id="trf-mday">${optsHtml(Array.from({length: 31}, (_, i) => [i + 1, i + 1]), men ? t.day : 1)}</select></div>
+    </div>
+    <div class="row mt">
+      <div class="field w10">Monto${+t.max ? " desde" : " aproximado"}<input id="trf-amount" inputmode="numeric" value="${t.amount ? fmt(t.amount) : ""}" placeholder="25.000"></div>
+      <div class="field w10">Hasta (si varía)<input id="trf-max" inputmode="numeric" value="${+t.max ? fmt(t.max) : ""}" placeholder="opcional"></div>
+      <div class="field w10">Aviso a las<select id="trf-hour">${optsHtml(Array.from({length: 18}, (_, i) => [i + 6, `${pad(i + 6)}:00`]), t.hour ?? 10)}</select></div>
+    </div>
+    <div class="row mt">
+      <div class="field w10">RUT<input id="trf-rut" value="${esc(t.rut || "")}" placeholder="${esc(acc.rut || "del comprobante")}"></div>
+      <div class="field w10">Banco<input id="trf-banco" value="${esc(t.banco || "")}" placeholder="${esc(acc.banco || "del comprobante")}"></div>
+      <div class="field w10">N° de cuenta<input id="trf-cuenta" value="${esc(t.cuenta || "")}" placeholder="opcional"></div>
+    </div>
+    <p class="small muted" style="margin:8px 0 0">Si el monto varía (por ejemplo, entre $25.000 y $30.000), escribe el rango: cualquier monto dentro cuenta como hecha. Con un solo monto, acepta ±10%. El RUT y el banco se llenan solos con el último comprobante.</p>
+    <div class="row mt"><button class="btn primary" data-action="fin-tr-save">Guardar</button><button class="btn ghost" data-action="fin-tr-cancel">Cancelar</button></div>
+  </div>`;
+}
+function renderFinTransfers(){
+  const ts = finTransfers(), pend = ts.filter(trPending).length, sug = trSuggestions(), ed = S.trEdit;
+  $("#finTrSum").textContent = !ts.length ? "aviso y control de las que haces cada semana o cada mes" : pend ? `${pend} ${pend === 1 ? "pendiente" : "pendientes"}` : "al día";
+  const card = t => {
+    if (ed && ed === t.id) return trFormHtml({...S.trDraft, id: t.id});
+    const acc = trAccount(t);
+    return `<div class="item-head mt"><div><strong>${esc(t.name)}</strong> <span class="muted">${trAmountLabel(t)} ${trEvery(t)}, aviso a las ${pad(t.hour)}:00</span>
+        ${acc.rut || acc.banco || acc.cuenta ? `<div class="small muted">${[acc.rut && "RUT " + acc.rut, acc.banco, acc.cuenta && "cuenta " + acc.cuenta].filter(Boolean).map(esc).join(" · ")}</div>` : ""}</div>
+        <span class="act"><button class="btn ghost small" data-action="fin-tr-edit" data-id="${esc(t.id)}">Editar</button><button class="btn ghost small danger" data-action="fin-tr-del" data-id="${esc(t.id)}">Quitar</button></span></div>
+      <div class="scroll"><table><thead><tr><th>Vence</th><th class="n">Transferido</th><th>Estado</th><th></th></tr></thead><tbody>${trPeriods(t).map(s => `<tr${s.cur ? ' style="background:var(--hl)"' : ""}>
+        <td style="white-space:nowrap">${s.cur ? `<strong>${fmtShort(s.due)}</strong>` : fmtShort(s.due)}</td>
+        <td class="n">${s.paid ? fmtClp(s.paid) : "—"}</td><td>${trStatus(t, s)}</td>
+        <td>${!s.done && s.end >= today() ? `<button class="btn ghost small" data-action="fin-tr-skip" data-id="${esc(t.id)}" data-due="${s.due}">${s.skip ? "Retomar" : "Omitir esta vez"}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+  };
+  setHTML($("#finTr"), `${ed === "new" ? trFormHtml(S.trDraft) : `<div class="row"><button class="btn small primary" data-action="fin-tr-new">Agregar transferencia</button></div>`}
+    ${ts.map(card).join("") || (ed === "new" ? "" : `<p class="empty">Agrega lo que pagas por transferencia cada semana o cada mes (arriendo, un servicio): te aviso el día que toca y la marco como hecha cuando llega el comprobante del banco.</p>`)}
+    ${sug.length ? `<h3 class="mt">Se repiten en tus transferencias</h3>${sug.map((g, i) => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:8px 0">
+      <span><strong>${esc(g.name)}</strong> <span class="muted">${trAmountLabel(g)} ${trEvery(g)}, ${g.n} veces</span></span>
+      <button class="btn small" data-action="fin-tr-sug" data-i="${i}">Agregar</button></div>`).join("")}` : ""}`);
+  const names = [...new Set(S.movs.filter(isTransfer).map(m => m.comercio))].sort();
+  setHTML($("#finTrNames"), names.map(n => `<option value="${esc(n)}">`).join(""));
+  renderPush();
+}
+function trOpenForm(id, draft){
+  document.activeElement?.blur(); S.trEdit = id; S.trDraft = draft;
+  renderFinTransfers();
+  setTimeout(() => { const el = $("#trf-name"); if (el){ el.scrollIntoView({block: "center"}); if (!draft.name) el.focus(); } }, 0);
+}
+
+/* Notificaciones push: el service worker (/sw.js) las muestra; la suscripción de cada dispositivo se guarda en el Worker (push_subs). */
+const pushOk = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const pushKeyBytes = k => Uint8Array.from(atob(k.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((k.length + 3) % 4)), c => c.charCodeAt(0));
+async function pushSub(){
+  if (!pushOk()) return null;
+  const reg = await navigator.serviceWorker.getRegistration();
+  return reg ? reg.pushManager.getSubscription() : null;
+}
+async function renderPush(){
+  const box = $("#pushBox"), say = (t, btns = "") => setHTML(box, `<p class="small" style="margin:0 0 8px">${t}</p>${btns ? `<div class="row">${btns}</div>` : ""}`);
+  if (!pushOk()) return say(isIOS() && !isStandalone()
+    ? "En iPhone, los avisos llegan solo con la app instalada: en Safari toca Compartir → Agregar a inicio y abre la app desde ese ícono."
+    : "Este navegador no permite notificaciones push.");
+  if (Notification.permission === "denied") return say("Bloqueaste las notificaciones de este sitio. Actívalas en los ajustes del navegador y vuelve aquí.");
+  const sub = await pushSub().catch(() => null);
+  if (sub) say("Este dispositivo recibe los avisos de tus transferencias.", `<button class="btn small" data-action="push-test">Enviar un aviso de prueba</button><button class="btn ghost small" data-action="push-off">Dejar de recibir avisos aquí</button>`);
+  else say("Este dispositivo no recibe avisos.", `<button class="btn small primary" data-action="push-on">Activar notificaciones</button>`);
+}
+
 /* Tarjetas: nombre y tipo por últimos 4 dígitos (lib.fin.cards) */
 function renderFinCards(){
   const cards = finCards(), list = finCardList(), cfg = finCfg();
@@ -3789,6 +4003,19 @@ function renderFinCards(){
       <td><select data-card="${esc(t)}" data-f="kind" aria-label="Tipo de la tarjeta ··${esc(t)}"><option value=""${c.kind ? "" : " selected"}>sin tipo (crédito)</option>${Object.entries(FIN_KIND).map(([k, v]) => `<option value="${k}"${c.kind === k ? " selected" : ""}>${v}</option>`).join("")}</select></td>
       <td class="n">${ms.length}</td><td>${last ? fmtShort(last) : "—"}</td></tr>`; }).join("")}</tbody></table></div>`
     : `<p class="empty">Aún no llega ninguna alerta de Visa.</p>`);
+}
+
+/* Categorías propias (lib.fin.myCats): grupo, si cuenta como gasto y quitar */
+// Una categoría nueva desde el selector: nombre limpio; las de inversión o ahorro no cuentan como gasto
+const finNewCat = name => { const n = String(name || "").trim().replace(/\s+/g, " ").slice(0, 40); return n ? n[0].toUpperCase() + n.slice(1) : ""; };
+const finCatGuess = name => { const inv = /invers|ahorro|apv|fondo|deposito|acciones|cripto/.test(norm(name)); return {name, group: inv ? "Ahorro e inversión" : "Otros", spend: !inv}; };
+function renderFinMyCats(){
+  const mine = finMyCats();
+  setHTML($("#finMyCats"), `<p class="small muted" style="margin:0 0 6px">"Inversiones y ahorro" ya viene incluida y no cuenta como gasto (Fintual, Racional, depósitos a plazo, APV).</p>` + (mine.length ? mine.map(c => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:6px 0">
+      <strong>${esc(c.name)}</strong>
+      <span class="row"><select data-mycat="${esc(c.name)}" data-f="group" aria-label="Grupo de ${esc(c.name)}">${FIN_TREE_BASE.map(([g]) => `<option${g === (c.group || "Otros") ? " selected" : ""}>${esc(g)}</option>`).join("")}</select>
+        <label class="small"><input type="checkbox" data-mycat="${esc(c.name)}" data-f="spend"${c.spend === false ? "" : " checked"}> gasto</label>
+        <button class="btn ghost small danger" data-action="fin-cat-del" data-name="${esc(c.name)}">Quitar</button></span></div>`).join("") : ""));
 }
 
 /* Reglas de categoría: lib.fin.rules = [{pat, cat}] */
@@ -5738,6 +5965,86 @@ const actions = {
   },
   "fin-rule-del": el => saveLib("fin", () => { const c = finCfg(); return {...c, rules: (c.rules || []).filter((_, i) => i !== +el.dataset.i)}; }),
   "fin-review": () => finReview(),
+  "fin-cat-add": () => {
+    const name = finNewCat($("#finMyCatName").value);
+    if (!name){ toast("Escribe el nombre de la categoría."); return; }
+    if (FIN_CATS.some(c => norm(c) === norm(name))){ toast("Esa categoría ya existe."); return; }
+    saveLib("fin", () => { const c = finCfg(); return {...c, myCats: [...(c.myCats || []), {name, group: $("#finMyCatGroup").value, spend: $("#finMyCatSpend").checked}]}; });
+    $("#finMyCatName").value = ""; toast(`Categoría "${name}" agregada.`);
+  },
+  "fin-cat-del": el => {
+    const name = el.dataset.name;
+    if (!confirm(`¿Quitar la categoría "${name}"? Los comercios y reglas que la usan quedan sin categoría.`)) return;
+    saveLib("fin", () => {
+      const c = finCfg(), cats = {...c.cats};
+      for (const k of Object.keys(cats)) if (cats[k] === name) delete cats[k];
+      return {...c, cats, rules: (c.rules || []).filter(r => r.cat !== name), myCats: (c.myCats || []).filter(x => x.name !== name)};
+    });
+  },
+  "fin-mov-add": async () => {
+    const fecha = $("#finMovDate").value, comercio = $("#finMovName").value.trim(), monto = clp($("#finMovAmt").value), tipo = $("#finMovTipo").value, cat = $("#finMovCat").value;
+    if (!fecha || !comercio || !(monto > 0)){ toast("Completa la fecha, la descripción y el monto."); return; }
+    try {
+      const r = await finApi("POST", "movs", {fecha, comercio, monto: Math.round(monto), tipo});
+      S.movs.push(r.mov);
+      $("#finMovName").value = ""; $("#finMovAmt").value = "";
+      if (cat && tipo !== "Transferencia recibida") saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [finKey(comercio)]: cat}}; });
+      else renderFin();
+      toast(`Movimiento agregado: ${comercio}, ${fmtClp(monto)}.`);
+    } catch (e) { toast("No se pudo agregar: " + e.message); }
+  },
+  "fin-tr-new": () => trOpenForm("new", {freq: "semanal", day: 1, hour: 10}),
+  "fin-tr-edit": el => { const t = finTransfers().find(x => x.id === el.dataset.id); if (t) trOpenForm(t.id, {...t}); },
+  "fin-tr-sug": el => { const g = trSuggestions()[+el.dataset.i]; if (g) trOpenForm("new", g); },
+  "fin-tr-cancel": () => { document.activeElement?.blur(); S.trEdit = null; S.trDraft = null; renderFinTransfers(); },
+  "fin-tr-save": () => {
+    const v = id => ($("#trf-" + id).value || "").trim(), freq = v("freq"), amount = clp(v("amount")), max = clp(v("max"));
+    if (!v("name") || !(amount > 0)){ toast("Escribe el destinatario y el monto."); return; }
+    if (max && max < amount){ toast("El monto \"hasta\" debe ser mayor que el \"desde\"."); return; }
+    const id = S.trEdit === "new" ? "tr" + Date.now().toString(36) : S.trEdit;
+    const t = {name: v("name"), freq, day: +(freq === "mensual" ? v("mday") : v("wday")), hour: +v("hour"), amount: Math.round(amount), max: max ? Math.round(max) : 0,
+      rut: v("rut"), banco: v("banco"), cuenta: v("cuenta")};
+    S.trEdit = null; S.trDraft = null; document.activeElement?.blur();
+    saveLib("fin", () => {
+      const c = finCfg(), list = [...(c.transfers || [])], i = list.findIndex(x => x.id === id);
+      const next = {...(list[i] || {since: today(), skip: []}), ...t, id};
+      if (i >= 0) list[i] = next; else list.push(next);
+      return {...c, transfers: list};
+    });
+    toast("Transferencia guardada.");
+  },
+  "fin-tr-del": el => {
+    const t = finTransfers().find(x => x.id === el.dataset.id);
+    if (!t || !confirm(`¿Quitar la transferencia a ${t.name}? Los movimientos no se borran.`)) return;
+    saveLib("fin", () => { const c = finCfg(); return {...c, transfers: (c.transfers || []).filter(x => x.id !== t.id)}; });
+  },
+  "fin-tr-skip": el => saveLib("fin", () => {
+    const c = finCfg(), due = el.dataset.due;
+    return {...c, transfers: (c.transfers || []).map(x => { if (x.id !== el.dataset.id) return x; const sk = new Set(x.skip || []); sk.has(due) ? sk.delete(due) : sk.add(due); return {...x, skip: [...sk].filter(d => d >= addDays(today(), -60)).sort()}; })};
+  }),
+  "push-on": async () => {
+    try {
+      const {key} = await finApi("GET", "push");
+      if (!key){ toast("Falta configurar la clave VAPID_JWK en el Worker."); return; }
+      if (await Notification.requestPermission() !== "granted"){ renderPush(); return; }
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: pushKeyBytes(key)});
+      await finApi("PUT", "push/sub", sub.toJSON());
+      await finApi("POST", "push/test");
+      toast("Notificaciones activadas: te mandé un aviso de prueba.");
+    } catch (e) { toast("No se pudieron activar: " + e.message); }
+    renderPush();
+  },
+  "push-test": async () => {
+    try { const r = await finApi("POST", "push/test"); toast(r.sent ? `Aviso enviado a ${r.sent} ${r.sent === 1 ? "dispositivo" : "dispositivos"}.` : "No se entregó a ningún dispositivo."); }
+    catch (e) { toast("No se pudo enviar: " + e.message); }
+  },
+  "push-off": async () => {
+    try { const sub = await pushSub(); if (sub){ await finApi("DELETE", "push/sub", {endpoint: sub.endpoint}); await sub.unsubscribe(); } }
+    catch (e) { toast("No se pudo desactivar: " + e.message); }
+    renderPush();
+  },
   "water": el => saveDay(S.date, d => { d.water = Math.max(0, (d.water || 0) + Number(el.dataset.v)); }),
 
   "act-save": () => { saveAct(); document.activeElement && document.activeElement.blur(); toast("Actividad guardada."); },
@@ -6469,12 +6776,23 @@ function wireUI(){
     const v = t.value; t.blur();
     saveLib("fin", () => { const c = finCfg(), rf = {...c.refunds}; if (!v) delete rf[id]; else rf[id] = v.startsWith("of:") ? {of: v.slice(3)} : {cat: v.slice(4)}; return {...c, refunds: rf}; });
   }));
-  ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => { const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur(); saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: t.value}}; }); }));
+  ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => {
+    const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur();
+    let cat = t.value, add = null;
+    if (cat === "__new"){ cat = finNewCat(prompt("Nombre de la nueva categoría (por ejemplo, Inversiones en Fintual)")); if (!cat){ renderFin(); return; } add = cat; }
+    saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: cat}, myCats: add && !FIN_CATS.includes(add) ? [...(c.myCats || []), finCatGuess(add)] : c.myCats}; });
+    if (add) toast(`Categoría "${add}" creada. Su grupo y si cuenta como gasto se cambian en Presupuesto, topes y reglas.`);
+  }));
   $("#finCatBudgets").addEventListener("change", e => { const c = e.target.dataset.catbud; if (!c) return; const v = clp(e.target.value); saveLib("fin", () => { const f = finCfg(), b = {...f.catBudgets}; if (v > 0) b[c] = Math.round(v); else delete b[c]; return {...f, catBudgets: b}; }); });
   $("#cartolaFile").addEventListener("change", e => importCartola(e.target.files[0]));
   $("#finDetPhoto").addEventListener("change", e => { const f = [...e.target.files].slice(0, 3); $("#finDetPhotoName").textContent = f.map(x => x.name).join(", ") + (e.target.files.length > 3 ? " (solo se leen las 3 primeras)" : ""); });
-  $("#finRuleCat").innerHTML = FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
-  $("#finCatF").innerHTML = `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>` + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join("");
+  $("#finMyCatGroup").innerHTML = FIN_TREE_BASE.map(([g]) => `<option${g === "Otros" ? " selected" : ""}>${esc(g)}</option>`).join("");
+  $("#finMovDate").value = today();
+  $("#finMyCats").addEventListener("change", e => {
+    const t = e.target, name = t.dataset.mycat; if (!name) return;
+    const v = t.type === "checkbox" ? t.checked : t.value;
+    saveLib("fin", () => { const c = finCfg(); return {...c, myCats: (c.myCats || []).map(x => x.name === name ? {...x, [t.dataset.f]: v} : x)}; });
+  });
   $("#finQ").addEventListener("input", renderFinList);
   $("#finCatF").addEventListener("change", renderFinList);
   $("#finGroupF").innerHTML = `<option value="">Todos los grupos</option>` + FIN_TREE.map(([g]) => `<option value="${esc(g)}">Solo ${esc(g.toLowerCase())}</option>`).join("");
@@ -6486,6 +6804,10 @@ function wireUI(){
     saveLib("fin", () => { const c = finCfg(), card = {...(c.cards || {})[k]}; if (v) card[f] = v; else delete card[f]; return {...c, cards: {...c.cards, [k]: card}}; });
   });
   $("#finCmp").addEventListener("change", renderFin);
+  // Frecuencia del formulario de transferencias: muestra el día de la semana o el día del mes
+  $("#finTr").addEventListener("change", e => { if (e.target.id !== "trf-freq") return; const men = e.target.value === "mensual"; $("#trf-wd").hidden = men; $("#trf-md").hidden = !men; });
+  // Notificación tocada con la app abierta: el service worker pide ir a la pestaña
+  if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => goTab(e.data && e.data.tab));
   $("#finDetItems").addEventListener("change", e => {
     const t = e.target, d = S.finDraft; if (!t.classList.contains("fin-in") || !d) return;
     const it = d.items[+t.dataset.i], f = t.dataset.f; if (!it) return;
