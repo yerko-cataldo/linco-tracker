@@ -82,6 +82,40 @@ export function catInfo(m, ctx) {
 
 export const isPurchase = (m, ctx) => m.moneda === "CLP" && FIN_SPEND.includes(norm(m.tipo)) && !ctx.noSpend.has(catInfo(m, ctx).cat);
 
+/* Fijos y variables (finFixedWhy() de la web): fijo si la categoría lo es (FIN_FIXED_BASE o lib.fin.catKind), si el comercio
+   se cobra con periodicidad (finRecurring()) o si es una cuota. La detección de recurrentes necesita el historial (400 días). */
+export const FIN_FIXED_BASE = ["Arriendo y gastos comunes", "Servicios", "Suscripciones", "Comisiones e intereses", "Educación"];
+const FIN_FREQ = [["semanal", 6, 8, 3, 52 / 12], ["mensual", 26, 35, 2, 1], ["anual", 355, 375, 2, 1 / 12]];
+const median = (a) => { const s = [...a].sort((x, y) => x - y), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; };
+const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+
+export const catFixed = (cat, ctx) => { const k = (ctx.fin.catKind || {})[cat]; return k ? k === "fijo" : FIN_FIXED_BASE.includes(cat); };
+
+// Comercios recurrentes: [{key, name, freq, amount, monthly}] desde todo el historial de compras
+export function recurring(movs, ctx) {
+  const by = {};
+  for (const m of movs) if (isPurchase(m, ctx) && !(m.cuotas > 1)) (by[finKey(m.comercio)] || (by[finKey(m.comercio)] = [])).push(m);
+  const out = [];
+  for (const [key, xs] of Object.entries(by)) {
+    if (xs.length < 2) continue;
+    const med = median(xs.map((m) => m.monto)), same = xs.filter((m) => Math.abs(m.monto - med) <= 0.15 * med).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    if (same.length < 2) continue;
+    const gaps = same.slice(1).map((m, i) => daysBetween(same[i].fecha, m.fecha)), gm = median(gaps);
+    const f = FIN_FREQ.find(([, lo, hi, n]) => gm >= lo && gm <= hi && same.length >= n);
+    if (!f || !gaps.every((g) => Math.abs(g - gm) <= Math.max(2, 0.25 * gm))) continue;
+    out.push({ key, name: same[same.length - 1].comercio, freq: f[0], amount: med, monthly: med * f[4] });
+  }
+  return out;
+}
+
+// "cuota" | "categoría fija" | "recurrente" | "" (variable)
+export function fixedWhy(m, ctx, recKeys) {
+  if (m.cuotas > 1) return "cuota";
+  if (catFixed(catInfo(m, ctx).cat || "Sin categoría", ctx)) return "categoría fija";
+  const k = finKey(m.comercio);
+  return recKeys.some((x) => finSameMerchant(x, k)) ? "recurrente" : "";
+}
+
 // Gasto por categoría: compras más devoluciones (abonos marcados, en negativo); cada producto detallado va a su categoría
 export function spendRows(movs, ctx, det = {}) {
   const out = [];
