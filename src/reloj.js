@@ -17,10 +17,10 @@ const DEFAULT_ROUTINE = {
   torsoB: ["Press militar", "Remo en polea", "Press de pecho en máquina", "Jalón con agarre estrecho", "Face pull", "Elevaciones laterales", "Curl martillo", "Extensión de tríceps sobre la cabeza"],
   piernaB: ["Hip thrust", "Prensa", "Curl femoral", "Aductores en máquina", "Abductores en máquina", "Elevación de talones sentado", "Elevación de piernas", "Plancha lateral"],
 };
-const DEFAULT_GOALS = { kcal: 2550, protein: 190, water: 10 };
+const DEFAULT_GOALS = { kcal: 2550, protein: 190, water: 10, gymWeek: 3 };
 const HABIT_SESSIONS = 3, DEFAULT_SETS = 3, DEFAULT_REPS = 10;
 const REP_RANGE = [8, 12], REP_FLOOR = 6, WARM_RATIO = 0.75, LB_KG = 0.4536;
-const SET_SEC = 30, REST_MAX = 600, HISTORY_DAYS = 180;
+const SET_SEC = 30, REST_MAX = 600, HISTORY_DAYS = 400;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -79,11 +79,11 @@ function nextStep(g) {
 
 // "Le toca": sigue la rotación Torso/Pierna si la última sesión fue de ella; si no, el Push/Pull/Legs menos hecho en la semana
 function suggestType(hist, date) {
-  const last = hist.filter((h) => h.date <= date && ["push", "pull", "legs", ...TL_CYCLE].includes(h.d.act.gym)).map((h) => h.d.act.gym).pop();
+  const last = hist.filter((h) => h.date <= date && ["push", "pull", "legs", ...TL_CYCLE].includes(h.act.gym)).map((h) => h.act.gym).pop();
   if (TL_CYCLE.includes(last)) return TL_CYCLE[(TL_CYCLE.indexOf(last) + 1) % TL_CYCLE.length];
   const d = new Date(date + "T12:00:00Z"), monday = new Date(d - ((d.getUTCDay() + 6) % 7) * 864e5).toISOString().slice(0, 10);
   const n = { push: 0, pull: 0, legs: 0 };
-  hist.forEach((h) => { if (h.date >= monday && h.date <= date && h.d.act.gym in n) n[h.d.act.gym]++; });
+  hist.forEach((h) => { if (h.date >= monday && h.date <= date && h.act.gym in n) n[h.act.gym]++; });
   return Object.keys(n).sort((a, b) => n[a] - n[b])[0];
 }
 
@@ -91,53 +91,77 @@ function workoutPlan(hist, d, date, today) {
   const a = d.act, ended = a.sets.length > 0 && (!!a.end || date < today);
   const suggested = suggestType(hist, date), type = a.gym || suggested;
   const before = hist.filter((h) => h.date < date);
-  const sessions = before.filter((h) => h.d.act.gym === type && h.d.act.sets.length).slice(-HABIT_SESSIONS);
+  const sessions = before.filter((h) => h.act.gym === type && h.act.sets.length).slice(-HABIT_SESSIONS);
   let habit = DEFAULT_ROUTINE[type] || [];
   if (sessions.length) {
     const pos = {};
-    sessions.forEach((h) => { const gs = groupSets(h.d.act.sets); gs.forEach((g, i) => (pos[g.k] = pos[g.k] || { ex: g.ex, p: [] }).p.push(i / Math.max(1, gs.length - 1))); });
+    sessions.forEach((h) => { const gs = groupSets(h.act.sets); gs.forEach((g, i) => (pos[g.k] = pos[g.k] || { ex: g.ex, p: [] }).p.push(i / Math.max(1, gs.length - 1))); });
     const avg = (x) => x.p.reduce((s, v) => s + v, 0) / x.p.length;
     habit = Object.values(pos).sort((x, y) => avg(x) - avg(y)).map((x) => x.ex);
   }
   const done = groupSets(a.sets), names = [];
   [...done.map((g) => g.ex), ...(ended ? [] : habit)].forEach((n) => { if (!names.some((x) => norm(x) === norm(n))) names.push(n); });
 
+  // Récords (liftStats() de la web): la mejor serie del día de un ejercicio cuando supera el 1RM estimado de todas las sesiones anteriores
+  const best = {}, top = {}, prIds = new Set();
+  before.forEach((h) => h.act.sets.forEach((s) => { const k = norm(s.ex), v = e1rm(s); if (!s.drop && v > (best[k] || 0)) best[k] = v; }));
+  a.sets.forEach((s) => { const k = norm(s.ex), v = e1rm(s); if (!s.drop && v && (!top[k] || v > top[k].v)) top[k] = { s, v }; });
+  Object.entries(top).forEach(([k, { s, v }]) => { if (best[k] && v > best[k] + 1e-9) prIds.add(s.id); });
+
   const exs = names.map((name) => {
     const k = norm(name), dg = done.find((g) => g.k === k);
-    const prevH = [...before].reverse().find((h) => h.d.act.sets.some((s) => norm(s.ex) === k));
-    const pg = prevH ? groupSets(prevH.d.act.sets.filter((s) => norm(s.ex) === k))[0] : null;
+    const prevH = [...before].reverse().find((h) => h.act.sets.some((s) => norm(s.ex) === k));
+    const pg = prevH ? groupSets(prevH.act.sets.filter((s) => norm(s.ex) === k))[0] : null;
     const step = pg ? nextStep(pg) : null;
     let plan = pg
       ? pg.sets.map((s) => ({ kg: Number(s.kg) || 0, reps: s.reps, unit: s.unit || "", warm: pg.warm.has(s.id), drop: !!s.drop }))
       : Array.from({ length: DEFAULT_SETS }, () => ({ kg: 0, reps: DEFAULT_REPS, unit: "", warm: false, drop: false }));
     if (step && step.kind !== "keep") plan = plan.map((p) => (!p.warm && !p.drop && p.kg === step.top ? { ...p, kg: step.kg, reps: step.reps } : p));
     const sets = dg ? dg.sets : [], warm = dg ? dg.warm : new Set();
-    const rows = sets.map((s) => ({ done: true, id: s.id, kg: Number(s.kg) || 0, reps: s.reps, unit: s.unit || "", warm: warm.has(s.id), drop: !!s.drop }));
-    if (!ended) for (let i = sets.length; i < plan.length; i++) rows.push({ done: false, ...plan[i] });
-    return { name: dg ? dg.ex : name, step: step && !sets.length ? step.txt : "", rows };
+    const rows = sets.map((s) => ({ done: true, id: s.id, kg: Number(s.kg) || 0, reps: s.reps, unit: s.unit || "", warm: warm.has(s.id), drop: !!s.drop, pr: prIds.has(s.id) }));
+    if (!ended) for (let i = sets.length; i < plan.length; i++) rows.push({ done: false, ...plan[i], pr: false });
+    return { name: dg ? dg.ex : name, step: step ? step.txt : "", stepKind: step ? step.kind : "", rows };
   });
-  const lastT = Math.max(0, ...a.sets.map((s) => s.t || 0));
-  return { type, label: GYM_LABEL[type] || "", suggested, ended, lastT, exs };
+  const last = a.sets.filter((s) => s.t).sort((x, y) => y.t - x.t)[0];
+  return {
+    type, label: GYM_LABEL[type] || "", suggested, ended,
+    lastT: last ? last.t : 0,
+    last: last ? { id: last.id, ex: last.ex, kg: Number(last.kg) || 0, reps: last.reps, unit: last.unit || "" } : null,
+    exs,
+  };
 }
 
-async function loadHistory(env, date) {
-  const r = await env.DB.prepare("SELECT date, data FROM days WHERE date <= ? ORDER BY date DESC LIMIT ?").bind(date, HISTORY_DAYS).all();
-  return r.results.reverse().map((x) => ({ date: x.date, d: normDay(JSON.parse(x.data), x.date) }));
-}
+// Solo los días con entreno y solo su parte act: SQLite la extrae para no parsear cientos de días completos
+// (el plan gratis de Workers tiene 10 ms de CPU por request)
+const HIST_SQL =
+  "SELECT date, json_extract(data, '$.act') AS act FROM days WHERE date < ?1 " +
+  "AND (json_array_length(json_extract(data, '$.act.sets')) > 0 OR coalesce(json_extract(data, '$.act.gym'), '') <> '') " +
+  "ORDER BY date DESC LIMIT ?2";
+const LAST_WEIGHT_SQL =
+  "SELECT json_extract(data, '$.weight') AS w FROM days WHERE date <= ?1 AND json_extract(data, '$.weight') > 0 ORDER BY date DESC LIMIT 1";
 
 async function summary(env, date) {
   const today = chileToday();
-  const [hist, g] = await Promise.all([loadHistory(env, date), env.DB.prepare("SELECT data FROM lib WHERE key = 'goals'").first()]);
-  const goals = Object.assign({}, DEFAULT_GOALS, g ? JSON.parse(g.data).values || {} : {});
-  const h = hist.find((x) => x.date === date), d = h ? h.d : normDay(null, date);
+  const [histR, dayR, goalsR, weightR] = await env.DB.batch([
+    env.DB.prepare(HIST_SQL).bind(date, HISTORY_DAYS),
+    env.DB.prepare("SELECT data FROM days WHERE date = ?1").bind(date),
+    env.DB.prepare("SELECT data FROM lib WHERE key = 'goals'"),
+    env.DB.prepare(LAST_WEIGHT_SQL).bind(date),
+  ]);
+  const d = normDay(dayR.results[0] ? JSON.parse(dayR.results[0].data) : null, date);
+  const goals = Object.assign({}, DEFAULT_GOALS, goalsR.results[0] ? JSON.parse(goalsR.results[0].data).values || {} : {});
+  const hist = histR.results.reverse().map((x) => ({ date: x.date, act: normDay({ act: JSON.parse(x.act || "{}") }, x.date).act }));
+  hist.push({ date, act: d.act });
   const total = (f) => Math.round(d.meals.reduce((s, m) => s + (Number(m[f]) || 0), 0));
+  const d0 = new Date(date + "T12:00:00Z"), monday = new Date(d0 - ((d0.getUTCDay() + 6) % 7) * 864e5).toISOString().slice(0, 10);
   return {
     date, today,
     water: d.water || 0, waterGoal: goals.water,
     creatine: !!d.creatine, weight: d.weight ?? null,
-    lastWeight: hist.map((x) => x.d.weight).filter((w) => Number(w) > 0).pop() ?? null,
+    lastWeight: weightR.results[0] ? Number(weightR.results[0].w) : null,
     kcal: total("kcal"), kcalGoal: goals.kcal,
     protein: total("p"), proteinGoal: goals.protein,
+    gymWeek: hist.filter((h) => h.date >= monday && h.act.sets.length).length, gymWeekGoal: goals.gymWeek,
     types: Object.entries(GYM_LABEL).map(([k, label]) => ({ k, label })),
     gym: workoutPlan(hist, d, date, today),
   };
