@@ -135,6 +135,7 @@ async function summary(env, date) {
     date, today,
     water: d.water || 0, waterGoal: goals.water,
     creatine: !!d.creatine, weight: d.weight ?? null,
+    lastWeight: hist.map((x) => x.d.weight).filter((w) => Number(w) > 0).pop() ?? null,
     kcal: total("kcal"), kcalGoal: goals.kcal,
     protein: total("p"), proteinGoal: goals.protein,
     types: Object.entries(GYM_LABEL).map(([k, label]) => ({ k, label })),
