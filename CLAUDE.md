@@ -7,7 +7,7 @@ Tracker personal de un solo usuario: nutrición, entreno, bajo eléctrico y estu
 - **Cloudflare Worker** (`src/index.js`): valida el login, expone la API y hace de proxy al modelo.
 - **Front** (`public/index.html`): un solo archivo con HTML, CSS y JS vanilla. No hay build, framework ni dependencias.
 - **D1 (SQLite)**: tablas `days`, `lib` y `ai_usage`, más las de finanzas (`movimientos`, `mov_detalle`, `inbox_raw`) y de notificaciones (`push_subs`, `push_log`). El esquema está en `migrations/`.
-- **Workers AI**: modelo por defecto `@cf/meta/llama-4-scout-17b-16e-instruct`, dentro del tier gratis de 10.000 neurons diarios. Anthropic es opcional, por variable.
+- **Modelos**: la API de Anthropic (secreto `ANTHROPIC_API_KEY`). Claude Sonnet 5.5 para el agente, la revisión semanal y el tier `complex` (diagnóstico del día, resumen mensual de finanzas); Claude Haiku 5.5 para la extracción (registro rápido, desglose de comidas, alimentos, boletas), la propuesta del día, las fotos y el agente de compras. **Workers AI** (`@cf/meta/llama-4-scout-17b-16e-instruct`, `MODEL_FALLBACK`, tier gratis de 10.000 neurons diarios) es el respaldo cuando falta la key, se llega a `ANTHROPIC_BUDGET_USD` en el mes o Anthropic falla.
 - **Cloudflare Access**: login por código al correo. El Worker valida el JWT (`cf-access-jwt-assertion`) con `jose` en cada request, salvo en `/s/*` (vista compartida), que tiene una excepción Bypass en Access. El reloj (Galaxy Watch) entra con un service token de Access (policy Service Auth `reloj`): su JWT trae `common_name` en vez de `email` y el Worker lo acepta si coincide con `WATCH_CLIENT_ID` (solo en la instancia principal). `workers_dev` y `preview_urls` están desactivados.
 
 ## Comandos
@@ -87,7 +87,7 @@ Campos opcionales: `meals[].slot` (la comida a la que corresponde, con el nombre
 
 El body de `/api/ai` es `{messages, images, tier, json, stream}`.
 
-- **Ruteo por tarea**: `tier: "complex"` usa `PROVIDER_COACH`/`MODEL_COACH`; las imágenes usan `PROVIDER_VISION`/`MODEL_VISION`; lo demás usa `PROVIDER_DEFAULT`/`MODEL_DEFAULT`. Todo se configura en `wrangler.jsonc`.
+- **Ruteo por tarea**: `tier: "complex"` usa `PROVIDER_COACH`/`MODEL_COACH`; las imágenes usan `PROVIDER_VISION`/`MODEL_VISION`; lo demás usa `PROVIDER_DEFAULT`/`MODEL_DEFAULT`. Todo se configura en `wrangler.jsonc`. Si el proveedor es Anthropic y falta la key, se pasó el presupuesto del mes o la llamada falla, `ai()` responde con `MODEL_FALLBACK` de Workers AI. El costo de cada llamada a Anthropic (también en streaming, con `meterAnthropicSSE`) queda en `api_usage`.
 - **Streaming**: el de Workers AI se convierte al formato SSE de Anthropic (`content_block_delta`), que es el que parsea el front.
 - **Tope diario**: `AI_DAILY_LIMIT` llamadas por día, en hora de Chile.
 

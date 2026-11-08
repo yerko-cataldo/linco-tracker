@@ -47,13 +47,16 @@
     "MODEL_AGENT": "claude-sonnet-5-5",
     // Agente de compras (sugiere la categoría de una compra nueva): tarea simple, Haiku basta y cuesta ~20 veces menos
     "MODEL_CLASSIFY": "claude-haiku-5-5",
-    "MODEL_COACH": "@cf/meta/llama-4-scout-17b-16e-instruct",
-    "MODEL_DEFAULT": "@cf/meta/llama-4-scout-17b-16e-instruct",
-    "MODEL_VISION": "@cf/meta/llama-4-scout-17b-16e-instruct",
+    // tier "complex" (diagnóstico del día, resumen mensual de finanzas): Sonnet; extracción y propuesta del día: Haiku; fotos: Haiku con visión
+    "MODEL_COACH": "claude-sonnet-5-5",
+    "MODEL_DEFAULT": "claude-haiku-5-5",
+    // Respaldo gratis si falta la key, se llega a ANTHROPIC_BUDGET_USD en el mes o Anthropic falla
+    "MODEL_FALLBACK": "@cf/meta/llama-4-scout-17b-16e-instruct",
+    "MODEL_VISION": "claude-haiku-5-5",
     "PROVIDER_AGENT": "anthropic",
-    "PROVIDER_COACH": "workers-ai",
-    "PROVIDER_DEFAULT": "workers-ai",
-    "PROVIDER_VISION": "workers-ai",
+    "PROVIDER_COACH": "anthropic",
+    "PROVIDER_DEFAULT": "anthropic",
+    "PROVIDER_VISION": "anthropic",
     "PUSH_SUBJECT": "https://tracker.yerkolincoyan.cl",
     // Client ID (no es secreto) del service token de Access que usa el reloj. No va en env.jere.
     "WATCH_CLIENT_ID": "8f42af7a83adc5142009742bba2c200d.access"

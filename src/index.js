@@ -6,7 +6,7 @@ import { parseBankMail } from "./correos.js";
 import { unimarcSearch } from "./precios.js";
 import { sendPush, vapidPublicKey } from "./push.js";
 import { reloj } from "./reloj.js";
-import { logUsage, anthropicStatus } from "./uso.js";
+import { logUsage, anthropicStatus, anthropicCost, monthCost } from "./uso.js";
 import { agente, confirmar } from "./agente.js";
 import { classify, classifyPending } from "./clasificador.js";
 import { remindTransfers, notifyTransfer } from "./transferencias.js";
@@ -586,8 +586,10 @@ async function ai(request, env) {
 
   const images = (Array.isArray(body.images) ? body.images : []).slice(0, MAX_IMAGES)
     .filter((i) => i && typeof i.data === "string" && i.data.length < MAX_IMAGE_B64 && /^image\/(jpeg|png|webp|gif)$/.test(i.media_type));
-  const route = pickRoute(env, body.tier, images.length > 0);
-  if (route.provider === "anthropic" && !env.ANTHROPIC_API_KEY) return json({ error: "no_api_key" }, 503);
+  let route = pickRoute(env, body.tier, images.length > 0);
+  const fallback = { provider: "workers-ai", model: env.MODEL_FALLBACK || "@cf/meta/llama-4-scout-17b-16e-instruct" };
+  const budget = Number(env.ANTHROPIC_BUDGET_USD) || 0;
+  if (route.provider === "anthropic" && (!env.ANTHROPIC_API_KEY || (budget && (await monthCost(env)) >= budget))) route = fallback;
   if (route.provider === "workers-ai" && !env.AI) return json({ error: "no_ai_binding" }, 503);
 
   // Tope diario de llamadas (hora de Chile) para acotar gasto y cuota gratis
@@ -610,9 +612,17 @@ async function ai(request, env) {
   const maxTokens = Math.min(Math.max(Number(body.max_tokens) || 2000, 64), 4000);
 
   try {
-    const out = route.provider === "anthropic"
-      ? await runAnthropic(env, route.model, system, msgs, images, stream, maxTokens)
-      : await runWorkersAI(env, route.model, system, msgs, images, stream, maxTokens);
+    let out;
+    try {
+      out = route.provider === "anthropic"
+        ? await runAnthropic(env, route.model, system, msgs, images, stream, maxTokens)
+        : await runWorkersAI(env, route.model, system, msgs, images, stream, maxTokens);
+    } catch (err) {
+      if (route.provider !== "anthropic" || !env.AI) throw err;
+      console.error("anthropic, uso Workers AI", String((err && err.message) || err).slice(0, 300));
+      route = fallback;
+      out = await runWorkersAI(env, route.model, system, msgs, images, stream, maxTokens);
+    }
 
     if (stream) {
       return new Response(out.stream, {
@@ -622,7 +632,7 @@ async function ai(request, env) {
     await env.DB.prepare(
       "UPDATE ai_usage SET input_tokens = input_tokens + ?2, output_tokens = output_tokens + ?3 WHERE day = ?1"
     ).bind(today, out.inTok || 0, out.outTok || 0).run();
-    await logUsage(env, route.provider, route.model, out.inTok, out.outTok);
+    await logUsage(env, route.provider, route.model, out.inTok, out.outTok, out.cost);
     return json({ text: out.text, truncated: !!out.truncated, provider: route.provider, model: route.model });
   } catch (err) {
     const msg = String((err && err.message) || err);
@@ -648,13 +658,44 @@ async function runAnthropic(env, model, system, msgs, images, stream, maxTokens)
     body: JSON.stringify({ model, max_tokens: maxTokens, system, messages, stream }),
   });
   if (!res.ok) throw new Error(`anthropic ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  if (stream) return { stream: res.body };  // ya viene en el formato SSE que entiende el front
+  if (stream) return { stream: meterAnthropicSSE(env, model, res.body) };  // ya viene en el formato SSE que entiende el front
   const data = await res.json();
+  const u = data.usage || {};
   return {
     text: (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join(""),
     truncated: data.stop_reason === "max_tokens",
-    inTok: data.usage?.input_tokens, outTok: data.usage?.output_tokens,
+    inTok: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0), outTok: u.output_tokens,
+    cost: anthropicCost(model, u),
   };
+}
+
+/* Deja pasar el streaming de Anthropic tal cual y, al terminar, registra sus tokens (message_start y message_delta traen el uso) */
+function meterAnthropicSSE(env, model, body) {
+  const dec = new TextDecoder();
+  let buf = "";
+  const usage = {};
+  const read = (line) => {
+    if (!line.startsWith("data:")) return;
+    try {
+      const ev = JSON.parse(line.slice(5));
+      const u = ev.type === "message_start" ? ev.message && ev.message.usage : ev.type === "message_delta" ? ev.usage : null;
+      if (u) for (const [k, v] of Object.entries(u)) if (typeof v === "number") usage[k] = Math.max(usage[k] || 0, v);
+    } catch { /* evento parcial o sin JSON */ }
+  };
+  return body.pipeThrough(new TransformStream({
+    transform(chunk, ctl) {
+      ctl.enqueue(chunk);
+      buf += dec.decode(chunk, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop();
+      lines.forEach(read);
+    },
+    async flush() {
+      read(buf);
+      const inTok = (usage.input_tokens || 0) + (usage.cache_creation_input_tokens || 0) + (usage.cache_read_input_tokens || 0);
+      await logUsage(env, "anthropic", model, inTok, usage.output_tokens, anthropicCost(model, usage));
+    },
+  }));
 }
 
 /* Workers AI (binding AI): modelos abiertos dentro del tier gratis de Cloudflare */

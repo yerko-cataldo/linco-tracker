@@ -4106,7 +4106,7 @@ async function finReview(){
     const r = await S.sample(`Escribe un resumen breve de mis gastos del mes (tarjeta de crédito, débito, transferencias y pagos de cuentas) ${ym}, en español de Chile, tuteando.
 Usa solo estas cifras, ya calculadas; no calcules cifras nuevas ni inventes datos. Montos en pesos chilenos.
 ${JSON.stringify(facts)}
-Formato: 4 a 6 viñetas en markdown. Destaca lo que cambió frente al mes anterior, las categorías sobre su tope, los recurrentes que subieron y los comercios nuevos. Termina con una sugerencia concreta.`, {onText: ({text}) => setHTML($("#finReviewOut"), md(text))});
+Formato: 4 a 6 viñetas en markdown. Destaca lo que cambió frente al mes anterior, las categorías sobre su tope, los recurrentes que subieron y los comercios nuevos. Termina con una sugerencia concreta.`, {modelTier: "complex", onText: ({text}) => setHTML($("#finReviewOut"), md(text))});
     saveLib("fin", c => ({...finCfg(), reviews: {...finCfg().reviews, [ym]: r.text}}));
     st.textContent = "";
   } catch (e) { st.textContent = aiErr(e); }
@@ -4912,7 +4912,7 @@ Lo que suele comer en cada franja (últimos ${PLAN_DAYS} días, con cuántas vec
 Alimentos disponibles (valores por 100 g tal como se comen): ${JSON.stringify(foodsWithMacros())}
 ${S.planNote ? `Pedido de la persona: "${S.planNote}"\n` : ""}Responde con este JSON, con 2 opciones y en cada una exactamente ${targets.length} ${targets.length === 1 ? "comida" : "comidas"}:
 {"nota": string (una frase sobre el criterio), "opciones": [{"comidas": [{"franja": string, "desc": string breve, "items": [{"foodId": string o null, "name": string, "g": number, "kcal": number o null, "p": number o null, "c": number o null, "f": number o null, "fib": number o null, "plant": boolean}]}]}]}
-En items, si el alimento está en la lista pon su foodId y deja kcal, p, c, f y fib en null; si no está, pon foodId null y estima esos valores para los gramos indicados.${attempt ? "\nOjo: en tu respuesta anterior las comidas no sumaban sus metas de kcal. Revisa los gramos de cada ingrediente." : ""}`, {modelTier: "complex", cache: false, system: PLAN_SYSTEM, maxTokens: 3000});
+En items, si el alimento está en la lista pon su foodId y deja kcal, p, c, f y fib en null; si no está, pon foodId null y estima esos valores para los gramos indicados.${attempt ? "\nOjo: en tu respuesta anterior las comidas no sumaban sus metas de kcal. Revisa los gramos de cada ingrediente." : ""}`, {modelTier: "default", cache: false, system: PLAN_SYSTEM, maxTokens: 3000});
     opts = (r.opciones || []).slice(0, 2).map(o => {
       const meals = targets.map((t, i) => {
         const c = (o.comidas || [])[i], items = c ? itemsFromAI(c.items) : [];
