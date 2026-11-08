@@ -1430,7 +1430,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- COACH -->
   <section class="tab" id="tab-coach">
-    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg></span><div><h2>Coach</h2><p class="lede">La revisión semanal lee tus registros de las últimas dos semanas. El agente consulta todas tus áreas, también tus gastos, y deja listos registros y cambios para que los confirmes.</p></div></div>
+    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg></span><div><h2>Coach</h2><p class="lede">La revisión semanal y el agente leen todas tus áreas, también tus gastos. El agente además deja listos registros y cambios para que los confirmes.</p></div></div>
     <div class="notice" id="coachOff" hidden>El coach no está disponible.</div>
     <div class="ai-only stack" id="coachOn" hidden>
       <div class="panel">
@@ -6571,9 +6571,24 @@ Entrenamiento: organiza su rutina según su actividad habitual, sin poner sesion
 Bajo: práctica deliberada; subir BPM en pasos pequeños solo con ejecución limpia, bajar si hay errores, alternar técnicas.
 Nutrición: prioriza sus alimentos preferidos y sugiere alimentos nuevos solo si cubren un déficit. No das consejos médicos ni promueves restricción extrema; ante señales de riesgo sugiere un profesional.
 Formato: breve, con secciones claras cuando sirva.`;
+/* Revisión semanal con el agente (todas las áreas, también finanzas); sin API key de Anthropic, la revisión con el resumen de 14 días */
+const REVIEW_ASK = `Haz mi revisión semanal. Consulta resumen_dias de los últimos 14 días, peso, entreno de 28 días, bajo, estudio, gastos de esta semana y de la anterior (por categoría y en total) y los movimientos por revisar.
+Responde en Markdown con estas secciones: "Lo que funcionó", "Lo que se estancó", "Finanzas" (gasto de la semana frente a la anterior, categorías que subieron, comida en casa frente a comer fuera y si quedan movimientos por revisar), "Plan para los próximos 7 días" (exactamente 5 acciones concretas y medibles: una de nutrición, una de entreno con la distribución de sesiones de gimnasio por día según el tipo que estoy usando, una de bajo, una de estudio y una de finanzas) y "Una pregunta para ti". Máximo 380 palabras. No propongas registros ni cambios.`;
 async function coachReview(){
   const st = $("#revStatus"), out = $("#revOut");
-  st.innerHTML = `<span class="spin"></span> Revisando tus registros…`; out.innerHTML = "";
+  st.innerHTML = `<span class="spin"></span> Revisando tus registros y tus gastos…`; out.innerHTML = "";
+  try {
+    const r = await fetch("/api/agente", {method: "POST", headers: {"content-type": "application/json"}, credentials: "same-origin",
+      body: JSON.stringify({client: "web", messages: [{role: "user", content: REVIEW_ASK}]})});
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.reply){
+      out.innerHTML = md(j.reply); st.textContent = j.cost_usd ? `con el agente · US$${fmt(j.cost_usd, 4)}` : "";
+      saveLib("coach", l => { l.push({date: today(), text: j.reply}); return l.slice(-12); });
+      return;
+    }
+    if (!(r.status === 503 && j.error === "no_api_key")){ st.textContent = j.reply || `No se pudo revisar (HTTP ${r.status}).`; return; }
+  } catch (e) { st.textContent = "No pude conectarme con el agente: " + e.message; return; }
+  st.innerHTML = `<span class="spin"></span> Revisando tus registros…`;
   try {
     const r = await S.sample(`${coachRole()}
 
