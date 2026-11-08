@@ -1,3 +1,6 @@
+import { finContext, catInfo, isIncoming } from "./finanzas.js";
+import { applyProposal } from "./agente.js";
+
 // Reloj (Galaxy Watch, app en AndroidStudioProjects/lincoyan/wear): resumen del día y acciones rápidas.
 // El plan de series replica, simplificada, la lógica del checklist de public/index.html (habitual(), nextStep(),
 // warmIds(), "wk-done"): sin el catálogo EX_CAT, los ejercicios se agrupan por nombre normalizado y no se reordenan
@@ -22,8 +25,10 @@ const HABIT_SESSIONS = 3, DEFAULT_SETS = 3, DEFAULT_REPS = 10;
 const REP_RANGE = [8, 12], REP_FLOOR = 6, WARM_RATIO = 0.75, LB_KG = 0.4536;
 const SET_SEC = 30, REST_MAX = 600, HISTORY_DAYS = 400;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const FREQ_DAYS = 45, PENDING_DAYS = 45;
 
-const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+const addDays = (date, n) => new Date(Date.parse(date + "T12:00:00Z") + n * 864e5).toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 10);
 const chileToday = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
 const loadOf = (s) => (Number(s.kg) || 0) * (s.unit === "lb" ? LB_KG : 1);
@@ -131,6 +136,62 @@ function workoutPlan(hist, d, date, today) {
   };
 }
 
+// Gastos por revisar (compras y transferencias de los últimos 45 días) con su categoría actual o la sugerida por el agente
+async function finPending(env) {
+  try {
+    const [movs, fin] = await env.DB.batch([
+      env.DB.prepare("SELECT * FROM movimientos WHERE revisado = 0 AND fecha >= date('now', ?1) ORDER BY fecha DESC, hora DESC LIMIT 15").bind(`-${PENDING_DAYS} days`),
+      env.DB.prepare("SELECT data FROM lib WHERE key = 'fin'"),
+    ]);
+    const ctx = finContext(fin.results[0] ? JSON.parse(fin.results[0].data).values : {}, movs.results);
+    return {
+      cats: ctx.cats,
+      pending: movs.results.filter((m) => m.moneda === "CLP").map((m) => {
+        const c = catInfo(m, ctx);
+        return { id: m.id, fecha: m.fecha, hora: m.hora || "", comercio: m.comercio, monto: m.monto, tipo: m.tipo, cat: c.cat, src: c.src, why: m.cat_sug_why || "", incoming: isIncoming(m) };
+      }),
+    };
+  } catch (err) {
+    console.error("finPending", String(err).slice(0, 200));
+    return { cats: [], pending: [] };
+  }
+}
+
+// Comidas frecuentes: las de la web (lib.combos) y las que más se repiten en 45 días, agrupadas por descripción dentro de SQLite
+const FREQ_SQL =
+  "SELECT lower(trim(json_extract(m.value, '$.desc'))) AS k, count(*) AS n, max(d.date || '|' || json_extract(m.value, '$.id')) AS ref, " +
+  "max(json_extract(m.value, '$.desc')) AS nombre, round(avg(json_extract(m.value, '$.kcal'))) AS kcal, round(avg(json_extract(m.value, '$.p'))) AS p " +
+  "FROM days d, json_each(d.data, '$.meals') m WHERE d.date >= ?1 AND json_extract(m.value, '$.desc') IS NOT NULL GROUP BY k HAVING n >= 2 ORDER BY n DESC LIMIT 6";
+
+async function frequent(env, date) {
+  const [rep, combos, foods] = await env.DB.batch([
+    env.DB.prepare(FREQ_SQL).bind(addDays(date, -FREQ_DAYS)),
+    env.DB.prepare("SELECT data FROM lib WHERE key = 'combos'"),
+    env.DB.prepare("SELECT data FROM lib WHERE key = 'foods'"),
+  ]);
+  const byId = new Map((foods.results[0] ? JSON.parse(foods.results[0].data).list || [] : []).map((f) => [f.id, f]));
+  const macro = (items, k) => Math.round((items || []).reduce((s, it) => { const fd = it.foodId && byId.get(it.foodId); return s + (fd ? fd[k === "kcal" ? "kcal" : "p"] * (it.g || 0) / 100 : Number(it[k]) || 0); }, 0));
+  const out = (combos.results[0] ? JSON.parse(combos.results[0].data).list || [] : []).slice(0, 8)
+    .map((c) => ({ ref: `c:${c.id}`, nombre: c.name, kcal: macro(c.items, "kcal"), p: macro(c.items, "p"), hora: c.time || "" }));
+  for (const r of rep.results) if (!out.some((x) => norm(x.nombre) === norm(r.nombre))) out.push({ ref: `m:${r.ref}`, nombre: r.nombre, kcal: r.kcal || 0, p: r.p || 0, veces: r.n });
+  return out.slice(0, 10);
+}
+
+// Ingredientes de una comida frecuente: la de la web (c:id) o una registrada antes (m:fecha|id)
+async function quickItems(env, ref) {
+  if (typeof ref !== "string") return null;
+  if (ref.startsWith("c:")) {
+    const r = await env.DB.prepare("SELECT data FROM lib WHERE key = 'combos'").first();
+    const c = r && (JSON.parse(r.data).list || []).find((x) => x.id === ref.slice(2));
+    return c ? { descripcion: c.name, items: c.items } : null;
+  }
+  const [date, id] = ref.slice(2).split("|");
+  if (!DATE_RE.test(date || "")) return null;
+  const r = await env.DB.prepare("SELECT data FROM days WHERE date = ?1").bind(date).first();
+  const m = r && (JSON.parse(r.data).meals || []).find((x) => x.id === id);
+  return m ? { descripcion: m.desc, items: m.items } : null;
+}
+
 // Solo los días con entreno y solo su parte act: SQLite la extrae para no parsear cientos de días completos
 // (el plan gratis de Workers tiene 10 ms de CPU por request)
 const HIST_SQL =
@@ -164,6 +225,9 @@ async function summary(env, date) {
     gymWeek: hist.filter((h) => h.date >= monday && h.act.sets.length).length, gymWeekGoal: goals.gymWeek,
     types: Object.entries(GYM_LABEL).map(([k, label]) => ({ k, label })),
     gym: workoutPlan(hist, d, date, today),
+    meals: d.meals.slice(-6).map((m) => ({ id: m.id, time: m.time || "", desc: m.desc || "", kcal: Math.round(m.kcal || 0), p: Math.round(m.p || 0) })),
+    frequent: await frequent(env, date),
+    fin: await finPending(env),
   };
 }
 
@@ -208,6 +272,25 @@ export async function reloj(request, env, url) {
   try { b = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
   const date = b.date || chileToday();
   if (!DATE_RE.test(date)) return json({ error: "bad_date" }, 400);
+  // Acciones que no son del documento del día: las aplica el agente (src/agente.js) con su propia lectura-modificación-escritura
+  try {
+    if (b.op === "fin-cat") {
+      await applyProposal(env, { kind: "categoria", args: { mov_id: b.id, categoria: b.cat, alcance: b.scope === "comercio" ? "comercio" : "este" } });
+      return json(await summary(env, date));
+    }
+    if (b.op === "meal-quick") {
+      const q = await quickItems(env, b.ref);
+      if (!q || !(q.items || []).length) return json({ error: "bad_ref" }, 400);
+      await applyProposal(env, { kind: "comida", args: { fecha: date, descripcion: q.descripcion, items: q.items } });
+      return json(await summary(env, date));
+    }
+    if (b.op === "meal-del") {
+      await applyProposal(env, { kind: "editar_comida", args: { fecha: date, id: b.id, accion: "borrar" } });
+      return json(await summary(env, date));
+    }
+  } catch (err) {
+    return json({ error: String(err.message || err) }, 400);
+  }
   // Lee y escribe el día en el servidor, así una acción del reloj no pisa lo que guardaste desde otro dispositivo
   const row = await env.DB.prepare("SELECT data FROM days WHERE date = ?").bind(date).first();
   const d = normDay(row ? JSON.parse(row.data) : null, date);

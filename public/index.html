@@ -731,6 +731,11 @@ input[type=range]{width:100%;accent-color:var(--bass)}
 .msg{max-width:76ch;padding:11px 15px;border-radius:var(--r)}
 .msg.u{align-self:flex-end;background:var(--sunken);border-bottom-right-radius:4px}
 .msg.a{align-self:flex-start;border:1px solid var(--line);background:var(--bg);border-bottom-left-radius:4px}
+.agent-card{margin-top:10px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:var(--r);background:var(--surface)}
+.agent-card .row{gap:8px;align-items:center}
+.agent-ok{color:var(--ok);font-weight:600}
+.agent-meta{margin-top:8px}
+.fin-only{display:flex;gap:4px;align-items:center;margin-top:2px;white-space:nowrap}
 details.rev{border-top:1px solid var(--line);padding:12px 0}
 details.rev summary{cursor:pointer;font-weight:600}
 dialog{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:26px 26px 22px;width:min(520px,92vw);border-radius:20px;box-shadow:var(--shadow-pop)}
@@ -1300,7 +1305,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="sec-body">
         <div class="row" style="justify-content:flex-end;margin-bottom:4px"><button class="btn small" data-action="fin-inbox-all">Marcar todo como revisado</button></div>
         <div id="finInbox"></div>
-        <p class="small muted" style="margin:10px 0 0">Al marcar una compra como revisada, su categoría queda guardada para ese comercio.</p>
+        <p class="small muted" style="margin:10px 0 0">Al marcar una compra como revisada, su categoría queda guardada para ese comercio. La que sugiere el agente y la de "solo esta compra" quedan solo para esa compra.</p>
       </div>
     </details>
     <div class="item-head mt"><h3 id="finMonthLbl"></h3><span class="act"><button class="btn small" data-action="fin-prev" aria-label="Mes anterior">‹</button><button class="btn small" data-action="fin-next" aria-label="Mes siguiente">›</button></span></div>
@@ -1425,7 +1430,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- COACH -->
   <section class="tab" id="tab-coach">
-    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg></span><div><h2>Coach</h2><p class="lede">Conoce tu perfil y lee tus registros de las últimas dos semanas: nutrición, entreno, bajo y estudio.</p></div></div>
+    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg></span><div><h2>Coach</h2><p class="lede">La revisión semanal lee tus registros de las últimas dos semanas. El agente consulta todas tus áreas, también tus gastos, y deja listos registros y cambios para que los confirmes.</p></div></div>
     <div class="notice" id="coachOff" hidden>El coach no está disponible.</div>
     <div class="ai-only stack" id="coachOn" hidden>
       <div class="panel">
@@ -1434,12 +1439,14 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div id="revHist"></div>
       </div>
       <div class="panel">
-        <h3>Pregúntale algo</h3>
+        <h3>Agente</h3>
+        <p class="small muted" style="margin:-4px 0 12px">Consulta y analiza todas tus áreas, también tus gastos, con los números de tus registros. Puede dejar listos registros y cambios (comidas, agua, peso, categorías de gastos), que se aplican solo cuando los confirmas.</p>
         <div class="chips" style="margin-bottom:12px">
-          <button class="chip" data-action="chat-chip">Distribuye mis sesiones de gimnasio esta semana sin chocar con el tenis</button>
-          <button class="chip" data-action="chat-chip">Rutina de movilidad de 10 minutos para después de estar todo el día en el computador</button>
-          <button class="chip" data-action="chat-chip">Calentamiento de 8 minutos antes del tenis</button>
-          <button class="chip" data-action="chat-chip">¿Cómo va mi microbiota esta semana? ¿Qué alimentos nuevos me convendría sumar?</button>
+          <button class="chip" data-action="chat-chip">¿Cuánto gasté en comida este mes, entre supermercado y comer fuera, y cómo va frente al mes pasado?</button>
+          <button class="chip" data-action="chat-chip">Revisa mis compras por revisar y propón la categoría de cada una</button>
+          <button class="chip" data-action="chat-chip">¿Cómo va mi tendencia de peso frente a la meta y qué ajustarías en las kcal?</button>
+          <button class="chip" data-action="chat-chip">¿Qué ejercicio está estancado en las últimas 4 semanas?</button>
+          <button class="chip" data-action="chat-chip">Registra que almorcé 200 g de pechuga de pollo con 150 g de arroz y ensalada de tomate</button>
           <button class="chip" data-action="chat-chip">¿Qué técnica de bajo estoy descuidando?</button>
         </div>
         <div class="chat" id="chatLog"></div>
@@ -3201,7 +3208,7 @@ const FIN_CATS_BASE = ["Supermercado", "Comida y delivery", "Restaurantes y bare
 // Base más las categorías propias (lib.fin.myCats); se recalcula en finSyncCats()
 let FIN_CATS = [...FIN_CATS_BASE];
 const BANK_CATS = {"Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros"};
-const FIN_SRC = {comercio: "", regla: "regla", base: "regla base", sugerida: "sugerida", banco: "banco", devolucion: "devolución"};
+const FIN_SRC = {comercio: "", movimiento: "solo esta compra", regla: "regla", agente: "sugerida por el agente", base: "regla base", sugerida: "sugerida", banco: "banco", devolucion: "devolución"};
 // Reglas base: palabras genéricas y cadenas de Chile, en orden de prioridad (mascotas antes que salud).
 // Palabras de menos de 6 letras calzan con una palabra completa del nombre; las demás, como parte del nombre.
 const FIN_BASE_RULES = [
@@ -3257,11 +3264,13 @@ function finCatInfo(m){
 function finCatInfoCalc(m){
   if (m.refundCat) return {cat: m.refundCat, src: "devolucion"};
   if (isIncoming(m)) return {cat: "", src: ""};
+  if (m.cat) return {cat: m.cat, src: "movimiento"};
   const map = finCatMap(), k = finKey(m.comercio);
   const pre = Object.keys(map).find(x => finSameMerchant(x, k));
   if (pre) return {cat: map[pre], src: "comercio"};
   const rule = (finCfg().rules || []).find(r => r.pat && k.includes(finKey(r.pat)));
   if (rule) return {cat: rule.cat, src: "regla"};
+  if (m.cat_sug) return {cat: m.cat_sug, src: "agente"};
   const base = finBaseRule(m.comercio);
   if (base) return {cat: base, src: "base"};
   if (norm(m.tipo) === "transferencia") return {cat: "Transferencias", src: "base"};
@@ -3324,6 +3333,14 @@ async function finApi(method, path, body){
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || "HTTP " + r.status);
   return j;
+}
+// Categoría de una sola compra (movimientos.cat): se ve al tiro y se guarda en el servidor; null vuelve a la del comercio
+async function movCatSet(id, cat){
+  const mv = S.movs.find(x => x.id === id); if (!mv) return;
+  const prev = mv.cat;
+  mv.cat = cat || null; FIN_CAT_CACHE = new Map(); renderFin();
+  try { await finApi("PUT", "movs/cat", {id, cat: cat || null}); }
+  catch (e) { mv.cat = prev; FIN_CAT_CACHE = new Map(); renderFin(); toast("No se pudo guardar la categoría: " + e.message); }
 }
 const finMonth = () => S.finMonth || today().slice(0, 7);
 const shiftMonth = (ym, n) => { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
@@ -3730,7 +3747,7 @@ function renderFinList(){
 }
 function finCatSelect(m){
   const info = finCatInfo(m);
-  return `<select data-fin-cat="${esc(finKey(m.comercio))}" aria-label="Categoría de ${esc(m.comercio)}"><option value="">Sin categoría</option>${FIN_CATS.map(x => `<option${x === info.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}<option value="__new">+ nueva categoría…</option></select>${FIN_SRC[info.src] ? `<div class="small muted">${FIN_SRC[info.src]}</div>` : ""}`;
+  return `<select data-fin-cat="${esc(finKey(m.comercio))}" data-mov="${esc(m.id)}" aria-label="Categoría de ${esc(m.comercio)}"><option value="">Sin categoría</option>${FIN_CATS.map(x => `<option${x === info.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}<option value="__new">+ nueva categoría…</option></select>${FIN_SRC[info.src] && info.src !== "movimiento" ? `<div class="small muted">${FIN_SRC[info.src]}${info.src === "agente" && m.cat_sug_why ? `: ${esc(m.cat_sug_why)}` : ""}</div>` : ""}<label class="small muted fin-only"><input type="checkbox" data-mov-only="${esc(m.id)}"${info.src === "movimiento" ? " checked" : ""}> solo esta compra</label>`;
 }
 function finAmountNote(m){
   const back = finRefundedOf()[m.id];
@@ -3774,7 +3791,9 @@ async function finMarkReviewed(ids){
   for (const m of S.movs.filter(x => ids.includes(x.id))){
     if (isIncoming(m)){ m.revisado = 1; continue; }
     const info = finCatInfo(m);
-    if (info.cat && info.src !== "comercio" && info.src !== "regla") cats[finKey(m.comercio)] = info.cat;
+    // la sugerida por el agente se confirma solo para esta compra; la de "solo esta compra" ya está fija
+    if (info.src === "agente") movCatSet(m.id, info.cat);
+    else if (info.cat && !["comercio", "regla", "movimiento"].includes(info.src)) cats[finKey(m.comercio)] = info.cat;
     m.revisado = 1;
   }
   if (Object.keys(cats).length !== Object.keys(cfg.cats).length) saveLib("fin", () => ({...finCfg(), cats}));
@@ -4362,7 +4381,25 @@ function finDetSave(){
 function renderCoach(){
   const revs = S.lib.coach || [];
   setHTML($("#revHist"), revs.length ? `<h3 style="margin-top:18px">Revisiones anteriores</h3>` + [...revs].reverse().map(r => `<details class="rev"><summary>${fmtLong(r.date)}</summary><div class="md">${md(r.text)}</div></details>`).join("") : "");
-  setHTML($("#chatLog"), S.chat.map(m => `<div class="msg ${m.role === "user" ? "u" : "a"}">${m.role === "user" ? esc(m.content) : `<div class="md">${md(m.content)}</div>`}</div>`).join(""));
+  setHTML($("#chatLog"), S.chat.map((m, i) => `<div class="msg ${m.role === "user" ? "u" : "a"}">${m.role === "user" ? esc(m.content) : `<div class="md">${md(m.content)}</div>${(m.proposals || []).map((p, j) => agentCard(p, i, j)).join("")}${m.meta ? `<div class="small muted agent-meta">${esc(m.meta)}</div>` : ""}`}</div>`).join(""));
+}
+/* Propuesta del agente: se aplica solo al confirmar (POST /api/agente/confirmar) */
+const AGENT_KIND = {comida: "comida", editar_comida: "comida", registro: "registro", categoria: "categoría", revisado: "revisión"};
+function agentCard(p, i, j){
+  const st = p.state === "ok" ? `<span class="agent-ok">✓ ${esc(p.result || "listo")}</span>` : p.state === "no" ? `<span class="muted">descartada</span>` : p.state === "err" ? `<span style="color:var(--danger)">${esc(p.result)}</span>`
+    : p.state === "busy" ? `<span class="muted">aplicando…</span>` : `<button class="btn small primary" data-action="agent-ok" data-i="${i}" data-j="${j}">Confirmar</button><button class="btn small ghost" data-action="agent-no" data-i="${i}" data-j="${j}">Descartar</button>`;
+  return `<div class="agent-card"><div class="small muted">${esc(AGENT_KIND[p.kind] || p.kind)}</div><strong>${esc(p.title)}</strong>${p.detail ? `<div class="small">${esc(p.detail)}</div>` : ""}${p.items ? `<div class="small muted">${p.items.map(esc).join(" · ")}</div>` : ""}<div class="row" style="margin-top:8px">${st}</div></div>`;
+}
+async function agentConfirm(i, j, ok){
+  const p = ((S.chat[i] || {}).proposals || [])[j]; if (!p || p.state) return;
+  if (!ok){ p.state = "no"; renderCoach(); return; }
+  p.state = "busy"; renderCoach();
+  try {
+    const r = await finApi("POST", "agente/confirmar", {proposal: {kind: p.kind, args: p.args}});
+    p.state = "ok"; p.result = r.message;
+    await loadState(); renderAll();
+  } catch (e) { p.state = "err"; p.result = e.message; }
+  renderCoach();
 }
 
 /* Compartir con amigos: lib.share = {token, areas}; el Worker sirve /s/<token> solo con esas áreas */
@@ -6287,7 +6324,9 @@ const actions = {
   "coach-review": () => coachReview(),
   "chat-send": () => chatSend(),
   "chat-chip": el => { $("#chatIn").value = el.textContent; chatSend(); },
-  "chat-clear": () => { S.chat = []; renderCoach(); }
+  "chat-clear": () => { S.chat = []; renderCoach(); },
+  "agent-ok": el => agentConfirm(+el.dataset.i, +el.dataset.j, true),
+  "agent-no": el => agentConfirm(+el.dataset.i, +el.dataset.j, false)
 };
 async function importJson(file){
   if (!file) return;
@@ -6547,12 +6586,25 @@ Haz la revisión semanal en markdown con estas secciones: "Lo que funcionó", "L
   } catch (e) { st.textContent = aiErr(e); if (e && e.text) out.innerHTML = md(e.text); }
 }
 let chatBusy = false;
+// Agente con herramientas (POST /api/agente); sin API key de Anthropic vuelve al chat simple con el resumen de 14 días
 async function chatSend(){
   const q = $("#chatIn").value.trim(); if (!q || chatBusy) return;
   chatBusy = true; $("#chatIn").value = "";
-  S.chat.push({role: "user", content: q}); S.chat.push({role: "assistant", content: "…"}); renderCoach();
-  const turns = S.chat.slice(0, -1).map((m, i) => i === 0 ? {role: "user", content: `${coachRole()}\n\nDatos actuales (JSON): ${JSON.stringify(contextData())}\n\nPregunta: ${m.content}`} : m);
+  S.chat.push({role: "user", content: q}); S.chat.push({role: "assistant", content: "Consultando tus datos…"}); renderCoach();
   const last = S.chat[S.chat.length - 1];
+  try {
+    const r = await fetch("/api/agente", {method: "POST", headers: {"content-type": "application/json"}, credentials: "same-origin",
+      body: JSON.stringify({client: "web", messages: S.chat.slice(0, -1).map(m => ({role: m.role, content: m.content}))})});
+    const j = await r.json().catch(() => ({}));
+    if (r.status !== 503 || j.error !== "no_api_key"){
+      last.content = j.reply || (r.ok ? "" : `No pude responder (HTTP ${r.status}).`);
+      last.proposals = j.proposals || [];
+      if (j.tools) last.meta = `${j.tools.length ? `consultó: ${[...new Set(j.tools)].join(", ")} · ` : ""}${j.model || ""}${j.cost_usd ? ` · US$${fmt(j.cost_usd, 4)}` : ""}`;
+      chatBusy = false; renderCoach(); return;
+    }
+  } catch (e) { last.content = "No pude conectarme con el agente: " + e.message; chatBusy = false; renderCoach(); return; }
+  last.content = "…"; renderCoach();
+  const turns = S.chat.slice(0, -1).map((m, i) => i === 0 ? {role: "user", content: `${coachRole()}\n\nDatos actuales (JSON): ${JSON.stringify(contextData())}\n\nPregunta: ${m.content}`} : m);
   try {
     const r = await S.sample(turns, {modelTier: "default", cache: false, onText: ({text}) => { last.content = text; const b = $("#chatLog").lastElementChild; if (b) b.innerHTML = `<div class="md">${md(text)}</div>`; }});
     last.content = r.text;
@@ -6809,11 +6861,24 @@ function wireUI(){
     const v = t.value; t.blur();
     saveLib("fin", () => { const c = finCfg(), rf = {...c.refunds}; if (!v) delete rf[id]; else rf[id] = v.startsWith("of:") ? {of: v.slice(3)} : {cat: v.slice(4)}; return {...c, refunds: rf}; });
   }));
+  // "solo esta compra": al marcarla, la categoría que se ve queda fija en el movimiento; al desmarcarla, vuelve la del comercio
+  ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => {
+    const t = e.target, id = t.dataset.movOnly; if (id === undefined) return;
+    const mv = S.movs.find(x => x.id === id); if (!mv) return;
+    movCatSet(id, t.checked ? (finCat({...mv, cat: null}) || null) : null);
+  }));
   ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => {
     const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur();
     let cat = t.value, add = null;
     if (cat === "__new"){ cat = finNewCat(prompt("Nombre de la nueva categoría (por ejemplo, Inversiones en Fintual)")); if (!cat){ renderFin(); return; } add = cat; }
-    saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: cat}, myCats: add && !FIN_CATS.includes(add) ? [...(c.myCats || []), finCatGuess(add)] : c.myCats}; });
+    const only = t.parentElement.querySelector("[data-mov-only]");
+    if (only && only.checked){
+      movCatSet(t.dataset.mov, cat || null);
+      if (add) saveLib("fin", () => { const c = finCfg(); return {...c, myCats: FIN_CATS.includes(add) ? c.myCats : [...(c.myCats || []), finCatGuess(add)]}; });
+    } else {
+      const mv = S.movs.find(x => x.id === t.dataset.mov); if (mv && mv.cat) movCatSet(mv.id, null);
+      saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: cat}, myCats: add && !FIN_CATS.includes(add) ? [...(c.myCats || []), finCatGuess(add)] : c.myCats}; });
+    }
     if (add) toast(`Categoría "${add}" creada. Su grupo y si cuenta como gasto se cambian en Presupuesto, topes y reglas.`);
   }));
   $("#finCatBudgets").addEventListener("change", e => { const c = e.target.dataset.catbud; if (!c) return; const v = clp(e.target.value); saveLib("fin", () => { const f = finCfg(), b = {...f.catBudgets}; if (v > 0) b[c] = Math.round(v); else delete b[c]; return {...f, catBudgets: b}; }); });

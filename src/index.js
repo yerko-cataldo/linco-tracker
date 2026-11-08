@@ -7,6 +7,8 @@ import { unimarcSearch } from "./precios.js";
 import { sendPush, vapidPublicKey } from "./push.js";
 import { reloj } from "./reloj.js";
 import { logUsage, anthropicStatus } from "./uso.js";
+import { agente, confirmar } from "./agente.js";
+import { classify, classifyPending } from "./clasificador.js";
 import { remindTransfers, notifyTransfer } from "./transferencias.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin", "prices"]);
@@ -18,6 +20,7 @@ const MAX_RAW_EMAIL_BYTES = 512 * 1024;
 const MAX_INBOX_ROWS = 200;
 
 let JWKS = null;
+const WATCH_PATHS = new Set(["/api/reloj", "/api/agente", "/api/agente/confirmar"]);
 
 export default {
   async fetch(request, env) {
@@ -34,8 +37,8 @@ export default {
 
     const user = await authorize(request, env);
     if (!user) return new Response("No autorizado", { status: 403 });
-    // El service token del reloj solo entra a /api/reloj
-    if (user.watch && url.pathname !== "/api/reloj") return new Response("No autorizado", { status: 403 });
+    // El service token del reloj solo entra a sus rutas
+    if (user.watch && !WATCH_PATHS.has(url.pathname)) return new Response("No autorizado", { status: 403 });
 
     if (!url.pathname.startsWith("/api/")) return brand(await env.ASSETS.fetch(request), env);
 
@@ -59,6 +62,7 @@ export default {
   // Cron cada hora: avisos push de las transferencias semanales pendientes
   async scheduled(controller, env, ctx) {
     ctx.waitUntil(remindTransfers(env).catch((err) => console.error(err)));
+    ctx.waitUntil(classifyPending(env).catch((err) => console.error(err)));
   },
 };
 
@@ -74,11 +78,13 @@ async function processEmail(message, env) {
     return;
   }
   const mv = res.mov;
-  await env.DB.prepare(
+  const ins = await env.DB.prepare(
     "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'alerta', ?)"
   )
     .bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.ciudad, mv.pais, mv.tarjeta, mv.tipo, mv.moneda, mv.monto, inboxId)
     .run();
+  // compra nueva: el agente de compras sugiere su categoría si no hay una firme (src/clasificador.js)
+  if (ins.meta.changes) await classify(env, mv.id).catch((err) => console.error("clasificador", err));
 }
 
 /* Comprobante de transferencia de BICE reenviado por el titular (FORWARD_FROM): crea el movimiento sin tarjeta, por revisar. */
@@ -291,7 +297,7 @@ async function api(request, env, url) {
       env.DB.prepare("SELECT date, data FROM days ORDER BY date DESC LIMIT 400"),
       env.DB.prepare("SELECT key, data FROM lib"),
       env.DB.prepare(
-        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado, rut_destino, banco_destino " +
+        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado, rut_destino, banco_destino, cat, cat_sug, cat_sug_why " +
         "FROM movimientos WHERE fecha >= date('now', '-400 days') ORDER BY fecha DESC, hora DESC"
       ),
       env.DB.prepare("SELECT mov_id, data FROM mov_detalle"),
@@ -305,6 +311,17 @@ async function api(request, env, url) {
   }
 
   if (p === "/api/reloj") return reloj(request, env, url);
+  if (p === "/api/agente" && m === "POST") return agente(request, env);
+  if (p === "/api/agente/confirmar" && m === "POST") return confirmar(request, env);
+
+  // Categoría de una sola compra (gana sobre la del comercio); null la quita
+  if (p === "/api/movs/cat" && m === "PUT") {
+    let body;
+    try { body = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
+    if (typeof body.id !== "string" || !(body.cat === null || (typeof body.cat === "string" && body.cat.length <= 60))) return json({ error: "bad_body" }, 400);
+    await env.DB.prepare("UPDATE movimientos SET cat = ?1 WHERE id = ?2").bind(body.cat || null, body.id).run();
+    return json({ ok: true });
+  }
 
   if (p === "/api/cartola" && m === "POST") return importCartola(request, env);
 

@@ -45,6 +45,8 @@
     "DOMAIN_NAME": "yerkolincoyan.cl",
     // Agente con herramientas (consultas, análisis y acciones con confirmación): Claude Sonnet por la API de Anthropic
     "MODEL_AGENT": "claude-sonnet-5-5",
+    // Agente de compras (sugiere la categoría de una compra nueva): tarea simple, Haiku basta y cuesta ~20 veces menos
+    "MODEL_CLASSIFY": "claude-haiku-5-5",
     "MODEL_COACH": "@cf/meta/llama-4-scout-17b-16e-instruct",
     "MODEL_DEFAULT": "@cf/meta/llama-4-scout-17b-16e-instruct",
     "MODEL_VISION": "@cf/meta/llama-4-scout-17b-16e-instruct",

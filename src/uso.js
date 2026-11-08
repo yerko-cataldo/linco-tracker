@@ -16,13 +16,30 @@ export const costOf = (model, inTok, outTok) => {
   return p ? ((inTok || 0) * p[0] + (outTok || 0) * p[1]) / 1e6 : 0;
 };
 
+// Costo de una respuesta de Anthropic con caché de prompt: la escritura en caché vale 1,25× la entrada y la lectura 0,1×
+export const anthropicCost = (model, u) => {
+  const p = MODEL_PRICES[model];
+  if (!p || !u) return 0;
+  return ((u.input_tokens || 0) * p[0] + (u.cache_creation_input_tokens || 0) * p[0] * 1.25 + (u.cache_read_input_tokens || 0) * p[0] * 0.1 + (u.output_tokens || 0) * p[1]) / 1e6;
+};
+
+// Gasto estimado del mes en la API de Anthropic (para cortar el agente al llegar al presupuesto)
+export async function monthCost(env) {
+  try {
+    const r = await env.DB.prepare("SELECT SUM(cost_usd) AS c FROM api_usage WHERE provider = 'anthropic' AND day >= ?1").bind(chileDay().slice(0, 7) + "-01").first();
+    return (r && r.c) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 // Suma una llamada; nunca rompe la respuesta si la tabla aún no existe (instancia sin la migración 0007)
-export async function logUsage(env, provider, model, inTok, outTok) {
+export async function logUsage(env, provider, model, inTok, outTok, cost = costOf(model, inTok, outTok)) {
   try {
     await env.DB.prepare(
       "INSERT INTO api_usage(day, provider, model, calls, input_tokens, output_tokens, cost_usd) VALUES(?1, ?2, ?3, 1, ?4, ?5, ?6) " +
       "ON CONFLICT(day, model) DO UPDATE SET calls = calls + 1, input_tokens = input_tokens + ?4, output_tokens = output_tokens + ?5, cost_usd = cost_usd + ?6"
-    ).bind(chileDay(), provider, model, inTok || 0, outTok || 0, costOf(model, inTok, outTok)).run();
+    ).bind(chileDay(), provider, model, inTok || 0, outTok || 0, cost).run();
   } catch (err) {
     console.error("api_usage", String(err).slice(0, 200));
   }
