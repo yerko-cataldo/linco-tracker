@@ -748,6 +748,8 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--bg);padding:11px 20px;font-size:.9rem;font-weight:550;z-index:20;opacity:0;pointer-events:none;transition:opacity .2s,transform .25s var(--ease);border-radius:999px;box-shadow:var(--shadow-pop)}
 @media (min-width:1080px){.toast{left:calc(50% + var(--side) / 2)}}
 .toast.on{opacity:1;transform:translateX(-50%)}
+.new-version{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:10px 18px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer}
+@media (min-width:1080px){.new-version{left:calc(50% + var(--side) / 2)}}
 .spin{display:inline-block;width:.9em;height:.9em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}.beats .beat,.toast,.btn{transition:none}.pulse.go{animation:none}}
@@ -1761,10 +1763,23 @@ async function init(){
   renderAll();
   const tab = new URLSearchParams(location.search).get("tab");
   if (tab){ goTab(tab); history.replaceState(null, "", location.pathname); }
+  checkVersion();
   document.addEventListener("visibilitychange", async () => {
     if (document.hidden || S.mode !== "api") return;
+    checkVersion();
     try { await loadState(); renderAll(); } catch {}
   });
+}
+/* Versión nueva desplegada: al volver a la pestaña compara el ETag de la página con el de la carga y ofrece recargar.
+   Los datos se recargan solos, pero el código solo cambia al recargar la página. */
+let PAGE_TAG = null;
+async function checkVersion(){
+  if (SHARE) return;
+  let t = null;
+  try { const r = await fetch("/", {method: "HEAD", cache: "no-store", credentials: "same-origin", redirect: "manual"}); t = r.ok ? r.headers.get("etag") : null; } catch {}
+  if (!t) return;
+  if (!PAGE_TAG){ PAGE_TAG = t; return; }
+  if (t !== PAGE_TAG && !$("#newVersion")) document.body.insertAdjacentHTML("beforeend", `<button id="newVersion" class="new-version" data-action="reload-page">Hay una versión nueva de la app · Recargar</button>`);
 }
 function setNotice(t){ const n = $("#modeNotice"); n.textContent = t; n.hidden = !t; }
 // Abre una pestaña por nombre (?tab=finanzas en el link de una notificación)
@@ -5828,6 +5843,7 @@ const actions = {
   "day-prev": () => setDate(addDays(S.date, -1)),
   "day-next": () => setDate(addDays(S.date, 1)),
   "day-today": () => setDate(today()),
+  "reload-page": () => location.reload(),
   "theme-toggle": () => {
     const t = isDark() ? "light" : "dark";
     document.documentElement.dataset.theme = t;
