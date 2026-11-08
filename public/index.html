@@ -1454,12 +1454,15 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 
   <!-- PERFIL -->
   <section class="tab" id="tab-metricas">
-    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-metricas"/></svg></span><div><h2>Métricas de uso</h2><p class="lede">Consumo frente a los límites gratuitos de Cloudflare, uso del modelo de IA y vencimiento del dominio.</p></div></div>
+    <div class="page-head c-ink"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-metricas"/></svg></span><div><h2>Métricas de uso</h2><p class="lede">Consumo frente a los límites gratuitos de Cloudflare, uso de los modelos de IA, gasto de la API de Anthropic y vencimientos.</p></div></div>
     <div class="grid g2">
       <div class="panel"><div class="item-head"><h3>Cloudflare (plan gratis)</h3><span class="act"><button class="btn small" data-action="metrics-load">Actualizar</button></span></div><div id="metCf"></div></div>
       <div class="panel"><h3>Modelo de IA</h3><div id="metAi"></div></div>
     </div>
-    <div class="panel mt"><h3>Dominio</h3><div id="metDomain"></div></div>
+    <div class="grid g2 mt">
+      <div class="panel"><h3>Claude (API de Anthropic)</h3><div id="metAnthropic"></div></div>
+      <div class="panel"><h3>Dominio</h3><div id="metDomain"></div></div>
+    </div>
   </section>
 
   <section class="tab" id="tab-perfil">
@@ -3152,13 +3155,43 @@ function renderMetrics(m){
   setHTML($("#metAi"), (hoy && hoy.day === today() ? usageMeter("Llamadas hoy", hoy.calls, m.ai.limit, v => fmt(v), "tope diario propio de la app") : usageMeter("Llamadas hoy", 0, m.ai.limit, v => fmt(v), "tope diario propio de la app"))
     + `<dl><dt>Llamadas, últimos 30 días</dt><dd>${fmt(calls30)}</dd><dt>Tokens de entrada</dt><dd>${fmt(tokIn)}</dd><dt>Tokens de salida</dt><dd>${fmt(tokOut)}</dd></dl>`
     + (days.length ? barChart(days.slice(0, 14).reverse().map(d => d.calls), days.slice(0, 14).reverse().map(d => d.day.slice(8)), m.ai.limit, "var(--study)", "llamadas", 13) : ""));
+  renderAnthropic(m.anthropic);
   const dm = m.domain;
-  let dom = `<p class="empty">Sin fecha de vencimiento. Anótala en <strong>DOMAIN_EXPIRY</strong> (AAAA-MM-DD) en wrangler.jsonc; la ves en nic.cl, en Mis dominios.</p>`;
+  let dom =`<p class="empty">Sin fecha de vencimiento. Anótala en <strong>DOMAIN_EXPIRY</strong> (AAAA-MM-DD) en wrangler.jsonc; la ves en nic.cl, en Mis dominios.</p>`;
   if (dm.expires){
     const left = Math.round((parseYmd(dm.expires) - parseYmd(today())) / 864e5);
     dom = `<dl><dt>Dominio</dt><dd>${esc(dm.name || "")}</dd><dt>Vence</dt><dd>${fmtLong(dm.expires)}</dd><dt>Faltan</dt><dd style="color:${left <= 30 ? "var(--danger)" : left <= 60 ? "var(--food)" : "inherit"}">${left < 0 ? "vencido" : days_(left)}</dd></dl>`;
   }
   setHTML($("#metDomain"), dom);
+}
+/* API de Anthropic: gasto estimado del mes (tabla api_usage, con los precios de src/uso.js) frente a ANTHROPIC_BUDGET_USD,
+   proyección lineal a fin de mes y vencimiento de la key (ANTHROPIC_KEY_EXPIRY) */
+const usd = (v, d = 2) => `US$${fmt(v, v > 0 && v < 0.01 ? 4 : d)}`;
+function renderAnthropic(a){
+  if (!a){ setHTML($("#metAnthropic"), `<p class="empty">Sin datos.</p>`); return; }
+  const left = a.expires ? Math.round((parseYmd(a.expires) - parseYmd(today())) / 864e5) : null;
+  const key = a.expires
+    ? `<dt>La key vence</dt><dd>${fmtLong(a.expires)}</dd><dt>Faltan</dt><dd style="color:${left <= 30 ? "var(--danger)" : left <= 60 ? "var(--food)" : "inherit"}">${left < 0 ? "vencida" : days_(left)}</dd>`
+    : `<dt>La key vence</dt><dd>sin fecha (ANTHROPIC_KEY_EXPIRY)</dd>`;
+  const status = a.configured
+    ? `<dt>Key</dt><dd style="color:var(--ok)">configurada</dd>`
+    : `<dt>Key</dt><dd style="color:var(--danger)">falta el secreto ANTHROPIC_API_KEY</dd>`;
+  const models = a.models.length ? `<dt>Modelos</dt><dd>${a.models.map(esc).join(", ")}</dd>` : "";
+  if (a.days === null){
+    setHTML($("#metAnthropic"), `<dl>${status}${models}${key}</dl><p class="small muted">Falta aplicar la migración 0007 (tabla api_usage) para medir el gasto.</p>`);
+    return;
+  }
+  const cost = sum(a.days, d => d.cost_usd), calls = sum(a.days, d => d.calls);
+  const tokIn = sum(a.days, d => d.input_tokens), tokOut = sum(a.days, d => d.output_tokens);
+  const [y, mo, dd] = a.today.split("-").map(Number), dim = new Date(y, mo, 0).getDate();
+  const proj = cost / dd * dim, hoy = a.days.find(d => d.day === a.today);
+  const meter = a.budget
+    ? usageMeter("Gasto del mes", cost, a.budget, v => usd(v), `proyección a fin de mes: ${usd(proj)}${proj > a.budget ? ", sobre el presupuesto" : ""}`)
+    : `<p class="small muted">Sin presupuesto: anótalo en ANTHROPIC_BUDGET_USD (US$ al mes).</p>`;
+  setHTML($("#metAnthropic"), meter
+    + `<dl>${status}${models}<dt>Gasto hoy</dt><dd>${usd(hoy ? hoy.cost_usd : 0)}</dd><dt>Llamadas del mes</dt><dd>${fmt(calls)}${calls ? ` · ${usd(cost / calls, 3)} c/u` : ""}</dd>`
+    + `<dt>Tokens del mes</dt><dd>${fmt(tokIn)} entrada · ${fmt(tokOut)} salida</dd>${key}</dl>`
+    + `<p class="small muted" style="margin:10px 0 0">Costo estimado con los precios por millón de tokens de cada modelo. El cobro real y el límite de gasto están en console.anthropic.com, en Billing y Limits.</p>`);
 }
 /* Finanzas: movimientos de tarjeta (S.movs: alertas de Visa y cartola BICE).
    lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto},

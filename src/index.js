@@ -6,6 +6,7 @@ import { parseBankMail } from "./correos.js";
 import { unimarcSearch } from "./precios.js";
 import { sendPush, vapidPublicKey } from "./push.js";
 import { reloj } from "./reloj.js";
+import { logUsage, anthropicStatus } from "./uso.js";
 import { remindTransfers, notifyTransfer } from "./transferencias.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin", "prices"]);
@@ -515,14 +516,16 @@ async function cloudflareUsage(env) {
 }
 
 async function metrics(env) {
-  const [cloudflare, usage] = await Promise.all([
+  const [cloudflare, usage, anthropic] = await Promise.all([
     cloudflareUsage(env),
     env.DB.prepare("SELECT * FROM ai_usage ORDER BY day DESC LIMIT 30").all(),
+    anthropicStatus(env),
   ]);
   const expires = /^\d{4}-\d{2}-\d{2}$/.test(env.DOMAIN_EXPIRY || "") ? env.DOMAIN_EXPIRY : null;
   return json({
     cloudflare,
     ai: { limit: Number(env.AI_DAILY_LIMIT || 150), days: usage.results },
+    anthropic,
     domain: { name: env.DOMAIN_NAME || null, expires },
   });
 }
@@ -602,6 +605,7 @@ async function ai(request, env) {
     await env.DB.prepare(
       "UPDATE ai_usage SET input_tokens = input_tokens + ?2, output_tokens = output_tokens + ?3 WHERE day = ?1"
     ).bind(today, out.inTok || 0, out.outTok || 0).run();
+    await logUsage(env, route.provider, route.model, out.inTok, out.outTok);
     return json({ text: out.text, truncated: !!out.truncated, provider: route.provider, model: route.model });
   } catch (err) {
     const msg = String((err && err.message) || err);
