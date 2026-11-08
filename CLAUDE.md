@@ -8,7 +8,7 @@ Tracker personal de un solo usuario: nutrición, entreno, bajo eléctrico y estu
 - **Front** (`public/index.html`): un solo archivo con HTML, CSS y JS vanilla. No hay build, framework ni dependencias.
 - **D1 (SQLite)**: tablas `days`, `lib` y `ai_usage`, más las de finanzas (`movimientos`, `mov_detalle`, `inbox_raw`) y de notificaciones (`push_subs`, `push_log`). El esquema está en `migrations/`.
 - **Workers AI**: modelo por defecto `@cf/meta/llama-4-scout-17b-16e-instruct`, dentro del tier gratis de 10.000 neurons diarios. Anthropic es opcional, por variable.
-- **Cloudflare Access**: login por código al correo. El Worker valida el JWT (`cf-access-jwt-assertion`) con `jose` en cada request, salvo en `/s/*` (vista compartida), que tiene una excepción Bypass en Access. `workers_dev` y `preview_urls` están desactivados.
+- **Cloudflare Access**: login por código al correo. El Worker valida el JWT (`cf-access-jwt-assertion`) con `jose` en cada request, salvo en `/s/*` (vista compartida), que tiene una excepción Bypass en Access. El reloj (Galaxy Watch) entra con un service token de Access (policy Service Auth `reloj`): su JWT trae `common_name` en vez de `email` y el Worker lo acepta si coincide con `WATCH_CLIENT_ID` (solo en la instancia principal). `workers_dev` y `preview_urls` están desactivados.
 
 ## Comandos
 
@@ -69,6 +69,7 @@ Campos opcionales: `meals[].slot` (la comida a la que corresponde, con el nombre
 | `GET /api/precio?q=` | Precios de referencia de Unimarc (`src/precios.js`): productos con precio por kg, litro o unidad y link a unimarc.cl; caché de 1 día por búsqueda |
 | `GET /api/metrics` | Uso frente a los límites gratis de Cloudflare (GraphQL Analytics), uso del modelo y vencimiento del dominio |
 | `POST /api/ai` | Proxy al modelo |
+| `GET`, `POST /api/reloj` | App del reloj (`src/reloj.js`; el proyecto Android está fuera del repo, en `AndroidStudioProjects/lincoyan/wear`). GET: resumen del día (agua, creatina, peso, kcal y proteína frente a la meta) y plan de series, que replica simplificado `habitual()`/`nextStep()` de la web. POST `{date, op, ...}`: `water`, `creatine`, `weight`, `gym`, `set`, `undo`, `end`, `resume`; lee y escribe el día en el servidor y devuelve el resumen. El service token del reloj solo entra a esta ruta |
 | `GET /api/push` | Clave pública VAPID y número de dispositivos suscritos |
 | `POST /api/movs` | Agrega un movimiento a mano (`fuente = 'manual'`) |
 | `PUT`, `DELETE /api/push/sub` | Guarda o borra la suscripción push de un dispositivo (`push_subs`) |

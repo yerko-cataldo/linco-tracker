@@ -5,6 +5,7 @@ import { parseCartola, parseCuenta, planConciliation, rutOrigen, nameKey } from 
 import { parseBankMail } from "./correos.js";
 import { unimarcSearch } from "./precios.js";
 import { sendPush, vapidPublicKey } from "./push.js";
+import { reloj } from "./reloj.js";
 import { remindTransfers, notifyTransfer } from "./transferencias.js";
 
 const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin", "prices"]);
@@ -32,6 +33,8 @@ export default {
 
     const user = await authorize(request, env);
     if (!user) return new Response("No autorizado", { status: 403 });
+    // El service token del reloj solo entra a /api/reloj
+    if (user.watch && url.pathname !== "/api/reloj") return new Response("No autorizado", { status: 403 });
 
     if (!url.pathname.startsWith("/api/")) return brand(await env.ASSETS.fetch(request), env);
 
@@ -206,6 +209,8 @@ async function authorize(request, env) {
   JWKS ??= createRemoteJWKSet(new URL(`${env.ACCESS_TEAM_DOMAIN}/cdn-cgi/access/certs`));
   try {
     const { payload } = await jwtVerify(token, JWKS, { issuer: env.ACCESS_TEAM_DOMAIN, audience: env.ACCESS_AUD });
+    // Service token del reloj: su JWT trae common_name (el Client ID) en vez de email
+    if (env.WATCH_CLIENT_ID && payload.common_name && payload.common_name === env.WATCH_CLIENT_ID) return { email: "reloj", watch: true };
     const email = String(payload.email || "").toLowerCase();
     // ALLOWED_EMAIL acepta varios correos separados por coma
     if (env.ALLOWED_EMAIL && !env.ALLOWED_EMAIL.toLowerCase().split(",").map((s) => s.trim()).includes(email)) return null;
@@ -297,6 +302,8 @@ async function api(request, env, url) {
       movDet: Object.fromEntries(movDet.results.map((r) => [r.mov_id, JSON.parse(r.data)])),
     });
   }
+
+  if (p === "/api/reloj") return reloj(request, env, url);
 
   if (p === "/api/cartola" && m === "POST") return importCartola(request, env);
 

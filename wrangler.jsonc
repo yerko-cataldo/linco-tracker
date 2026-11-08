@@ -46,7 +46,9 @@
     "PROVIDER_COACH": "workers-ai",
     "PROVIDER_DEFAULT": "workers-ai",
     "PROVIDER_VISION": "workers-ai",
-    "PUSH_SUBJECT": "https://tracker.yerkolincoyan.cl"
+    "PUSH_SUBJECT": "https://tracker.yerkolincoyan.cl",
+    // Client ID (no es secreto) del service token de Access que usa el reloj. No va en env.jere.
+    "WATCH_CLIENT_ID": "8f42af7a83adc5142009742bba2c200d.access"
   },
 
   // Instancia de Jere: mismo código, su propio Worker (lincoyan-jere), su D1 y su subdominio.
