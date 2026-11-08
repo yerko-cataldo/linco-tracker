@@ -787,6 +787,24 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 .fin-big{font-family:var(--display);font-weight:750;font-size:2.4rem;letter-spacing:-.02em;line-height:1.05}
 .fin-verdict{margin:8px 0 12px;max-width:72ch}
 .watch{list-style:none;margin:0;padding:0}
+.fv-bar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--sunken);margin:10px 0 6px}
+.fv-bar i{display:block;height:100%}
+.fv-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.88rem}
+.fv-legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.fv-col h4{margin:14px 0 6px;font-family:var(--display);font-size:1rem}
+.fv-big{font-family:var(--display);font-weight:700;font-size:1.5rem;letter-spacing:-.01em}
+.fv-list{list-style:none;margin:6px 0 0;padding:0}
+.fv-list li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:.9rem}
+.fv-list li span:last-child{white-space:nowrap}
+.fv-why{font-size:.75rem;color:var(--muted);margin-left:6px}
+.fv-left{margin-top:10px;padding:10px 12px;border-radius:var(--r);background:var(--sunken);font-size:.92rem}
+.adj{list-style:none;margin:0;padding:0}
+.adj li{padding:10px 0;border-top:1px solid var(--line)}
+.adj li:first-child{border-top:0;padding-top:2px}
+.adj .row{justify-content:space-between;gap:8px;flex-wrap:nowrap}
+.adj .bar{position:relative;margin:6px 0 4px;height:8px;overflow:visible}
+.adj .bar i{display:block;height:100%;border-radius:999px}
+.adj .bar em{position:absolute;top:-3px;width:2px;height:14px;background:var(--ink)}
 .watch li{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--line);font-size:.92rem}
 .watch li:first-child{border-top:0;padding-top:0}
 .eat dl{margin:0}
@@ -1312,15 +1330,20 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     </details>
     <div class="item-head mt"><h3 id="finMonthLbl"></h3><span class="act"><button class="btn small" data-action="fin-prev" aria-label="Mes anterior">‹</button><button class="btn small" data-action="fin-next" aria-label="Mes siguiente">›</button></span></div>
     <div class="panel fin-hero" id="finHero"></div>
+    <div class="panel mt">
+      <div class="item-head"><h3>Fijos y variables</h3><span class="small muted">lo comprometido frente a lo que decides</span></div>
+      <div id="finFixVar"></div>
+    </div>
     <div class="grid g2 mt">
+      <div class="panel"><h3>Dónde ajustar</h3><div id="finAdjust"></div></div>
       <div class="panel"><h3>Para mirar</h3><div id="finWatch"></div></div>
-      <div class="panel"><h3>Lo que cuesta comer</h3><div id="finEat"></div></div>
     </div>
     <div class="panel mt">
       <div class="item-head"><h3>En qué gastaste</h3><span class="act"><label class="small muted" for="finCmp">Comparar con</label> <select id="finCmp"></select></span></div>
       <div id="finTree"></div>
       <p class="small muted" style="margin:10px 0 0">Toca un grupo para ver sus categorías y una categoría para ver productos (en compras detalladas) o comercios. La barra es lo gastado; la marca vertical, la comparación.</p>
     </div>
+    <div class="panel mt"><h3>Lo que cuesta comer</h3><div id="finEat"></div></div>
     <details class="panel sec mt" id="finListSec">
       <summary><h3>Movimientos</h3><span class="hint" id="finListSum"></span></summary>
       <div class="sec-body">
@@ -1380,6 +1403,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div>
             <h3>Presupuesto mensual</h3>
             <div class="row"><div class="field w10">Monto en pesos<input id="finBudget" inputmode="numeric"></div></div>
+            <h3 class="mt">Categorías fijas</h3>
+            <p class="small muted" style="margin:0 0 8px">Las categorías marcadas son compromisos del mes. Los cobros recurrentes y las cuotas cuentan como fijos aunque su categoría no esté marcada.</p>
+            <div class="chips" id="finKinds"></div>
             <h3 class="mt">Topes por categoría</h3>
             <div id="finCatBudgets"></div>
           </div>
@@ -1422,6 +1448,8 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <summary><h3>Cómo se calcula</h3><span class="hint">fórmulas y reglas</span></summary>
       <div class="sec-body small muted">
         <p style="margin:0 0 8px">El gasto suma las compras en pesos y las transferencias, pagos de cuentas y cargos del banco de la cuenta; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%. En "En qué gastaste", en el mes en curso cada mes comparado se cuenta hasta el mismo día, y el promedio de 3 meses usa solo meses con datos completos.</p>
+        <p style="margin:0 0 8px">Fijos y variables: un gasto es fijo si su categoría está marcada como fija (por defecto arriendo y gastos comunes, servicios, suscripciones, comisiones e intereses y educación), si el comercio se cobra con periodicidad (los mismos recurrentes de "Recurrentes y cuotas") o si es una compra en cuotas. Lo demás es variable. "Faltan por pagar" son los comercios con gasto fijo el mes anterior que aún no aparecen este mes, por el monto del mes anterior. Lo que te queda para variables es el presupuesto menos los fijos pagados, los que faltan y los variables del mes, repartido en los días que quedan.</p>
+        <p style="margin:0 0 8px">Dónde ajustar compara lo variable de cada categoría con su promedio de los 3 meses completos anteriores (sin el mes parcial del inicio de los datos), prorrateado al día del mes. El ahorro al cierre es la diferencia entre la proyección de la categoría a fin de mes (al ritmo actual) y su promedio. Gasto hormiga: compras variables bajo $5.000.</p>
         <p style="margin:0 0 8px">"Para mirar" muestra solo lo que pide atención: categorías sobre el ritmo de su tope, categorías que subieron más de 20% (y más de $10.000) frente a la comparación, compras de más de 2,5 veces lo habitual en ese comercio (con 3 compras previas o más) o de más de 3 veces una compra típica de su categoría (con 5 o más, y solo si la categoría la elegiste tú), recurrentes que subieron o no se cobraron, alertas que no aparecen en la cartola, compras de supermercado sin detallar y compras bajo $5.000 cuando suman más del 15% del mes.</p>
         <p style="margin:0 0 8px">"Lo que cuesta comer" separa lo comprado en comida (en casa: Supermercado y productos detallados con un alimento; fuera: Comida y delivery y Restaurantes y bares) del costo de lo que registraste en Nutrición, que sale de los precios de tus alimentos. La proteína más barata es el costo de 10 g de proteína: precio por kg ÷ gramos de proteína por 100 g.</p>
         <p style="margin:0 0 8px">Categoría de cada compra, en este orden: la que elegiste para ese comercio, una regla que calce con su nombre, la sugerida por comercios parecidos que ya categorizaste y, al final, la del banco.</p>
@@ -3386,11 +3414,11 @@ function finMonthCtx(){
 const fmtClpShort = v => Math.abs(v) >= 1e6 ? `$${fmt(v / 1e6, 1)} M` : Math.abs(v) >= 1e3 ? `$${fmt(v / 1e3)} mil` : fmtClp(v);
 function renderFin(){
   if (SHARE) return;
-  FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null; PRICE_IDX = null;
+  FIN_CAT_CACHE = new Map(); FIN_REFUND_CACHE = null; PRICE_IDX = null; FIN_RECUR_KEYS = null;
   const c = finMonthCtx(), cfg = finCfg();
   $("#finMonthLbl").textContent = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
   const cmp = finCmpBase(c), tree = finTreeOf(c.buys);
-  renderFinHero(c); renderFinWatch(c, tree, cmp); renderFinEat(c); renderFinTree(c, tree, cmp);
+  renderFinHero(c); renderFinFixVar(c); renderFinAdjust(c); renderFinWatch(c, tree, cmp); renderFinEat(c); renderFinTree(c, tree, cmp); renderFinKinds();
   renderFinEvo(c, finTopCats(c.ym));
   const buds = cfg.catBudgets || {};
   setVal("#finBudget", cfg.budget ?? "");
@@ -3467,6 +3495,105 @@ function renderFinTree(c, tree, cmp){
 function finSavedHtml(ym){
   const xs = S.movs.filter(m => m.fecha.startsWith(ym) && m.moneda === "CLP" && m.monto > 0 && FIN_SPEND.includes(norm(m.tipo)) && finNoSpend(m)), v = sum(xs, m => m.monto);
   return v ? `<p class="small muted" style="margin:6px 0 0">Además, apartaste ${fmtClp(v)} en ${[...new Set(xs.map(finCat))].map(c => esc(c.toLowerCase())).join(" y ")}; no cuenta como gasto.</p>` : "";
+}
+/* Fijos y variables: un gasto es fijo si su categoría lo es (FIN_FIXED_BASE o lib.fin.catKind), si el comercio se cobra con
+   periodicidad (finRecurring) o si es una cuota. Lo demás es variable: lo que se decide día a día y se puede ajustar. */
+const FIN_FIXED_BASE = ["Arriendo y gastos comunes", "Servicios", "Suscripciones", "Comisiones e intereses", "Educación"];
+const finCatFixed = cat => { const k = (finCfg().catKind || {})[cat]; return k ? k === "fijo" : FIN_FIXED_BASE.includes(cat); };
+let FIN_RECUR_KEYS = null;
+const finRecurKeys = () => FIN_RECUR_KEYS || (FIN_RECUR_KEYS = finRecurring().map(r => finKey(r.name)));
+function finFixedWhy(m){
+  if (m.cuotas > 1) return "cuota";
+  if (finCatFixed(finCat(m) || "Sin categoría")) return "categoría fija";
+  const k = finKey(m.comercio);
+  return finRecurKeys().some(x => finSameMerchant(x, k)) ? "recurrente" : "";
+}
+const finIsFixed = m => !!finFixedWhy(m);
+// Meses completos anteriores con datos (hasta 3, sin el mes parcial del inicio)
+function finPrevMonths(ym){
+  const out = [];
+  for (let i = 1; i <= 6 && out.length < 3; i++){ const p = shiftMonth(ym, -i), b = finBuysOf(p); if (b.length && !finPartialNote(p)) out.push(b); }
+  return out;
+}
+// Agrupa por comercio: [{name, monto, n, why}] de mayor a menor
+function finByMerchant(list, why){
+  const g = {};
+  for (const m of list){ const k = finKey(m.comercio); const o = g[k] || (g[k] = {name: m.comercio, monto: 0, n: 0, why: why ? finFixedWhy(m) : ""}); o.monto += m.monto; o.n++; }
+  return Object.values(g).sort((a, b) => b.monto - a.monto);
+}
+function renderFinFixVar(c){
+  const el = $("#finFixVar");
+  if (!c.buys.length){ setHTML(el, `<p class="empty">Sin gastos en este mes.</p>`); return; }
+  const fix = c.buys.filter(finIsFixed), vari = c.buys.filter(m => !finIsFixed(m));
+  const F = sum(fix, m => m.monto), V = sum(vari, m => m.monto), T = F + V || 1;
+  // fijos del mes anterior que aún no se cobran este mes (solo en el mes en curso); una cuota que ya terminó no se espera
+  const paid = fix.map(m => finKey(m.comercio)), due = {};
+  if (c.isCur) for (const m of finBuysOf(c.prevYm)){
+    if (!(m.monto > 0) || !finIsFixed(m) || (m.cuotas > 1 && m.cuota >= m.cuotas)) continue;
+    const k = finKey(m.comercio); if (paid.some(x => finSameMerchant(x, k))) continue;
+    const o = due[k] || (due[k] = {name: m.comercio, monto: 0, day: +m.fecha.slice(8)}); o.monto += m.monto;
+  }
+  const dueL = Object.values(due).sort((a, b) => a.day - b.day), D = sum(dueL, x => x.monto);
+  const prev = finPrevMonths(c.ym), f = c.isCur ? c.dayCut / c.lastDay : 1;
+  const avgV = prev.length ? sum(prev, bs => sum(bs.filter(m => !finIsFixed(m)), m => m.monto)) / prev.length : null;
+  const projV = c.isCur && c.dayCut ? V / c.dayCut * c.lastDay : V, left = c.lastDay - c.dayCut, b = finCfg().budget;
+  const pct = x => fmt(x / T * 100);
+  const fixList = finByMerchant(fix, true).slice(0, 6), varList = finByMerchant(vari).slice(0, 5);
+  let story = "";
+  if (b && c.isCur){
+    const rest = b - F - D - V;
+    story = rest >= 0
+      ? `Con tu presupuesto de ${fmtClp(b)}, después de los fijos${D ? " (contando los que faltan)" : ""} te quedan <strong>${fmtClp(rest)}</strong> para variables: <strong>${fmtClp(left ? rest / left : rest)} al día</strong> por ${days_(left)}.`
+      : `Contando los fijos que faltan, ya pasaste tu presupuesto de ${fmtClp(b)} por <strong class="fin-up">${fmtClp(-rest)}</strong>. Lo que queda por ajustar está en los variables.`;
+  } else if (avgV !== null){
+    const d = (c.isCur ? projV : V) - avgV;
+    story = `${c.isCur ? "A este ritmo cierras" : "Cerraste"} los variables en <strong>${fmtClp(c.isCur ? projV : V)}</strong>, ${Math.abs(d) < 5000 ? "igual que tu promedio" : `<strong class="${d > 0 ? "fin-up" : "fin-down"}">${fmtClp(Math.abs(d))} ${d > 0 ? "sobre" : "bajo"}</strong> tu promedio de ${fmtClp(avgV)}`}.${b ? "" : " Con un presupuesto (abajo, en Presupuesto, topes y reglas) te digo cuánto puedes gastar al día."}`;
+  }
+  setHTML(el, `<div class="fv-bar" role="img" aria-label="Fijos ${pct(F)}%, variables ${pct(V)}%"><i style="width:${F / T * 100}%;background:var(--study)"></i><i style="width:${V / T * 100}%;background:var(--fin)"></i></div>
+    <div class="fv-legend"><span><b style="background:var(--study)"></b>Fijos <strong>${fmtClp(F)}</strong> · ${pct(F)}%</span><span><b style="background:var(--fin)"></b>Variables <strong>${fmtClp(V)}</strong> · ${pct(V)}%</span></div>
+    <div class="grid g2">
+      <div class="fv-col"><h4>Fijos: tus compromisos</h4>
+        ${dueL.length ? `<div class="small">Faltan por pagar este mes, según el mes pasado: <strong>${fmtClp(D)}</strong></div><ul class="fv-list">${dueL.slice(0, 5).map(x => `<li><span>${esc(x.name)}<span class="fv-why">el mes pasado, el ${x.day}</span></span><span>~${fmtClp(x.monto)}</span></li>`).join("")}</ul>` : c.isCur && fix.length ? `<div class="small muted">Ya se cobraron los fijos que tuviste el mes pasado.</div>` : ""}
+        ${fixList.length ? `<div class="small muted" style="margin-top:10px">Pagados</div><ul class="fv-list">${fixList.map(x => `<li><span>${esc(x.name)}<span class="fv-why">${esc(x.why)}${x.n > 1 ? ` · ${x.n} cobros` : ""}</span></span><span>${fmtClp(x.monto)}</span></li>`).join("")}</ul>` : `<div class="small muted">Sin gastos fijos este mes.</div>`}
+      </div>
+      <div class="fv-col"><h4>Variables: lo que decides</h4>
+        <div class="fv-big">${fmtClp(V)}</div>
+        <div class="small muted">${c.isCur ? `${fmtClp(c.dayCut ? V / c.dayCut : 0)} al día${avgV !== null ? ` · tu promedio a esta altura: ${fmtClp(avgV * f)}` : ""}` : avgV !== null ? `tu promedio mensual: ${fmtClp(avgV)}` : ""}</div>
+        ${varList.length ? `<ul class="fv-list">${varList.map(x => `<li><span>${esc(x.name)}${x.n > 1 ? `<span class="fv-why">${x.n} compras</span>` : ""}</span><span>${fmtClp(x.monto)}</span></li>`).join("")}</ul>` : ""}
+      </div>
+    </div>
+    ${story ? `<div class="fv-left">${story}</div>` : ""}`);
+}
+/* Dónde ajustar: categorías variables frente a su promedio de 3 meses (prorrateado al día del mes), con los comercios que las mueven */
+function renderFinAdjust(c){
+  const el = $("#finAdjust"), vari = c.buys.filter(m => !finIsFixed(m));
+  if (!vari.length){ setHTML(el, `<p class="empty">Sin gastos variables en este mes.</p>`); return; }
+  const cur = finCatTotals(vari), prev = finPrevMonths(c.ym).map(bs => finCatTotals(bs.filter(m => !finIsFixed(m))));
+  const f = c.isCur ? c.dayCut / c.lastDay : 1, V = sum(vari, m => m.monto);
+  const cats = [...new Set([...Object.keys(cur), ...prev.flatMap(o => Object.keys(o))])];
+  const rows = cats.map(cat => {
+    const v = cur[cat] || 0, avg = prev.length ? sum(prev, o => o[cat] || 0) / prev.length : null, exp = avg === null ? null : avg * f;
+    const proj = c.isCur && c.dayCut ? v / c.dayCut * c.lastDay : v;
+    return {cat, v, avg, exp, d: exp === null ? null : v - exp, save: avg === null ? 0 : Math.max(0, proj - avg), shops: finByMerchant(vari.filter(m => (finCat(m) || "Sin categoría") === cat)).slice(0, 3)};
+  }).filter(r => r.v > 0 || (r.exp || 0) > 0);
+  const over = rows.filter(r => r.d !== null && r.d > 3000).sort((a, b) => b.save - a.save || b.d - a.d);
+  const list = (over.length ? over : rows.sort((a, b) => b.v - a.v)).slice(0, 5);
+  const small = vari.filter(m => m.monto > 0 && m.monto < FIN_SMALL), smallT = sum(small, m => m.monto);
+  const totSave = sum(over, r => r.save);
+  const head = !prev.length ? `<p class="small muted" style="margin:0 0 8px">Cuando tengas un mes completo de historial te muestro qué categorías van sobre tu ritmo. Por ahora, dónde se va lo variable:</p>`
+    : over.length ? `<p style="margin:0 0 8px">${over.length === 1 ? "Una categoría va" : `${over.length} categorías van`} sobre tu ritmo habitual. Volver a tu promedio ${c.isCur ? "en lo que queda del mes " : ""}son <strong>~${fmtClp(totSave)}</strong> menos${c.isCur ? " al cierre" : ""}.</p>`
+    : `<p style="margin:0 0 8px">Ninguna categoría variable va sobre tu promedio${c.isCur ? " a esta altura del mes" : ""}. Estas son las que más pesan:</p>`;
+  setHTML(el, head + `<ul class="adj">${list.map(r => {
+    const max = Math.max(r.v, r.exp || 0) || 1, col = r.d !== null && r.d > 3000 ? "var(--danger)" : "var(--fin)";
+    return `<li><div class="row"><strong>${esc(r.cat)}</strong><span>${fmtClp(r.v)}${r.d !== null && Math.abs(r.d) >= 1000 ? ` <span class="small ${r.d > 0 ? "fin-up" : "fin-down"}">${r.d > 0 ? "+" : "−"}${fmtClp(Math.abs(r.d))}</span>` : ""}</span></div>
+      <div class="bar"><i style="width:${r.v / max * 100}%;background:${col}"></i>${r.exp !== null ? `<em style="left:calc(${Math.min(r.exp / max, 1) * 100}% - 1px)" title="tu promedio a esta altura"></em>` : ""}</div>
+      <div class="small muted">${r.exp !== null ? `promedio ${c.isCur ? "a esta altura" : "mensual"} ${fmtClp(r.exp)}` : "sin historial"}${r.shops.length ? ` · ${r.shops.map(x => `${esc(x.name)}${x.n > 1 ? ` ×${x.n}` : ""} ${fmtClp(x.monto)}`).join(", ")}` : ""}</div>
+      ${r.save >= 2000 ? `<div class="small">Volver a tu ritmo: ~${fmtClp(r.save)} menos${c.isCur ? " al cierre" : ""}.</div>` : ""}</li>`;
+  }).join("")}</ul>`
+    + (small.length >= 3 ? `<p class="small" style="margin:10px 0 0"><strong>Gasto hormiga:</strong> ${small.length} compras bajo ${fmtClp(FIN_SMALL)} suman ${fmtClp(smallT)} (${fmt(smallT / (V || 1) * 100)}% de lo variable).</p>` : ""));
+}
+function renderFinKinds(){
+  setHTML($("#finKinds"), FIN_CATS.filter(x => !FIN_NOSPEND.has(x)).map(x => { const on = finCatFixed(x); return `<button class="chip${on ? " sel" : ""}" data-action="fin-kind" data-cat="${esc(x)}" aria-pressed="${on}">${esc(x)}</button>`; }).join(""));
 }
 function renderFinHero(c){
   const b = finCfg().budget, mes = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long"});
@@ -5844,6 +5971,12 @@ const actions = {
   "day-next": () => setDate(addDays(S.date, 1)),
   "day-today": () => setDate(today()),
   "reload-page": () => location.reload(),
+  // Categoría fija o variable (lib.fin.catKind); solo se guarda lo distinto de FIN_FIXED_BASE
+  "fin-kind": el => saveLib("fin", () => {
+    const c = finCfg(), cat = el.dataset.cat, k = {...(c.catKind || {})}, want = finCatFixed(cat) ? "variable" : "fijo";
+    if ((want === "fijo") === FIN_FIXED_BASE.includes(cat)) delete k[cat]; else k[cat] = want;
+    return {...c, catKind: k};
+  }),
   "theme-toggle": () => {
     const t = isDark() ? "light" : "dark";
     document.documentElement.dataset.theme = t;
