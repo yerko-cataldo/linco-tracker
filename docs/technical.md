@@ -35,6 +35,20 @@ El contexto general del proyecto (stack, modelo de datos, API y principios) est�
 
 ## Nutrición y precios
 
+### Fases y metas de nutrición (`PHASES`, `calcTargets()`)
+- Fases: definición (−0,7 % del peso por semana, entre −1 y −0,4), recomposición (−0,1, entre −0,25 y 0), mantención (0), pausa de dieta (0, aviso después de 14 días) y volumen limpio (+0,25, entre +0,1 y +0,5). Se eligen en Perfil y metas → "Fase y metas de nutrición"; la fase vigente se ve como etiqueta en la cabecera de Nutrición.
+- El ritmo va en % del peso y no en kcal fijas, para que escale con el peso. Kg por semana = ritmo × peso de tendencia (`bodyW()`); kcal por día = kg por semana × 7.700 ÷ 7.
+- Mantención medida (`tdeeMeasured()`): kcal promedio de los días con al menos 1.200 kcal registradas (`TDEE_KCAL_MIN`, filtra días registrados a medias) en los 28 días hasta ayer, menos la pendiente de los pesajes de esos días × 7.700. Requiere 14 días con registro completo, 6 pesajes y 14 días entre el primero y el último (`TDEE_MIN`). Sin eso, Mifflin-St Jeor × factor de actividad. El panel muestra cuál se usó y el valor de la fórmula al lado.
+- Macros: proteína por kg de masa libre de grasa si hay `goals.wLean` (definición 2,6; recomposición 2,4; resto 2,2) o por kg de peso (2,2; 2,0; 1,8); grasa 0,7 g/kg de peso en definición y 0,8 en las demás; carbohidratos el resto; fibra 14 g por 1.000 kcal. Avisos: meta bajo el metabolismo basal o menos de 100 g de carbohidratos.
+- Cambiar de fase muestra la tabla "Hoy → fase nueva" y se confirma con "Cambiar a … con estas metas" o "Cambiar solo la fase". Si la meta de peso va en sentido contrario a la fase (`phaseConflict()`), se ofrece desactivarla (borra `wDate` y conserva `wLean` para la proteína).
+- Ajuste (`kcalAdjustment()`): pendiente del peso desde el inicio de la fase (`phaseStart()`: primer tramo seguido de `goals.hist` con la misma fase), con un máximo de 28 días, frente al ritmo de la fase. Tolerancia 0,1 kg/sem (`ADJ_TOL`), tope ±250 kcal (`ADJ_CAP`). "Aplicar a mis metas" suma el ajuste a las kcal y a los carbohidratos.
+
+### Historial de metas (`goals.hist`, `goals(fecha)`)
+- `goalsWithHist()` guarda cada cambio de metas (formulario de metas, fase, ajuste) como un tramo `{from, ...metas}` desde hoy; dos cambios el mismo día dejan un solo tramo y guardar sin cambios no agrega nada. El primer guardado siembra un tramo con las metas anteriores desde el primer día con datos, así los días pasados conservan su meta.
+- `goals(fecha)` devuelve las metas del tramo vigente ese día (con caché por fecha que se invalida al guardar); antes del primer tramo, las del primero. La usan `dayStats()`, `weekStats()` (meta de actividad y bajo sumada día a día), el calendario del Resumen, los 7 días de Nutrición, la propuesta del día y el optimizador del día que estás viendo.
+- Los historiales de antes de este cambio no existían: todo lo anterior al primer guardado se evalúa con las metas de ese momento.
+- Vista compartida: el Worker comparte `hist` con solo las claves de las áreas compartidas, sin fase ni ritmo. El agente recibe `historial_metas` en `perfil_metas` y `metas_por_periodo` en `resumen_dias` cuando el rango cruza más de un tramo.
+
 ### Agente de alimentos (`foodAgent()`)
 - Se usa en "Agregar un alimento" (Mis alimentos), cuando un alimento del armado de comida no está en la base, en "Agregar a mi base" de un ingrediente estimado por la IA y en el detalle de una compra.
 - Primero busca en `FOOD_REF` (`refFind()`: el alias más largo contenido en el texto). Si está, `refEnsure()` agrega la versión cruda y la cocida que falten, sin preguntar. Al registrar comidas devuelve la cocida; en compras, la cruda; "crudo" o "cocido" en el texto mandan.

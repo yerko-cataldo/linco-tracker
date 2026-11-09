@@ -43,6 +43,10 @@ async function lib(env, key) {
   return d.values ?? d.list ?? d.reviews ?? d;
 }
 const goalsOf = async (env) => Object.assign({}, DEFAULT_GOALS, (await lib(env, "goals")) || {});
+// Tramos de metas de nutrición (goals.hist) vigentes en un rango de fechas
+const goalTramos = (g, desde, hasta) => (Array.isArray(g.hist) ? g.hist : [])
+  .filter((h, i, a) => h.from <= hasta && (!a[i + 1] || a[i + 1].from > desde))
+  .map((h) => ({ desde: h.from, fase: h.phase || null, ritmo_pct_peso_sem: h.rate ?? null, kcal: h.kcal, proteina: h.protein, carbos: h.carbs, grasa: h.fat, fibra: h.fiber }));
 
 /* ---------- herramientas ---------- */
 
@@ -60,7 +64,7 @@ const TOOLS = [
   { name: "gastos", description: "Gasto en un rango (compras menos devoluciones, en CLP) agrupado por categoría, comercio, día o tipo (fijo o variable), con el total. Siempre separa fijos (categoría fija, cobro recurrente o cuota: compromisos) de variables (lo que se decide y se puede ajustar), con el detalle de los fijos y, si el rango llega a hoy, los fijos del mes anterior que aún no se cobran. Usa la misma categorización que la web.", input_schema: S({ ...RANGO, agrupar: { type: "string", enum: ["categoria", "comercio", "dia", "tipo"], description: "cómo agrupar (por defecto categoria)" }, categoria: D("filtrar por una categoría (opcional)"), tipo: { type: "string", enum: ["fijo", "variable"], description: "solo fijos o solo variables (opcional)" } }) },
   { name: "movimientos", description: "Movimientos de tarjeta y cuenta en un rango (id, fecha, comercio, monto, tipo, categoría y su origen, revisado, sugerencia del agente). Filtros opcionales por texto o solo los por revisar.", input_schema: S({ ...RANGO, buscar: D("texto en el comercio (opcional)"), por_revisar: { type: "boolean", description: "solo los que faltan revisar" } }) },
   { name: "buscar_alimento", description: "Busca en la base de alimentos (valores por 100 g tal como se comen, y la porción). Úsala antes de proponer una comida para obtener cada foodId.", input_schema: S({ texto: D("nombre del alimento") }, ["texto"]) },
-  { name: "perfil_metas", description: "Metas diarias y semanales, perfil (sexo, edad, estatura, objetivo, sobre mí) y meta de peso.", input_schema: S({}) },
+  { name: "perfil_metas", description: "Metas diarias y semanales vigentes, fase (definición, recomposición, mantención, pausa de dieta o volumen) y su ritmo, historial de metas por fecha, perfil (sexo, edad, estatura, objetivo, sobre mí) y meta de peso.", input_schema: S({}) },
   { name: "proponer_comida", description: "Propone registrar una comida; NO la registra: el usuario la confirma. Desglosa en ingredientes con gramos tal como se comen. Usa foodId de buscar_alimento siempre que exista; solo para ingredientes que no están en la base da kcal, p, c, f y fib estimados para esos gramos.", input_schema: S({
     descripcion: D("descripción corta de la comida"),
     fecha: D("YYYY-MM-DD (por defecto hoy)"), hora: D("HH:MM (por defecto ahora)"),
@@ -103,7 +107,8 @@ const handlers = {
       desde, hasta, dias,
       promedios_dias_con_comidas: { dias: conComidas.length, kcal: avg(conComidas, "kcal"), p: avg(conComidas, "p"), c: avg(conComidas, "c"), f: avg(conComidas, "f"), fib: avg(conComidas, "fib") },
       totales: { sesiones_gym: r.results.filter((x) => x.series > 0).length, bajo_min: r.results.reduce((s, x) => s + (x.bajo_min || 0), 0), estudio_min: r.results.reduce((s, x) => s + (x.estudio_min || 0), 0), bici_min: r.results.reduce((s, x) => s + (x.bici_min || 0), 0) },
-      metas: { kcal: g.kcal, proteina: g.protein, carbos: g.carbs, grasa: g.fat, fibra: g.fiber, agua_vasos: g.water, gym_semana: g.gymWeek, bajo_min_dia: g.bassMin, bajo_dias_semana: g.bassDays, estudio_min_dia: g.studyMin },
+      ...(goalTramos(g, desde, hasta).length > 1 ? { metas_por_periodo: goalTramos(g, desde, hasta) } : {}),
+      metas: { fase: g.phase || null, kcal: g.kcal, proteina: g.protein, carbos: g.carbs, grasa: g.fat, fibra: g.fiber, agua_vasos: g.water, gym_semana: g.gymWeek, bajo_min_dia: g.bassMin, bajo_dias_semana: g.bassDays, estudio_min_dia: g.studyMin },
     };
   },
 
@@ -267,8 +272,9 @@ const handlers = {
     const [g, p] = await Promise.all([goalsOf(env), lib(env, "profile")]);
     const pr = p || {};
     return {
-      metas: g,
-      perfil: { sexo: pr.sex, edad: pr.age, estatura_cm: pr.height, objetivo: pr.goal, sobre_mi: pr.about, fase: pr.phase, dias_oficina: pr.officeDays, caminata_min: pr.walkMin },
+      metas: Object.fromEntries(Object.entries(g).filter(([k]) => k !== "hist")),
+      historial_metas: goalTramos(g, "0000-00-00", "9999-12-31"),
+      perfil: { sexo: pr.sex, edad: pr.age, estatura_cm: pr.height, objetivo: pr.goal, sobre_mi: pr.about, fase: g.phase || pr.phase, dias_oficina: pr.officeDays, caminata_min: pr.walkMin },
       ultimo_inbody: Array.isArray(pr.inbody) && pr.inbody.length ? pr.inbody[pr.inbody.length - 1] : null,
     };
   },

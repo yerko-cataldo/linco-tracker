@@ -269,7 +269,9 @@ async function share(request, env, url) {
   ]);
   const libs = Object.fromEntries(lib.results.map((r) => [r.key, JSON.parse(r.data)]));
   const g = libs.goals?.values || {}, goals = {};
-  for (const a of areas) for (const k of SHARE_GOALS[a]) if (k in g) goals[k] = g[k];
+  const pick = (src) => { const o = {}; for (const a of areas) for (const k of SHARE_GOALS[a]) if (k in src) o[k] = src[k]; return o; };
+  Object.assign(goals, pick(g));
+  if (Array.isArray(g.hist)) goals.hist = g.hist.map((h) => ({ from: h.from, ...pick(h) }));
   const outLib = { goals: { values: goals } };
   for (const a of areas) for (const k of SHARE_LIBS[a] || []) if (libs[k]) outLib[k] = libs[k];
   const outDays = {};

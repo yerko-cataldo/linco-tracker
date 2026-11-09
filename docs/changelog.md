@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-09
+- Nutrición: fases definición, recomposición, mantención, pausa de dieta y volumen limpio, en Perfil y metas → "Fase y metas de nutrición". Cada fase tiene un ritmo en % del peso por semana, ajustable dentro de un rango, y sus propias reglas de proteína y grasa. La recomposición pasa de −400 kcal a −0,1 % del peso por semana.
+- La mantención se mide con tus datos (kcal registradas y tendencia de peso de 28 días) y solo usa la fórmula cuando faltan datos. Antes de cambiar de fase se ven las metas actuales y las nuevas lado a lado.
+- Historial de metas: cada cambio queda guardado desde su fecha y cada día se evalúa con las metas que tenía (calendario, constancia, rango semanal, días en meta). El historial se ve en el panel de la fase, y el gráfico de peso marca cada fase con una banda de color.
+- El ajuste de kcal usa solo los pesajes desde que empezó la fase, se puede aplicar con un botón y avisa si la meta de peso contradice la fase.
+- El coach y el agente conocen la fase, su ritmo y el historial de metas.
+
 ## 2026-11-07
 - Finanzas: transferencias recurrentes, semanales o mensuales (por ejemplo, el arriendo el 1 de cada mes), en la sección nueva del mismo nombre. Cada una tiene un monto aproximado (±10%) o un rango ("de $25.000 a $30.000"): cualquier monto dentro cuenta como hecha, sin cambiar nada a mano. El destinatario se reconoce por el RUT del comprobante o por el nombre, y el RUT y el banco se llenan solos con el último comprobante. Lo pagado unos días antes cuenta para el vencimiento (el arriendo del 29 vale para el 1). "Omitir esta vez" salta un periodo.
 - Las transferencias se agregan y se editan en la misma sección, y la app sugiere las que ya se repiten en tu historial (mismo destinatario cada semana o cada mes), con su día y su rango de montos.

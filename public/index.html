@@ -832,6 +832,13 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
 .build td,.build th{padding:6px}
 .chips .chip.sel{border-color:var(--ink);background:var(--ink);color:var(--bg)}
 .calc{font-size:.9rem;background:color-mix(in srgb,var(--sunken) 60%,var(--surface));border:1px solid var(--line);padding:14px 16px;line-height:1.65;border-radius:var(--r-sm)}
+.calc .phase-tbl{margin-top:10px;font-size:.88rem;font-variant-numeric:tabular-nums}
+.calc .phase-tbl th,.calc .phase-tbl td{padding:4px 8px}
+#phaseHist summary{cursor:pointer;color:var(--muted)}
+#cRateF[hidden]{display:none}
+#phaseHist .phase-tbl{margin-top:8px;font-variant-numeric:tabular-nums}
+.lede .phase-tag{margin-left:6px;padding:2px 10px;font-size:.8rem;vertical-align:1px;border-color:color-mix(in srgb,var(--c) 55%,var(--line));color:var(--ink)}
+.lede .phase-tag::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:1px}
 </style>
 </head>
 <body>
@@ -1523,17 +1530,19 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
       </details>
       <div class="stack">
-        <details class="panel sec" id="calcSec">
-          <summary><h3>Calcular metas de nutrición</h3><span class="hint">metabolismo y fase</span></summary>
+        <details class="panel sec" id="calcSec" open>
+          <summary><h3>Fase y metas de nutrición</h3><span class="hint" id="phaseSum">definición, mantención o volumen</span></summary>
           <div class="sec-body stack">
+          <div class="chips" id="phaseChips"></div>
+          <p class="small muted" id="phaseHint" style="margin:0"></p>
           <div class="row">
-            <div class="field grow">Nivel de actividad<select id="cPal">
+            <div class="field grow" id="cRateF">Ritmo (% de tu peso por semana)<select id="cRate"></select></div>
+            <div class="field grow">Nivel de actividad (para la fórmula)<select id="cPal">
               <option value="1.4">Liviano (1,4)</option><option value="1.55" selected>Moderado (1,55)</option><option value="1.7">Alto (1,7)</option><option value="1.85">Muy alto (1,85)</option></select></div>
-            <div class="field grow">Fase<select id="cPhase">
-              <option value="recomp" selected>Recomposición (−400 kcal)</option><option value="cut">Definición (−600 kcal)</option><option value="maint">Mantención</option><option value="bulk">Volumen limpio (+250 kcal)</option></select></div>
           </div>
           <div class="calc" id="calcOut"></div>
-          <div><button class="btn" data-action="calc-apply">Usar como metas</button></div>
+          <div class="row" id="calcActs"></div>
+          <div id="phaseHist"></div>
           </div>
         </details>
         <details class="panel sec" id="goalSec" open>
@@ -1711,7 +1720,21 @@ function normDay(d, date){
   return o;
 }
 const day = date => normDay(S.days[date], date);
-const goals = () => Object.assign({}, DEFAULT_GOALS, S.lib.goals || {});
+/* Metas: goals() son las vigentes; goals(fecha) las que regían ese día, desde goals.hist ([{from, ...metas}], un tramo por cambio) */
+const GOALS_C = {src: undefined, m: new Map()};
+function goals(date){
+  const cur = S.lib.goals || {}, hist = Array.isArray(cur.hist) ? cur.hist : [];
+  if (!date || !hist.length) return Object.assign({}, DEFAULT_GOALS, cur);
+  if (GOALS_C.src !== cur){ GOALS_C.src = cur; GOALS_C.m.clear(); }
+  let g = GOALS_C.m.get(date);
+  if (!g){
+    let tr = hist[0];
+    for (const h of hist) if (h.from <= date) tr = h;
+    g = Object.assign({}, DEFAULT_GOALS, cur, tr); delete g.from;
+    GOALS_C.m.set(date, g);
+  }
+  return Object.assign({}, g);
+}
 const profile = () => Object.assign({}, DEFAULT_PROFILE, S.lib.profile || {});
 
 /* ---------- almacenamiento ---------- */
@@ -1819,7 +1842,7 @@ function kcalScore(kcal, g){ const tolAbs = g.kcal * g.tol / 100, dev = Math.abs
 function studyWeekPlan(g = goals()){ const p = g.studyPlan; return Array.isArray(p) && p.length === 7 && p.some(v => v > 0) ? p.map(v => +v || 0) : Array(7).fill(g.studyMin); }
 const studyGoalOn = (dt, g) => studyWeekPlan(g)[parseYmd(dt).getDay()];
 function dayStats(date){
-  const d = day(date), g = goals(), a = d.act;
+  const d = day(date), g = goals(date), a = d.act;
   const kcal = sum(d.meals, m => m.kcal), p = sum(d.meals, m => m.p), c = sum(d.meals, m => m.c), f = sum(d.meals, m => m.f), fib = sum(d.meals, m => m.fib);
   const actMin = walkOf(date) + (a.gym ? gymDur(a) : 0) + (a.tennisMin || 0) + (a.bikeMin || 0);
   const studyMin = sum(d.study, s => s.minutes), bassMin = d.bass.minutes || 0, studyGoal = studyGoalOn(date, g);
@@ -1832,7 +1855,7 @@ function dayStats(date){
   return {d, kcal, p, c, f, fib, actMin, studyMin, studyGoal, bassMin, pct, meals: d.meals.length};
 }
 function weekStats(date){
-  const t = today(), dates = weekDates(date).filter(x => x <= t), st = dates.map(dayStats), g = goals();
+  const t = today(), dates = weekDates(date).filter(x => x <= t), st = dates.map(dayStats), gs = dates.map(dt => goals(dt)), g = goals(dates.length ? dates[dates.length - 1] : date);
   const logged = st.filter(s => s.meals > 0), n = dates.length || 1;
   const plants = new Set(); st.forEach(s => s.d.meals.forEach(m => (m.plants || []).forEach(x => plants.add(String(x).toLowerCase()))));
   const gym = {push:0, pull:0, legs:0, full:0, core:0}; st.forEach(s => { if (s.d.act.gym) gym[s.d.act.gym] = (gym[s.d.act.gym] || 0) + 1; });
@@ -1849,8 +1872,9 @@ function weekStats(date){
     studyMin: sum(st, s => s.studyMin), studyDays: st.filter(s => s.studyMin > 0).length, studyGoal: sum(st, s => s.studyGoal)
   };
   const foodScore = sum(st, s => Math.min(1, s.pct.food || 0)) / n;
-  const actScore = Math.min(1, w.actMin / (g.activeMin * n));
-  const bassScore = Math.min(1, w.bassMin / (g.bassMin * g.bassDays * n / 7));
+  const actGoal = gs.length ? sum(gs, x => x.activeMin) : g.activeMin * n, bassGoal = gs.length ? sum(gs, x => x.bassMin * x.bassDays / 7) : g.bassMin * g.bassDays * n / 7;
+  const actScore = Math.min(1, w.actMin / actGoal);
+  const bassScore = Math.min(1, w.bassMin / bassGoal);
   const studyScore = w.studyGoal ? Math.min(1, w.studyMin / w.studyGoal) : 1;
   w.parts = {food: foodScore, act: actScore, bass: bassScore, study: studyScore};
   w.score = Math.round(100 * sum(AREAS, k => w.parts[k]) / AREAS.length);
@@ -2247,32 +2271,93 @@ function bookPlanChart(p, width){
 }
 const unitTxt = (v, b) => `${fmt(v, v % 1 ? 1 : 0)} ${esc(b.unit || "")}`;
 function linreg(pts){ const n = pts.length; if (n < 3) return null; const mx = sum(pts, p => p[0]) / n, my = sum(pts, p => p[1]) / n; let sxy = 0, sxx = 0; for (const [x, y] of pts){ sxy += (x-mx)*(y-my); sxx += (x-mx)**2; } return sxx ? sxy / sxx : null; }
-function weightTrend(){
-  const t = parseYmd(today()).getTime(), pts = [];
-  for (let i = 0; i < 28; i++){ const dt = addDays(today(), -i), w = day(dt).weight; if (w) pts.push([(parseYmd(dt).getTime() - t) / 864e5, w]); }
+// Pendiente de los pesajes de 28 días; con from, solo desde esa fecha
+function weightTrend(from){
+  const t0 = today(), t = parseYmd(t0).getTime(), pts = [];
+  for (let i = 0; i < 28; i++){ const dt = addDays(t0, -i); if (from && dt < from) break; const w = day(dt).weight; if (w) pts.push([(parseYmd(dt).getTime() - t) / 864e5, w]); }
   const b = linreg(pts); if (b === null) return null;
   const span = pts.length ? -Math.min(...pts.map(p => p[0])) : 0;
   const now = sum(pts, p => p[1]) / pts.length - b * sum(pts, p => p[0]) / pts.length;
   return {perWeek: b * 7, perDay: b, now, n: pts.length, span};
 }
 function lastWeight(){ for (const dt of allDatesAsc().reverse()){ const w = day(dt).weight; if (w) return {w, dt}; } return null; }
-const PHASES = {recomp: {label: "Recomposición", delta: -400, rate: -0.25}, cut: {label: "Definición", delta: -600, rate: -0.5}, maint: {label: "Mantención", delta: 0, rate: 0}, bulk: {label: "Volumen limpio", delta: 250, rate: 0.2}};
-function calcTargets(p){
-  const w = (lastWeight() || {}).w || p.weight;
-  const bmr = 10 * w + 6.25 * p.height - 5 * p.age + (p.sex === "mujer" ? -161 : 5);
-  const tdee = bmr * p.pal, ph = PHASES[p.phase] || PHASES.recomp;
-  const kcal = Math.round((tdee + ph.delta) / 50) * 50;
-  const protein = Math.round(w * 2.0 / 5) * 5, fat = Math.round(w * 0.8 / 5) * 5;
+/* Fases: ritmo de cambio de peso en % del peso por semana (por defecto y rango), proteína en g/kg de masa libre de grasa (protL) o de peso (protW) y grasa en g/kg de peso */
+const PHASES = {
+  cut:    {label: "Definición", rate: -0.7, min: -1, max: -0.4, protL: 2.6, protW: 2.2, fat: 0.7, hint: "bajar grasa conservando el músculo, con déficit moderado"},
+  recomp: {label: "Recomposición", rate: -0.1, min: -0.25, max: 0, protL: 2.4, protW: 2, fat: 0.8, hint: "ganar músculo y perder grasa a la vez, casi en mantención; rinde más con % de grasa alto"},
+  maint:  {label: "Mantención", rate: 0, min: 0, max: 0, protL: 2.2, protW: 1.8, fat: 0.8, hint: "mantener el peso"},
+  pausa:  {label: "Pausa de dieta", rate: 0, min: 0, max: 0, protL: 2.2, protW: 1.8, fat: 0.8, days: 14, hint: "1 a 2 semanas en mantención dentro de una definición larga"},
+  bulk:   {label: "Volumen limpio", rate: 0.25, min: 0.1, max: 0.5, protL: 2.2, protW: 1.8, fat: 0.8, hint: "ganar músculo con un superávit chico"}
+};
+const PHASE_COLOR = {cut: "var(--study)", recomp: "var(--act)", maint: "var(--muted)", pausa: "var(--muted)", bulk: "var(--food)"};
+const KCAL_PER_KG = 7700, TDEE_DAYS = 28, TDEE_MIN = {food: 14, n: 6, span: 14}, TDEE_KCAL_MIN = 1200, ADJ_TOL = 0.1, ADJ_CAP = 250;
+const phaseOf = (g = goals()) => PHASES[g.phase] ? g.phase : PHASES[profile().phase] ? profile().phase : "maint";
+const phaseRate = (g = goals(), ph = phaseOf(g)) => { const P = PHASES[ph]; return clamp(Number.isFinite(g.rate) && ph === phaseOf(g) ? g.rate : P.rate, P.min, P.max); };
+const pctTxt = v => `${v > 0 ? "+" : v < 0 ? "−" : ""}${fmt(Math.abs(v), 2)} %`;
+// Peso de referencia: peso de tendencia, último pesaje o el del perfil
+function bodyW(){ const ser = weightSeries(), tr = ser && ser[ser.length - 1].trend; return tr || (lastWeight() || {}).w || profile().weight; }
+// Inicio de la fase actual: primer tramo seguido de goals.hist con la misma fase
+function phaseStart(g = goals()){
+  const hist = g.hist || [], ph = phaseOf(g);
+  let from = null;
+  for (let i = hist.length - 1; i >= 0 && (hist[i].phase || ph) === ph; i--) from = hist[i].from;
+  return from;
+}
+/* Mantención medida: kcal promedio de los días con registro completo (≥ TDEE_KCAL_MIN) de 28 días hasta ayer, menos la pendiente del peso × 7.700 */
+function tdeeMeasured(){
+  const end = addDays(today(), -1), t0 = parseYmd(end).getTime(), kc = [], pts = [];
+  for (let i = 0; i < TDEE_DAYS; i++){
+    const dt = addDays(end, -i), d = day(dt), k = sum(d.meals, m => m.kcal);
+    if (k >= TDEE_KCAL_MIN) kc.push(k);
+    if (d.weight) pts.push([(parseYmd(dt).getTime() - t0) / 864e5, d.weight]);
+  }
+  const b = linreg(pts), span = pts.length ? -Math.min(...pts.map(p => p[0])) : 0, food = kc.length, n = pts.length;
+  if (b === null || food < TDEE_MIN.food || n < TDEE_MIN.n || span < TDEE_MIN.span) return {ok: false, food, n, span};
+  const kcal = sum(kc, x => x) / food;
+  return {ok: true, kcal, perWeek: b * 7, tdee: kcal - b * KCAL_PER_KG, food, n};
+}
+/* Metas de nutrición de una fase: mantención (medida o Mifflin-St Jeor × actividad) + ritmo × 7.700 ÷ 7; proteína por masa libre de grasa si hay meta de peso, grasa por peso y carbohidratos el resto */
+function calcTargets(p, phase, rate){
+  const g = goals(), w = bodyW(), lean = g.wLean > 0 ? g.wLean : null, ph = PHASES[phase] || PHASES.maint;
+  const bmr = 10 * w + 6.25 * p.height - 5 * p.age + (p.sex === "mujer" ? -161 : 5), tdeeF = bmr * p.pal, meas = tdeeMeasured();
+  const tdee = meas.ok ? meas.tdee : tdeeF, kgWeek = rate / 100 * w, delta = kgWeek * KCAL_PER_KG / 7;
+  const kcal = Math.round((tdee + delta) / 50) * 50;
+  const protein = Math.round((lean ? ph.protL * lean : ph.protW * w) / 5) * 5, fat = Math.round(ph.fat * w / 5) * 5;
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4 / 5) * 5);
   const fiber = Math.round(kcal / 1000 * 14);
-  return {w, bmr, tdee, ph, kcal, protein, fat, carbs, fiber};
+  return {w, lean, bmr, tdeeF, meas, tdee, src: meas.ok ? "medida" : "fórmula", ph, rate, kgWeek, delta, kcal, protein, fat, carbs, fiber};
 }
+/* Ajuste de kcal: compara la pendiente del peso desde el inicio de la fase (máx. 28 días) con el ritmo de la fase */
 function kcalAdjustment(){
-  const t = weightTrend(), ph = PHASES[profile().phase] || PHASES.recomp;
-  if (!t || t.n < 6 || t.span < 14) return null;
-  const diff = t.perWeek - ph.rate;
-  if (Math.abs(diff) < 0.15) return {ok: true, t, ph};
-  return {ok: false, t, ph, kcal: Math.round(clamp(-diff * 7700 / 7, -250, 250) / 25) * 25};
+  const g = goals(), ph = PHASES[phaseOf(g)], from = phaseStart(g), target = phaseRate(g) / 100 * bodyW(), t = weightTrend(from);
+  if (!t || t.n < 6 || t.span < 14) return {wait: true, ph, from, target};
+  const diff = t.perWeek - target;
+  if (Math.abs(diff) < ADJ_TOL) return {ok: true, t, ph, from, target};
+  return {ok: false, t, ph, from, target, kcal: Math.round(clamp(-diff * KCAL_PER_KG / 7, -ADJ_CAP, ADJ_CAP) / 25) * 25};
+}
+/* Guarda metas con historial: el primer guardado siembra un tramo desde el primer día con datos; cada cambio abre un tramo desde hoy (o reemplaza el de hoy) */
+const goalSnap = o => { const r = Object.assign({}, o); delete r.hist; delete r.from; return r; };
+const sameSnap = (a, b) => [...new Set([...Object.keys(a), ...Object.keys(b)])].every(k => JSON.stringify(a[k] ?? null) === JSON.stringify(b[k] ?? null));
+function goalsWithHist(prev, next){
+  prev = prev || {};
+  const t = today(), first = allDatesAsc()[0], hist = Array.isArray(prev.hist) ? clone(prev.hist) : [];
+  if (!hist.length && Object.keys(prev).length) hist.push(Object.assign({from: first && first < t ? first : t}, goalSnap(Object.assign({}, DEFAULT_GOALS, {phase: phaseOf(prev)}, prev))));
+  const s = goalSnap(next), last = hist[hist.length - 1];
+  if (!last || !sameSnap(goalSnap(last), s)){
+    const tr = Object.assign({from: t}, s);
+    if (last && last.from === t) hist[hist.length - 1] = tr; else hist.push(tr);
+  }
+  return Object.assign(s, {hist});
+}
+// Sentido de la meta de peso frente a la fase: null si no hay conflicto
+function phaseConflict(phase, rate){
+  const goal = weightGoal(); if (!goal) return null;
+  const dir = goal.kg - bodyW();
+  if (Math.abs(dir) < 0.5) return null;
+  if (dir < 0 && rate > 0) return `tu meta de peso (${kg1(goal.kg)} kg) es bajar, y ${PHASES[phase].label.toLowerCase()} sube de peso`;
+  if (dir > 0 && rate < 0) return `tu meta de peso (${kg1(goal.kg)} kg) es subir, y ${PHASES[phase].label.toLowerCase()} baja de peso`;
+  if (rate === 0 && Math.abs(dir) >= 2) return `tu meta de peso (${kg1(goal.kg)} kg) está a ${kg1(Math.abs(dir))} kg y en ${PHASES[phase].label.toLowerCase()} el peso no se mueve`;
+  return null;
 }
 
 /* ---------- gráficos ---------- */
@@ -2310,9 +2395,21 @@ function weightSeries(){
   }
   return out;
 }
+// Tramos de fase entre dos fechas según goals.hist, con los tramos seguidos de la misma fase unidos
+function phaseSegs(a, b){
+  const hist = SHARE ? [] : goals().hist || [], out = [];
+  hist.forEach((h, i) => {
+    const from = h.from > a ? h.from : a, nx = hist[i + 1], to = nx ? [addDays(nx.from, -1), b].sort()[0] : b, ph = PHASES[h.phase] ? h.phase : "maint";
+    if (from > to) return;
+    const last = out[out.length - 1];
+    if (last && last.phase === ph && addDays(last.b, 1) >= from) last.b = to; else out.push({phase: ph, a: from, b: to});
+  });
+  return out;
+}
 function weightChart(ser, width, plan){
-  const W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 220 : 270, L = 38, R = 16, T = 18, B = 28, t = today();
-  const d0 = ser[0].dt, off = dt => Math.round((parseYmd(dt) - parseYmd(d0)) / 864e5);
+  const t = today(), d0 = ser[0].dt, segs = phaseSegs(d0, t);
+  const W = Math.round(clamp(width || 640, 300, 1100)), H = W < 480 ? 220 : 270, L = 38, R = 16, T = segs.length ? 36 : 18, B = 28;
+  const off = dt => Math.round((parseYmd(dt) - parseYmd(d0)) / 864e5);
   const last = plan ? plan.goal.date : ser[ser.length - 1].dt, n = off(last) + 1, iT = off(t);
   const vals = ser.flatMap(p => [p.w, p.trend]).filter(v => v !== null).concat(plan ? [plan.goal.kg, plan.now].concat(plan.end !== null ? [plan.end] : []) : []);
   const lo = Math.min(...vals), hi = Math.max(...vals), step = hi - lo <= 2.5 ? .5 : hi - lo <= 6 ? 1 : 2;
@@ -2327,6 +2424,11 @@ function weightChart(ser, width, plan){
     if (daily || (d.getDay() === 1 && mon++ % every === 0))
       s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(daily ? String(d.getDate()) : fmtShort(dt).replace(".", ""))}</text>`;
   }
+  segs.forEach(sg => {
+    const x1 = x(off(sg.a)), x2 = x(off(sg.b) + (sg.b < t ? 1 : 0)), lbl = PHASES[sg.phase].label;
+    s += `<rect x="${x1.toFixed(1)}" y="${T - 14}" width="${Math.max(3, x2 - x1 - 2).toFixed(1)}" height="5" rx="2.5" fill="${PHASE_COLOR[sg.phase]}"><title>${esc(lbl)}: ${esc(fmtShort(sg.a))} a ${esc(fmtShort(sg.b))}</title></rect>`;
+    if (x2 - x1 > lbl.length * 6.5) s += `<text x="${x1.toFixed(1)}" y="${T - 19}" font-size="10.5" font-weight="600" fill="var(--muted)">${esc(lbl.toLowerCase())}</text>`;
+  });
   ser.forEach((p, i) => { if (p.w !== null && p.trend !== null) s += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(p.w)}" y2="${y(p.trend)}" stroke="var(--line-strong)" stroke-width="1.5"/>`; });
   const tl = ser.map((p, i) => p.trend === null ? null : `${x(i).toFixed(1)},${y(p.trend).toFixed(1)}`).filter(Boolean);
   if (tl.length > 1) s += `<polyline points="${tl.join(" ")}" fill="none" stroke="var(--food)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
@@ -2435,7 +2537,7 @@ function spendBaseline(ym){
 }
 const mcChip = (area, ico, txt, ok, title) => `<span class="mc-chip${ok ? " ok" : ""}" style="--c:var(--${area})"${title ? ` title="${esc(title)}"` : ""}>${ico ? `<svg class="ico" aria-hidden="true"><use href="#i-${ico}"/></svg>` : ""}${txt}</span>`;
 function mcDay(r, o){
-  const st = r.st, a = st.d.act, g = o.g;
+  const st = r.st, a = st.d.act, g = goals(r.dt);
   const chips = [
     r.gym && mcChip("act", a.gym ? "" : "act", `${a.gym ? esc(r.gym.lbl) + " " : ""}<em>${fmt(r.gym.min)}′</em>`, false, `${r.gym.lbl}: ${fmt(r.gym.min)} min`),
     r.bike && mcChip("act", "bike", `<em>${fmt(r.bike.min)}′</em>`, false, `bici: ${fmt(r.bike.min)} min${r.bike.km ? `, ${fmt(r.bike.km, 1)} km` : ""}`),
@@ -2450,7 +2552,7 @@ function mcDay(r, o){
 }
 function mcWeek(rs, o){
   if (!rs.length) return "";
-  const s = monthStats(rs, "9999"), g = o.g, gymOk = s.gym >= g.gymWeek;
+  const s = monthStats(rs, "9999"), g = goals(rs[rs.length - 1].dt), gymOk = s.gym >= g.gymWeek;
   return `${o.act ? `<div class="mc-wl${gymOk ? " ok" : ""}"><b>${s.gym}/${g.gymWeek}</b> gimnasio${s.bike ? `<span>+ ${s.bike} bici</span>` : ""}</div>` : ""}
     ${o.food && s.kcal !== null ? `<div class="mc-wl"><b>${fmt(s.kcal)}</b> kcal/día<span>${s.foodOk} de ${days_(s.fed)} en meta</span></div>` : ""}
     ${o.study && s.study ? `<div class="mc-wl"><b>${fmt(s.study)}′</b> estudio</div>` : ""}
@@ -2468,7 +2570,7 @@ function renderMonthSum(){
   const delta = (d, txt, good) => !cmp || !isFinite(d) || Math.abs(d) < 1e-9 ? ""
     : `<span class="mc-dl ${good === null ? "" : (d > 0) === good ? "up" : "down"}">${d > 0 ? "▲" : "▼"} ${txt} que en ${pName}</span>`;
   const o = {g, act, food, study, money, base: money ? spendBaseline(ym) : null};
-  const gymGoal = Math.round(g.gymWeek * cur.n / 7);
+  const gymGoal = Math.round(sum(rows.slice(0, cur.n), r => goals(r.dt).gymWeek) / 7);
   const card = (area, ico, label, v, p, s, dl) => `<div class="mc-card c-${area}"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-${ico}"/></svg>${label}</span><span class="v">${v}</span>${hmBar(p)}<span class="s">${s}</span>${dl || ""}</div>`;
   const cards = !cur.n ? "" : [
     act && card("act", "act", "Entrenaste", `${cur.gym} <small>${cur.gym === 1 ? "sesión" : "sesiones"} de gimnasio</small>`, gymGoal ? cur.gym / gymGoal : null,
@@ -2538,7 +2640,7 @@ function kpiBlock(cls, title, big, goal, unit, pct, dl){
 }
 const days_ = n => `${n} ${n === 1 ? "día" : "días"}`;
 function renderKpis(){
-  const g = goals(), st = dayStats(S.date), ws = weekStats(S.date), lbl = S.date === today() ? "hoy" : fmtShort(S.date);
+  const g = goals(S.date), st = dayStats(S.date), ws = weekStats(S.date), lbl = S.date === today() ? "hoy" : fmtShort(S.date);
   const lastTech = (() => { for (const dt of allDatesAsc().reverse()){ const l = day(dt).bass.logs.filter(x => x.clean); if (l.length){ const x = l[l.length-1]; const t = S.lib.techniques.find(t => t.id === x.techId); return t ? `${t.name} ${x.bpm}` : null; } } return null; })();
   const topBook = S.lib.books.filter(b => !b.archived).sort((a,b) => (b.current/b.total||0)-(a.current/a.total||0))[0];
   $("#hoyLede").textContent = `${fmtLong(S.date)}.`;
@@ -2586,8 +2688,9 @@ function renderHeat(){
 }
 
 function renderNutrition(){
-  const g = goals(), st = dayStats(S.date), d = st.d, ws = weekStats(S.date);
-  $("#nutLede").textContent = `${fmtLong(S.date)}, día de ${KIND_LABEL[dayKind(S.date)]}. Meta: ${fmt(g.kcal)} kcal ±${g.tol}%, ${fmt(g.protein)} g de proteína y ${fmt(g.fiber)} g de fibra.`;
+  const g = goals(S.date), st = dayStats(S.date), d = st.d, ws = weekStats(S.date);
+  const phTag = SHARE ? "" : ` <button class="chip phase-tag" data-action="phase-open" style="--c:${PHASE_COLOR[phaseOf(g)]}" title="Cambiar la fase en Perfil y metas">${esc(PHASES[phaseOf(g)].label)} · ${pctTxt(phaseRate(g))}/sem</button>`;
+  setHTML($("#nutLede"), `${esc(fmtLong(S.date))}, día de ${KIND_LABEL[dayKind(S.date)]}. Meta: ${fmt(g.kcal)} kcal ±${g.tol}%, ${fmt(g.protein)} g de proteína y ${fmt(g.fiber)} g de fibra.${phTag}`);
   const kP = st.p * 4, kC = st.c * 4, kF = st.f * 9, kT = kP + kC + kF, gT = g.protein * 4 + g.carbs * 4 + g.fat * 9 || 1;
   const pc = v => kT ? Math.round(v / kT * 100) : 0;
   const MC = ["var(--food)", "color-mix(in srgb,var(--food) 62%,var(--surface))", "color-mix(in srgb,var(--food) 36%,var(--surface))"];
@@ -2624,15 +2727,18 @@ function renderNutrition(){
       <button class="btn small" data-action="weight-save">Guardar peso</button>
     </div>`);
   setHTML($("#days7"), weekDates(S.date).map(dt => {
-    const s = dayStats(dt), lo = g.kcal * (1 - g.tol / 100), hi = g.kcal * (1 + g.tol / 100);
+    const s = dayStats(dt), gd = goals(dt), lo = gd.kcal * (1 - gd.tol / 100), hi = gd.kcal * (1 + gd.tol / 100);
     const col = !s.meals ? "var(--muted)" : s.kcal > hi ? "var(--danger)" : s.kcal >= lo ? "var(--ok)" : "var(--food)";
     return `<button class="day7${s.meals ? "" : " empty"}" data-action="day-open" data-d="${dt}"${dt === S.date ? ' aria-current="true"' : ""} aria-label="${esc(fmtLong(dt))}">
       <span class="dw">${esc(parseYmd(dt).toLocaleDateString("es-CL", {weekday: "short"}).replace(".", ""))} ${parseYmd(dt).getDate()}</span>
       <span class="dk" style="color:${col}">${s.meals ? fmt(s.kcal) : "–"}</span>
       <span class="dp">${s.meals ? fmt(s.p) + " g" : "&nbsp;"}</span></button>`;
   }).join(""));
-  const wt = weightTrend(), adj = kcalAdjustment(), protDays = ws.st.filter(s => s.meals && s.p >= 0.9 * g.protein).length;
-  const adjTxt = !adj ? "Necesito al menos 6 pesajes en 2 semanas" : adj.ok ? `Vas al ritmo de ${adj.ph.label.toLowerCase()}, mantén las kcal` : `${adj.kcal > 0 ? "+" : ""}${adj.kcal} kcal/día para acercarte a ${fmt(adj.ph.rate, 2)} kg/sem`;
+  const wt = weightTrend(), adj = kcalAdjustment(), protDays = ws.st.filter(s => s.meals && s.p >= 0.9 * goals(s.d.date).protein).length;
+  const sgk = v => `${v > 0 ? "+" : ""}${fmt(v, 2)} kg/sem`;
+  const adjTxt = SHARE ? "" : adj.wait ? `Necesito al menos 6 pesajes en 2 semanas${adj.from && adj.from > addDays(today(), -28) ? ` desde que empezó la fase (${fmtShort(adj.from)})` : ""}`
+    : adj.ok ? `Vas al ritmo de ${adj.ph.label.toLowerCase()} (${sgk(adj.target)}), mantén las kcal`
+    : `${adj.kcal > 0 ? "+" : ""}${adj.kcal} kcal/día para acercarte a ${sgk(adj.target)} <button class="btn small" data-action="kcal-adjust" data-v="${adj.kcal}">Aplicar a mis metas</button>`;
   setHTML($("#nutWeek"), `<div class="kpi flat c-food" style="padding-top:0"><dl style="margin:0">
     <dt>Días registrados</dt><dd>${ws.foodLogged} de ${ws.n}</dd>
     <dt>Racha de registro</dt><dd>${days_(streak(x => day(x).meals.length > 0))}</dd>
@@ -2643,8 +2749,8 @@ function renderNutrition(){
     <dt>Promedio fibra</dt><dd>${ws.fibAvg === null ? "—" : fmt(ws.fibAvg) + " g"}</dd>
     <dt>Plantas distintas</dt><dd>${ws.plants} / ${g.plantsWeek}</dd>
     <dt>Tendencia de peso (28 días)</dt><dd>${wt ? `${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "faltan datos"}</dd>
-    <dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>
-  </dl></div><p class="small muted" style="margin:10px 0 0">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara esa pendiente con el ritmo de tu fase (7.700 kcal ≈ 1 kg), con tope de ±250 kcal. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
+    ${SHARE ? "" : `<dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>`}
+  </dl></div><p class="small muted" style="margin:10px 0 0">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara la pendiente desde que empezó tu fase (hasta 4 semanas) con el ritmo de la fase (% de tu peso por semana; 7.700 kcal ≈ 1 kg); si se desvía más de ${fmt(ADJ_TOL, 1)} kg/sem, propone un cambio con tope de ±${ADJ_CAP} kcal, que se aplica a los carbohidratos. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
   $("#nutWeekSum").textContent = `${ws.foodOk} de ${ws.n} días en meta · ${wt ? `peso ${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "tendencia de peso sin datos"}`;
   renderPlan(); renderOpt(); renderWeight(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
 }
@@ -2712,7 +2818,7 @@ function saveAct(){
   });
 }
 function renderAct(){
-  const g = goals(), d = day(S.date), st = dayStats(S.date), ws = weekStats(S.date), a = d.act;
+  const g = goals(S.date), d = day(S.date), st = dayStats(S.date), ws = weekStats(S.date), a = d.act;
   $("#actLede").textContent = `${fmtLong(S.date)}. Meta: ${g.activeMin} min activos al día${walkMin() ? ` (incluye ${walkMin()} min de paseo con el galgo)` : ""} y ${g.gymWeek} sesiones de gimnasio por semana.`;
   setVal("#aGym", a.gym); setVal("#aGymMin", a.sets.length ? gymDur(a) : a.gymMin || ""); $("#aGymNote").hidden = !a.sets.length; setVal("#aTennis", a.tennisMin || ""); setVal("#aBike", a.bikeMin || ""); setVal("#aBikeKm", a.bikeKm || "");
   const wkLabel = (a, b) => { const A = parseYmd(a), B = parseYmd(b), m = d => d.toLocaleDateString("es-CL", {month:"short"}).replace(".", ""); return A.getMonth() === B.getMonth() ? `${A.getDate()}–${B.getDate()} ${m(B)}` : `${A.getDate()} ${m(A)} – ${B.getDate()} ${m(B)}`; };
@@ -3077,7 +3183,7 @@ function renderSessions(){
 }
 
 function renderBass(){
-  const g = goals(), d = day(S.date), techs = S.lib.techniques, songs = S.lib.songs;
+  const g = goals(S.date), d = day(S.date), techs = S.lib.techniques, songs = S.lib.songs;
   $("#bassLede").textContent = `${fmtLong(S.date)}. Meta: ${g.bassMin} min al día, ${g.bassDays} días por semana.`;
   fillSelect($("#bTech"), techs.map(t => ({v: t.id, t: t.name})), techs.length ? null : "Crea una técnica primero");
   const tName = id => (techs.find(t => t.id === id) || {}).name || "Técnica borrada";
@@ -3106,7 +3212,7 @@ function renderBass(){
 }
 
 function renderStudy(){
-  const g = goals(), d = day(S.date), books = S.lib.books.filter(b => !b.archived);
+  const g = goals(S.date), d = day(S.date), books = S.lib.books.filter(b => !b.archived);
   const wp = studyWeekPlan(g), wk = weekDates(S.date);
   $("#studyLede").textContent = `${fmtLong(S.date)}. Meta: ${fmt(sum(wp, v => v))} min a la semana (${studyPlanTxt(wp)}).`;
   fillSelect($("#sItem"), books.map(b => ({v: b.id, t: b.title})), books.length ? null : "Agrega un libro o curso primero");
@@ -4559,7 +4665,7 @@ function renderProfile(){
   const p = profile(), g = goals();
   setVal("#pSex", p.sex); setVal("#pAge", p.age); setVal("#pHeight", p.height); setVal("#pWeight", p.weight);
   setVal("#pAbout", p.about); setVal("#pGoal", p.goal); setVal("#pActivity", p.activity); setVal("#pFoods", p.foods); setVal("#pNotes", p.notes);
-  setVal("#cPal", String(p.pal)); setVal("#cPhase", p.phase);
+  setVal("#cPal", String(p.pal));
   setVal("#gKcal", g.kcal); setVal("#gProt", g.protein); setVal("#gCarb", g.carbs); setVal("#gFat", g.fat); setVal("#gFib", g.fiber);
   setVal("#gTol", g.tol); setVal("#gPlants", g.plantsWeek); setVal("#gWater", g.water); setVal("#gActive", g.activeMin); setVal("#gGym", g.gymWeek);
   setVal("#gBass", g.bassMin); setVal("#gBassDays", g.bassDays);
@@ -4577,16 +4683,52 @@ function renderGoalInfo(){
 }
 function calcInput(){
   const p = profile();
-  return Object.assign(p, {sex: $("#pSex").value || p.sex, age: num($("#pAge").value) || p.age, height: num($("#pHeight").value) || p.height, weight: num($("#pWeight").value) || p.weight, pal: num($("#cPal").value) || p.pal, phase: $("#cPhase").value || p.phase});
+  return Object.assign(p, {sex: $("#pSex").value || p.sex, age: num($("#pAge").value) || p.age, height: num($("#pHeight").value) || p.height, weight: num($("#pWeight").value) || p.weight, pal: num($("#cPal").value) || p.pal});
+}
+// Fase elegida en el panel (S.phaseDraft) o la vigente
+function phaseDraft(){
+  const g = goals(), cur = phaseOf(g), curRate = phaseRate(g), d = S.phaseDraft;
+  const ph = d && PHASES[d.phase] ? d.phase : cur, rate = d ? clamp(d.rate, PHASES[ph].min, PHASES[ph].max) : curRate;
+  return {ph, rate, cur, curRate, changed: ph !== cur || Math.abs(rate - curRate) > 1e-9};
+}
+function rateOpts(ph){
+  const P = PHASES[ph], step = P.max - P.min > 0.3 ? 0.1 : 0.05, out = [];
+  for (let v = P.min; v <= P.max + 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+  if (!out.some(v => Math.abs(v - P.rate) < 1e-9)) out.push(P.rate);
+  return out.sort((x, y) => x - y);
 }
 function renderCalc(){
-  const c = calcTargets(calcInput()), lw = lastWeight();
-  $("#calcOut").innerHTML = `Metabolismo basal (Mifflin-St Jeor, ${fmt(c.w, 1)} kg${lw ? ", último pesaje" : ""}): <strong>${fmt(c.bmr)} kcal</strong><br>
-    Gasto total estimado (× ${fmt(calcInput().pal, 2)}): <strong>${fmt(c.tdee)} kcal</strong><br>
-    ${c.ph.label} (${c.ph.delta > 0 ? "+" : ""}${c.ph.delta}): <strong>${fmt(c.kcal)} kcal</strong><br>
-    Proteína 2,0 g/kg: <strong>${c.protein} g</strong>. Grasa 0,8 g/kg: <strong>${c.fat} g</strong>. Carbohidratos (resto): <strong>${c.carbs} g</strong>. Fibra 14 g/1.000 kcal: <strong>${c.fiber} g</strong>.<br>
-    <span class="muted">Es un punto de partida: después de 2 a 3 semanas, el ajuste sugerido en Nutrición lo calibra con tu tendencia de peso real.</span>`;
+  if (SHARE) return;
+  const g = goals(), dr = phaseDraft(), P = PHASES[dr.ph], start = phaseStart(g), t = today();
+  $("#phaseSum").textContent = `${PHASES[dr.cur].label} · ${pctTxt(dr.curRate)}/sem${start && start < t ? ` desde el ${fmtShort(start)}` : ""}`;
+  setHTML($("#phaseChips"), Object.entries(PHASES).map(([k, x]) => `<button class="chip${k === dr.ph ? " sel" : ""}" data-action="phase-pick" data-v="${k}" aria-pressed="${k === dr.ph}">${esc(x.label)}${k === dr.cur ? " · actual" : ""}</button>`).join(""));
+  const inPause = dr.cur === "pausa" && dr.ph === "pausa" && start ? daysBetween(start, t) : 0;
+  $("#phaseHint").textContent = `${P.label}: ${P.hint}.${P.min !== P.max ? ` Ritmo recomendado: ${pctTxt(P.rate)} de tu peso por semana (entre ${pctTxt(P.min)} y ${pctTxt(P.max)}).` : ""}${inPause > P.days ? ` Llevas ${inPause} días en pausa; lo habitual son ${P.days} como máximo antes de volver a definición.` : ""}`;
+  const rs = $("#cRate"), opts = rateOpts(dr.ph);
+  $("#cRateF").hidden = P.min === P.max;
+  if (document.activeElement !== rs){ rs.innerHTML = opts.map(v => `<option value="${v}">${pctTxt(v)}${Math.abs(v - P.rate) < 1e-9 ? " (recomendado)" : ""}</option>`).join(""); rs.value = String(opts.find(v => Math.abs(v - dr.rate) < 1e-9) ?? P.rate); }
+  const c = calcTargets(calcInput(), dr.ph, dr.rate), m = c.meas, pal = calcInput().pal;
+  const mant = m.ok
+    ? `Mantención medida: <strong>${fmt(c.tdee)} kcal</strong>. Comiste ${fmt(m.kcal)} kcal en promedio (${m.food} días con registro completo de los últimos ${TDEE_DAYS}) y tu peso cambió ${m.perWeek > 0 ? "+" : ""}${fmt(m.perWeek, 2)} kg/sem: ${fmt(m.kcal)} ${m.perWeek > 0 ? "−" : "+"} ${fmt(Math.abs(m.perWeek), 2)} × 7.700 ÷ 7. <span class="muted">Con la fórmula sería ${fmt(c.tdeeF)} kcal.</span>`
+    : `Mantención estimada con fórmula: <strong>${fmt(c.tdee)} kcal</strong> (basal Mifflin-St Jeor ${fmt(c.bmr)} kcal con ${fmt(c.w, 1)} kg × actividad ${fmt(pal, 2)}). <span class="muted">Para medirla con tus datos necesito, en los últimos ${TDEE_DAYS} días, ${TDEE_MIN.food} días con al menos ${fmt(TDEE_KCAL_MIN)} kcal registradas (llevas ${m.food}) y ${TDEE_MIN.n} pesajes repartidos en ${TDEE_MIN.span} días (llevas ${m.n}).</span>`;
+  const rateTxt = c.rate ? `Ritmo ${pctTxt(c.rate)}/sem = ${c.kgWeek > 0 ? "+" : ""}${fmt(c.kgWeek, 2)} kg/sem: ${c.delta > 0 ? "+" : "−"}${fmt(Math.abs(c.delta))} kcal/día (7.700 kcal ≈ 1 kg).` : "Ritmo 0: comes lo que gastas.";
+  const protTxt = c.lean ? `${fmt(P.protL, 1)} g/kg de masa libre de grasa (${fmt(c.lean, 1)} kg)` : `${fmt(P.protW, 1)} g/kg de peso`;
+  const rows = [["kcal", "kcal", ""], ["Proteína", "protein", " g"], ["Carbohidratos", "carbs", " g"], ["Grasa", "fat", " g"], ["Fibra", "fiber", " g"]];
+  const tbl = `<table class="phase-tbl"><thead><tr><th></th><th class="n">Hoy</th><th class="n">${esc(P.label)}</th></tr></thead><tbody>${rows.map(([n, k, u]) => `<tr><td>${n}</td><td class="n">${fmt(g[k])}${u}</td><td class="n"><strong>${fmt(c[k])}${u}</strong>${c[k] !== g[k] ? ` <span class="muted">(${c[k] > g[k] ? "+" : "−"}${fmt(Math.abs(c[k] - g[k]))})</span>` : ""}</td></tr>`).join("")}</tbody></table>`;
+  const conflict = phaseConflict(dr.ph, dr.rate);
+  const warn = [conflict && `Ojo: ${conflict}.`, c.kcal < c.bmr && `La meta queda bajo tu metabolismo basal (${fmt(c.bmr)} kcal); baja el ritmo.`, c.carbs < 100 && `Quedan solo ${fmt(c.carbs)} g de carbohidratos; baja el ritmo o revisa la grasa.`].filter(Boolean);
+  $("#calcOut").innerHTML = `${mant}<br>${rateTxt}<br>Proteína ${protTxt}, grasa ${fmt(P.fat, 1)} g/kg de peso, carbohidratos el resto y fibra 14 g por 1.000 kcal.${tbl}${warn.map(w => `<p class="small" style="margin:6px 0 0;color:var(--danger)">${esc(w)}</p>`).join("")}`;
+  const same = rows.every(([, k]) => c[k] === g[k]);
+  setHTML($("#calcActs"), (dr.changed ? `<button class="btn primary" data-action="calc-apply">Cambiar a ${esc(P.label.toLowerCase())} con estas metas</button><button class="btn" data-action="phase-only">Cambiar solo la fase</button><button class="btn ghost" data-action="phase-cancel">Cancelar</button>`
+    : same ? `<span class="small muted">Tus metas ya coinciden con este cálculo.</span>` : `<button class="btn" data-action="calc-apply">Recalcular mis metas</button>`)
+    + (conflict ? `<button class="btn ghost" data-action="wgoal-off">Desactivar la meta de peso</button>` : ""));
+  const hist = (g.hist || []).slice().reverse();
+  setHTML($("#phaseHist"), hist.length ? `<details class="sub"><summary class="small">Historial de metas (${hist.length} ${hist.length === 1 ? "tramo" : "tramos"})</summary><div class="scroll"><table class="phase-tbl"><thead><tr><th>Desde</th><th>Fase</th><th class="n">kcal</th><th class="n">P</th><th class="n">C</th><th class="n">G</th><th class="n">Fib</th></tr></thead><tbody>
+    ${hist.map(h => { const k = PHASES[h.phase] ? h.phase : "maint"; return `<tr><td>${esc(fmtShort(h.from))}</td><td><span class="dot" style="display:inline-block;background:${PHASE_COLOR[k]};margin-right:6px"></span>${esc(PHASES[k].label)}${Number.isFinite(h.rate) && h.rate ? ` <span class="muted">${pctTxt(h.rate)}</span>` : ""}</td><td class="n">${fmt(h.kcal)}</td><td class="n">${fmt(h.protein)}</td><td class="n">${fmt(h.carbs)}</td><td class="n">${fmt(h.fat)}</td><td class="n">${fmt(h.fiber)}</td></tr>`; }).join("")}
+    </tbody></table></div><p class="small muted" style="margin:6px 0 0">Cada día se evalúa con las metas que tenía. Lo anterior al primer tramo usa las metas del primer tramo.</p></details>` : "");
 }
+// Guarda metas nuevas con su fase y abre un tramo en el historial
+function commitGoals(patch){ saveLib("goals", prev => goalsWithHist(prev, Object.assign(goalSnap(Object.assign({}, DEFAULT_GOALS, {phase: phaseOf(prev || {})}, prev || {})), patch))); }
 
 /* ---------- base de alimentos y armado de comidas ---------- */
 const foods = () => S.lib.foods || [];
@@ -4993,7 +5135,7 @@ function mealHistory(date){
   return by.map(mp => [...mp.values()].sort((a, b) => b.n - a.n).slice(0, PLAN_CANDS));
 }
 function planNeed(date){
-  const g = goals(), st = dayStats(date);
+  const g = goals(date), st = dayStats(date);
   const need = {kcal: g.kcal - st.kcal, p: g.protein - st.p, c: g.carbs - st.c, f: g.fat - st.f, fib: g.fiber - st.fib};
   return {g, st, need, done: need.kcal <= g.kcal * g.tol / 100};
 }
@@ -5353,7 +5495,7 @@ function optRound(items, x, P){
   return g;
 }
 function optContext(date){
-  const cfg = optCfg(), g = goals(), st = dayStats(date), stat = optSlotStatus(date, cfg.slots), w = cfg.w;
+  const cfg = optCfg(), g = goals(date), st = dayStats(date), stat = optSlotStatus(date, cfg.slots), w = cfg.w;
   let rem = stat.filter(s => s.st === "va");
   if (!rem.length && !stat.some(s => s.st === "omitida")) rem = [{name: "Colación", time: nowHM(), share: 10, comps: "lácteo/fruta/proteína, grasa?", i: -1, fi: optSlotIdx(cfg.slots, nowHM())}];
   const need = {kcal: g.kcal - st.kcal, p: g.protein - st.p, c: g.carbs - st.c, f: g.fat - st.f, fib: g.fiber - st.fib};
@@ -6439,10 +6581,21 @@ const actions = {
     document.activeElement && document.activeElement.blur(); saveLib("profile", () => p); toast("Perfil guardado.");
   },
   "calc-apply": () => {
-    const c = calcTargets(calcInput());
-    $("#gKcal").value = c.kcal; $("#gProt").value = c.protein; $("#gCarb").value = c.carbs; $("#gFat").value = c.fat; $("#gFib").value = c.fiber;
-    saveLib("profile", p => Object.assign(p, {pal: num($("#cPal").value), phase: $("#cPhase").value}));
-    toast("Valores copiados a las metas. Revisa y guarda.");
+    const dr = phaseDraft(), c = calcTargets(calcInput(), dr.ph, dr.rate);
+    saveLib("profile", p => Object.assign(p, {pal: num($("#cPal").value) || p.pal}));
+    commitGoals({phase: dr.ph, rate: dr.rate, kcal: c.kcal, protein: c.protein, carbs: c.carbs, fat: c.fat, fiber: c.fiber});
+    S.phaseDraft = null; renderProfile();
+    toast(`${PHASES[dr.ph].label}: metas guardadas desde hoy (${fmt(c.kcal)} kcal, ${fmt(c.protein)} g de proteína).`);
+  },
+  "phase-pick": el => { const v = el.dataset.v, g = goals(); S.phaseDraft = {phase: v, rate: v === phaseOf(g) ? phaseRate(g) : PHASES[v].rate}; renderCalc(); },
+  "phase-cancel": () => { S.phaseDraft = null; renderCalc(); },
+  "phase-only": () => { const dr = phaseDraft(); commitGoals({phase: dr.ph, rate: dr.rate}); S.phaseDraft = null; toast(`Fase: ${PHASES[dr.ph].label.toLowerCase()} desde hoy. Tus metas de nutrición no cambiaron.`); },
+  "phase-open": () => { goTab("perfil"); const d = $("#calcSec"); d.open = true; d.scrollIntoView({behavior: "smooth", block: "start"}); },
+  "wgoal-off": () => { commitGoals({wDate: null}); toast("Meta de peso desactivada. Tu masa libre de grasa se mantiene para calcular la proteína."); },
+  "kcal-adjust": el => {
+    const v = +el.dataset.v, g = goals();
+    commitGoals({kcal: g.kcal + v, carbs: Math.max(0, g.carbs + Math.round(v / 4 / 5) * 5)});
+    toast(`Meta ajustada a ${fmt(g.kcal + v)} kcal desde hoy; el cambio va a los carbohidratos.`);
   },
   "goals-save": () => {
     const v = {kcal: num($("#gKcal").value), protein: num($("#gProt").value), carbs: num($("#gCarb").value), fat: num($("#gFat").value), fiber: num($("#gFib").value), tol: num($("#gTol").value), plantsWeek: num($("#gPlants").value), water: num($("#gWater").value),
@@ -6452,7 +6605,7 @@ const actions = {
     Object.assign(v, sp.some(x => x > 0) ? {studyPlan: sp, studyMin: Math.round(sum(sp, x => x) / 7)} : {studyMin: DEFAULT_GOALS.studyMin});
     const wFat = num($("#gWFat").value), wLean = num($("#gWLean").value);
     Object.assign(v, {wDate: $("#gWDate").value || null, wFat: wFat > 0 && wFat < 60 ? wFat : null, wLean: wLean > 0 ? wLean : null});
-    document.activeElement && document.activeElement.blur(); saveLib("goals", () => v); toast("Metas guardadas.");
+    document.activeElement && document.activeElement.blur(); commitGoals(v); toast("Metas guardadas desde hoy. Los días anteriores mantienen las metas que tenían.");
   },
   "export": () => saveFile(`lincoyan-${today()}.json`, JSON.stringify({exported: new Date().toISOString(), lib: S.lib, days: S.days}, null, 2)),
   "export-csv": () => {
@@ -6568,8 +6721,8 @@ function aiErr(e){
   return "No se pudo consultar al coach. Intenta de nuevo.";
 }
 function profileText(){
-  const p = profile();
-  return `Perfil: ${p.sex}, ${p.age} años, ${p.height} cm, ${(lastWeight() || {}).w || p.weight} kg. Fase: ${(PHASES[p.phase] || PHASES.recomp).label}.
+  const p = profile(), g = goals(), ph = phaseOf(g), from = phaseStart(g);
+  return `Perfil: ${p.sex}, ${p.age} años, ${p.height} cm, ${(lastWeight() || {}).w || p.weight} kg. Fase: ${PHASES[ph].label} (${PHASES[ph].hint}), ritmo ${pctTxt(phaseRate(g))} del peso por semana${from ? `, desde el ${from}` : ""}.
 ${p.about ? "Sobre la persona: " + p.about + "\n" : ""}Objetivo: ${p.goal}
 Actividad habitual: ${p.activity}
 Alimentos preferidos: ${p.foods}
@@ -6597,7 +6750,7 @@ Responde solo con este JSON: {"desc": string breve, "items": ${ITEMS_SCHEMA}, "a
   } catch (e) { st.textContent = aiErr(e); }
 }
 async function analyzeDay(){
-  const g = goals(), st = dayStats(S.date), ws = weekStats(S.date), a = st.d.act, st_ = $("#nutAiStatus");
+  const g = goals(S.date), st = dayStats(S.date), ws = weekStats(S.date), a = st.d.act, st_ = $("#nutAiStatus");
   st_.innerHTML = `<span class="spin"></span> Analizando tu día…`;
   const falta = {kcal: Math.round(g.kcal - st.kcal), proteina_g: Math.round(g.protein - st.p), carbohidratos_g: Math.round(g.carbs - st.c), grasa_g: Math.round(g.fat - st.f), fibra_g: Math.round(g.fiber - st.fib), agua_vasos: g.water - (st.d.water || 0)};
   try {
@@ -7018,7 +7171,8 @@ function wireUI(){
   $("#mSub").addEventListener("change", e => { Metro.sub = +e.target.value; Metro.subIdx = 0; });
   $("#mVol").addEventListener("input", e => { if (Metro.gain) Metro.gain.gain.value = (e.target.value / 100) ** 2; });
   $("#sItem").addEventListener("change", () => renderStudy());
-  ["#cPal","#cPhase","#pAge","#pHeight","#pWeight","#pSex"].forEach(s => $(s).addEventListener("input", renderCalc));
+  ["#cPal","#pAge","#pHeight","#pWeight","#pSex"].forEach(s => $(s).addEventListener("input", renderCalc));
+  $("#cRate").addEventListener("change", e => { S.phaseDraft = {phase: phaseDraft().ph, rate: num(e.target.value)}; renderCalc(); });
   $("#importFile").addEventListener("change", e => importJson(e.target.files[0]));
   ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => {
     const t = e.target, id = t.dataset.refund; if (id === undefined) return;
