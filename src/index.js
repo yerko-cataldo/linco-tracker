@@ -339,6 +339,8 @@ async function api(request, env, url) {
     return json({ ok: true, updated: ids.length });
   }
 
+  if ((match = p.match(/^\/api\/movs\/(manual(?::|%3A).{1,200})$/i)) && m === "PUT") return editMov(request, env, decodeURIComponent(match[1]));
+
   if ((match = p.match(/^\/api\/movs\/(.{1,300})$/)) && m === "DELETE") {
     const id = decodeURIComponent(match[1]);
     await env.DB.batch([
@@ -408,20 +410,41 @@ async function api(request, env, url) {
 /* ---------- movimiento agregado a mano (efectivo, inversiones, lo que no llega por correo ni cartola) ---------- */
 const MANUAL_TIPOS = ["Compra", "Transferencia", "Pago de cuenta", "Transferencia recibida"];
 
+// Movimiento a mano: {fecha, comercio, monto, tipo, cat?, hora?}; un ingreso se guarda en negativo. cat es la categoría de ese movimiento.
+function manualMov(b) {
+  const monto = Math.round(Number(b.monto)), comercio = String(b.comercio || "").trim().slice(0, 120);
+  const hora = /^\d{2}:\d{2}$/.test(b.hora || "") ? b.hora : null;
+  const cat = typeof b.cat === "string" && b.cat.trim() ? b.cat.trim().slice(0, 60) : null;
+  if (!DATE_RE.test(b.fecha || "") || !comercio || !(monto > 0) || !MANUAL_TIPOS.includes(b.tipo)) return null;
+  return {
+    fecha: b.fecha, hora, comercio, ciudad: null, pais: "CHL", tarjeta: "", tipo: b.tipo, moneda: "CLP",
+    monto: b.tipo === "Transferencia recibida" ? -monto : monto, fuente: "manual", revisado: 1, cat: b.tipo === "Transferencia recibida" ? null : cat,
+  };
+}
+
+// Alta: un movimiento o {movs: [...]} (hasta 300, todos válidos)
 async function addMov(request, env) {
   let b;
   try { b = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
-  const monto = Math.round(Number(b.monto)), comercio = String(b.comercio || "").trim().slice(0, 120);
-  const hora = /^\d{2}:\d{2}$/.test(b.hora || "") ? b.hora : null;
-  if (!DATE_RE.test(b.fecha || "") || !comercio || !(monto > 0) || !MANUAL_TIPOS.includes(b.tipo)) return json({ error: "bad_body" }, 400);
-  const mov = {
-    id: `manual:${crypto.randomUUID()}`, fecha: b.fecha, hora, comercio, ciudad: null, pais: "CHL", tarjeta: "", tipo: b.tipo, moneda: "CLP",
-    monto: b.tipo === "Transferencia recibida" ? -monto : monto, fuente: "manual", revisado: 1,
-  };
-  await env.DB.prepare(
-    "INSERT INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, revisado) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'manual', 1)"
-  ).bind(mov.id, mov.fecha, mov.hora, mov.comercio, mov.tipo, mov.monto).run();
-  return json({ ok: true, mov });
+  const many = Array.isArray(b.movs), list = (many ? b.movs : [b]).slice(0, 300).map(manualMov);
+  if (!list.length || list.some((x) => !x)) return json({ error: "bad_body" }, 400);
+  const movs = list.map((x) => ({ id: `manual:${crypto.randomUUID()}`, ...x }));
+  const stmt = env.DB.prepare("INSERT INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, revisado, cat) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'manual', 1, ?)");
+  const stmts = movs.map((m) => stmt.bind(m.id, m.fecha, m.hora, m.comercio, m.tipo, m.monto, m.cat));
+  for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
+  return json(many ? { ok: true, movs } : { ok: true, mov: movs[0] });
+}
+
+// Edición de un movimiento a mano (los del banco no se editan)
+async function editMov(request, env, id) {
+  let b;
+  try { b = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
+  const x = manualMov(b);
+  if (!x || !id.startsWith("manual:")) return json({ error: "bad_body" }, 400);
+  const r = await env.DB.prepare("UPDATE movimientos SET fecha = ?1, hora = ?2, comercio = ?3, tipo = ?4, monto = ?5, cat = ?6 WHERE id = ?7 AND fuente = 'manual'")
+    .bind(x.fecha, x.hora, x.comercio, x.tipo, x.monto, x.cat, id).run();
+  if (!r.meta.changes) return json({ error: "not_found" }, 404);
+  return json({ ok: true, mov: { id, ...x } });
 }
 
 /* ---------- notificaciones push: clave pública, suscripción de cada dispositivo y aviso de prueba ---------- */

@@ -4,7 +4,7 @@
 //   y que solo se aplica con POST /api/agente/confirmar (applyProposal), leyendo y escribiendo en el servidor.
 // - El costo se registra en api_usage y el agente se detiene al llegar a ANTHROPIC_BUDGET_USD en el mes.
 
-import { finContext, catInfo, spendRows, finKey, norm, recurring, fixedWhy } from "./finanzas.js";
+import { finContext, catInfo, spendRows, finKey, norm, recurring, fixedWhy, isIncoming } from "./finanzas.js";
 import { logUsage, anthropicCost, monthCost, chileDay } from "./uso.js";
 
 const MAX_STEPS = 8;
@@ -61,7 +61,7 @@ const TOOLS = [
   { name: "entreno", description: "Series de gimnasio en un rango agrupadas por sesión y ejercicio (series, mejor serie y 1RM estimado con Epley), y el mejor 1RM histórico de cada ejercicio. Filtro opcional por ejercicio.", input_schema: S({ ...RANGO, ejercicio: D("nombre o parte del nombre del ejercicio (opcional)") }) },
   { name: "bajo", description: "Práctica de bajo en un rango: minutos por día, días practicados, técnicas con su BPM limpio máximo y último, y canciones trabajadas.", input_schema: S(RANGO) },
   { name: "estudio", description: "Libros y cursos (avance, total, fechas del plan y examen) y minutos de estudio por libro en un rango.", input_schema: S(RANGO) },
-  { name: "gastos", description: "Gasto en un rango (compras menos devoluciones, en CLP) agrupado por categoría, comercio, día o tipo (fijo o variable), con el total. Siempre separa fijos (categoría fija, cobro recurrente o cuota: compromisos) de variables (lo que se decide y se puede ajustar), con el detalle de los fijos y, si el rango llega a hoy, los fijos del mes anterior que aún no se cobran. Usa la misma categorización que la web.", input_schema: S({ ...RANGO, agrupar: { type: "string", enum: ["categoria", "comercio", "dia", "tipo"], description: "cómo agrupar (por defecto categoria)" }, categoria: D("filtrar por una categoría (opcional)"), tipo: { type: "string", enum: ["fijo", "variable"], description: "solo fijos o solo variables (opcional)" } }) },
+  { name: "gastos", description: "Gasto en un rango (compras menos devoluciones, en CLP) agrupado por categoría, comercio, día o tipo (fijo o variable), con el total. Siempre separa fijos (categoría fija, cobro recurrente o cuota: compromisos) de variables (lo que se decide y se puede ajustar), con el detalle de los fijos y, si el rango llega a hoy, los fijos del mes anterior que aún no se cobran. Usa la misma categorización que la web. Incluye lo que entró en el rango (abonos que no son devolución) y, si existe, el plan del mes del usuario (ingreso, fijos, variables por categoría y ahorro planeados) para comparar lo real con lo planeado.", input_schema: S({ ...RANGO, agrupar: { type: "string", enum: ["categoria", "comercio", "dia", "tipo"], description: "cómo agrupar (por defecto categoria)" }, categoria: D("filtrar por una categoría (opcional)"), tipo: { type: "string", enum: ["fijo", "variable"], description: "solo fijos o solo variables (opcional)" } }) },
   { name: "movimientos", description: "Movimientos de tarjeta y cuenta en un rango (id, fecha, comercio, monto, tipo, categoría y su origen, revisado, sugerencia del agente). Filtros opcionales por texto o solo los por revisar.", input_schema: S({ ...RANGO, buscar: D("texto en el comercio (opcional)"), por_revisar: { type: "boolean", description: "solo los que faltan revisar" } }) },
   { name: "buscar_alimento", description: "Busca en la base de alimentos (valores por 100 g tal como se comen, y la porción). Úsala antes de proponer una comida para obtener cada foodId.", input_schema: S({ texto: D("nombre del alimento") }, ["texto"]) },
   { name: "perfil_metas", description: "Metas diarias y semanales vigentes, fase (definición, recomposición, mantención, pausa de dieta o volumen) y su ritmo, historial de metas por fecha, perfil (sexo, edad, estatura, objetivo, sobre mí) y meta de peso.", input_schema: S({}) },
@@ -237,7 +237,23 @@ const handlers = {
     const g = {};
     for (const x of rows) { const k = by(x); const o = g[k] || (g[k] = { clave: k, monto: 0, n: 0 }); o.monto += x.monto; o.n++; }
     const grupos = Object.values(g).map((o) => ({ ...o, monto: Math.round(o.monto) })).sort((x, y) => (a.agrupar === "dia" ? x.clave.localeCompare(y.clave) : y.monto - x.monto));
-    return { desde, hasta, total_clp: Math.round(rows.reduce((s, x) => s + x.monto, 0)), agrupado_por: a.agrupar || "categoria", grupos: grupos.slice(0, 60), fijos_y_variables: fijosVariables };
+    // Ingresos del rango y plan del mes (lib.fin.plan)
+    const ing = histR.results.filter((m) => m.fecha >= desde && isIncoming(m) && !ctx.refunds[m.id]);
+    const ingG = {};
+    for (const m of ing) { const k = finKey(m.comercio); const o = ingG[k] || (ingG[k] = { remitente: m.comercio, monto: 0 }); o.monto += Math.abs(m.monto); }
+    const planRows = (Array.isArray(ctx.fin.plan?.rows) ? ctx.fin.plan.rows : []).filter((r) => r && r.amount > 0);
+    const tot = (k) => planRows.filter((r) => r.kind === k).reduce((s, r) => s + r.amount, 0);
+    const plan = planRows.length ? {
+      dia_de_pago: ctx.fin.plan.payDay ?? null,
+      ingreso: tot("ingreso"), fijos: tot("fijo"), variables: tot("variable"), ahorro: tot("ahorro"),
+      sin_asignar: tot("ingreso") - tot("fijo") - tot("variable") - tot("ahorro"),
+      lineas: planRows.map((r) => ({ concepto: r.name, tipo: r.kind, monto_mensual: r.amount, se_reconoce_por: r.match || r.name, dia: r.day || undefined })),
+    } : null;
+    return {
+      desde, hasta, total_clp: Math.round(rows.reduce((s, x) => s + x.monto, 0)), agrupado_por: a.agrupar || "categoria", grupos: grupos.slice(0, 60), fijos_y_variables: fijosVariables,
+      ingresos_clp: Math.round(ing.reduce((s, m) => s + Math.abs(m.monto), 0)), ingresos_por_remitente: Object.values(ingG).map((o) => ({ ...o, monto: Math.round(o.monto) })).sort((x, y) => y.monto - x.monto).slice(0, 10),
+      ...(plan ? { plan_del_mes: plan } : {}),
+    };
   },
 
   async movimientos(env, a) {

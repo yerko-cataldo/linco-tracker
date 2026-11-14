@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-13
+- Finanzas: "Tu plan del mes", una planilla con lo que entra, tus fijos, cuánto quieres gastar en cada categoría variable y cuánto ahorrar, con plan frente a real en cada línea, lo que queda sin asignar y lo que gastaste fuera del plan (con botón para sumarlo). Se escribe como en Excel: Enter baja de fila, la última fila de cada grupo agrega una línea y se pueden pegar filas desde Excel. Se puede armar solo con tus movimientos o partir con una plantilla. Con plan, el presupuesto y los topes salen de él.
+- Finanzas: "Tu sueldo", el ciclo de pago a pago: cuánto te queda por día hasta el próximo sueldo, hasta qué día te alcanza a tu ritmo y, en los ciclos anteriores, cuánto sobró o qué día se acabó la plata.
+- Finanzas: anotar rápido en una línea ("almuerzo 8.500", "uber 4.500 ayer", "sueldo 1.850.000") con categoría y tipo deducidos, y pegar varias filas desde Excel o tus notas con vista previa y aviso de duplicados. Los movimientos a mano ahora se editan, y la lista se descarga en CSV para Excel.
+- Los montos aceptan "450 mil", "15 lucas", "8,5k" y "1,2M" en toda la app.
+- El agente ve lo que entró en el rango y tu plan del mes.
+
 ## 2026-11-09
 - Nutrición: fases definición, recomposición, mantención, pausa de dieta y volumen limpio, en Perfil y metas → "Fase y metas de nutrición". Cada fase tiene un ritmo en % del peso por semana, ajustable dentro de un rango, y sus propias reglas de proteína y grasa. La recomposición pasa de −400 kcal a −0,1 % del peso por semana.
 - La mantención se mide con tus datos (kcal registradas y tendencia de peso de 28 días) y solo usa la fórmula cuando faltan datos. Antes de cambiar de fase se ven las metas actuales y las nuevas lado a lado.

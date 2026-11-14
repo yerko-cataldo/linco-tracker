@@ -799,6 +799,53 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 .fv-why{font-size:.75rem;color:var(--muted);margin-left:6px}
 .fv-left{margin-top:10px;padding:10px 12px;border-radius:var(--r);background:var(--sunken);font-size:.92rem}
 .adj{list-style:none;margin:0;padding:0}
+.fin-quick .row{align-items:flex-end}
+.fin-quick #fqText{font-size:1.05rem}
+.fin-quick textarea{width:100%;font:inherit;font-size:.9rem;border:1px solid var(--line-strong);background:var(--field);color:var(--ink);border-radius:var(--r-sm);padding:8px 11px}
+.plan{container-type:inline-size}
+.plan-sec{margin-top:14px}
+.plan-sh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-bottom:4px;border-bottom:1px solid var(--line-strong)}
+.plan-sh h4{margin:0;font-family:var(--display);font-size:1rem;display:flex;align-items:center;gap:8px}
+.plan-sh h4 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.plan-r{display:grid;grid-template-columns:minmax(120px,1.4fr) 112px minmax(150px,1.5fr) minmax(130px,1.2fr) 54px 98px 32px;grid-template-areas:"name amt real match day kind del";gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid var(--line)}
+.plan-r>*{min-width:0}
+.plan-r .pl-name{grid-area:name}.plan-r .pl-amt{grid-area:amt}.plan-r .pl-real{grid-area:real}.plan-r .pl-match{grid-area:match}.plan-r .pl-day{grid-area:day}.plan-r .pl-kind{grid-area:kind}.plan-r .pl-del{grid-area:del;min-height:30px;padding:0}
+.plan-hd{font-size:.76rem;color:var(--muted);font-weight:600;border-bottom:0;padding:0}
+.plan-hd .n{text-align:right}
+.plan input,.plan select{font:inherit;font-size:.92rem;color:var(--ink);background-color:transparent;border:1px solid transparent;border-radius:8px;padding:6px 8px;width:100%;min-height:34px}
+.plan select{padding-right:24px}
+.plan input:hover,.plan select:hover{border-color:var(--line-strong)}
+.plan input:focus,.plan select:focus{outline:none;border-color:color-mix(in srgb,var(--ink) 55%,var(--line-strong));background-color:var(--field);box-shadow:0 0 0 3px var(--ring)}
+.plan input::placeholder{color:color-mix(in srgb,var(--muted) 75%,transparent)}
+.plan .pl-amt{text-align:right;font-variant-numeric:tabular-nums;font-weight:650}
+.plan .pl-name{font-weight:600}
+.plan-add{border-bottom:0}
+.plan-add .pl-name{grid-column:1/-1;font-weight:400}
+.pl-real{font-size:.9rem;padding:0 8px;font-variant-numeric:tabular-nums}
+.pl-bar{height:5px;background:var(--sunken);border-radius:999px;margin-top:4px;overflow:hidden}
+.pl-bar i{display:block;height:100%;border-radius:999px}
+.plan-out{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.plan-out .n{font-variant-numeric:tabular-nums;font-weight:650}
+@container (max-width:720px){
+  .plan-r{grid-template-columns:minmax(0,1fr) 56px 104px 32px;grid-template-areas:"name name amt del" "real real real real" "match day kind kind";row-gap:2px;padding:6px 0}
+  .plan-hd{display:none}
+  .plan-out{grid-template-columns:1fr auto}
+  .plan-out .btn{grid-column:1/-1;justify-self:start}
+}
+.plan-eq{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 12px}
+.plan-eq div{display:flex;flex-direction:column}
+.plan-eq span{font-size:.76rem;color:var(--muted);font-weight:600}
+.plan-eq strong{font-family:var(--display);font-size:1.3rem;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.plan-eq i{font-style:normal;color:var(--muted);font-size:1.1rem;padding-bottom:3px}
+.plan-eq .neg strong{color:var(--danger)}
+.plan-foot{align-items:flex-end}
+.pay-big{font-family:var(--display);font-weight:750;font-size:2.3rem;letter-spacing:-.02em;line-height:1.05;margin-top:4px}
+.pay-unit{font-size:1rem;font-weight:600;color:var(--muted)}
+.pay-bars{display:grid;gap:6px;margin:0 0 10px;max-width:560px}
+.pay-bar{display:grid;grid-template-columns:130px 1fr 44px;gap:10px;align-items:center;font-size:.85rem}
+.pay-bar .t{height:10px;background:var(--sunken);border-radius:999px;overflow:hidden}
+.pay-bar .t i{display:block;height:100%;border-radius:999px}
+.pay-bar .n{text-align:right;font-variant-numeric:tabular-nums}
 .adj li{padding:10px 0;border-top:1px solid var(--line)}
 .adj li:first-child{border-top:0;padding-top:2px}
 .adj .row{justify-content:space-between;gap:8px;flex-wrap:nowrap}
@@ -1327,6 +1374,21 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <!-- FINANZAS -->
   <section class="tab" id="tab-finanzas">
     <div class="page-head c-fin"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-fin"/></svg></span><div><h2>Finanzas</h2><p class="lede">Compras con tarjeta, transferencias y pagos de la cuenta BICE, y lo que te cuesta comer.</p></div></div>
+    <div class="panel fin-quick" id="finQuick">
+      <div class="row">
+        <label class="field grow">Anota un gasto o un ingreso<input id="fqText" autocomplete="off" enterkeyhint="done" placeholder="almuerzo 8.500 · uber 4.500 ayer · sueldo 1.850.000"></label>
+        <label class="field w10">Categoría<select id="fqCat"></select></label>
+        <label class="field w10">Tipo<select id="fqTipo"><option value="Compra">gasto o compra</option><option value="Transferencia">transferencia</option><option value="Pago de cuenta">pago de cuenta</option><option value="Transferencia recibida">dinero que recibí</option></select></label>
+        <button class="btn primary" data-action="fq-add" id="fqBtn">Agregar</button>
+        <button class="btn ghost" data-action="fq-cancel" id="fqCancel" hidden>Cancelar</button>
+      </div>
+      <p class="small" id="fqPrev" style="margin:8px 0 0"></p>
+      <details class="manual mt" id="fqPasteBox"><summary>Pegar varias filas desde Excel, Sheets o tus notas</summary>
+        <textarea id="fqPaste" rows="4" class="mt" placeholder="Una fila por movimiento, con fecha, descripción y monto (y si quieres, categoría):&#10;12-11-2026	Feria	15.000&#10;11/11 almuerzo 8.500&#10;10-11	Arriendo	450000	Arriendo y gastos comunes"></textarea>
+        <div id="fqPasteOut"></div>
+        <p class="small muted" style="margin:8px 0 0">Para lo que no llega por alerta, correo ni cartola: efectivo, otra tarjeta, ingresos. Si después llega también por el banco, borra uno de los dos.</p>
+      </details>
+    </div>
     <details class="panel sec" id="finInboxPanel" open hidden>
       <summary><h3 id="finInboxHead">Por revisar</h3><span class="hint">elige la categoría y detalla lo que compraste</span></summary>
       <div class="sec-body">
@@ -1335,8 +1397,26 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <p class="small muted" style="margin:10px 0 0">Al marcar una compra como revisada, su categoría queda guardada para ese comercio. La que sugiere el agente y la de "solo esta compra" quedan solo para esa compra.</p>
       </div>
     </details>
+    <div class="panel mt" id="finPay" hidden><h3>Tu sueldo</h3><div id="finPayBody"></div></div>
     <div class="item-head mt"><h3 id="finMonthLbl"></h3><span class="act"><button class="btn small" data-action="fin-prev" aria-label="Mes anterior">‹</button><button class="btn small" data-action="fin-next" aria-label="Mes siguiente">›</button></span></div>
     <div class="panel fin-hero" id="finHero"></div>
+    <details class="panel sec mt" id="finPlanSec" open>
+      <summary><h3>Tu plan del mes</h3><span class="hint" id="finPlanHint"></span></summary>
+      <div class="sec-body">
+        <div id="finPlanSum"></div>
+        <div class="plan mt" id="finPlanGrid"></div>
+        <div class="row mt plan-foot">
+          <label class="field w10">Te pagan el<select id="planPayDay"><option value="">día de la línea del sueldo</option><option value="1">1 de cada mes</option><option value="2">2 de cada mes</option><option value="3">3 de cada mes</option><option value="4">4 de cada mes</option><option value="5">5 de cada mes</option><option value="6">6 de cada mes</option><option value="7">7 de cada mes</option><option value="8">8 de cada mes</option><option value="9">9 de cada mes</option><option value="10">10 de cada mes</option><option value="11">11 de cada mes</option><option value="12">12 de cada mes</option><option value="13">13 de cada mes</option><option value="14">14 de cada mes</option><option value="15">15 de cada mes</option><option value="16">16 de cada mes</option><option value="17">17 de cada mes</option><option value="18">18 de cada mes</option><option value="19">19 de cada mes</option><option value="20">20 de cada mes</option><option value="21">21 de cada mes</option><option value="22">22 de cada mes</option><option value="23">23 de cada mes</option><option value="24">24 de cada mes</option><option value="25">25 de cada mes</option><option value="26">26 de cada mes</option><option value="27">27 de cada mes</option><option value="28">28 de cada mes</option><option value="29">29 de cada mes</option><option value="30">30 de cada mes</option><option value="31">31 de cada mes</option><option value="ult">último día hábil</option></select></label>
+          <button class="btn small" data-action="plan-seed">Completar con mis movimientos</button>
+          <button class="btn ghost small danger" data-action="plan-clear">Borrar el plan</button>
+        </div>
+        <details class="manual mt"><summary>Pegar filas desde Excel</summary>
+          <textarea id="planPaste" rows="4" class="mt" placeholder="Concepto y monto por fila (y si quieres, tipo, categoría y día):&#10;Arriendo	450.000	fijo	5&#10;Supermercado	180.000	variable&#10;Sueldo	1.850.000	ingreso	30"></textarea>
+          <div class="row mt"><button class="btn small primary" data-action="plan-paste">Agregar filas al plan</button></div>
+        </details>
+        <p class="small muted" style="margin:10px 0 0">Escribe como en una planilla: Enter baja a la fila siguiente y en la última fila de cada grupo agregas una línea nueva. Los montos aceptan 450.000, 450 lucas o 1,2M. "Se reconoce por" es el nombre del comercio o del remitente como aparece en el banco, o una categoría; con eso cada línea compara lo planeado con lo real. Las variables son categorías y quedan como topes del mes.</p>
+      </div>
+    </details>
     <div class="panel mt">
       <div class="item-head"><h3>Fijos y variables</h3><span class="small muted">lo comprometido frente a lo que decides</span></div>
       <div id="finFixVar"></div>
@@ -1358,19 +1438,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
           <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"></select></div>
           <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
+          <button class="btn small" data-action="fin-csv" title="Descarga los movimientos que se ven, para abrirlos en Excel">Descargar CSV</button>
           <div class="field w10" hidden><span class="sr">Filtrar por medio de pago</span><select id="finCardF"><option value="">Todas las tarjetas</option><option value="credito">Solo crédito</option><option value="debito">Solo débito</option><option value="cuenta">Solo transferencias y pagos</option></select></div>
         </div>
-        <details class="manual" id="finAddMov" style="margin-bottom:10px"><summary>Agregar un movimiento a mano</summary>
-          <div class="row mt">
-            <div class="field w10">Fecha<input type="date" id="finMovDate"></div>
-            <div class="field grow">Descripción<input id="finMovName" placeholder="Fintual, feria, almuerzo en efectivo"></div>
-            <div class="field w10">Monto<input id="finMovAmt" inputmode="numeric"></div>
-            <div class="field w10">Tipo<select id="finMovTipo"><option value="Compra">gasto o compra</option><option value="Transferencia">transferencia</option><option value="Pago de cuenta">pago de cuenta</option><option value="Transferencia recibida">dinero que recibí</option></select></div>
-            <div class="field w10">Categoría<select id="finMovCat"></select></div>
-          </div>
-          <div class="row mt"><button class="btn primary" data-action="fin-mov-add">Agregar movimiento</button></div>
-          <p class="small muted" style="margin:8px 0 0">Para lo que no llega por alerta, correo ni cartola: efectivo, inversiones, pagos con otra tarjeta. Si después llega también por el banco, borra uno de los dos.</p>
-        </details>
         <div id="finList"></div>
       </div>
     </details>
@@ -1410,6 +1480,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div>
             <h3>Presupuesto mensual</h3>
             <div class="row"><div class="field w10">Monto en pesos<input id="finBudget" inputmode="numeric"></div></div>
+            <p class="small muted" id="finBudPlan" style="margin:6px 0 0" hidden>Con un plan, el presupuesto es la suma de sus fijos y variables, y los topes son sus líneas variables.</p>
             <h3 class="mt">Categorías fijas</h3>
             <p class="small muted" style="margin:0 0 8px">Las categorías marcadas son compromisos del mes. Los cobros recurrentes y las cuotas cuentan como fijos aunque su categoría no esté marcada.</p>
             <div class="chips" id="finKinds"></div>
@@ -1456,6 +1527,8 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="sec-body small muted">
         <p style="margin:0 0 8px">El gasto suma las compras en pesos y las transferencias, pagos de cuentas y cargos del banco de la cuenta; una compra en cuotas cuenta completa el día que la haces, y las cuotas que se cobran después no se vuelven a sumar. "Frente al mes anterior" compara con lo gastado el mes anterior hasta el mismo día. La proyección extiende el promedio diario a todo el mes. El ritmo de un tope es la parte del mes que ya pasó: al día 15 de un mes de 30 días, el ritmo es 50%. En "En qué gastaste", en el mes en curso cada mes comparado se cuenta hasta el mismo día, y el promedio de 3 meses usa solo meses con datos completos.</p>
         <p style="margin:0 0 8px">Fijos y variables: un gasto es fijo si su categoría está marcada como fija (por defecto arriendo y gastos comunes, servicios, suscripciones, comisiones e intereses y educación), si el comercio se cobra con periodicidad (los mismos recurrentes de "Recurrentes y cuotas") o si es una compra en cuotas. Lo demás es variable. "Faltan por pagar" son los comercios con gasto fijo el mes anterior que aún no aparecen este mes, por el monto del mes anterior. Lo que te queda para variables es el presupuesto menos los fijos pagados, los que faltan y los variables del mes, repartido en los días que quedan.</p>
+        <p style="margin:0 0 8px">Tu plan del mes: cada línea cuenta los movimientos del mes que calzan con "Se reconoce por" (si es una categoría, todo lo de esa categoría; si no, los movimientos con todas esas palabras en el nombre del comercio o del remitente). Los fijos con nombre de comercio toman sus movimientos primero y cada movimiento cuenta una sola vez; las variables suman su categoría con lo que no tomó un fijo, y lo que no calza con ninguna línea queda fuera del plan. Sin asignar = lo que entra − fijos − variables − ahorro. Con montos en el plan, el presupuesto es fijos + variables y los topes son las variables.</p>
+        <p style="margin:0 0 8px">Tu sueldo: el ciclo va de un pago al siguiente. El pago es el abono de tu línea de sueldo cerca del día de pago (de 6 días antes a 4 después); si no aparece, el día de pago, adelantado al viernes si cae en fin de semana. Te queda = lo que entró − lo gastado − lo apartado − lo que falta de tus fijos y ahorro del plan; por día, eso dividido por los días hasta el próximo pago. El ritmo es lo gastado sin los fijos dividido por los días que van del ciclo, y "te alcanza hasta" es hoy más lo que te queda dividido por ese ritmo.</p>
         <p style="margin:0 0 8px">Dónde ajustar compara lo variable de cada categoría con su promedio de los 3 meses completos anteriores (sin el mes parcial del inicio de los datos), prorrateado al día del mes. El ahorro al cierre es la diferencia entre la proyección de la categoría a fin de mes (al ritmo actual) y su promedio. Gasto hormiga: compras variables bajo $5.000.</p>
         <p style="margin:0 0 8px">"Para mirar" muestra solo lo que pide atención: categorías sobre el ritmo de su tope, categorías que subieron más de 20% (y más de $10.000) frente a la comparación, compras de más de 2,5 veces lo habitual en ese comercio (con 3 compras previas o más) o de más de 3 veces una compra típica de su categoría (con 5 o más, y solo si la categoría la elegiste tú), recurrentes que subieron o no se cobraron, alertas que no aparecen en la cartola, compras de supermercado sin detallar y compras bajo $5.000 cuando suman más del 15% del mes.</p>
         <p style="margin:0 0 8px">"Lo que cuesta comer" separa lo comprado en comida (en casa: Supermercado y productos detallados con un alimento; fuera: Comida y delivery y Restaurantes y bares) del costo de lo que registraste en Nutrición, que sale de los precios de tus alimentos. La proteína más barata es el costo de 10 g de proteína: precio por kg ÷ gramos de proteína por 100 g.</p>
@@ -3524,13 +3597,13 @@ function renderFin(){
   const c = finMonthCtx(), cfg = finCfg();
   $("#finMonthLbl").textContent = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long", year: "numeric"});
   const cmp = finCmpBase(c), tree = finTreeOf(c.buys);
-  renderFinHero(c); renderFinFixVar(c); renderFinAdjust(c); renderFinWatch(c, tree, cmp); renderFinEat(c); renderFinTree(c, tree, cmp); renderFinKinds();
+  renderFinPay(); renderFinHero(c); renderFinPlan(); renderFinFixVar(c); renderFinAdjust(c); renderFinWatch(c, tree, cmp); renderFinEat(c); renderFinTree(c, tree, cmp); renderFinKinds();
   renderFinEvo(c, finTopCats(c.ym));
-  const buds = cfg.catBudgets || {};
-  setVal("#finBudget", cfg.budget ?? "");
-  setHTML($("#finCatBudgets"), `<div class="row">${FIN_CATS.map(x => `<div class="field w10">${esc(x)}<input data-catbud="${esc(x)}" inputmode="numeric" value="${buds[x] ? buds[x] : ""}"></div>`).join("")}</div>`);
+  const buds = finCatBudgets(), pl = planOn(), plCats = new Set(finPlan().rows.filter(r => r.kind === "variable").map(planCatOf).filter(Boolean)), bud = finBudget();
+  setVal("#finBudget", pl ? fmt(bud) : cfg.budget ?? ""); $("#finBudget").disabled = pl; $("#finBudPlan").hidden = !pl;
+  setHTML($("#finCatBudgets"), `<div class="row">${FIN_CATS.map(x => `<div class="field w10">${esc(x)}<input data-catbud="${esc(x)}" inputmode="numeric" value="${buds[x] ? buds[x] : ""}"${pl && plCats.has(x) ? ` disabled title="sale de tu plan"` : ""}></div>`).join("")}</div>`);
   const nb = Object.values(buds).filter(Boolean).length, nr = (cfg.rules || []).length;
-  $("#finBudSum").textContent = `${cfg.budget ? "presupuesto " + fmtClp(cfg.budget) : "sin presupuesto"} · ${nb} ${nb === 1 ? "tope" : "topes"} · ${nr} ${nr === 1 ? "regla" : "reglas"}`;
+  $("#finBudSum").textContent = `${bud ? (pl ? "plan " : "presupuesto ") + fmtClp(bud) : "sin presupuesto"} · ${nb} ${nb === 1 ? "tope" : "topes"} · ${nr} ${nr === 1 ? "regla" : "reglas"}`;
   const rec = finRecurring(), inst = finInstallments();
   $("#finRecurSum").textContent = `${rec.length} ${rec.length === 1 ? "recurrente" : "recurrentes"}, ${fmtClp(sum(rec, r => r.monthly))} al mes · cuotas por pagar ${fmtClp(sum(inst, g => g.pending))}`;
   renderFinList();
@@ -3642,7 +3715,7 @@ function renderFinFixVar(c){
   const dueL = Object.values(due).sort((a, b) => a.day - b.day), D = sum(dueL, x => x.monto);
   const prev = finPrevMonths(c.ym), f = c.isCur ? c.dayCut / c.lastDay : 1;
   const avgV = prev.length ? sum(prev, bs => sum(bs.filter(m => !finIsFixed(m)), m => m.monto)) / prev.length : null;
-  const projV = c.isCur && c.dayCut ? V / c.dayCut * c.lastDay : V, left = c.lastDay - c.dayCut, b = finCfg().budget;
+  const projV = c.isCur && c.dayCut ? V / c.dayCut * c.lastDay : V, left = c.lastDay - c.dayCut, b = finBudget();
   const pct = x => fmt(x / T * 100);
   const fixList = finByMerchant(fix, true).slice(0, 6), varList = finByMerchant(vari).slice(0, 5);
   let story = "";
@@ -3702,7 +3775,7 @@ function renderFinKinds(){
   setHTML($("#finKinds"), FIN_CATS.filter(x => !FIN_NOSPEND.has(x)).map(x => { const on = finCatFixed(x); return `<button class="chip${on ? " sel" : ""}" data-action="fin-kind" data-cat="${esc(x)}" aria-pressed="${on}">${esc(x)}</button>`; }).join(""));
 }
 function renderFinHero(c){
-  const b = finCfg().budget, mes = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long"});
+  const b = finBudget(), mes = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long"});
   if (!c.buys.length){ setHTML($("#finHero"), `<p class="empty">Sin gastos registrados en ${esc(mes)}.</p>${finSavedHtml(c.ym)}`); return; }
   const prevOk = finBuysOf(c.prevYm).length > 0 && !finPartialNote(c.prevYm), d = c.total - c.prevSame;
   const vs = !prevOk ? `<span class="muted">Aún no hay un mes anterior completo para comparar.</span>`
@@ -3718,6 +3791,569 @@ function renderFinHero(c){
     <div id="finCum"></div>`);
   renderFinCum(c);
 }
+/* Plan del mes: lib.fin.plan = {payDay, rows: [{id, name, kind, amount, match, day}]}.
+   kind: ingreso, fijo, variable o ahorro. match: una categoría (cuenta todo lo de esa categoría) o el nombre del comercio o remitente
+   (cuentan los movimientos con todas sus palabras); sin match, el nombre de la línea. Una línea variable es una categoría.
+   payDay: día de pago del sueldo (1–31 o "ult", último día hábil); sin él, el día de la línea de ingreso más grande. */
+const PLAN_KINDS = ["ingreso", "fijo", "variable", "ahorro"];
+const PLAN_HEAD = {ingreso: "Lo que entra", fijo: "Fijos", variable: "Variables", ahorro: "Ahorro"};
+const PLAN_ADD = {ingreso: "agregar ingreso (sueldo, bono, arriendo que cobras)", fijo: "agregar fijo (arriendo, luz, plan del celular, crédito)", variable: "agregar categoría variable (supermercado, salidas, transporte)", ahorro: "agregar ahorro (Fintual, APV, depósito)"};
+const PLAN_COLOR = {fijo: "var(--study)", variable: "var(--fin)", ahorro: "var(--ok)"};
+function finPlan(){
+  const p = finCfg().plan || {};
+  return {payDay: p.payDay ?? null, rows: (Array.isArray(p.rows) ? p.rows : []).filter(r => r && r.id && PLAN_KINDS.includes(r.kind))};
+}
+const planOn = () => finPlan().rows.some(r => r.amount > 0);
+const planTotal = (rows, kind) => sum(rows.filter(r => r.kind === kind), r => r.amount);
+const planCatOf = r => { const t = norm(r.match || (r.kind === "variable" ? r.name : "")); return t ? FIN_CATS.find(c => norm(c) === t) || null : null; };
+function planSave(mut){
+  saveLib("fin", () => { const c = finCfg(), p = finPlan(); return {...c, plan: mut({payDay: p.payDay, rows: p.rows.map(r => ({...r}))})}; });
+}
+// Presupuesto de gasto y topes por categoría: los del plan (fijos más variables) si tiene montos; si no, los de Presupuesto, topes y reglas
+const finBudget = () => { const r = finPlan().rows, b = planTotal(r, "fijo") + planTotal(r, "variable"); return b > 0 ? b : finCfg().budget; };
+function finCatBudgets(){
+  const out = {...(finCfg().catBudgets || {})};
+  for (const r of finPlan().rows){ const c = planCatOf(r); if (r.kind === "variable" && c && r.amount > 0) out[c] = r.amount; }
+  return out;
+}
+const planWords = s => norm(s).split(/[^a-z0-9]+/).filter(w => w.length > 1);
+function planMatch(r, m){
+  const cat = planCatOf(r);
+  if (cat) return !isIncoming(m) && (finCat(m) || "Sin categoría") === cat;
+  const want = planWords(r.match || r.name); if (!want.length) return false;
+  const have = planWords(`${m.comercio} ${m.detalle_banco || ""}`);
+  return want.every(w => have.some(h => h === w || (w.length >= 4 && h.startsWith(w))));
+}
+const inRange = (m, a, b) => m.fecha >= a && m.fecha <= b;
+// Movimientos de un rango: gasto (compras y devoluciones), ingresos (abonos que no son devolución) y ahorro (categorías que no son gasto)
+function finPools(a, b){
+  const rf = finRefunds();
+  return {
+    buys: [...S.movs.filter(m => inRange(m, a, b) && isPurchase(m)), ...finRefundList().filter(m => inRange(m, a, b))],
+    incomes: S.movs.filter(m => inRange(m, a, b) && isIncoming(m) && !rf[m.id]),
+    saves: S.movs.filter(m => inRange(m, a, b) && m.moneda === "CLP" && m.monto > 0 && FIN_SPEND.includes(norm(m.tipo)) && finNoSpend(m))
+  };
+}
+// Real de cada línea en un rango. Las líneas con comercio toman sus movimientos antes que las de categoría; las variables suman por
+// categoría lo que no tomó un fijo. Lo que no cae en ninguna línea queda "fuera del plan".
+function planReal(rows, a, b){
+  const P = finPools(a, b), used = new Set(), by = {};
+  const bySpec = (x, y) => (planCatOf(x) ? 1 : 0) - (planCatOf(y) ? 1 : 0);
+  const take = (r, list, amt) => { const ms = list.filter(m => !used.has(m) && planMatch(r, m)); ms.forEach(m => used.add(m)); by[r.id] = {movs: ms, v: sum(ms, amt)}; };
+  rows.filter(r => r.kind === "ingreso").sort(bySpec).forEach(r => take(r, P.incomes, m => Math.abs(m.monto)));
+  rows.filter(r => r.kind === "ahorro").sort(bySpec).forEach(r => take(r, P.saves, m => m.monto));
+  rows.filter(r => r.kind === "fijo").sort(bySpec).forEach(r => take(r, P.buys, m => m.monto));
+  const rest = P.buys.filter(m => !used.has(m)), cats = finCatTotals(rest), seen = new Set();
+  const ofCat = c => rest.filter(m => (finCat(m) || "Sin categoría") === c);
+  for (const r of rows.filter(r => r.kind === "variable")){
+    const c = planCatOf(r), first = c && !seen.has(c);
+    by[r.id] = {movs: first ? ofCat(c) : [], v: first ? cats[c] || 0 : 0, cat: c};
+    if (c) seen.add(c);
+  }
+  const out = Object.entries(cats).filter(([c, v]) => !seen.has(c) && Math.abs(v) >= 1)
+    .map(([cat, v]) => ({cat, v, shops: finByMerchant(ofCat(cat)).slice(0, 3)})).sort((x, y) => y.v - x.v);
+  const incomeIn = sum(rows.filter(r => r.kind === "ingreso"), r => by[r.id].v);
+  return {by, out, P, spent: sum(P.buys, m => m.monto), saved: sum(P.saves, m => m.monto), income: sum(P.incomes, m => Math.abs(m.monto)), incomeIn};
+}
+// Promedio mensual de una categoría en los 3 meses completos anteriores
+function planCatAvg(cat, ym){
+  const prev = finPrevMonths(ym);
+  return prev.length ? sum(prev, bs => finCatTotals(bs)[cat] || 0) / prev.length : null;
+}
+const roundTo = (x, k) => Math.round(x / k) * k;
+const ceilTo = (x, k) => Math.ceil(x / k) * k;
+
+/* Categoría de una descripción escrita a mano ("almuerzo", "bencina"): tus comercios y reglas, después estas palabras y al final las reglas base */
+const FIN_WORDS = [
+  ["Inversiones y ahorro", ["ahorro", "fintual", "apv", "inversion", "deposito a plazo", "racional"]],
+  ["Restaurantes y bares", ["almuerzo", "cena", "once", "desayuno", "cafe", "completo", "completos", "empanada", "empanadas", "salida", "salidas", "carrete", "copete", "cerveza", "cervezas", "bar", "restaurant", "restaurante", "sushi", "pizza", "colacion"]],
+  ["Comida y delivery", ["delivery", "pedido", "uber eats", "rappi", "pedidosya"]],
+  ["Supermercado", ["super", "supermercado", "feria", "verdura", "verduras", "fruta", "frutas", "pan", "almacen", "mercaderia", "carniceria", "carne", "huevos", "leche"]],
+  ["Transporte", ["bencina", "combustible", "uber", "cabify", "didi", "taxi", "micro", "metro", "bip", "colectivo", "peaje", "tag", "estacionamiento", "pasaje bus", "bus"]],
+  ["Arriendo y gastos comunes", ["arriendo", "gastos comunes", "dividendo", "comunidad"]],
+  ["Servicios", ["luz", "agua", "gas", "internet", "celular", "telefono", "cable", "enel", "aguas andinas", "metrogas", "lipigas", "abastible", "entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo"]],
+  ["Salud", ["isapre", "fonasa", "doctor", "medico", "dentista", "remedio", "remedios", "farmacia", "psicologo", "psicologa", "examen", "examenes", "kine", "kinesiologo"]],
+  ["Deporte", ["gimnasio", "gym", "cancha", "tenis", "padel", "futbol", "smartfit"]],
+  ["Educación", ["universidad", "curso", "colegio", "jardin", "matricula", "arancel", "cae", "libro", "libros"]],
+  ["Suscripciones", ["netflix", "spotify", "disney", "hbo", "max", "youtube", "icloud", "chatgpt", "prime", "suscripcion"]],
+  ["Ropa", ["ropa", "zapatillas", "zapatos", "polera", "pantalon", "chaqueta"]],
+  ["Entretención", ["cine", "concierto", "entrada", "entradas", "panorama", "juego", "juegos", "videojuego", "steam"]],
+  ["Mascotas", ["perro", "gato", "veterinario", "veterinaria", "mascota", "comida perro", "comida gato"]],
+  ["Hogar", ["hogar", "mueble", "muebles", "limpieza", "aseo", "ferreteria", "sodimac", "detergente"]],
+  ["Viajes", ["viaje", "pasaje", "pasajes", "hotel", "airbnb", "vuelo", "hostal"]],
+  ["Comisiones e intereses", ["comision", "intereses", "mantencion", "impuesto"]],
+  ["Compras", ["regalo", "regalos", "mercadolibre", "falabella", "ripley", "paris"]],
+  ["Otros", ["peluqueria", "corte de pelo", "barberia"]]
+];
+function finGuessCat(text, tipo = "Compra"){
+  if (!String(text || "").trim()) return "";
+  const info = finCatInfoCalc({comercio: text, tipo, moneda: "CLP"});
+  if (["comercio", "regla"].includes(info.src)) return info.cat;
+  const joined = ` ${planWords(text).join(" ")} `;
+  for (const [cat, kws] of FIN_WORDS) if (FIN_CATS.includes(cat) && kws.some(k => joined.includes(` ${norm(k)} `))) return cat;
+  return info.cat || "";
+}
+
+/* Texto libre a movimiento: "almuerzo 8.500", "uber 4500 ayer", "12/11 feria 15 lucas", "sueldo 1.850.000".
+   Fecha: hoy, ayer, anteayer, un día de la semana (el último), dd/mm, dd/mm/aaaa, aaaa-mm-dd o "12 nov". Monto: el que lleva $, separador de
+   miles o sufijo (mil, lucas, k, M); si no, el número más grande. Tipo: ingreso o transferencia por palabras clave; si no, compra. */
+const QK_MONTHS = {ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, set: 9, oct: 10, nov: 11, dic: 12};
+const QK_WD = {domingo: 0, lunes: 1, martes: 2, miercoles: 3, jueves: 4, viernes: 5, sabado: 6};
+const QK_IN = /\s(sueldo|salario|me pagaron|recibi|recibido|recibida|me transfirieron|me depositaron|me devolvieron|ingreso|abono|bono|honorarios?|reembolso|aguinaldo)\s/;
+const QK_TR = /\s(transferi|le transferi|transferencia|le pase)\s/;
+const QK_VERB = /\s(me pagaron|me transfirieron|me depositaron|me devolvieron|recibi|recibido|recibida|le transferi|transferi|le pase|me gaste|gaste|pague|compre|en efectivo|efectivo|con debito|con credito|con tarjeta)(?=\s)/;
+const QK_FILL = new Set(["en", "de", "del", "por", "el", "la", "los", "las", "un", "una", "para", "a", "al", "y", "gasto", "pago", "compra"]);
+// Fecha de un texto "dd/mm[/aa]" o "dd mes [aaaa]"; sin año, el último que no queda en el futuro
+function qkDate(d, mo, y){
+  const t = today();
+  if (!(d >= 1 && d <= 31 && mo >= 1 && mo <= 12)) return null;
+  let yy = y ? +y : +t.slice(0, 4); if (yy < 100) yy += 2000;
+  if (d > new Date(yy, mo, 0).getDate()) return null;
+  let f = `${yy}-${pad(mo)}-${pad(d)}`;
+  if (!y && f > t) f = `${yy - 1}-${pad(mo)}-${pad(d)}`;
+  return f;
+}
+// Fecha de una celda completa (para filas pegadas)
+function qkCellDate(s){
+  const n = norm(s);
+  let m = n.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return qkDate(+m[3], +m[2], m[1]);
+  m = n.match(/^(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?$/); if (m) return qkDate(+m[1], +m[2], m[3]);
+  m = n.match(/^(\d{1,2})[\s\/-]*(?:de\s)?(ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|set(?:iembre)?|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?)\.?(?:[\s\/-]*(?:de\s)?(\d{2,4}))?$/); if (m) return qkDate(+m[1], QK_MONTHS[m[2].slice(0, 3)], m[3]);
+  if (n === "hoy") return today();
+  if (n === "ayer") return addDays(today(), -1);
+  return null;
+}
+const qkIsMoney = s => /\d/.test(s) && /^-?\$?\s?(\d{1,3}(\.\d{3})+(,\d+)?|\d+([.,]\d+)?)\s?(millones|millon|mm|m|mil|lucas|luca|k)?$/.test(norm(s).replace(/\s+/g, " ")) && !qkCellDate(s);
+const qkCap = s => { const t = String(s || "").replace(/\s+/g, " ").trim(); return t ? t[0].toUpperCase() + t.slice(1) : ""; };
+function finParseQuick(text, o = {}){
+  const raw = String(text || "").replace(/\s+/g, " ").trim();
+  let s = ` ${raw} `, ns = ` ${norm(raw)} `;
+  if (ns.length !== s.length) s = ns;
+  const cut = (i, len) => { s = s.slice(0, i) + " " + s.slice(i + len); ns = ns.slice(0, i) + " " + ns.slice(i + len); };
+  const t = today();
+  let fecha = t, m;
+  if (!o.noDate){
+    const pats = [
+      [/\s(\d{4})-(\d{1,2})-(\d{1,2})(?=\s)/, x => qkDate(+x[3], +x[2], x[1])],
+      [/\s(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?(?=\s)/, x => qkDate(+x[1], +x[2], x[3])],
+      [/\s(\d{1,2})\s?(?:de\s)?(ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|set(?:iembre)?|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?)\.?(?:\s(?:de\s)?(\d{4}))?(?=\s)/, x => qkDate(+x[1], QK_MONTHS[x[2].slice(0, 3)], x[3])],
+      [/\s(anteayer|antier|ayer|hoy)(?=\s)/, x => addDays(t, x[1] === "hoy" ? 0 : x[1] === "ayer" ? -1 : -2)],
+      [/\s(?:el\s)?(lunes|martes|miercoles|jueves|viernes|sabado|domingo)(\spasado)?(?=\s)/, x => { const back = (parseYmd(t).getDay() - QK_WD[x[1]] + 7) % 7 || (x[2] ? 7 : 0); return addDays(t, -back); }]
+    ];
+    for (const [re, f] of pats){ m = ns.match(re); const v = m && f(m); if (v){ fecha = v; cut(m.index, m[0].length); break; } }
+  }
+  // monto: el candidato con más señales de ser dinero; empate, el mayor
+  const cands = [...ns.matchAll(/\s-?(\$\s?)?(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)(\s?(?:millones|millon|mm|m|mil|lucas|luca|k))?(?=\s)/g)]
+    .map(x => ({x, v: Math.abs(clp(x[0].trim())), w: (x[1] ? 2 : 0) + (x[3] ? 2 : 0) + (/\.\d{3}/.test(x[2]) ? 1 : 0)})).filter(c => c.v > 0);
+  const best = cands.sort((a, b) => b.w - a.w || b.v - a.v)[0];
+  let monto = null;
+  if (best){ monto = Math.round(best.v); cut(best.x.index, best.x[0].length); }
+  const tipo = QK_IN.test(ns) ? "Transferencia recibida" : QK_TR.test(ns) ? "Transferencia" : "Compra";
+  for (let g = 0; g < 4 && (m = ns.match(QK_VERB)); g++) cut(m.index, m[0].length);
+  const ws = s.trim().split(/\s+/).filter(Boolean);
+  while (ws.length && QK_FILL.has(norm(ws[0]))) ws.shift();
+  while (ws.length && QK_FILL.has(norm(ws[ws.length - 1]))) ws.pop();
+  const comercio = qkCap(ws.join(" ").replace(/[,;:]+$/, "")) || (tipo === "Transferencia recibida" ? "Ingreso" : "Gasto");
+  return {fecha, monto, comercio, tipo};
+}
+
+/* Filas pegadas (Excel, Sheets o notas): columnas separadas por tabulación o punto y coma; se reconocen la fecha, el monto,
+   la categoría y el tipo, y el resto es la descripción. Una fila de una sola columna se lee como texto libre. Sin monto, se ignora. */
+const FQ_TIPOS = [["Compra", "gasto o compra"], ["Transferencia", "transferencia"], ["Pago de cuenta", "pago de cuenta"], ["Transferencia recibida", "dinero que recibí"]];
+function fqParseRows(txt){
+  const rows = [];
+  for (const line of String(txt || "").split(/\r?\n/)){
+    const cells = line.split(/\t|;/).map(x => x.trim()).filter(Boolean);
+    if (!cells.length) continue;
+    let q;
+    if (cells.length > 1){
+      let fecha = null, monto = null, neg = false, cat = "", tipo = null; const rest = [];
+      for (const c of cells){
+        const n = norm(c), catM = FIN_CATS.find(x => norm(x) === n);
+        if (!fecha && qkCellDate(c)){ fecha = qkCellDate(c); continue; }
+        if (catM){ cat = catM; continue; }
+        if (monto === null && qkIsMoney(c)){ monto = Math.round(Math.abs(clp(c.replace(/^-/, "")))); neg = /^-/.test(c); continue; }
+        if (/^(ingresos?|abonos?)$/.test(n)){ tipo = "Transferencia recibida"; continue; }
+        if (/^(gastos?|compras?|cargos?|egresos?)$/.test(n)){ tipo = "Compra"; continue; }
+        rest.push(c);
+      }
+      const desc = rest.join(" "), nd = ` ${norm(desc)} `;
+      q = {fecha: fecha || today(), monto, comercio: qkCap(desc) || "Gasto", cat,
+        tipo: tipo || (neg ? "Compra" : QK_IN.test(nd) ? "Transferencia recibida" : QK_TR.test(nd) ? "Transferencia" : "Compra")};
+    } else q = finParseQuick(cells[0]);
+    if (!(q.monto > 0)) continue;
+    const cat = q.tipo === "Transferencia recibida" ? "" : q.cat || finGuessCat(q.comercio, q.tipo);
+    const dup = S.movs.some(m => m.fecha === q.fecha && Math.round(Math.abs(m.monto)) === q.monto);
+    rows.push({...q, cat, dup, on: !dup});
+  }
+  return rows;
+}
+
+/* Filas del plan pegadas: concepto y monto (y, si vienen, tipo, categoría y día). El tipo que falta se deduce del concepto. */
+function planGuessKind(name, cat){
+  const n = ` ${norm(name)} `;
+  if (/\s(sueldo|salario|ingreso|ingresos|bono|honorario|honorarios|aguinaldo|liquido|remuneracion)\s/.test(n)) return "ingreso";
+  if (/\s(ahorro|inversion|inversiones|fintual|apv|deposito|racional)\s/.test(n) || cat === "Inversiones y ahorro") return "ahorro";
+  const c = cat || finGuessCat(name);
+  if (/\s(credito|dividendo|cuota|cuotas|seguro|plan|arriendo|colegio|jardin|gimnasio|gym|isapre|membresia|mensualidad)\s/.test(n)) return "fijo";
+  return c && !finCatFixed(c) ? "variable" : "fijo";
+}
+function planNewRow(kind, name, extra = {}){
+  const r = {id: "pl" + uid(), kind, name: qkCap(name).slice(0, 60), amount: null, match: "", day: null, ...extra};
+  if (kind === "variable" && !planCatOf(r)) r.match = finGuessCat(r.name) || "";
+  return r;
+}
+function planParseRows(txt, kind){
+  const out = [];
+  for (const line of String(txt || "").split(/\r?\n/)){
+    const cells = line.split(/\t|;|\|/).map(x => x.trim()).filter(Boolean);
+    if (!cells.length) continue;
+    let name = "", k = kind || null, match = "", nums = [];
+    if (cells.length === 1){ const q = finParseQuick(cells[0], {noDate: true}); name = q.monto ? q.comercio : ""; if (q.monto) nums.push(q.monto); }
+    else for (const c of cells){
+      const n = norm(c), cat = FIN_CATS.find(x => norm(x) === n);
+      if (!kind && (PLAN_KINDS.includes(n) || /^gastos? (fijo|variable)s?$/.test(n))){ k = n.includes("fijo") ? "fijo" : n.includes("variable") ? "variable" : n; continue; }
+      if (cat){ match = cat; if (!name) name = c; continue; }
+      if (qkIsMoney(c)){ nums.push(Math.abs(clp(c.replace(/^-/, "")))); continue; }
+      const d = n.match(/^(?:dia\s)?(\d{1,2})$/); if (d){ nums.push(+d[1]); continue; }
+      if (!name) name = c;
+    }
+    if (!name || !nums.length) continue;
+    const amount = Math.max(...nums), rest = nums.filter(x => x !== amount), day = rest.find(x => Number.isInteger(x) && x >= 1 && x <= 31) || null;
+    k = k || planGuessKind(name, match);
+    out.push(planNewRow(k, name, {amount: Math.round(amount), match, day: k === "variable" ? null : day}));
+  }
+  return out;
+}
+
+/* Plan inicial desde los movimientos: ingresos que se repiten (2 de los últimos 3 meses), transferencias recurrentes, cobros recurrentes,
+   categorías fijas y, como variables, el promedio de cada categoría en los 3 meses completos anteriores (redondeado hacia arriba a $5.000). */
+function planSeed(){
+  const rows = [], t = today(), from = addDays(t, -95), rf = finRefunds(), ym = t.slice(0, 7);
+  const inc = {};
+  for (const m of S.movs) if (isIncoming(m) && !rf[m.id] && m.fecha >= from) (inc[finKey(m.comercio)] || (inc[finKey(m.comercio)] = [])).push(m);
+  const incs = Object.values(inc).map(xs => {
+    const months = [...new Set(xs.map(m => m.fecha.slice(0, 7)))];
+    return {xs, months, amt: median(months.map(k => sum(xs.filter(m => m.fecha.startsWith(k)), m => Math.abs(m.monto))))};
+  }).filter(g => g.months.length >= 2 && g.amt >= 100000).sort((a, b) => b.amt - a.amt);
+  incs.forEach((g, i) => { const last = g.xs.sort((a, b) => a.fecha.localeCompare(b.fecha))[g.xs.length - 1];
+    rows.push(planNewRow("ingreso", i ? last.comercio : "Sueldo", {match: last.comercio, amount: roundTo(g.amt, 1000), day: Math.round(median(g.xs.map(m => +m.fecha.slice(8))))})); });
+  if (!incs.length) rows.push(planNewRow("ingreso", "Sueldo"));
+  const covered = m => rows.some(r => r.kind === "fijo" && planMatch(r, m));
+  for (const tr of finTransfers()){
+    const amt = (+tr.amount + (+tr.max > +tr.amount ? +tr.max : +tr.amount)) / 2;
+    rows.push(planNewRow("fijo", tr.name, {match: tr.name, amount: roundTo(tr.freq === "mensual" ? amt : amt * 52 / 12, 1000), day: tr.freq === "mensual" ? tr.day : null}));
+  }
+  for (const r of finRecurring()){
+    if (r.late || r.monthly < 1000 || covered(r.last)) continue;
+    rows.push(planNewRow("fijo", r.name, {match: r.name, amount: roundTo(r.monthly, 100), day: r.freq === "mensual" ? +r.last.fecha.slice(8) : null}));
+  }
+  const prev = finPrevMonths(ym), n = prev.length || 1, fixAvg = {}, varAvg = {}, saveAvg = [];
+  for (const bs of prev){
+    const left = bs.filter(m => !covered(m)), tot = finCatTotals(left);
+    for (const [c, v] of Object.entries(tot)) (finCatFixed(c) ? fixAvg : varAvg)[c] = ((finCatFixed(c) ? fixAvg : varAvg)[c] || 0) + v / n;
+  }
+  for (let i = 1; i <= 3; i++){ const k = shiftMonth(ym, -i), P = finPools(k + "-01", k + "-31"); if (P.buys.length) saveAvg.push(sum(P.saves, m => m.monto)); }
+  Object.entries(fixAvg).filter(([, v]) => v >= 3000).sort((a, b) => b[1] - a[1]).forEach(([c, v]) => rows.push(planNewRow("fijo", c, {match: c, amount: roundTo(v, 1000)})));
+  const buds = finCfg().catBudgets || {};
+  const vars = {...Object.fromEntries(Object.entries(varAvg).filter(([c, v]) => v >= 5000 && c !== "Sin categoría")), ...Object.fromEntries(Object.entries(buds).filter(([, v]) => v > 0))};
+  Object.entries(vars).sort((a, b) => b[1] - a[1]).forEach(([c, v]) => rows.push(planNewRow("variable", c, {match: c, amount: buds[c] || ceilTo(v, 5000)})));
+  const sv = saveAvg.length ? sum(saveAvg, x => x) / saveAvg.length : 0;
+  if (sv >= 5000) rows.push(planNewRow("ahorro", "Ahorro e inversión", {match: "Inversiones y ahorro", amount: roundTo(sv, 5000)}));
+  return {payDay: incs.length ? rows[0].day : null, rows};
+}
+const PLAN_TEMPLATE = [["ingreso", "Sueldo"], ["fijo", "Arriendo o dividendo"], ["fijo", "Gastos comunes"], ["fijo", "Luz"], ["fijo", "Agua"], ["fijo", "Gas"], ["fijo", "Internet y celular"],
+  ["variable", "Supermercado"], ["variable", "Transporte"], ["variable", "Restaurantes y bares"], ["variable", "Comida y delivery"], ["variable", "Entretención"], ["variable", "Compras"],
+  ["ahorro", "Ahorro e inversión", "Inversiones y ahorro"]];
+
+/* Ciclo del sueldo: de un pago al siguiente. El pago es el abono de la línea de ingreso principal (la de mayor monto) cerca del día de pago;
+   si no está en los movimientos, el día de pago (un sábado o domingo se adelanta al viernes). */
+function planPayDay(){
+  const p = finPlan(); if (p.payDay) return p.payDay;
+  const inc = p.rows.filter(r => r.kind === "ingreso" && r.amount > 0 && r.day).sort((a, b) => b.amount - a.amount)[0];
+  return inc ? inc.day : null;
+}
+function payNominal(ym, pd){
+  const [y, m] = ym.split("-").map(Number), last = new Date(y, m, 0).getDate(), d = new Date(y, m - 1, pd === "ult" ? last : Math.min(+pd, last));
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+  return ymd(d);
+}
+function payDates(){
+  const pd = planPayDay(); if (!pd) return [];
+  const rf = finRefunds(), main = finPlan().rows.filter(r => r.kind === "ingreso" && r.amount > 0).sort((a, b) => b.amount - a.amount)[0], t = today(), out = [];
+  for (let i = -8; i <= 1; i++){
+    const nom = payNominal(shiftMonth(t.slice(0, 7), i), pd);
+    const got = main ? S.movs.filter(m => isIncoming(m) && !rf[m.id] && inRange(m, addDays(nom, -6), addDays(nom, 4)) && planMatch(main, m)).map(m => m.fecha).sort()[0] : null;
+    out.push({date: got || nom, got: !!got});
+  }
+  return out.filter((x, i) => !i || x.date > out[i - 1].date);
+}
+function payCycles(){
+  const ds = payDates(), t = today(), out = [];
+  for (let i = 0; i + 1 < ds.length; i++){
+    const from = ds[i].date, next = ds[i + 1].date; if (from > t) break;
+    out.push({from, to: addDays(next, -1), next, got: ds[i].got, cur: t < next});
+  }
+  return out;
+}
+// Cifras de un ciclo: lo que entró (la línea de ingreso o, si no aparece, la del plan), gasto, ahorro y el día en que el gasto pasó lo que entró
+function payStats(cy, rows){
+  const t = today(), end = cy.cur ? t : cy.to, R = planReal(rows, cy.from, end), planInc = planTotal(rows, "ingreso");
+  const est = R.incomeIn <= 0, income = (est ? planInc : R.incomeIn) + (R.income - R.incomeIn);
+  const daily = {}; for (const m of [...R.P.buys, ...R.P.saves]) daily[m.fecha] = (daily[m.fecha] || 0) + m.monto;
+  let acc = 0, gone = null;
+  for (let d = cy.from; d <= end; d = addDays(d, 1)){ acc += daily[d] || 0; if (!gone && income > 0 && acc > income) gone = d; }
+  return {R, income, est, spent: R.spent, saved: R.saved, left: income - R.spent - R.saved, gone};
+}
+
+/* Tu plan del mes: ecuación (entra − fijos − variables − ahorro = sin asignar), lo real del mes elegido y la planilla editable */
+const planRealOf = c => planReal(finPlan().rows, c.ym + "-01", `${c.ym}-${pad(c.lastDay)}`);
+function planStatus(r, x, c){
+  const v = x.v, p = r.amount || 0, last = x.movs.map(m => m.fecha).sort().pop();
+  if (r.kind === "variable"){
+    if (!x.cat) return `<span class="small muted">elige su categoría</span>`;
+    if (!p) return "";
+    const pct = v / p * 100, pace = c.isCur ? c.dayCut / c.lastDay * 100 : 100, over = pct > 100 || (c.isCur && pct > pace + 10);
+    return `<span class="small ${over ? "fin-up" : "muted"}">${fmt(pct)}%${c.isCur ? ` con ${fmt(pace)}% del mes` : ""}${p - v > 0 ? ` · quedan ${fmtClp(p - v)}` : ""}</span>`;
+  }
+  const [done, toCome] = {ingreso: ["recibido", "llega"], fijo: ["pagado", "vence"], ahorro: ["apartado", "toca"]}[r.kind];
+  if (p && v >= p * .9) return `<span class="small fin-down">${done}${last ? " el " + fmtShort(last) : ""}</span>${v > p * 1.1 ? ` <span class="small muted">más de lo planeado</span>` : ""}`;
+  if (v > 0) return `<span class="small fin-up">faltan ${fmtClp(p - v)}</span>`;
+  if (!p) return "";
+  if (c.isCur && r.day && r.day > c.dayCut) return `<span class="small muted">${toCome} el ${Math.min(r.day, c.lastDay)}</span>`;
+  if (c.ym > today().slice(0, 7)) return "";
+  return `<span class="small ${c.isCur ? "fin-up" : "muted"}">no lo veo en tus movimientos${r.match ? "" : ": escribe cómo aparece en el banco"}</span>`;
+}
+function renderFinPlan(force, focus){
+  const el = $("#finPlanGrid"), sumEl = $("#finPlanSum"); if (!el) return;
+  const p = finPlan(), c = finMonthCtx(), R = planRealOf(c), mes = new Date(c.y, c.mo - 1, 1).toLocaleDateString("es-CL", {month: "long"});
+  const I = planTotal(p.rows, "ingreso"), F = planTotal(p.rows, "fijo"), V = planTotal(p.rows, "variable"), A = planTotal(p.rows, "ahorro"), L = I - F - V - A;
+  const rv = kind => sum(p.rows.filter(r => r.kind === kind), r => (R.by[r.id] || {}).v || 0);
+  const outT = sum(R.out, o => o.v);
+  // resumen
+  let sh;
+  if (!p.rows.length) sh = `<p style="margin:0 0 10px">Anota lo que te entra, tus gastos fijos, cuánto quieres gastar en lo variable y cuánto ahorrar. Después comparo cada línea con lo que de verdad pasa en tus movimientos y te digo cuánto te queda hasta el próximo sueldo.</p>
+    <div class="row"><button class="btn primary" data-action="plan-seed">Armarlo con mis movimientos</button><button class="btn" data-action="plan-template">Partir con una plantilla</button></div>
+    <p class="small muted" style="margin:8px 0 0">También puedes escribir directo en la planilla de abajo o pegar filas desde Excel (concepto y monto).</p>`;
+  else {
+    const base = Math.max(I, F + V + A, 1), seg = (v, col, lbl) => v > 0 ? `<i style="width:${v / base * 100}%;background:${col}" title="${lbl}: ${fmtClp(v)}"></i>` : "";
+    const pct = v => I ? ` · ${fmt(v / I * 100)}%` : "";
+    const incR = R.incomeIn > 0 ? R.incomeIn : 0, est = !incR && I > 0, inc = (est ? I : incR) + (R.income - R.incomeIn), left = inc - R.spent - R.saved;
+    sh = `<div class="plan-eq">
+        <div><span>Entra</span><strong>${fmtClp(I)}</strong></div><i>−</i>
+        <div><span>Fijos${pct(F)}</span><strong>${fmtClp(F)}</strong></div><i>−</i>
+        <div><span>Variables${pct(V)}</span><strong>${fmtClp(V)}</strong></div><i>−</i>
+        <div><span>Ahorro${pct(A)}</span><strong>${fmtClp(A)}</strong></div><i>=</i>
+        <div class="${L < 0 ? "neg" : "pos"}"><span>${L < 0 ? "Te falta" : "Sin asignar"}</span><strong>${fmtClp(Math.abs(L))}</strong></div>
+      </div>
+      <div class="fv-bar" role="img" aria-label="Reparto del plan">${seg(F, PLAN_COLOR.fijo, "Fijos")}${seg(V, PLAN_COLOR.variable, "Variables")}${seg(A, PLAN_COLOR.ahorro, "Ahorro")}${seg(Math.max(0, L), "var(--line-strong)", "Sin asignar")}</div>
+      <p class="small" style="margin:6px 0 0">${!I ? "Escribe cuánto te entra (tu sueldo líquido) para ver cómo se reparte."
+        : L < 0 ? `<strong class="fin-up">Tu plan gasta ${fmtClp(-L)} más de lo que entra.</strong> Baja algún variable o revisa los fijos que podrías cambiar.`
+        : `Tu plan reparte el ${fmt((F + V + A) / I * 100)}% de lo que entra. Una referencia común: hasta 50% en fijos, 30% en variables y al menos 20% de ahorro.`}</p>
+      <div class="fv-left">${c.isCur ? `En ${esc(mes)}, al día ${c.dayCut}` : `En ${esc(mes)}`}: entró <strong>${fmtClp(inc)}</strong>${est ? ` <span class="small muted">(el sueldo del plan; no lo veo en tus movimientos)</span>` : ""}, gastaste <strong>${fmtClp(R.spent)}</strong>
+        (fijos ${fmtClp(rv("fijo"))}, variables ${fmtClp(rv("variable"))}${outT ? `, fuera del plan <strong>${fmtClp(outT)}</strong>` : ""})${R.saved ? ` y apartaste ${fmtClp(R.saved)}` : ""}.
+        ${inc ? (left >= 0 ? `Te ${c.isCur ? "quedan" : "sobraron"} <strong class="fin-down">${fmtClp(left)}</strong>.` : `Gastaste <strong class="fin-up">${fmtClp(-left)} más</strong> de lo que entró.`) : ""}</div>`;
+  }
+  setHTML(sumEl, sh);
+  $("#finPlanHint").textContent = !p.rows.length ? "lo que entra, fijos, variables y ahorro" : I ? `${L < 0 ? "te faltan" : "sin asignar"} ${fmtClp(Math.abs(L))} · gastado ${fmtClp(R.spent)} de ${fmtClp(F + V)}` : `${p.rows.length} líneas`;
+  setVal("#planPayDay", p.payDay ?? "");
+  // planilla
+  const shops = [...new Set(S.movs.filter(m => m.fecha >= addDays(today(), -120) && !isIncoming(m)).map(m => m.comercio))].sort();
+  const senders = [...new Set(S.movs.filter(isIncoming).map(m => m.comercio))].sort();
+  const spendCats = FIN_CATS.filter(x => !FIN_NOSPEND.has(x));
+  const rowHtml = r => {
+    const x = R.by[r.id] || {movs: [], v: 0}, id = esc(r.id), avg = r.kind === "variable" && !r.amount && x.cat ? planCatAvg(x.cat, c.ym) : null;
+    const match = r.kind === "variable"
+      ? `<select class="pl-match" data-f="match" aria-label="Categoría de ${esc(r.name)}"><option value="">elige una categoría</option>${spendCats.map(k => `<option${k === x.cat ? " selected" : ""}>${esc(k)}</option>`).join("")}</select>`
+      : `<input class="pl-match" data-f="match" value="${esc(r.match || "")}" list="${r.kind === "ingreso" ? "planSenders" : "planShops"}" placeholder="${r.kind === "ingreso" ? "remitente en el banco" : "comercio o categoría"}" aria-label="Cómo reconocer ${esc(r.name)} en tus movimientos">`;
+    const bar = r.kind === "variable" && r.amount ? `<div class="pl-bar"><i style="width:${clamp(x.v / r.amount * 100, 0, 100)}%;background:${x.v > r.amount ? "var(--danger)" : "var(--fin)"}"></i></div>` : "";
+    return `<div class="plan-r" data-id="${id}">
+      <input class="pl-name" data-f="name" value="${esc(r.name)}" aria-label="Concepto">
+      <input class="pl-amt" data-f="amount" inputmode="numeric" value="${r.amount ? fmt(r.amount) : ""}" placeholder="${avg ? "~" + fmt(ceilTo(avg, 5000)) : "monto"}" aria-label="Monto de ${esc(r.name)}"${avg ? ` title="tu promedio de los últimos meses: ${fmtClp(avg)}"` : ""}>
+      <div class="pl-real"><strong>${x.v || r.amount ? fmtClp(x.v) : ""}</strong> ${planStatus(r, x, c)}${bar}</div>
+      ${match}
+      ${r.kind === "variable" ? `<span class="pl-day"></span>` : `<input class="pl-day" data-f="day" inputmode="numeric" value="${r.day || ""}" placeholder="día" aria-label="Día del mes de ${esc(r.name)}">`}
+      <select class="pl-kind" data-f="kind" aria-label="Tipo de ${esc(r.name)}">${PLAN_KINDS.map(k => `<option value="${k}"${k === r.kind ? " selected" : ""}>${k}</option>`).join("")}</select>
+      <button class="btn ghost small danger pl-del" data-action="plan-del" data-id="${id}" aria-label="Quitar ${esc(r.name)}" title="Quitar">×</button>
+    </div>`;
+  };
+  const sec = kind => {
+    const rs = p.rows.filter(r => r.kind === kind);
+    return `<div class="plan-sec"><div class="plan-sh"><h4><i style="background:${PLAN_COLOR[kind] || "var(--ink)"}"></i>${PLAN_HEAD[kind]}</h4><span class="small muted">plan <strong>${fmtClp(planTotal(p.rows, kind))}</strong> · real ${fmtClp(rv(kind))}</span></div>
+      ${rs.map(rowHtml).join("")}
+      <div class="plan-r plan-add"><input class="pl-name" data-new="${kind}" placeholder="+ ${PLAN_ADD[kind]}" aria-label="${PLAN_ADD[kind]}"${kind === "variable" ? ` list="planCats"` : ""}></div></div>`;
+  };
+  const out = R.out.length ? `<div class="plan-sec"><div class="plan-sh"><h4><i style="background:var(--danger)"></i>Fuera del plan</h4><span class="small muted">real <strong>${fmtClp(outT)}</strong></span></div>
+    ${R.out.map(o => `<div class="plan-out"><div><strong>${esc(o.cat)}</strong> <span class="small muted">${o.shops.map(s => `${esc(s.name)}${s.n > 1 ? ` ×${s.n}` : ""} ${fmtClp(s.monto)}`).join(", ")}</span></div>
+      <span class="n">${fmtClp(o.v)}</span>${o.cat !== "Sin categoría" ? `<button class="btn small" data-action="plan-add-cat" data-cat="${esc(o.cat)}">Agregar al plan</button>` : `<span></span>`}</div>`).join("")}
+    <p class="small muted" style="margin:6px 0 0">Gasto de ${esc(mes)} que no cae en ninguna línea: es justo la plata que se va sin que la hayas decidido.</p></div>` : "";
+  const html = `<div class="plan-r plan-hd" aria-hidden="true"><span>Concepto</span><span class="n">Plan</span><span>Real en ${esc(mes)}</span><span>Se reconoce por</span><span>Día</span><span>Tipo</span><span></span></div>
+    ${PLAN_KINDS.map(sec).join("")}${out}
+    <datalist id="planShops">${[...spendCats, ...shops].map(s => `<option value="${esc(s)}">`).join("")}</datalist>
+    <datalist id="planSenders">${senders.map(s => `<option value="${esc(s)}">`).join("")}</datalist>
+    <datalist id="planCats">${spendCats.map(s => `<option value="${esc(s)}">`).join("")}</datalist>`;
+  if (force){ el.innerHTML = html; if (focus){ const t = el.querySelector(`.plan-r[data-id="${CSS.escape(focus.id)}"] [data-f="${focus.f}"]`) || el.querySelector(`[data-new="${focus.kind}"]`); if (t){ t.focus(); if (t.select) t.select(); } } }
+  else setHTML(el, html);
+}
+// Edición de una celda: crea la línea (fila "agregar"), o guarda el campo. Los cambios de estructura redibujan la planilla.
+function planCellChange(t){
+  const kind = t.dataset.new;
+  if (kind){
+    const name = t.value.trim(); if (!name) return;
+    const r = planNewRow(kind, name); t.value = "";
+    planSave(p => { p.rows.push(r); return p; });
+    renderFinPlan(true, {id: r.id, f: "amount"});
+    return;
+  }
+  const id = t.closest(".plan-r")?.dataset.id, f = t.dataset.f; if (!id || !f) return;
+  let v = t.value.trim();
+  if (f === "amount"){ const x = clp(v); v = x > 0 ? Math.round(x) : null; t.value = v ? fmt(v) : ""; }
+  else if (f === "day"){ const x = parseInt(v, 10); v = x >= 1 && x <= 31 ? x : null; t.value = v || ""; }
+  else if (f === "name" && !v){ t.value = (finPlan().rows.find(r => r.id === id) || {}).name || ""; return; }
+  else if (f === "match"){ const cat = FIN_CATS.find(x => norm(x) === norm(v)); if (cat) v = cat; }
+  planSave(p => {
+    const r = p.rows.find(x => x.id === id); if (!r) return p;
+    r[f] = v;
+    if (f === "kind" && v === "variable" && !planCatOf(r)){ r.match = finGuessCat(r.name) || ""; r.day = null; }
+    if (f === "kind" && v !== "variable" && planCatOf(r) && r.match === r.name) r.match = "";
+    return p;
+  });
+  if (f === "kind" || f === "match") renderFinPlan(true, {id, f});
+}
+// Enter baja a la misma columna de la fila siguiente; en la fila "agregar", crea la línea
+function planGridKey(e){
+  const t = e.target; if (e.key !== "Enter" || t.tagName !== "INPUT") return;
+  e.preventDefault();
+  if (t.dataset.new){ t.blur(); return; }
+  const next = t.closest(".plan-r").nextElementSibling;
+  const to = next && (next.querySelector(`[data-f="${t.dataset.f}"]`) || next.querySelector("input"));
+  if (to){ to.focus(); to.select && to.select(); } else t.blur();
+}
+function planAddText(txt, kind){
+  const rows = planParseRows(txt, kind);
+  if (!rows.length){ toast("No encontré filas con concepto y monto."); return false; }
+  planSave(p => { p.rows.push(...rows); return p; });
+  renderFinPlan(true);
+  toast(`Agregué ${rows.length} ${rows.length === 1 ? "línea" : "líneas"} al plan. Revisa el tipo de cada una.`);
+  return true;
+}
+function planPasteEv(e){
+  const txt = (e.clipboardData && e.clipboardData.getData("text")) || "";
+  if (!/[\n\t]/.test(txt.trim())) return;
+  e.preventDefault();
+  planAddText(txt, e.target.dataset.new || null);
+}
+
+/* Tu sueldo: lo que queda del ciclo actual por día hasta el próximo pago, a qué ritmo vas y cómo terminaron los ciclos anteriores */
+function renderFinPay(){
+  const box = $("#finPay"), p = finPlan(), cys = payCycles(), cur = cys.find(x => x.cur);
+  box.hidden = !planOn() || !planTotal(p.rows, "ingreso");
+  if (box.hidden) return;
+  if (!cur){ setHTML($("#finPayBody"), `<p class="empty">Indica el día en que te pagan (en tu plan, junto a la línea del sueldo o en "Te pagan el") y te muestro cuánto te queda hasta el próximo pago.</p>`); return; }
+  const t = today(), st = payStats(cur, p.rows), R = st.R;
+  const pend = sum(p.rows.filter(r => r.kind === "fijo" || r.kind === "ahorro"), r => Math.max(0, (r.amount || 0) - ((R.by[r.id] || {}).v || 0)));
+  const pendL = p.rows.filter(r => (r.kind === "fijo" || r.kind === "ahorro") && (r.amount || 0) - ((R.by[r.id] || {}).v || 0) > 0);
+  const avail = st.left - pend, daysLeft = Math.max(1, daysBetween(t, cur.next)), perDay = avail / daysLeft;
+  const fixPaid = sum(p.rows.filter(r => r.kind === "fijo"), r => (R.by[r.id] || {}).v || 0), elapsed = daysBetween(cur.from, t) + 1, rate = Math.max(0, st.spent - fixPaid) / elapsed;
+  const runOut = avail <= 0 ? t : rate > 0 ? addDays(t, Math.floor(avail / rate)) : null;
+  const short = runOut && runOut < cur.next ? daysBetween(runOut, cur.next) : 0;
+  const usedPct = st.income ? clamp((st.spent + st.saved + pend) / st.income * 100, 0, 100) : 0, timePct = clamp(elapsed / (elapsed + daysBetween(t, cur.next)) * 100, 0, 100);
+  const verdict = avail <= 0 ? `<strong class="fin-up">Ya no te queda para variables</strong> contando los fijos que faltan: cada gasto desde hoy sale de tu ahorro o del crédito.`
+    : short ? `A tu ritmo de <strong>${fmtClp(rate)} al día</strong> en variables te alcanza hasta el <strong>${fmtShort(runOut)}</strong>: <strong class="fin-up">${days_(short)} antes del sueldo</strong>. Para llegar, baja a ${fmtClp(perDay)} al día.`
+    : `A tu ritmo de ${fmtClp(rate)} al día en variables llegas al sueldo con unos <strong class="fin-down">${fmtClp(avail - rate * daysLeft)}</strong> de sobra.`;
+  const hist = cys.filter(x => !x.cur).slice(-6).reverse().map(x => ({x, s: payStats(x, p.rows)})).filter(h => h.s.spent > 0);
+  setHTML($("#finPayBody"), `<div class="fin-hero-top"><div>
+      <div class="small muted">Ciclo del ${fmtShort(cur.from)} al ${fmtShort(cur.to)} · te pagan ${daysBetween(t, cur.next) === 1 ? "mañana" : `el ${fmtShort(cur.next)}, en ${days_(daysBetween(t, cur.next))}`}</div>
+      <div class="pay-big ${avail < 0 ? "fin-up" : ""}">${fmtClp(Math.max(0, perDay))} <span class="pay-unit">al día</span></div>
+      <p class="fin-verdict">Te quedan <strong>${fmtClp(avail)}</strong> para lo variable hasta el próximo sueldo. ${verdict}</p></div></div>
+    <div class="pay-bars">
+      <div class="pay-bar"><span>Plata usada</span><div class="t"><i style="width:${usedPct}%;background:${usedPct > timePct + 5 ? "var(--danger)" : "var(--fin)"}"></i></div><span class="n">${fmt(usedPct)}%</span></div>
+      <div class="pay-bar"><span>Ciclo transcurrido</span><div class="t"><i style="width:${timePct}%;background:var(--muted)"></i></div><span class="n">${fmt(timePct)}%</span></div>
+    </div>
+    <p class="small muted" style="margin:0">Entró ${fmtClp(st.income)}${st.est ? " (el sueldo del plan: aún no lo veo en tus movimientos)" : ""} − gastaste ${fmtClp(st.spent)}${st.saved ? ` − apartaste ${fmtClp(st.saved)}` : ""}${pend ? ` − por pagar ${fmtClp(pend)} (${pendL.slice(0, 4).map(r => esc(r.name)).join(", ")}${pendL.length > 4 ? "…" : ""})` : ""}.</p>
+    ${hist.length ? `<h4 class="mt" style="margin-bottom:4px">Ciclos anteriores</h4><div class="scroll"><table><thead><tr><th>Ciclo</th><th class="n">Entró</th><th class="n">Gastaste</th><th class="n">Apartaste</th><th>Cómo terminó</th></tr></thead><tbody>${hist.map(({x, s}) => `<tr>
+      <td style="white-space:nowrap">${fmtShort(x.from)} – ${fmtShort(x.to)}</td><td class="n">${fmtClp(s.income)}${s.est ? `<div class="small muted">del plan</div>` : ""}</td><td class="n">${fmtClp(s.spent)}</td><td class="n">${s.saved ? fmtClp(s.saved) : "—"}</td>
+      <td>${s.left >= 0 ? `<span class="fin-down">sobraron ${fmtClp(s.left)}</span>` : `<span class="fin-up">faltaron ${fmtClp(-s.left)}</span>${s.gone ? `<div class="small muted">se acabó el ${fmtShort(s.gone)}, ${days_(daysBetween(s.gone, x.next))} antes del sueldo</div>` : ""}`}</td></tr>`).join("")}</tbody></table></div>` : ""}`);
+}
+
+/* Anotar rápido: una línea de texto libre con categoría y tipo deducidos (se pueden cambiar); Enter agrega. También edita un movimiento a mano. */
+function fqUpdate(){
+  const txt = $("#fqText").value, q = finParseQuick(txt), cs = $("#fqCat"), ts = $("#fqTipo");
+  if (!ts.dataset.touched) ts.value = q.tipo;
+  const tipo = ts.value, inc = tipo === "Transferencia recibida", guess = inc ? "" : finGuessCat(q.comercio, tipo);
+  S.fqGuess = guess;
+  if (!cs.dataset.touched) cs.value = guess;
+  cs.disabled = inc;
+  const day = q.fecha === today() ? "hoy" : q.fecha === addDays(today(), -1) ? "ayer" : fmtShort(q.fecha);
+  $("#fqPrev").innerHTML = !txt.trim() ? `Escribe como en tus notas: <em>almuerzo 8.500</em>, <em>uber 4.500 ayer</em>, <em>12/11 feria 15 lucas</em>, <em>sueldo 1.850.000</em>.`
+    : q.monto > 0 ? `${inc ? "Ingreso" : FQ_TIPOS.find(x => x[0] === tipo)[1].replace(/^./, ch => ch.toUpperCase())} de <strong>${fmtClp(q.monto)}</strong> · ${esc(q.comercio)} · ${day}${cs.value && !inc ? ` · ${esc(cs.value)}` : ""} <span class="muted">· Enter para ${S.fqEdit ? "guardar" : "agregar"}</span>`
+    : `<span class="muted">Falta el monto: 8.500, 8500, 8,5 lucas o 1,2M.</span>`;
+}
+function fqReset(){
+  $("#fqText").value = ""; delete $("#fqCat").dataset.touched; delete $("#fqTipo").dataset.touched;
+  S.fqEdit = null; $("#fqBtn").textContent = "Agregar"; $("#fqCancel").hidden = true; fqUpdate();
+}
+const finSortMovs = () => S.movs.sort((a, b) => (b.fecha + (b.hora || "")).localeCompare(a.fecha + (a.hora || "")));
+async function fqAdd(){
+  const q = finParseQuick($("#fqText").value), tipo = $("#fqTipo").value, inc = tipo === "Transferencia recibida", cat = inc ? "" : $("#fqCat").value;
+  if (!(q.monto > 0)){ toast("Falta el monto."); $("#fqText").focus(); return; }
+  const body = {fecha: q.fecha, comercio: q.comercio, monto: q.monto, tipo, cat: cat || null}, btn = $("#fqBtn"), edit = S.fqEdit;
+  btn.disabled = true;
+  try {
+    if (edit){ const r = await finApi("PUT", "movs/" + encodeURIComponent(edit), body); const i = S.movs.findIndex(x => x.id === edit); if (i >= 0) S.movs[i] = {...S.movs[i], ...r.mov}; }
+    else { const r = await finApi("POST", "movs", body); S.movs.push(r.mov); }
+    finSortMovs();
+    const learn = cat && cat !== S.fqGuess;
+    fqReset();
+    if (learn) saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [finKey(q.comercio)]: cat}}; });
+    else renderFin();
+    toast(`${edit ? "Guardé" : "Anoté"} ${q.comercio}, ${fmtClp(q.monto)}${q.fecha.slice(0, 7) !== finMonth() ? `, el ${fmtShort(q.fecha)}` : ""}.`);
+    $("#fqText").focus();
+  } catch (e){ toast("No se pudo guardar: " + e.message); }
+  finally { btn.disabled = false; }
+}
+function fqPasteRender(){
+  const rows = S.fqRows || [], on = rows.filter(r => r.on).length, dups = rows.filter(r => r.dup).length;
+  setHTML($("#fqPasteOut"), !rows.length ? ($("#fqPaste").value.trim() ? `<p class="small muted">No encuentro filas con monto.</p>` : "") : `<p class="small" style="margin:8px 0">${rows.length} ${rows.length === 1 ? "fila" : "filas"} por ${fmtClp(sum(rows.filter(r => r.on), r => r.monto))}${dups ? `; ${dups} ${dups === 1 ? "parece repetida" : "parecen repetidas"} (mismo día y monto que un movimiento que ya tienes) y ${dups === 1 ? "quedó" : "quedaron"} sin marcar` : ""}.</p>
+    <div class="scroll"><table><thead><tr><th></th><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${rows.map((r, i) => `<tr>
+      <td><input type="checkbox" data-fqi="${i}" data-f="on"${r.on ? " checked" : ""} aria-label="Agregar ${esc(r.comercio)}"></td>
+      <td style="white-space:nowrap">${fmtShort(r.fecha)}</td>
+      <td>${esc(r.comercio)}${r.dup ? `<div class="small" style="color:var(--danger)">¿repetido?</div>` : ""}</td>
+      <td><select data-fqi="${i}" data-f="tipo" aria-label="Tipo">${optsHtml(FQ_TIPOS, r.tipo)}</select></td>
+      <td><select data-fqi="${i}" data-f="cat" aria-label="Categoría"${r.tipo === "Transferencia recibida" ? " disabled" : ""}><option value="">sin categoría</option>${FIN_CATS.map(x => `<option${x === r.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}</select></td>
+      <td class="n">${fmtClp(r.monto)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="row mt"><button class="btn primary" data-action="fq-paste-add"${on ? "" : " disabled"}>Agregar ${on} ${on === 1 ? "movimiento" : "movimientos"}</button><button class="btn ghost" data-action="fq-paste-clear">Limpiar</button></div>`);
+}
+async function fqPasteAdd(){
+  const rows = (S.fqRows || []).filter(r => r.on); if (!rows.length) return;
+  const btn = document.querySelector('[data-action="fq-paste-add"]'); if (btn) btn.disabled = true;
+  try {
+    const r = await finApi("POST", "movs", {movs: rows.map(x => ({fecha: x.fecha, comercio: x.comercio, monto: x.monto, tipo: x.tipo, cat: x.tipo === "Transferencia recibida" ? null : x.cat || null}))});
+    S.movs.push(...r.movs); finSortMovs();
+    S.fqRows = []; $("#fqPaste").value = ""; fqPasteRender(); renderFin();
+    toast(`Agregué ${r.movs.length} ${r.movs.length === 1 ? "movimiento" : "movimientos"}.`);
+  } catch (e){ toast("No se pudieron agregar: " + e.message); if (btn) btn.disabled = false; }
+}
+// Movimientos del mes con los filtros de la lista
+function finListFiltered(){
+  const multi = finMultiCard(), ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value, gf = $("#finGroupF").value, kf = multi ? $("#finCardF").value : "";
+  const all = S.movs.filter(m => m.fecha.startsWith(ym));
+  const part = m => gf ? (isPurchase(m) ? finSplitGroups(m)[gf] : 0) : m.monto;
+  const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
+    && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0) && (!kf || finCardKind(m) === kf));
+  return {multi, ym, q, cf, gf, kf, all, list, part};
+}
+function finCsv(){
+  const {list, ym} = finListFiltered(), cell = v => { const s = String(v ?? ""); return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const lines = [["Fecha", "Hora", "Descripción", "Tipo", "Categoría", "Fijo o variable", "Medio de pago", "Gasto", "Ingreso"].join(";"),
+    ...list.map(m => [m.fecha, m.hora || "", m.comercio, m.tipo, isIncoming(m) ? "" : finCat(m), isPurchase(m) ? (finIsFixed(m) ? "fijo" : "variable") : "", finCardLabel(m),
+      isIncoming(m) ? "" : m.moneda === "CLP" ? Math.round(m.monto) : `${m.monto} ${m.moneda}`, isIncoming(m) ? Math.round(Math.abs(m.monto)) : ""].map(cell).join(";"))];
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], {type: "text/csv;charset=utf-8"}));
+  a.download = `lincoyan-movimientos-${ym}.csv`; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
 /* Para mirar: solo lo que pide atención, ordenado por importancia (máximo 6) */
 const finGone = m => {
   if (m.banco_id || m.fuente !== "alerta") return false;
@@ -3725,7 +4361,7 @@ const finGone = m => {
   return !!(finCardKind(m) === "debito" ? cfg.cuentaHasta && m.fecha >= cfg.cuentaDesde && m.fecha <= addDays(cfg.cuentaHasta, -5) : al && m.fecha <= addDays(al, -3));
 };
 function renderFinWatch(c, tree, cmp){
-  const out = [], cfg = finCfg(), buds = cfg.catBudgets || {}, pace = c.dayCut / c.lastDay * 100, byCat = finCatTotals(c.buys);
+  const out = [], buds = finCatBudgets(), pace = c.dayCut / c.lastDay * 100, byCat = finCatTotals(c.buys);
   for (const [cat, b] of Object.entries(buds)){
     if (!b) continue;
     const v = byCat[cat] || 0, pct = v / b * 100;
@@ -3759,7 +4395,7 @@ function renderFinWatch(c, tree, cmp){
 /* Gasto acumulado día a día: este mes, el mes anterior y el ritmo del presupuesto (recta de 0 al tope) */
 function finCumSeries(c){
   const acc = list => { const a = new Array(32).fill(0); for (const m of list) a[+m.fecha.slice(8)] += m.monto; for (let i = 1; i < 32; i++) a[i] += a[i - 1]; return a; };
-  return {cur: acc(c.buys), prev: acc(finBuysOf(c.prevYm)), prevLast: new Date(c.y, c.mo - 1, 0).getDate(), end: c.dayCut, b: finCfg().budget};
+  return {cur: acc(c.buys), prev: acc(finBuysOf(c.prevYm)), prevLast: new Date(c.y, c.mo - 1, 0).getDate(), end: c.dayCut, b: finBudget()};
 }
 function finCumChart(c, width){
   const {cur, prev, prevLast, end, b} = finCumSeries(c), n = c.lastDay;
@@ -3882,7 +4518,7 @@ function finSyncCats(){
   FIN_NOSPEND = new Set([...FIN_NOSPEND_BASE, ...mine.filter(c => c.spend === false).map(c => c.name)]);
   const fill = (sel, head) => { const el = $(sel); if (!el || document.activeElement === el) return; const v = el.value; el.innerHTML = head + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join(""); el.value = FIN_CATS.includes(v) || !v || v === "-" ? v : ""; };
   fill("#finRuleCat", ""); fill("#finCatF", `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>`);
-  fill("#finMovCat", `<option value="">según la descripción</option>`);
+  fill("#fqCat", `<option value="">sin categoría</option>`);
 }
 const finNoSpend = m => FIN_NOSPEND.has(finCat(m));
 // categoría efectiva de un producto detallado
@@ -3975,14 +4611,9 @@ function finAnomalies(c){
 }
 /* Lista de movimientos del mes con búsqueda (comercio, detalle del banco o producto) y filtro de categoría */
 function renderFinList(){
-  const multi = finMultiCard(), ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value, gf = $("#finGroupF").value;
-  $("#finCardF").parentElement.hidden = !multi;
-  const kf = multi ? $("#finCardF").value : "";
-  const all = S.movs.filter(m => m.fecha.startsWith(ym));
   // con destino elegido: solo compras con una parte en ese destino, y se muestra esa parte
-  const part = m => gf ? (isPurchase(m) ? finSplitGroups(m)[gf] : 0) : m.monto;
-  const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
-    && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0) && (!kf || finCardKind(m) === kf));
+  const {multi, q, cf, gf, kf, all, list, part} = finListFiltered();
+  $("#finCardF").parentElement.hidden = !multi;
   const shown = sum(list.filter(isPurchase), part);
   $("#finListSum").textContent = `${all.length} ${all.length === 1 ? "movimiento" : "movimientos"} en el mes`;
   setHTML($("#finList"), list.length ? `${q || cf || gf || kf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${gf.toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
@@ -4009,7 +4640,7 @@ function finAmountNote(m){
 function finStatusHtml(m){
   if (m.banco_id) return m.pendiente ? `<div class="small muted">en cartola, por confirmar</div>` : "";
   if (m.fuente === "correo") return `<div class="small muted">del correo del banco, aún no está en la cartola</div>`;
-  if (m.fuente === "manual") return `<div class="small muted">agregado a mano <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
+  if (m.fuente === "manual") return `<div class="small muted">agregado a mano <button class="btn ghost small" data-action="fq-edit" data-id="${esc(m.id)}">Editar</button><button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
   if (m.fuente !== "alerta") return "";
   if (finGone(m)) return `<div class="small" style="color:var(--danger)">no aparece en la cartola <button class="btn ghost small danger" data-action="fin-mov-del" data-id="${esc(m.id)}">Borrar</button></div>`;
   return `<div class="small muted">solo alerta</div>`;
@@ -4334,12 +4965,12 @@ function finMonthFacts(ym){
   return {
     mes: ym, gasto: sum(cur, m => m.monto), compras: cur.filter(m => m.monto > 0).length, devolucionesDescontadas: -sum(cur.filter(m => m.monto < 0), m => m.monto), gastoMesAnterior: sum(prev, m => m.monto),
     gastoPorMedioDePago: Object.fromEntries(Object.keys(FIN_MEDIO).map(k => [FIN_MEDIO[k], sum(cur.filter(m => finCardKind(m.refundOf || m) === k), m => m.monto)])),
-    porCategoria: Object.entries(cc).sort((a, b) => b[1] - a[1]).map(([c, v]) => ({categoria: c, monto: v, mesAnterior: pc[c] || 0, tope: finCfg().catBudgets[c] || null})),
+    porCategoria: Object.entries(cc).sort((a, b) => b[1] - a[1]).map(([c, v]) => ({categoria: c, monto: v, mesAnterior: pc[c] || 0, tope: finCatBudgets()[c] || null})),
     principalesComercios: Object.entries(byMerch).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c, v]) => ({comercio: c, monto: v})),
     comerciosNuevos: [...new Set(cur.filter(m => !seenBefore.has(finKey(m.comercio))).map(m => m.comercio))].slice(0, 10),
     recurrentes: finRecurring().map(r => ({comercio: r.name, frecuencia: r.freq, monto: r.amount, subioPct: r.up ? Math.round(r.up) : 0})),
     cuotasPorPagar: Math.round(sum(finInstallments(), g => g.pending)),
-    presupuesto: finCfg().budget
+    presupuesto: finBudget()
   };
 }
 function renderFinReview(){
@@ -4366,7 +4997,18 @@ Formato: 4 a 6 viñetas en markdown. Destaca lo que cambió frente al mes anteri
 const FIN_UNITS = {un: 0, kg: 1000, g: 1, L: 1000, ml: 1};
 const FIN_PER = ["un", "kg", "L"];
 const foodOf = id => id ? foods().find(f => f.id === id) || null : null;
-const clp = v => { if (v === null || v === undefined || v === "") return null; const x = parseFloat(String(v).replace(/[$\s]/g, "").replace(/\./g, "").replace(",", ".")); return isFinite(x) ? x : null; };
+// Monto en pesos: "450.000", "$450.000", "8,5" y con sufijo "450 mil", "15 lucas", "8,5k", "1,2M" o "2 millones"
+const clp = v => {
+  if (v === null || v === undefined || v === "") return null;
+  let s = norm(String(v)).replace(/[$\s]/g, ""), k = 1;
+  const suf = s.match(/(millones|millon|mm|m|mil|lucas|luca|k)$/);
+  if (suf && /\d$/.test(s.slice(0, -suf[1].length))){
+    k = /^(mil|lucas|luca|k)$/.test(suf[1]) ? 1e3 : 1e6; s = s.slice(0, -suf[1].length);
+    if (/^-?\d+[.,]\d{1,2}$/.test(s)) s = s.replace(".", ",");
+  }
+  const x = parseFloat(s.replace(/\./g, "").replace(",", "."));
+  return isFinite(x) ? x * k : null;
+};
 const finLiquid = it => it.unit === "L" || it.unit === "ml" || it.per === "L" || (it.unit === "un" && it.eachUnit === "ml");
 // Gramos o mililitros comprados: {v, est}; est = sale de la porción típica del alimento
 function finBase(it){
@@ -6342,17 +6984,51 @@ const actions = {
       return {...c, cats, rules: (c.rules || []).filter(r => r.cat !== name), myCats: (c.myCats || []).filter(x => x.name !== name)};
     });
   },
-  "fin-mov-add": async () => {
-    const fecha = $("#finMovDate").value, comercio = $("#finMovName").value.trim(), monto = clp($("#finMovAmt").value), tipo = $("#finMovTipo").value, cat = $("#finMovCat").value;
-    if (!fecha || !comercio || !(monto > 0)){ toast("Completa la fecha, la descripción y el monto."); return; }
-    try {
-      const r = await finApi("POST", "movs", {fecha, comercio, monto: Math.round(monto), tipo});
-      S.movs.push(r.mov);
-      $("#finMovName").value = ""; $("#finMovAmt").value = "";
-      if (cat && tipo !== "Transferencia recibida") saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [finKey(comercio)]: cat}}; });
-      else renderFin();
-      toast(`Movimiento agregado: ${comercio}, ${fmtClp(monto)}.`);
-    } catch (e) { toast("No se pudo agregar: " + e.message); }
+  "fq-add": () => fqAdd(),
+  "fq-cancel": () => fqReset(),
+  "fq-edit": el => {
+    const m = S.movs.find(x => x.id === el.dataset.id); if (!m) return;
+    const ts = $("#fqTipo"), cs = $("#fqCat");
+    S.fqEdit = m.id;
+    $("#fqText").value = `${m.fecha.slice(8)}/${m.fecha.slice(5, 7)}/${m.fecha.slice(0, 4)} ${m.comercio} ${fmt(Math.abs(m.monto))}`;
+    ts.value = m.tipo; ts.dataset.touched = 1; cs.value = finCat(m) || ""; cs.dataset.touched = 1;
+    $("#fqBtn").textContent = "Guardar cambios"; $("#fqCancel").hidden = false; fqUpdate();
+    $("#finQuick").scrollIntoView({block: "center", behavior: "smooth"}); $("#fqText").focus();
+  },
+  "fq-paste-add": () => fqPasteAdd(),
+  "fq-paste-clear": () => { $("#fqPaste").value = ""; S.fqRows = []; fqPasteRender(); },
+  "fin-csv": () => finCsv(),
+  "plan-seed": () => {
+    const seed = planSeed(), cur = finPlan(), key = r => r.kind + "|" + finKey(planCatOf(r) || r.match || r.name);
+    const have = new Set(cur.rows.map(key)), fresh = seed.rows.filter(r => !have.has(key(r)) && (r.amount > 0 || !cur.rows.some(x => x.kind === r.kind)));
+    if (!fresh.length){ toast("Tu plan ya tiene todo lo que encontré en tus movimientos."); return; }
+    planSave(p => ({payDay: p.payDay ?? seed.payDay, rows: [...p.rows, ...fresh]}));
+    renderFinPlan(true);
+    toast(`Agregué ${fresh.length} ${fresh.length === 1 ? "línea" : "líneas"} desde tus movimientos. Ajusta los montos a lo que quieres gastar.`);
+  },
+  "plan-template": () => {
+    planSave(p => ({...p, rows: [...p.rows, ...PLAN_TEMPLATE.map(([k, n, m]) => planNewRow(k, n, m ? {match: m} : {}))]}));
+    renderFinPlan(true, {id: (finPlan().rows[0] || {}).id, f: "amount"});
+  },
+  "plan-del": el => {
+    const r = finPlan().rows.find(x => x.id === el.dataset.id); if (!r) return;
+    if (r.amount && !confirm(`¿Quitar "${r.name}" (${fmtClp(r.amount)}) del plan?`)) return;
+    planSave(p => ({...p, rows: p.rows.filter(x => x.id !== r.id)}));
+    renderFinPlan(true);
+  },
+  "plan-clear": () => {
+    if (!finPlan().rows.length || !confirm("¿Borrar todas las líneas del plan? Tus movimientos no se tocan.")) return;
+    planSave(() => ({payDay: null, rows: []}));
+    renderFinPlan(true);
+  },
+  "plan-paste": () => { if (planAddText($("#planPaste").value, null)) $("#planPaste").value = ""; },
+  "plan-add-cat": el => {
+    const cat = el.dataset.cat, c = finMonthCtx(), avg = planCatAvg(cat, c.ym), r = planNewRow("variable", cat, {match: cat});
+    const R = planRealOf(c), cur = (R.out.find(o => o.cat === cat) || {}).v || 0;
+    r.amount = ceilTo(Math.max(avg || 0, c.isCur ? cur / Math.max(1, c.dayCut) * c.lastDay : cur, 5000), 5000);
+    planSave(p => { p.rows.push(r); return p; });
+    renderFinPlan(true, {id: r.id, f: "amount"});
+    toast(`${cat} quedó en tu plan con ${fmtClp(r.amount)} al mes. Cámbialo si quieres gastar menos.`);
   },
   "fin-tr-new": () => trOpenForm("new", {freq: "semanal", day: 1, hour: 10}),
   "fin-tr-edit": el => { const t = finTransfers().find(x => x.id === el.dataset.id); if (t) trOpenForm(t.id, {...t}); },
@@ -7203,7 +7879,25 @@ function wireUI(){
   $("#cartolaFile").addEventListener("change", e => importCartola(e.target.files[0]));
   $("#finDetPhoto").addEventListener("change", e => { const f = [...e.target.files].slice(0, 3); $("#finDetPhotoName").textContent = f.map(x => x.name).join(", ") + (e.target.files.length > 3 ? " (solo se leen las 3 primeras)" : ""); });
   $("#finMyCatGroup").innerHTML = FIN_TREE_BASE.map(([g]) => `<option${g === "Otros" ? " selected" : ""}>${esc(g)}</option>`).join("");
-  $("#finMovDate").value = today();
+  // Anotar rápido: vista previa al escribir, Enter agrega, Escape cancela la edición
+  $("#fqText").addEventListener("input", fqUpdate);
+  $("#fqText").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); fqAdd(); } else if (e.key === "Escape" && S.fqEdit) fqReset(); });
+  ["#fqCat", "#fqTipo"].forEach(q => $(q).addEventListener("change", e => { e.target.dataset.touched = 1; fqUpdate(); }));
+  $("#fqPaste").addEventListener("input", () => { S.fqRows = fqParseRows($("#fqPaste").value); fqPasteRender(); });
+  $("#fqPasteOut").addEventListener("change", e => {
+    const t = e.target, r = (S.fqRows || [])[+t.dataset.fqi]; if (!r) return;
+    if (t.dataset.f === "on") r.on = t.checked; else r[t.dataset.f] = t.value;
+    if (t.dataset.f === "tipo" && t.value === "Transferencia recibida") r.cat = "";
+    t.blur(); fqPasteRender();
+  });
+  fqUpdate();
+  // Plan del mes: celdas editables como planilla
+  const pg = $("#finPlanGrid");
+  pg.addEventListener("change", e => planCellChange(e.target));
+  pg.addEventListener("keydown", planGridKey);
+  pg.addEventListener("paste", planPasteEv);
+  pg.addEventListener("focusout", e => { if (!pg.contains(e.relatedTarget)) setTimeout(() => { if (!pg.contains(document.activeElement) && S.tab === "finanzas") renderFinPlan(); }, 0); });
+  $("#planPayDay").addEventListener("change", e => { const v = e.target.value; planSave(p => ({...p, payDay: v === "" ? null : v === "ult" ? "ult" : +v})); });
   $("#finMyCats").addEventListener("change", e => {
     const t = e.target, name = t.dataset.mycat; if (!name) return;
     const v = t.type === "checkbox" ? t.checked : t.value;
