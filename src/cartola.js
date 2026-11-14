@@ -115,8 +115,10 @@ function cuentaCargo(desc, fechaCta) {
   return null;
 }
 
-/* Lectura de un abono de la cuenta: transferencia recibida de otra persona o institución (posible devolución), o "omitir".
-   Se omiten las transferencias desde una cuenta propia (RUT del titular), las remuneraciones y los abonos no reconocidos. */
+/* Lectura de un abono de la cuenta: transferencia recibida de otra persona o institución, remuneración u otro abono, o "omitir".
+   Se omiten solo las transferencias desde una cuenta propia (RUT del titular); una remuneración nunca se omite. Un abono sin forma conocida entra con su descripción
+   como remitente (sin "Abono por", RUT ni referencia). */
+const RUT_IN_RE = /\b(\d{1,2}\.?\d{3}\.?\d{3}-[\dk])\b/i;
 function cuentaAbono(desc, fechaCta, propios) {
   let m;
   if ((m = desc.match(ABONO_RE))) {
@@ -127,7 +129,19 @@ function cuentaAbono(desc, fechaCta, propios) {
     if (propios.has(rutKey(m[1]))) return "omitir";
     return { tipo: "Transferencia recibida", comercio: m[2].trim(), fecha: fechaCta, hora: null };
   }
-  return "omitir";
+  const rut = desc.match(RUT_IN_RE), pago = /remunera|sueldo|honorario/i.test(desc);
+  if (!pago && rut && propios.has(rutKey(rut[1])) && /transfer/i.test(desc)) return "omitir";
+  const comercio = desc
+    .replace(/\s*\((?:N\.?\s*Ref|Ref)[^)]*\)?/gi, "")
+    .replace(/,?\s*originador\s*/i, " ")
+    .replace(/\bRut:?\s*[\dk.-]+/gi, "")
+    .replace(/\bNombre:\s*/i, "")
+    .replace(/^Abono\s+(?:(?:por|de)\s+)?/i, "")
+    .replace(/[.,\s]+$/, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+  return comercio ? { tipo: "Transferencia recibida", comercio, fecha: fechaCta, hora: null } : "omitir";
 }
 
 /* Devuelve {desde, hasta, totalCargos, cargos, omitidos, desconocidos, rows} o null si el texto no es una cartola de cuenta.
