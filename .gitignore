@@ -10,3 +10,8 @@ lincoyan-*.csv
 # Resultados de la comparación de la propuesta: contienen tus comidas
 eval/results/plan/
 __pycache__/
+
+# Script de cartolas: perfil del navegador, descargas y recorrido (datos del banco)
+tools/bice/.perfil/
+tools/bice/descargas/
+tools/bice/recorrido.jsonl

@@ -3,7 +3,7 @@
 // Diferencia: aquí la categoría propia del movimiento (movimientos.cat, migración 0008) y la sugerida por el agente (cat_sug)
 // entran igual que en la web, que también las lee.
 
-export const FIN_CATS_BASE = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Arriendo y gastos comunes", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Transferencias", "Comisiones e intereses", "Otros", "Inversiones y ahorro"];
+export const FIN_CATS_BASE = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Arriendo y gastos comunes", "Hogar", "Luz", "Agua", "Gas", "Celular e internet", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Transferencias", "Comisiones e intereses", "Otros", "Inversiones y ahorro"];
 const FIN_NOSPEND_BASE = ["Inversiones y ahorro"];
 const FIN_SPEND = ["compra", "transferencia", "pago de cuenta", "cargo del banco"];
 const BANK_CATS = { "Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros" };
@@ -12,7 +12,11 @@ const FIN_BASE_RULES = [
   ["Mascotas", ["veterinaria", "veterinario", "petshop", "pet", "mascota", "superzoo", "jardin zoo"]],
   ["Arriendo y gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes", "arriendo"]],
   ["Comisiones e intereses", ["sobregiro", "intereses", "comision", "mantencion"]],
-  ["Servicios", ["cuentas de servicio", "enel", "cge", "chilquinta", "aguas andinas", "esval", "essbio", "nuevosur", "metrogas", "lipigas", "abastible", "gasco", "entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo pacifico"]],
+  ["Luz", ["enel", "cge", "chilquinta", "saesa", "frontel", "luz osorno"]],
+  ["Agua", ["aguas andinas", "esval", "essbio", "nuevosur", "aguas del valle", "smapa"]],
+  ["Gas", ["metrogas", "lipigas", "abastible", "gasco", "gasvalpo"]],
+  ["Celular e internet", ["entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo pacifico", "virgin mobile", "simple"]],
+  ["Servicios", ["cuentas de servicio"]],
   ["Comida y delivery", ["uber eats", "rappi", "pedidosya", "justo", "didi food", "cornershop"]],
   ["Supermercado", ["unimarc", "lider", "lidercl", "jumbo", "tottus", "santa isabel", "acuenta", "alvi", "minimarket", "market", "carniceria", "panaderia", "pasteleria", "emporio", "verduleria", "almacen", "tostaduria", "feria", "fruteria"]],
   ["Restaurantes y bares", ["bar", "restaurant", "restobar", "cafe", "cafeteria", "sushi", "pizza", "pizzeria", "cerveceria", "birras", "sangucheria", "fuente de soda", "starbucks", "juan maestro", "dominos", "mcdonalds", "burger"]],
@@ -80,11 +84,74 @@ export function catInfo(m, ctx) {
   return { cat: "", src: "" };
 }
 
+/* Subcategorías (copia de SUB_BASE, SUB_RULES y finSubInfo() de la web): la del movimiento (movimientos.sub) → la recordada para el
+   comercio en esa categoría (lib.fin.subOf) → la sugerida por el comercio. Solo vale si está en el catálogo de la categoría. */
+export const SUB_BASE = {
+  "Supermercado": ["Despensa", "Frutas y verduras", "Carnes y pescados", "Lácteos y huevos", "Panadería", "Bebidas", "Aseo y limpieza", "Higiene personal"],
+  "Comida y delivery": ["Almuerzo", "Cena", "Desayuno o café", "Antojo"],
+  "Restaurantes y bares": ["Almuerzo", "Cena", "Café", "Bar y copete", "Salida con amigos"],
+  "Transporte": ["Uber o taxi", "Micro y metro", "Bencina", "Estacionamiento", "Peajes y TAG", "Bicicleta", "Mantención del auto"],
+  "Arriendo y gastos comunes": ["Arriendo", "Gastos comunes", "Dividendo"],
+  "Hogar": ["Muebles", "Decoración", "Ferretería", "Electrodomésticos", "Limpieza", "Reparaciones"],
+  "Celular e internet": ["Plan celular", "Internet hogar", "TV cable"],
+  "Salud": ["Farmacia", "Consulta médica", "Dentista", "Exámenes", "Psicólogo", "Isapre o Fonasa", "Óptica"],
+  "Deporte": ["Gimnasio", "Canchas", "Clases", "Equipamiento", "Inscripciones"],
+  "Mascotas": ["Comida", "Premios", "Juguetes", "Ropa y accesorios", "Veterinario", "Peluquería", "Remedios"],
+  "Entretención": ["Cine", "Conciertos y eventos", "Juegos", "Libros", "Salidas"],
+  "Suscripciones": ["YouTube Premium", "Spotify", "Netflix", "Google One", "iCloud", "Disney+", "Max", "Prime Video", "ChatGPT"],
+  "Ropa": ["Ropa", "Zapatos", "Accesorios"],
+  "Compras": ["Tecnología", "Regalos", "Compras online"],
+  "Educación": ["Cursos", "Libros", "Matrícula y arancel", "Materiales"],
+  "Viajes": ["Pasajes", "Alojamiento", "Comida en viaje", "Tours y panoramas", "Transporte en viaje"],
+  "Servicios": ["Profesionales", "Trámites"],
+  "Transferencias": ["Familia", "Amigos", "Pagos"],
+  "Comisiones e intereses": ["Comisiones", "Intereses", "Impuestos", "Seguros"],
+  "Inversiones y ahorro": ["Fintual", "APV", "Depósito a plazo", "Acciones", "Cripto"]
+};
+const SUB_RULES = [
+  ["Suscripciones", "YouTube Premium", ["youtube"]], ["Suscripciones", "Spotify", ["spotify"]], ["Suscripciones", "Netflix", ["netflix"]],
+  ["Suscripciones", "Google One", ["google one", "google storage", "googleone"]], ["Suscripciones", "iCloud", ["icloud", "apple com bill"]],
+  ["Suscripciones", "Disney+", ["disney"]], ["Suscripciones", "Max", ["hbo", "max com"]], ["Suscripciones", "Prime Video", ["prime video", "amazon prime"]],
+  ["Suscripciones", "ChatGPT", ["openai", "chatgpt"]],
+  ["Transporte", "Uber o taxi", ["uber trip", "uber rides", "cabify", "didi", "taxi"]], ["Transporte", "Bencina", ["copec", "shell", "aramco", "petrobras"]],
+  ["Transporte", "Micro y metro", ["metro", "bip"]], ["Transporte", "Estacionamiento", ["estacionamiento", "parking"]], ["Transporte", "Peajes y TAG", ["autopista", "tag"]],
+  ["Restaurantes y bares", "Café", ["starbucks", "cafe", "cafeteria", "juan valdez"]], ["Restaurantes y bares", "Bar y copete", ["bar", "cerveceria", "birras", "restobar"]],
+  ["Salud", "Farmacia", ["farmacia", "salcobrand", "cruz verde", "ahumada", "dr simi"]], ["Salud", "Dentista", ["dental"]], ["Salud", "Óptica", ["optica"]],
+  ["Salud", "Exámenes", ["laboratorio"]],
+  ["Deporte", "Gimnasio", ["smartfit", "sportlife", "pacific", "gimnasio", "gym", "wellhub", "gympass"]], ["Deporte", "Canchas", ["easycancha"]],
+  ["Mascotas", "Veterinario", ["veterinaria", "veterinario"]],
+  ["Entretención", "Cine", ["cine", "cinemark", "cineplanet"]], ["Entretención", "Conciertos y eventos", ["puntoticket", "ticketmaster", "passline"]],
+  ["Celular e internet", "Plan celular", ["entel pcs", "wom", "movistar movil", "claro movil"]], ["Celular e internet", "Internet hogar", ["vtr", "gtd", "mundo pacifico"]],
+  ["Arriendo y gastos comunes", "Gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes"]],
+  ["Arriendo y gastos comunes", "Arriendo", ["arriendo"]],
+  ["Inversiones y ahorro", "Fintual", ["fintual"]], ["Inversiones y ahorro", "APV", ["apv"]], ["Inversiones y ahorro", "Depósito a plazo", ["deposito a plazo"]],
+  ["Inversiones y ahorro", "Cripto", ["buda", "binance", "criptomarkt", "orionx"]], ["Inversiones y ahorro", "Acciones", ["racional"]]
+];
+export const subList = (cat, ctx) => [...new Set([...(SUB_BASE[cat] || []), ...(((ctx.fin.subs || {})[cat]) || [])])];
+function subRule(cat, comercio) {
+  const words = norm(comercio).split(/[^a-z0-9]+/).filter(Boolean), joined = words.join("");
+  for (const [c, sub, kws] of SUB_RULES) {
+    if (c !== cat) continue;
+    for (const kw of kws) { const k = norm(kw).replace(/[^a-z0-9]/g, ""); if (k.length < 6 && !kw.includes(" ") ? words.includes(k) : joined.includes(k)) return sub; }
+  }
+  return null;
+}
+export function subInfo(m, ctx, cat = catInfo(m, ctx).cat) {
+  if (!cat || isIncoming(m)) return "";
+  const list = subList(cat, ctx), ok = (s) => !!s && list.includes(s);
+  if (ok(m.sub)) return m.sub;
+  const k = finKey(m.comercio);
+  const mem = Object.entries(ctx.fin.subOf || {}).find(([key, v]) => { const i = key.indexOf("|"); return key.slice(0, i) === cat && finSameMerchant(key.slice(i + 1), k) && ok(v); });
+  if (mem) return mem[1];
+  const r = subRule(cat, m.comercio);
+  return ok(r) ? r : "";
+}
+
 export const isPurchase = (m, ctx) => m.moneda === "CLP" && FIN_SPEND.includes(norm(m.tipo)) && !ctx.noSpend.has(catInfo(m, ctx).cat);
 
 /* Fijos y variables (finFixedWhy() de la web): fijo si la categoría lo es (FIN_FIXED_BASE o lib.fin.catKind), si el comercio
    se cobra con periodicidad (finRecurring()) o si es una cuota. La detección de recurrentes necesita el historial (400 días). */
-export const FIN_FIXED_BASE = ["Arriendo y gastos comunes", "Servicios", "Suscripciones", "Comisiones e intereses", "Educación"];
+export const FIN_FIXED_BASE = ["Arriendo y gastos comunes", "Luz", "Agua", "Gas", "Celular e internet", "Servicios", "Suscripciones", "Comisiones e intereses", "Educación"];
 const FIN_FREQ = [["semanal", 6, 8, 3, 52 / 12], ["mensual", 26, 35, 2, 1], ["anual", 355, 375, 2, 1 / 12]];
 const median = (a) => { const s = [...a].sort((x, y) => x - y), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; };
 const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);

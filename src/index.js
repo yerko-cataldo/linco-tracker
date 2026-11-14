@@ -6,7 +6,7 @@ import { parseBankMail } from "./correos.js";
 import { unimarcSearch } from "./precios.js";
 import { sendPush, vapidPublicKey } from "./push.js";
 import { reloj } from "./reloj.js";
-import { logUsage, anthropicStatus, anthropicCost, monthCost } from "./uso.js";
+import { logUsage, anthropicStatus, anthropicCost, monthCost, chileDay } from "./uso.js";
 import { agente, confirmar } from "./agente.js";
 import { classify, classifyPending } from "./clasificador.js";
 import { remindTransfers, notifyTransfer } from "./transferencias.js";
@@ -21,6 +21,8 @@ const MAX_INBOX_ROWS = 200;
 
 let JWKS = null;
 const WATCH_PATHS = new Set(["/api/reloj", "/api/agente", "/api/agente/confirmar"]);
+// Service token del script de cartolas (tools/bice): solo importa cartolas
+const CARTOLA_PATHS = new Set(["/api/cartola"]);
 
 export default {
   async fetch(request, env) {
@@ -39,6 +41,7 @@ export default {
     if (!user) return new Response("No autorizado", { status: 403 });
     // El service token del reloj solo entra a sus rutas
     if (user.watch && !WATCH_PATHS.has(url.pathname)) return new Response("No autorizado", { status: 403 });
+    if (user.cartolas && !CARTOLA_PATHS.has(url.pathname)) return new Response("No autorizado", { status: 403 });
 
     if (!url.pathname.startsWith("/api/")) return brand(await env.ASSETS.fetch(request), env);
 
@@ -225,6 +228,15 @@ async function importCartola(request, env) {
   ];
   for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
 
+  // Periodo de la cartola en lib.fin: inicio del ciclo y fecha de la de crédito, o el rango cubierto por las de la cuenta
+  const cur = await env.DB.prepare("SELECT data FROM lib WHERE key = 'fin'").first();
+  const vals = cur ? JSON.parse(cur.data).values || {} : {};
+  const next = credito
+    ? { ...vals, cicloInicio: parsed.inicio || vals.cicloInicio || null, cartolaAl: chileDay() }
+    : { ...vals, cuentaDesde: [vals.cuentaDesde, parsed.desde].filter(Boolean).sort()[0] || null, cuentaHasta: [vals.cuentaHasta, parsed.hasta].filter(Boolean).sort().pop() || null };
+  await env.DB.prepare("INSERT INTO lib(key, data, updated_at) VALUES('fin', ?1, datetime('now')) ON CONFLICT(key) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at")
+    .bind(JSON.stringify({ values: next })).run();
+
   const cargos = credito ? parsed.rows.reduce((s, r) => s + (r.monto > 0 ? r.monto : 0), 0) : parsed.cargos;
   return json({
     ok: true,
@@ -261,6 +273,7 @@ async function authorize(request, env) {
     const { payload } = await jwtVerify(token, JWKS, { issuer: env.ACCESS_TEAM_DOMAIN, audience: env.ACCESS_AUD });
     // Service token del reloj: su JWT trae common_name (el Client ID) en vez de email
     if (env.WATCH_CLIENT_ID && payload.common_name && payload.common_name === env.WATCH_CLIENT_ID) return { email: "reloj", watch: true };
+    if (env.CARTOLA_CLIENT_ID && payload.common_name && payload.common_name === env.CARTOLA_CLIENT_ID) return { email: "cartolas", cartolas: true };
     const email = String(payload.email || "").toLowerCase();
     // ALLOWED_EMAIL acepta varios correos separados por coma
     if (env.ALLOWED_EMAIL && !env.ALLOWED_EMAIL.toLowerCase().split(",").map((s) => s.trim()).includes(email)) return null;
@@ -332,6 +345,13 @@ async function share(request, env, url) {
 }
 
 /* ---------- API ---------- */
+// ¿Existe movimientos.sub (migración 0009)? Se consulta una vez por instancia del Worker
+let HAS_SUB = null;
+async function hasSub(env) {
+  if (HAS_SUB === null) HAS_SUB = (await env.DB.prepare("SELECT name FROM pragma_table_info('movimientos') WHERE name = 'sub'").all()).results.length > 0;
+  return HAS_SUB;
+}
+
 async function api(request, env, url) {
   const { pathname: p } = url;
   const m = request.method;
@@ -342,7 +362,7 @@ async function api(request, env, url) {
       env.DB.prepare("SELECT date, data FROM days ORDER BY date DESC LIMIT 400"),
       env.DB.prepare("SELECT key, data FROM lib"),
       env.DB.prepare(
-        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado, rut_destino, banco_destino, cat, cat_sug, cat_sug_why " +
+        "SELECT id, fecha, hora, comercio, ciudad, pais, tarjeta, tipo, moneda, monto, fuente, banco_id, detalle_banco, cat_banco, cuota, cuotas, pendiente, revisado, rut_destino, banco_destino, cat, cat_sug, cat_sug_why" + ((await hasSub(env)) ? ", sub " : " ") +
         "FROM movimientos WHERE fecha >= date('now', '-400 days') ORDER BY fecha DESC, hora DESC"
       ),
       env.DB.prepare("SELECT mov_id, data FROM mov_detalle"),
@@ -365,6 +385,16 @@ async function api(request, env, url) {
     try { body = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
     if (typeof body.id !== "string" || !(body.cat === null || (typeof body.cat === "string" && body.cat.length <= 60))) return json({ error: "bad_body" }, 400);
     await env.DB.prepare("UPDATE movimientos SET cat = ?1 WHERE id = ?2").bind(body.cat || null, body.id).run();
+    return json({ ok: true });
+  }
+
+  // Subcategoría de una sola compra; null vuelve a la del comercio
+  if (p === "/api/movs/sub" && m === "PUT") {
+    let body;
+    try { body = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
+    if (typeof body.id !== "string" || !(body.sub === null || (typeof body.sub === "string" && body.sub.length <= 60))) return json({ error: "bad_body" }, 400);
+    if (!(await hasSub(env))) return json({ error: "Falta aplicar la migración 0009 (npm run db:migrate)." }, 409);
+    await env.DB.prepare("UPDATE movimientos SET sub = ?1 WHERE id = ?2").bind(body.sub || null, body.id).run();
     return json({ ok: true });
   }
 
@@ -459,10 +489,11 @@ function manualMov(b) {
   const monto = Math.round(Number(b.monto)), comercio = String(b.comercio || "").trim().slice(0, 120);
   const hora = /^\d{2}:\d{2}$/.test(b.hora || "") ? b.hora : null;
   const cat = typeof b.cat === "string" && b.cat.trim() ? b.cat.trim().slice(0, 60) : null;
+  const sub = cat && typeof b.sub === "string" && b.sub.trim() ? b.sub.trim().slice(0, 60) : null;
   if (!DATE_RE.test(b.fecha || "") || !comercio || !(monto > 0) || !MANUAL_TIPOS.includes(b.tipo)) return null;
   return {
     fecha: b.fecha, hora, comercio, ciudad: null, pais: "CHL", tarjeta: "", tipo: b.tipo, moneda: "CLP",
-    monto: b.tipo === "Transferencia recibida" ? -monto : monto, fuente: "manual", revisado: 1, cat: b.tipo === "Transferencia recibida" ? null : cat,
+    monto: b.tipo === "Transferencia recibida" ? -monto : monto, fuente: "manual", revisado: 1, cat: b.tipo === "Transferencia recibida" ? null : cat, sub: b.tipo === "Transferencia recibida" ? null : sub,
   };
 }
 
@@ -473,8 +504,11 @@ async function addMov(request, env) {
   const many = Array.isArray(b.movs), list = (many ? b.movs : [b]).slice(0, 300).map(manualMov);
   if (!list.length || list.some((x) => !x)) return json({ error: "bad_body" }, 400);
   const movs = list.map((x) => ({ id: `manual:${crypto.randomUUID()}`, ...x }));
-  const stmt = env.DB.prepare("INSERT INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, revisado, cat) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'manual', 1, ?)");
-  const stmts = movs.map((m) => stmt.bind(m.id, m.fecha, m.hora, m.comercio, m.tipo, m.monto, m.cat));
+  const withSub = await hasSub(env);
+  const stmt = env.DB.prepare(withSub
+    ? "INSERT INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, revisado, cat, sub) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'manual', 1, ?, ?)"
+    : "INSERT INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, revisado, cat) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'manual', 1, ?)");
+  const stmts = movs.map((m) => (withSub ? stmt.bind(m.id, m.fecha, m.hora, m.comercio, m.tipo, m.monto, m.cat, m.sub) : stmt.bind(m.id, m.fecha, m.hora, m.comercio, m.tipo, m.monto, m.cat)));
   for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
   return json(many ? { ok: true, movs } : { ok: true, mov: movs[0] });
 }
@@ -485,8 +519,11 @@ async function editMov(request, env, id) {
   try { b = JSON.parse(await request.text()); } catch { return json({ error: "bad_json" }, 400); }
   const x = manualMov(b);
   if (!x || !id.startsWith("manual:")) return json({ error: "bad_body" }, 400);
-  const r = await env.DB.prepare("UPDATE movimientos SET fecha = ?1, hora = ?2, comercio = ?3, tipo = ?4, monto = ?5, cat = ?6 WHERE id = ?7 AND fuente = 'manual'")
-    .bind(x.fecha, x.hora, x.comercio, x.tipo, x.monto, x.cat, id).run();
+  const r = (await hasSub(env))
+    ? await env.DB.prepare("UPDATE movimientos SET fecha = ?1, hora = ?2, comercio = ?3, tipo = ?4, monto = ?5, cat = ?6, sub = ?7 WHERE id = ?8 AND fuente = 'manual'")
+      .bind(x.fecha, x.hora, x.comercio, x.tipo, x.monto, x.cat, x.sub, id).run()
+    : await env.DB.prepare("UPDATE movimientos SET fecha = ?1, hora = ?2, comercio = ?3, tipo = ?4, monto = ?5, cat = ?6 WHERE id = ?7 AND fuente = 'manual'")
+      .bind(x.fecha, x.hora, x.comercio, x.tipo, x.monto, x.cat, id).run();
   if (!r.meta.changes) return json({ error: "not_found" }, 404);
   return json({ ok: true, mov: { id, ...x } });
 }

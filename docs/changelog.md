@@ -1,7 +1,13 @@
 # Changelog
 
 ## 2026-11-14
+- Finanzas: subcategorías en todas las categorías (Mascotas → Comida, Premios, Juguetes…; Suscripciones → YouTube Premium, Spotify, Netflix, Google One…), con las tuyas propias. Se eligen al revisar cada compra (para esa compra o recordada para el comercio), al anotar y al pegar filas; se ven en el árbol de En qué gastaste, en la búsqueda y en el CSV; el plan reconoce "Categoría › Subcategoría" y el agente agrupa por ellas. Requiere la migración 0009.
+- Los selectores de categoría se ordenan por grupo (Casa → Luz, Agua…; Mascotas → Comida de Cliff, Mascotas (otros)), para usar las categorías propias como subcategorías.
+- Una categoría nueva creada desde el selector queda en el grupo de la categoría que tenía la compra (por ejemplo, "Comida de Cliff" desde Mascotas), así sirve para separar lo fijo de lo variable dentro de un mismo grupo.
+- Script de cartolas para el notebook (`tools/bice/cartolas.py`): abre BICE, ingresas con BICE Pass y cada cartola que descargas se sube sola a la app. Usa un service token de Access que solo puede importar cartolas. El periodo de la cartola ahora lo guarda el Worker, así que importar desde la web o desde el script da lo mismo.
+- Finanzas: categorías Luz, Agua, Gas y Celular e internet (grupo Casa, fijas), separadas de Servicios. Las empresas conocidas (Enel, Aguas Andinas, Metrogas, Entel, Movistar…) caen solas en la suya; Servicios queda para lo demás.
 - Finanzas: los comprobantes de pago de cuentas de BICE (Enel, Entel…) reenviados por correo entran solos como pago de cuenta, con el nombre de la empresa y en Servicios. Si la cartola ya trajo el pago, solo le pone el nombre de la empresa; al importar la cartola después, se une al comprobante sin duplicarse.
+- Un gasto se agrega a tu plan como fijo de un toque: "Listo y fijo en el plan" en Por revisar y "Fijo en el plan" en Movimientos, con su monto y su día del mes.
 - "Leer de nuevo los correos del banco" (Movimientos → Tarjetas y cartolas) relee los correos reenviados de los últimos 60 días con el lector actual.
 
 ## 2026-11-13

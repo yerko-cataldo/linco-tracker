@@ -817,6 +817,14 @@ body.coach-open .drawer{transform:none;visibility:visible;transition:transform .
 .fin-month h3{margin:0;min-width:9.5em;text-align:center;text-transform:capitalize}
 @media (min-width:1080px){.fin-bar{position:sticky;top:0;z-index:5;background:var(--bg)}}
 .fin-quick .row{align-items:flex-end}
+.fin-catsub{display:inline-flex;gap:6px;align-items:flex-start;flex-wrap:wrap}
+select.fin-sub{margin-top:4px;max-width:14rem}
+.fin-catsub select.fin-sub{margin-top:0}
+select.fin-sub.need{border-color:var(--fin);box-shadow:0 0 0 2px color-mix(in srgb,var(--fin) 25%,transparent)}
+.pl-two{display:flex;gap:4px;min-width:0}
+.pl-two select{flex:1 1 0;min-width:0}
+details.sub-cat{border-top:1px solid var(--line);padding:6px 0}
+details.sub-cat .chip{cursor:default}
 .fin-quick #fqText{font-size:1.05rem}
 .fin-quick textarea{width:100%;font:inherit;font-size:.9rem;border:1px solid var(--line-strong);background:var(--field);color:var(--ink);border-radius:var(--r-sm);padding:8px 11px}
 .plan{container-type:inline-size}
@@ -1486,6 +1494,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="row">
         <label class="field grow">Anota un gasto o un ingreso<input id="fqText" autocomplete="off" enterkeyhint="done" placeholder="almuerzo 8.500 · uber 4.500 ayer · sueldo 1.850.000"></label>
         <label class="field w10">Categoría<select id="fqCat"></select></label>
+        <label class="field w10">Subcategoría<select id="fqSub"><option value="">sin subcategoría</option></select></label>
         <label class="field w10">Tipo<select id="fqTipo"><option value="Compra">gasto o compra</option><option value="Transferencia">transferencia</option><option value="Pago de cuenta">pago de cuenta</option><option value="Transferencia recibida">dinero que recibí</option></select></label>
         <button class="btn primary" data-action="fq-add" id="fqBtn">Agregar</button>
         <button class="btn ghost" data-action="fq-cancel" id="fqCancel" hidden>Cancelar</button>
@@ -1610,6 +1619,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
               <div class="field w10">Categoría<select id="finRuleCat"></select></div>
               <button class="btn" data-action="fin-rule-add">Agregar regla</button>
             </div>
+            <h3 class="mt">Subcategorías</h3>
+            <p class="small muted" style="margin:0 0 8px">Las de cada categoría que eliges al revisar una compra. Las que vienen con la app no se borran; las tuyas, sí.</p>
+            <div id="finSubs"></div>
             <h3 class="mt">Tus categorías</h3>
             <div id="finMyCats"></div>
             <div class="row mt">
@@ -3475,7 +3487,7 @@ function renderAnthropic(a){
    lib.fin = {budget, cats: {comercio: categoría}, rules: [{pat, cat}], catBudgets: {categoría: tope}, cicloInicio, cartolaAl, reviews: {YYYY-MM: texto},
               cards: {últimos 4 dígitos: {name, kind: "credito" | "debito"}}, cuentaDesde, cuentaHasta,
               refunds: {id del abono: {of: id de la compra} | {cat: categoría}}} */
-const FIN_CATS_BASE = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Arriendo y gastos comunes", "Hogar", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Transferencias", "Comisiones e intereses", "Otros", "Inversiones y ahorro"];
+const FIN_CATS_BASE = ["Supermercado", "Comida y delivery", "Restaurantes y bares", "Transporte", "Arriendo y gastos comunes", "Hogar", "Luz", "Agua", "Gas", "Celular e internet", "Salud", "Deporte", "Mascotas", "Entretención", "Suscripciones", "Ropa", "Compras", "Educación", "Viajes", "Servicios", "Transferencias", "Comisiones e intereses", "Otros", "Inversiones y ahorro"];
 // Base más las categorías propias (lib.fin.myCats); se recalcula en finSyncCats()
 let FIN_CATS = [...FIN_CATS_BASE];
 const BANK_CATS = {"Hogar": "Hogar", "Entretenimiento": "Entretención", "Shopping": "Compras", "Servicios Profesionales": "Servicios", "Autos Y Transporte": "Transporte", "Salud Y Bienestar": "Salud", "Viajes": "Viajes", "Servicios Financieros": "Servicios", "Otros Gastos": "Otros"};
@@ -3487,7 +3499,11 @@ const FIN_BASE_RULES = [
   ["Mascotas", ["veterinaria", "veterinario", "petshop", "pet", "mascota", "superzoo", "jardin zoo"]],
   ["Arriendo y gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes", "arriendo"]],
   ["Comisiones e intereses", ["sobregiro", "intereses", "comision", "mantencion"]],
-  ["Servicios", ["cuentas de servicio", "enel", "cge", "chilquinta", "aguas andinas", "esval", "essbio", "nuevosur", "metrogas", "lipigas", "abastible", "gasco", "entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo pacifico"]],
+  ["Luz", ["enel", "cge", "chilquinta", "saesa", "frontel", "luz osorno"]],
+  ["Agua", ["aguas andinas", "esval", "essbio", "nuevosur", "aguas del valle", "smapa"]],
+  ["Gas", ["metrogas", "lipigas", "abastible", "gasco", "gasvalpo"]],
+  ["Celular e internet", ["entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo pacifico", "virgin mobile", "simple"]],
+  ["Servicios", ["cuentas de servicio"]],
   ["Comida y delivery", ["uber eats", "rappi", "pedidosya", "justo", "didi food", "cornershop"]],
   ["Supermercado", ["unimarc", "lider", "lidercl", "jumbo", "tottus", "santa isabel", "acuenta", "alvi", "minimarket", "market", "carniceria", "panaderia", "pasteleria", "emporio", "verduleria", "almacen", "tostaduria", "feria", "fruteria"]],
   ["Restaurantes y bares", ["bar", "restaurant", "restobar", "cafe", "cafeteria", "sushi", "pizza", "pizzeria", "cerveceria", "birras", "sangucheria", "fuente de soda", "starbucks", "juan maestro", "dominos", "mcdonalds", "burger"]],
@@ -3613,6 +3629,92 @@ async function movCatSet(id, cat){
   try { await finApi("PUT", "movs/cat", {id, cat: cat || null}); }
   catch (e) { mv.cat = prev; FIN_CAT_CACHE = new Map(); renderFin(); toast("No se pudo guardar la categoría: " + e.message); }
 }
+
+/* Subcategorías: tercer nivel (grupo → categoría → subcategoría). Catálogo: SUB_BASE más las propias de lib.fin.subs = {categoría: [nombres]}.
+   Subcategoría de un movimiento (finSubInfo()): la del movimiento (movimientos.sub) → la recordada para el comercio en esa categoría
+   (lib.fin.subOf = {"categoría|comercio": subcategoría}) → la sugerida por el nombre del comercio (SUB_RULES). Solo vale si está en el
+   catálogo de la categoría actual. src/finanzas.js tiene una copia de SUB_BASE, SUB_RULES y esta regla para el agente. */
+const SUB_BASE = {
+  "Supermercado": ["Despensa", "Frutas y verduras", "Carnes y pescados", "Lácteos y huevos", "Panadería", "Bebidas", "Aseo y limpieza", "Higiene personal"],
+  "Comida y delivery": ["Almuerzo", "Cena", "Desayuno o café", "Antojo"],
+  "Restaurantes y bares": ["Almuerzo", "Cena", "Café", "Bar y copete", "Salida con amigos"],
+  "Transporte": ["Uber o taxi", "Micro y metro", "Bencina", "Estacionamiento", "Peajes y TAG", "Bicicleta", "Mantención del auto"],
+  "Arriendo y gastos comunes": ["Arriendo", "Gastos comunes", "Dividendo"],
+  "Hogar": ["Muebles", "Decoración", "Ferretería", "Electrodomésticos", "Limpieza", "Reparaciones"],
+  "Celular e internet": ["Plan celular", "Internet hogar", "TV cable"],
+  "Salud": ["Farmacia", "Consulta médica", "Dentista", "Exámenes", "Psicólogo", "Isapre o Fonasa", "Óptica"],
+  "Deporte": ["Gimnasio", "Canchas", "Clases", "Equipamiento", "Inscripciones"],
+  "Mascotas": ["Comida", "Premios", "Juguetes", "Ropa y accesorios", "Veterinario", "Peluquería", "Remedios"],
+  "Entretención": ["Cine", "Conciertos y eventos", "Juegos", "Libros", "Salidas"],
+  "Suscripciones": ["YouTube Premium", "Spotify", "Netflix", "Google One", "iCloud", "Disney+", "Max", "Prime Video", "ChatGPT"],
+  "Ropa": ["Ropa", "Zapatos", "Accesorios"],
+  "Compras": ["Tecnología", "Regalos", "Compras online"],
+  "Educación": ["Cursos", "Libros", "Matrícula y arancel", "Materiales"],
+  "Viajes": ["Pasajes", "Alojamiento", "Comida en viaje", "Tours y panoramas", "Transporte en viaje"],
+  "Servicios": ["Profesionales", "Trámites"],
+  "Transferencias": ["Familia", "Amigos", "Pagos"],
+  "Comisiones e intereses": ["Comisiones", "Intereses", "Impuestos", "Seguros"],
+  "Inversiones y ahorro": ["Fintual", "APV", "Depósito a plazo", "Acciones", "Cripto"]
+};
+const SUB_RULES = [
+  ["Suscripciones", "YouTube Premium", ["youtube"]], ["Suscripciones", "Spotify", ["spotify"]], ["Suscripciones", "Netflix", ["netflix"]],
+  ["Suscripciones", "Google One", ["google one", "google storage", "googleone"]], ["Suscripciones", "iCloud", ["icloud", "apple com bill"]],
+  ["Suscripciones", "Disney+", ["disney"]], ["Suscripciones", "Max", ["hbo", "max com"]], ["Suscripciones", "Prime Video", ["prime video", "amazon prime"]],
+  ["Suscripciones", "ChatGPT", ["openai", "chatgpt"]],
+  ["Transporte", "Uber o taxi", ["uber trip", "uber rides", "cabify", "didi", "taxi"]], ["Transporte", "Bencina", ["copec", "shell", "aramco", "petrobras"]],
+  ["Transporte", "Micro y metro", ["metro", "bip"]], ["Transporte", "Estacionamiento", ["estacionamiento", "parking"]], ["Transporte", "Peajes y TAG", ["autopista", "tag"]],
+  ["Restaurantes y bares", "Café", ["starbucks", "cafe", "cafeteria", "juan valdez"]], ["Restaurantes y bares", "Bar y copete", ["bar", "cerveceria", "birras", "restobar"]],
+  ["Salud", "Farmacia", ["farmacia", "salcobrand", "cruz verde", "ahumada", "dr simi"]], ["Salud", "Dentista", ["dental"]], ["Salud", "Óptica", ["optica"]],
+  ["Salud", "Exámenes", ["laboratorio"]],
+  ["Deporte", "Gimnasio", ["smartfit", "sportlife", "pacific", "gimnasio", "gym", "wellhub", "gympass"]], ["Deporte", "Canchas", ["easycancha"]],
+  ["Mascotas", "Veterinario", ["veterinaria", "veterinario"]],
+  ["Entretención", "Cine", ["cine", "cinemark", "cineplanet"]], ["Entretención", "Conciertos y eventos", ["puntoticket", "ticketmaster", "passline"]],
+  ["Celular e internet", "Plan celular", ["entel pcs", "wom", "movistar movil", "claro movil"]], ["Celular e internet", "Internet hogar", ["vtr", "gtd", "mundo pacifico"]],
+  ["Arriendo y gastos comunes", "Gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes"]],
+  ["Arriendo y gastos comunes", "Arriendo", ["arriendo"]],
+  ["Inversiones y ahorro", "Fintual", ["fintual"]], ["Inversiones y ahorro", "APV", ["apv"]], ["Inversiones y ahorro", "Depósito a plazo", ["deposito a plazo"]],
+  ["Inversiones y ahorro", "Cripto", ["buda", "binance", "criptomarkt", "orionx"]], ["Inversiones y ahorro", "Acciones", ["racional"]]
+];
+const SUB_SEP = " › ";
+const finSubs = cat => [...new Set([...(SUB_BASE[cat] || []), ...((finCfg().subs || {})[cat] || [])])];
+function finSubRule(cat, comercio){
+  const words = norm(comercio).split(/[^a-z0-9]+/).filter(Boolean), joined = words.join("");
+  for (const [c, sub, kws] of SUB_RULES){
+    if (c !== cat) continue;
+    for (const kw of kws){ const k = norm(kw).replace(/[^a-z0-9]/g, ""); if (k.length < 6 && !kw.includes(" ") ? words.includes(k) : joined.includes(k)) return sub; }
+  }
+  return null;
+}
+function finSubInfo(m){
+  const cat = isIncoming(m) ? "" : finCat(m); if (!cat) return {sub: "", src: ""};
+  const list = finSubs(cat), ok = s => !!s && list.includes(s);
+  if (ok(m.sub)) return {sub: m.sub, src: "movimiento"};
+  const k = finKey(m.comercio), mem = Object.entries(finCfg().subOf || {}).find(([key, v]) => { const i = key.indexOf("|"); return key.slice(0, i) === cat && finSameMerchant(key.slice(i + 1), k) && ok(v); });
+  if (mem) return {sub: mem[1], src: "comercio"};
+  const r = finSubRule(cat, m.comercio);
+  return ok(r) ? {sub: r, src: "regla"} : {sub: "", src: ""};
+}
+const finSub = m => finSubInfo(m).sub;
+// Subcategoría de un texto escrito a mano: un nombre del catálogo que aparece en el texto; sin categoría, se busca en todas
+function finSubGuess(cat, text){
+  const t = ` ${planWords(text).join(" ")} `, has = s => { const w = planWords(s); return w.length && w.every(x => t.includes(` ${x} `)); };
+  if (cat) return finSubs(cat).find(has) || finSubRule(cat, text) || "";
+  for (const c of FIN_CATS){ const s = finSubs(c).find(x => planWords(x).join("").length >= 4 && has(x)); if (s) return c + SUB_SEP + s; }
+  return "";
+}
+function finSubSelect(m, need){
+  const cat = isIncoming(m) ? "" : finCat(m); if (!cat) return "";
+  const list = finSubs(cat), info = finSubInfo(m), miss = need && list.length && !info.sub;
+  return `<select class="fin-sub${miss ? " need" : ""}" data-fin-sub="${esc(m.id)}" aria-label="Subcategoría de ${esc(m.comercio)}"><option value="">${list.length ? "elige subcategoría" : "sin subcategoría"}</option>${list.map(s => `<option${s === info.sub ? " selected" : ""}>${esc(s)}</option>`).join("")}<option value="__new">+ nueva subcategoría…</option></select>${info.src === "regla" ? `<div class="small muted">sugerida por el comercio</div>` : ""}`;
+}
+// Subcategoría de una sola compra (movimientos.sub); null vuelve a la del comercio
+async function movSubSet(id, sub){
+  const mv = S.movs.find(x => x.id === id); if (!mv) return;
+  const prev = mv.sub;
+  mv.sub = sub || null; renderFin();
+  try { await finApi("PUT", "movs/sub", {id, sub: sub || null}); }
+  catch (e) { mv.sub = prev; renderFin(); toast("No se pudo guardar la subcategoría: " + e.message); }
+}
 const finMonth = () => S.finMonth || today().slice(0, 7);
 /* Vistas: una pestaña con VIEWS reparte sus bloques de primer nivel en vistas. Cada bloque lleva data-fv con sus vistas (sin él, se ve
    en todas) y setView() oculta los demás con .fv-off. La vista elegida se recuerda por dispositivo junto a las secciones plegables.
@@ -3692,7 +3794,7 @@ function renderFin(){
   const rec = finRecurring(), inst = finInstallments();
   $("#finRecurSum").textContent = `${rec.length} ${rec.length === 1 ? "recurrente" : "recurrentes"}, ${fmtClp(sum(rec, r => r.monthly))} al mes · cuotas por pagar ${fmtClp(sum(inst, g => g.pending))}`;
   renderFinList();
-  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinTransfers(); renderFinRules(); renderFinMyCats(); renderFinCards(); renderFinReview(); renderFinDet(); renderFinPrices();
+  renderFinInbox(); renderFinCycle(); renderFinRecur(); renderFinTransfers(); renderFinRules(); renderFinSubs(); renderFinMyCats(); renderFinCards(); renderFinReview(); renderFinDet(); renderFinPrices();
 }
 /* Comparación: mes anterior, promedio de 3 meses completos, mismo mes del año pasado o un mes elegido.
    En el mes en curso, cada mes comparado se cuenta hasta el mismo día. */
@@ -3762,7 +3864,7 @@ function finSavedHtml(ym){
 }
 /* Fijos y variables: un gasto es fijo si su categoría lo es (FIN_FIXED_BASE o lib.fin.catKind), si el comercio se cobra con
    periodicidad (finRecurring) o si es una cuota. Lo demás es variable: lo que se decide día a día y se puede ajustar. */
-const FIN_FIXED_BASE = ["Arriendo y gastos comunes", "Servicios", "Suscripciones", "Comisiones e intereses", "Educación"];
+const FIN_FIXED_BASE = ["Arriendo y gastos comunes", "Luz", "Agua", "Gas", "Celular e internet", "Servicios", "Suscripciones", "Comisiones e intereses", "Educación"];
 const finCatFixed = cat => { const k = (finCfg().catKind || {})[cat]; return k ? k === "fijo" : FIN_FIXED_BASE.includes(cat); };
 let FIN_RECUR_KEYS = null;
 const finRecurKeys = () => FIN_RECUR_KEYS || (FIN_RECUR_KEYS = finRecurring().map(r => finKey(r.name)));
@@ -3891,6 +3993,14 @@ function finPlan(){
 const planOn = () => finPlan().rows.some(r => r.amount > 0);
 const planTotal = (rows, kind) => sum(rows.filter(r => r.kind === kind), r => r.amount);
 const planCatOf = r => { const t = norm(r.match || (r.kind === "variable" ? r.name : "")); return t ? FIN_CATS.find(c => norm(c) === t) || null : null; };
+// "Mascotas › Comida" (también con > o /): {cat, sub} si la categoría existe y la subcategoría está en su catálogo
+function planSubOf(r){
+  const parts = String(r.match || "").split(/\s*(?:›|>|\/)\s*/);
+  if (parts.length !== 2) return null;
+  const cat = FIN_CATS.find(c => norm(c) === norm(parts[0])); if (!cat) return null;
+  const sub = finSubs(cat).find(s => norm(s) === norm(parts[1]));
+  return sub ? {cat, sub} : null;
+}
 function planSave(mut){
   saveLib("fin", () => { const c = finCfg(), p = finPlan(); return {...c, plan: mut({payDay: p.payDay, rows: p.rows.map(r => ({...r}))})}; });
 }
@@ -3903,6 +4013,8 @@ function finCatBudgets(){
 }
 const planWords = s => norm(s).split(/[^a-z0-9]+/).filter(w => w.length > 1);
 function planMatch(r, m){
+  const sp = planSubOf(r);
+  if (sp) return !isIncoming(m) && finCat(m) === sp.cat && finSub(m) === sp.sub;
   const cat = planCatOf(r);
   if (cat) return !isIncoming(m) && (finCat(m) || "Sin categoría") === cat;
   const want = planWords(r.match || r.name); if (!want.length) return false;
@@ -3923,14 +4035,16 @@ function finPools(a, b){
 // categoría lo que no tomó un fijo. Lo que no cae en ninguna línea queda "fuera del plan".
 function planReal(rows, a, b){
   const P = finPools(a, b), used = new Set(), by = {};
-  const bySpec = (x, y) => (planCatOf(x) ? 1 : 0) - (planCatOf(y) ? 1 : 0);
-  const take = (r, list, amt) => { const ms = list.filter(m => !used.has(m) && planMatch(r, m)); ms.forEach(m => used.add(m)); by[r.id] = {movs: ms, v: sum(ms, amt)}; };
+  // especificidad: comercio (0), subcategoría (1), categoría (2); a igual especificidad, los fijos primero
+  const rank = r => planSubOf(r) ? 1 : planCatOf(r) ? 2 : 0;
+  const bySpec = (x, y) => rank(x) - rank(y) || (x.kind === "fijo" ? 0 : 1) - (y.kind === "fijo" ? 0 : 1);
+  const take = (r, list, amt) => { const ms = list.filter(m => !used.has(m) && planMatch(r, m)); ms.forEach(m => used.add(m)); by[r.id] = {movs: ms, v: sum(ms, amt), cat: (planSubOf(r) || {}).cat}; };
   rows.filter(r => r.kind === "ingreso").sort(bySpec).forEach(r => take(r, P.incomes, m => Math.abs(m.monto)));
   rows.filter(r => r.kind === "ahorro").sort(bySpec).forEach(r => take(r, P.saves, m => m.monto));
-  rows.filter(r => r.kind === "fijo").sort(bySpec).forEach(r => take(r, P.buys, m => m.monto));
+  rows.filter(r => r.kind === "fijo" || (r.kind === "variable" && planSubOf(r))).sort(bySpec).forEach(r => take(r, P.buys, m => m.monto));
   const rest = P.buys.filter(m => !used.has(m)), cats = finCatTotals(rest), seen = new Set();
   const ofCat = c => rest.filter(m => (finCat(m) || "Sin categoría") === c);
-  for (const r of rows.filter(r => r.kind === "variable")){
+  for (const r of rows.filter(r => r.kind === "variable" && !planSubOf(r))){
     const c = planCatOf(r), first = c && !seen.has(c);
     by[r.id] = {movs: first ? ofCat(c) : [], v: first ? cats[c] || 0 : 0, cat: c};
     if (c) seen.add(c);
@@ -3956,7 +4070,10 @@ const FIN_WORDS = [
   ["Supermercado", ["super", "supermercado", "feria", "verdura", "verduras", "fruta", "frutas", "pan", "almacen", "mercaderia", "carniceria", "carne", "huevos", "leche"]],
   ["Transporte", ["bencina", "combustible", "uber", "cabify", "didi", "taxi", "micro", "metro", "bip", "colectivo", "peaje", "tag", "estacionamiento", "pasaje bus", "bus"]],
   ["Arriendo y gastos comunes", ["arriendo", "gastos comunes", "dividendo", "comunidad"]],
-  ["Servicios", ["luz", "agua", "gas", "internet", "celular", "telefono", "cable", "enel", "aguas andinas", "metrogas", "lipigas", "abastible", "entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo"]],
+  ["Luz", ["luz", "electricidad", "enel", "cge", "chilquinta"]],
+  ["Agua", ["agua", "aguas andinas", "esval", "essbio", "nuevosur"]],
+  ["Gas", ["gas", "balon de gas", "metrogas", "lipigas", "abastible", "gasco"]],
+  ["Celular e internet", ["internet", "celular", "telefono", "plan celular", "cable", "fibra", "entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo"]],
   ["Salud", ["isapre", "fonasa", "doctor", "medico", "dentista", "remedio", "remedios", "farmacia", "psicologo", "psicologa", "examen", "examenes", "kine", "kinesiologo"]],
   ["Deporte", ["gimnasio", "gym", "cancha", "tenis", "padel", "futbol", "smartfit"]],
   ["Educación", ["universidad", "curso", "colegio", "jardin", "matricula", "arancel", "cae", "libro", "libros"]],
@@ -4052,24 +4169,29 @@ function fqParseRows(txt){
     if (!cells.length) continue;
     let q;
     if (cells.length > 1){
-      let fecha = null, monto = null, neg = false, cat = "", tipo = null; const rest = [];
+      let fecha = null, monto = null, neg = false, cat = "", tipo = null, subTxt = ""; const rest = [];
       for (const c of cells){
         const n = norm(c), catM = FIN_CATS.find(x => norm(x) === n);
         if (!fecha && qkCellDate(c)){ fecha = qkCellDate(c); continue; }
         if (catM){ cat = catM; continue; }
         if (monto === null && qkIsMoney(c)){ monto = Math.round(Math.abs(clp(c.replace(/^-/, "")))); neg = /^-/.test(c); continue; }
+        if (FIN_CATS.some(x => finSubs(x).some(y => norm(y) === n))){ subTxt = c; if (!rest.length) rest.push(c); continue; }
         if (/^(ingresos?|abonos?)$/.test(n)){ tipo = "Transferencia recibida"; continue; }
         if (/^(gastos?|compras?|cargos?|egresos?)$/.test(n)){ tipo = "Compra"; continue; }
         rest.push(c);
       }
       const desc = rest.join(" "), nd = ` ${norm(desc)} `;
-      q = {fecha: fecha || today(), monto, comercio: qkCap(desc) || "Gasto", cat,
+      q = {fecha: fecha || today(), monto, comercio: qkCap(desc) || "Gasto", cat, subTxt,
         tipo: tipo || (neg ? "Compra" : QK_IN.test(nd) ? "Transferencia recibida" : QK_TR.test(nd) ? "Transferencia" : "Compra")};
     } else q = finParseQuick(cells[0]);
     if (!(q.monto > 0)) continue;
-    const cat = q.tipo === "Transferencia recibida" ? "" : q.cat || finGuessCat(q.comercio, q.tipo);
+    let cat = q.tipo === "Transferencia recibida" ? "" : q.cat || finGuessCat(q.comercio, q.tipo), sub = "";
+    if (q.tipo !== "Transferencia recibida"){
+      const g = finSubGuess(cat, `${q.subTxt || ""} ${q.comercio}`);
+      if (g.includes(SUB_SEP)){ if (!cat) cat = g.split(SUB_SEP)[0]; sub = cat === g.split(SUB_SEP)[0] ? g.split(SUB_SEP)[1] : ""; } else sub = g;
+    }
     const dup = S.movs.some(m => m.fecha === q.fecha && Math.round(Math.abs(m.monto)) === q.monto);
-    rows.push({...q, cat, dup, on: !dup});
+    rows.push({...q, cat, sub, dup, on: !dup});
   }
   return rows;
 }
@@ -4085,7 +4207,7 @@ function planGuessKind(name, cat){
 }
 function planNewRow(kind, name, extra = {}){
   const r = {id: "pl" + uid(), kind, name: qkCap(name).slice(0, 60), amount: null, match: "", day: null, ...extra};
-  if (kind === "variable" && !planCatOf(r)) r.match = finGuessCat(r.name) || "";
+  if (kind === "variable" && !planCatOf(r) && !planSubOf(r)) r.match = finGuessCat(r.name) || "";
   return r;
 }
 // Línea escrita en la planilla: "Sueldo 2.200.000 el 25", "Arriendo 450 lucas día 5", "Sueldo que entra el 25 de cada mes"
@@ -4164,7 +4286,7 @@ function planSeed(){
   if (sv >= 5000) rows.push(planNewRow("ahorro", "Ahorro e inversión", {match: "Inversiones y ahorro", amount: roundTo(sv, 5000)}));
   return {payDay: incs.length ? rows[0].day : null, rows};
 }
-const PLAN_TEMPLATE = [["ingreso", "Sueldo"], ["fijo", "Arriendo o dividendo"], ["fijo", "Gastos comunes"], ["fijo", "Luz"], ["fijo", "Agua"], ["fijo", "Gas"], ["fijo", "Internet y celular"],
+const PLAN_TEMPLATE = [["ingreso", "Sueldo"], ["fijo", "Arriendo o dividendo"], ["fijo", "Gastos comunes"], ["fijo", "Luz", "Luz"], ["fijo", "Agua", "Agua"], ["fijo", "Gas", "Gas"], ["fijo", "Celular e internet", "Celular e internet"],
   ["variable", "Supermercado"], ["variable", "Transporte"], ["variable", "Restaurantes y bares"], ["variable", "Comida y delivery"], ["variable", "Entretención"], ["variable", "Compras"],
   ["ahorro", "Ahorro e inversión", "Inversiones y ahorro"]];
 
@@ -4268,7 +4390,7 @@ function renderFinPlan(force, focus){
   const rowHtml = r => {
     const x = R.by[r.id] || {movs: [], v: 0}, id = esc(r.id), avg = r.kind === "variable" && !r.amount && x.cat ? planCatAvg(x.cat, c.ym) : null;
     const match = r.kind === "variable"
-      ? `<select class="pl-match" data-f="match" aria-label="Categoría de ${esc(r.name)}"><option value="">elige una categoría</option>${spendCats.map(k => `<option${k === x.cat ? " selected" : ""}>${esc(k)}</option>`).join("")}</select>`
+      ? `<span class="pl-match pl-two"><select data-f="match" aria-label="Categoría de ${esc(r.name)}"><option value="">elige una categoría</option>${finCatOptions(x.cat, true)}</select>${x.cat && finSubs(x.cat).length ? `<select data-f="sub" aria-label="Subcategoría de ${esc(r.name)}"><option value="">toda la categoría</option>${finSubs(x.cat).map(s => `<option${s === (planSubOf(r) || {}).sub ? " selected" : ""}>${esc(s)}</option>`).join("")}</select>` : ""}</span>`
       : `<input class="pl-match" data-f="match" value="${esc(r.match || "")}" list="${r.kind === "ingreso" ? "planSenders" : "planShops"}" placeholder="${r.kind === "ingreso" ? "remitente en el banco" : "comercio o categoría"}" aria-label="Cómo reconocer ${esc(r.name)} en tus movimientos">`;
     const bar = r.kind === "variable" && r.amount ? `<div class="pl-bar"><i style="width:${clamp(x.v / r.amount * 100, 0, 100)}%;background:${x.v > r.amount ? "var(--danger)" : "var(--fin)"}"></i></div>` : "";
     return `<div class="plan-r" data-id="${id}">
@@ -4293,7 +4415,7 @@ function renderFinPlan(force, focus){
     <p class="small muted" style="margin:6px 0 0">Gasto de ${esc(mes)} que no cae en ninguna línea: es justo la plata que se va sin que la hayas decidido.</p></div>` : "";
   const html = `<div class="plan-r plan-hd" aria-hidden="true"><span>Concepto</span><span class="n">Plan</span><span>Real en ${esc(mes)}</span><span>Se reconoce por</span><span>Día</span><span>Tipo</span><span></span></div>
     ${PLAN_KINDS.map(sec).join("")}${out}
-    <datalist id="planShops">${[...spendCats, ...shops].map(s => `<option value="${esc(s)}">`).join("")}</datalist>
+    <datalist id="planShops">${[...spendCats, ...spendCats.flatMap(c => finSubs(c).map(s => c + SUB_SEP + s)), ...shops].map(s => `<option value="${esc(s)}">`).join("")}</datalist>
     <datalist id="planSenders">${senders.map(s => `<option value="${esc(s)}">`).join("")}</datalist>
     <datalist id="planCats">${spendCats.map(s => `<option value="${esc(s)}">`).join("")}</datalist>`;
   if (force){ el.innerHTML = html; if (focus){ const t = el.querySelector(`.plan-r[data-id="${CSS.escape(focus.id)}"] [data-f="${focus.f}"]`) || el.querySelector(`[data-new="${focus.kind}"]`); if (t){ t.focus(); if (t.select) t.select(); } } }
@@ -4322,11 +4444,17 @@ function planCellChange(t){
       return;
     }
   }
-  else if (f === "match"){ const cat = FIN_CATS.find(x => norm(x) === norm(v)); if (cat) v = cat; }
+  else if (f === "match"){ const cat = FIN_CATS.find(x => norm(x) === norm(v)), sp = planSubOf({match: v}); if (cat) v = cat; else if (sp) v = sp.cat + SUB_SEP + sp.sub; }
+  else if (f === "sub"){
+    const cur = finPlan().rows.find(r => r.id === id) || {}, cat = (planSubOf(cur) || {}).cat || planCatOf(cur);
+    planSave(p => { const r = p.rows.find(y => y.id === id); if (r && cat) r.match = v ? cat + SUB_SEP + v : cat; return p; });
+    renderFinPlan(true, {id, f: "sub"});
+    return;
+  }
   planSave(p => {
     const r = p.rows.find(x => x.id === id); if (!r) return p;
     r[f] = v;
-    if (f === "kind" && v === "variable" && !planCatOf(r)){ r.match = finGuessCat(r.name) || ""; r.day = null; }
+    if (f === "kind" && v === "variable" && !planCatOf(r) && !planSubOf(r)){ r.match = finGuessCat(r.name) || ""; r.day = null; }
     if (f === "kind" && v !== "variable" && planCatOf(r) && r.match === r.name) r.match = "";
     return p;
   });
@@ -4394,22 +4522,28 @@ function fqUpdate(){
   if (!ts.dataset.touched) ts.value = q.tipo;
   const tipo = ts.value, inc = tipo === "Transferencia recibida", guess = inc ? "" : finGuessCat(q.comercio, tipo);
   S.fqGuess = guess;
-  if (!cs.dataset.touched) cs.value = guess;
+  let sg = inc ? "" : finSubGuess(guess, txt);
+  if (!cs.dataset.touched && !guess && sg.includes(SUB_SEP)){ cs.value = sg.split(SUB_SEP)[0]; S.fqGuess = cs.value; sg = sg.split(SUB_SEP)[1]; }
+  else if (!cs.dataset.touched) cs.value = guess;
   cs.disabled = inc;
+  const ss = $("#fqSub"), subs = cs.value ? finSubs(cs.value) : [], keep = ss.dataset.touched && subs.includes(ss.value) ? ss.value : null;
+  ss.innerHTML = `<option value="">${subs.length ? "elige subcategoría" : "sin subcategoría"}</option>` + subs.map(x => `<option>${esc(x)}</option>`).join("");
+  ss.value = keep ?? (subs.includes(sg) ? sg : ""); ss.disabled = inc || !subs.length;
   const day = q.fecha === today() ? "hoy" : q.fecha === addDays(today(), -1) ? "ayer" : fmtShort(q.fecha);
   $("#fqPrev").innerHTML = !txt.trim() ? `Escribe como en tus notas: <em>almuerzo 8.500</em>, <em>uber 4.500 ayer</em>, <em>12/11 feria 15 lucas</em>, <em>sueldo 1.850.000</em>.`
-    : q.monto > 0 ? `${inc ? "Ingreso" : FQ_TIPOS.find(x => x[0] === tipo)[1].replace(/^./, ch => ch.toUpperCase())} de <strong>${fmtClp(q.monto)}</strong> · ${esc(q.comercio)} · ${day}${cs.value && !inc ? ` · ${esc(cs.value)}` : ""} <span class="muted">· Enter para ${S.fqEdit ? "guardar" : "agregar"}</span>`
+    : q.monto > 0 ? `${inc ? "Ingreso" : FQ_TIPOS.find(x => x[0] === tipo)[1].replace(/^./, ch => ch.toUpperCase())} de <strong>${fmtClp(q.monto)}</strong> · ${esc(q.comercio)} · ${day}${cs.value && !inc ? ` · ${esc(cs.value)}${ss.value ? SUB_SEP + esc(ss.value) : ""}` : ""} <span class="muted">· Enter para ${S.fqEdit ? "guardar" : "agregar"}</span>`
     : `<span class="muted">Falta el monto: 8.500, 8500, 8,5 lucas o 1,2M.</span>`;
 }
 function fqReset(){
-  $("#fqText").value = ""; delete $("#fqCat").dataset.touched; delete $("#fqTipo").dataset.touched;
+  $("#fqText").value = ""; delete $("#fqCat").dataset.touched; delete $("#fqTipo").dataset.touched; delete $("#fqSub").dataset.touched;
   S.fqEdit = null; $("#fqBtn").textContent = "Agregar"; $("#fqCancel").hidden = true; fqUpdate();
 }
 const finSortMovs = () => S.movs.sort((a, b) => (b.fecha + (b.hora || "")).localeCompare(a.fecha + (a.hora || "")));
 async function fqAdd(){
   const q = finParseQuick($("#fqText").value), tipo = $("#fqTipo").value, inc = tipo === "Transferencia recibida", cat = inc ? "" : $("#fqCat").value;
   if (!(q.monto > 0)){ toast("Falta el monto."); $("#fqText").focus(); return; }
-  const body = {fecha: q.fecha, comercio: q.comercio, monto: q.monto, tipo, cat: cat || null}, btn = $("#fqBtn"), edit = S.fqEdit;
+  const sub = cat ? $("#fqSub").value : "";
+  const body = {fecha: q.fecha, comercio: q.comercio, monto: q.monto, tipo, cat: cat || null, sub: sub || null}, btn = $("#fqBtn"), edit = S.fqEdit;
   btn.disabled = true;
   try {
     if (edit){ const r = await finApi("PUT", "movs/" + encodeURIComponent(edit), body); const i = S.movs.findIndex(x => x.id === edit); if (i >= 0) S.movs[i] = {...S.movs[i], ...r.mov}; }
@@ -4427,12 +4561,13 @@ async function fqAdd(){
 function fqPasteRender(){
   const rows = S.fqRows || [], on = rows.filter(r => r.on).length, dups = rows.filter(r => r.dup).length;
   setHTML($("#fqPasteOut"), !rows.length ? ($("#fqPaste").value.trim() ? `<p class="small muted">No encuentro filas con monto.</p>` : "") : `<p class="small" style="margin:8px 0">${rows.length} ${rows.length === 1 ? "fila" : "filas"} por ${fmtClp(sum(rows.filter(r => r.on), r => r.monto))}${dups ? `; ${dups} ${dups === 1 ? "parece repetida" : "parecen repetidas"} (mismo día y monto que un movimiento que ya tienes) y ${dups === 1 ? "quedó" : "quedaron"} sin marcar` : ""}.</p>
-    <div class="scroll"><table><thead><tr><th></th><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${rows.map((r, i) => `<tr>
+    <div class="scroll"><table><thead><tr><th></th><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Categoría</th><th>Subcategoría</th><th class="n">Monto</th></tr></thead><tbody>${rows.map((r, i) => `<tr>
       <td><input type="checkbox" data-fqi="${i}" data-f="on"${r.on ? " checked" : ""} aria-label="Agregar ${esc(r.comercio)}"></td>
       <td style="white-space:nowrap">${fmtShort(r.fecha)}</td>
       <td>${esc(r.comercio)}${r.dup ? `<div class="small" style="color:var(--danger)">¿repetido?</div>` : ""}</td>
       <td><select data-fqi="${i}" data-f="tipo" aria-label="Tipo">${optsHtml(FQ_TIPOS, r.tipo)}</select></td>
-      <td><select data-fqi="${i}" data-f="cat" aria-label="Categoría"${r.tipo === "Transferencia recibida" ? " disabled" : ""}><option value="">sin categoría</option>${FIN_CATS.map(x => `<option${x === r.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}</select></td>
+      <td><select data-fqi="${i}" data-f="cat" aria-label="Categoría"${r.tipo === "Transferencia recibida" ? " disabled" : ""}><option value="">sin categoría</option>${finCatOptions(r.cat)}</select></td>
+      <td><select data-fqi="${i}" data-f="sub" aria-label="Subcategoría"${!r.cat ? " disabled" : ""}><option value="">—</option>${finSubs(r.cat).map(x => `<option${x === r.sub ? " selected" : ""}>${esc(x)}</option>`).join("")}</select></td>
       <td class="n">${fmtClp(r.monto)}</td></tr>`).join("")}</tbody></table></div>
     <div class="row mt"><button class="btn primary" data-action="fq-paste-add"${on ? "" : " disabled"}>Agregar ${on} ${on === 1 ? "movimiento" : "movimientos"}</button><button class="btn ghost" data-action="fq-paste-clear">Limpiar</button></div>`);
 }
@@ -4440,7 +4575,7 @@ async function fqPasteAdd(){
   const rows = (S.fqRows || []).filter(r => r.on); if (!rows.length) return;
   const btn = document.querySelector('[data-action="fq-paste-add"]'); if (btn) btn.disabled = true;
   try {
-    const r = await finApi("POST", "movs", {movs: rows.map(x => ({fecha: x.fecha, comercio: x.comercio, monto: x.monto, tipo: x.tipo, cat: x.tipo === "Transferencia recibida" ? null : x.cat || null}))});
+    const r = await finApi("POST", "movs", {movs: rows.map(x => ({fecha: x.fecha, comercio: x.comercio, monto: x.monto, tipo: x.tipo, cat: x.tipo === "Transferencia recibida" ? null : x.cat || null, sub: x.tipo === "Transferencia recibida" ? null : x.sub || null}))});
     S.movs.push(...r.movs); finSortMovs();
     S.fqRows = []; $("#fqPaste").value = ""; fqPasteRender(); renderFin();
     toast(`Agregué ${r.movs.length} ${r.movs.length === 1 ? "movimiento" : "movimientos"}.`);
@@ -4451,14 +4586,14 @@ function finListFiltered(){
   const multi = finMultiCard(), ym = finMonth(), q = norm($("#finQ").value), cf = $("#finCatF").value, gf = $("#finGroupF").value, kf = multi ? $("#finCardF").value : "";
   const all = S.movs.filter(m => m.fecha.startsWith(ym));
   const part = m => gf ? (isPurchase(m) ? finSplitGroups(m)[gf] : 0) : m.monto;
-  const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
+  const list = all.filter(m => (!q || norm([m.comercio, m.detalle_banco, finSub(m), ...((S.movDet[m.id] || {}).items || []).map(i => i.name)].join(" ")).includes(q))
     && (!cf || (cf === "-" ? !finCat(m) : finCat(m) === cf)) && (!gf || part(m) > 0) && (!kf || finCardKind(m) === kf));
   return {multi, ym, q, cf, gf, kf, all, list, part};
 }
 function finCsv(){
   const {list, ym} = finListFiltered(), cell = v => { const s = String(v ?? ""); return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const lines = [["Fecha", "Hora", "Descripción", "Tipo", "Categoría", "Fijo o variable", "Medio de pago", "Gasto", "Ingreso"].join(";"),
-    ...list.map(m => [m.fecha, m.hora || "", m.comercio, m.tipo, isIncoming(m) ? "" : finCat(m), isPurchase(m) ? (finIsFixed(m) ? "fijo" : "variable") : "", finCardLabel(m),
+  const lines = [["Fecha", "Hora", "Descripción", "Tipo", "Categoría", "Subcategoría", "Fijo o variable", "Medio de pago", "Gasto", "Ingreso"].join(";"),
+    ...list.map(m => [m.fecha, m.hora || "", m.comercio, m.tipo, isIncoming(m) ? "" : finCat(m), finSub(m), isPurchase(m) ? (finIsFixed(m) ? "fijo" : "variable") : "", finCardLabel(m),
       isIncoming(m) ? "" : m.moneda === "CLP" ? Math.round(m.monto) : `${m.monto} ${m.moneda}`, isIncoming(m) ? Math.round(Math.abs(m.monto)) : ""].map(cell).join(";"))];
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], {type: "text/csv;charset=utf-8"}));
@@ -4607,7 +4742,7 @@ function renderFinEvo(c, top){
    (categoría Supermercado) salvo que su categoría sea de Casa. Por producto si la compra está detallada; si no, por la categoría del comercio. */
 const FIN_TREE_BASE = [
   ["Comida", ["Supermercado", "Comida y delivery", "Restaurantes y bares"]],
-  ["Casa", ["Arriendo y gastos comunes", "Hogar", "Servicios"]],
+  ["Casa", ["Arriendo y gastos comunes", "Hogar", "Luz", "Agua", "Gas", "Celular e internet", "Servicios"]],
   ["Transporte", ["Transporte"]],
   ["Salud y deporte", ["Salud", "Deporte"]],
   ["Ocio", ["Entretención", "Suscripciones", "Viajes"]],
@@ -4628,11 +4763,19 @@ function finSyncCats(){
     return [g, [...base, ...add, ...(cs.includes("Sin categoría") ? ["Sin categoría"] : [])]]; });
   FIN_GROUP_OF = Object.fromEntries(FIN_TREE.flatMap(([g, cs]) => cs.map(c => [c, g])));
   FIN_NOSPEND = new Set([...FIN_NOSPEND_BASE, ...mine.filter(c => c.spend === false).map(c => c.name)]);
-  const fill = (sel, head) => { const el = $(sel); if (!el || document.activeElement === el) return; const v = el.value; el.innerHTML = head + FIN_CATS.map(c => `<option>${esc(c)}</option>`).join(""); el.value = FIN_CATS.includes(v) || !v || v === "-" ? v : ""; };
+  const fill = (sel, head) => { const el = $(sel); if (!el || document.activeElement === el) return; const v = el.value; el.innerHTML = head + finCatOptions(null); el.value = FIN_CATS.includes(v) || !v || v === "-" ? v : ""; };
   fill("#finRuleCat", ""); fill("#finCatF", `<option value="">Todas las categorías</option><option value="-">Sin categoría</option>`);
   fill("#fqCat", `<option value="">sin categoría</option>`);
 }
 const finNoSpend = m => FIN_NOSPEND.has(finCat(m));
+// Opciones de categoría agrupadas por grupo (<optgroup>): el grupo es el primer nivel y la categoría el segundo ("Mascotas → Comida de Cliff").
+// spendOnly deja fuera las categorías que no son gasto.
+function finCatOptions(sel, spendOnly = false){
+  return FIN_TREE.map(([g, cs]) => {
+    const list = cs.filter(c => c !== "Sin categoría" && (!spendOnly || !FIN_NOSPEND.has(c)));
+    return list.length ? `<optgroup label="${esc(g)}">${list.map(c => `<option value="${esc(c)}"${c === sel ? " selected" : ""}>${esc(list.length > 1 && c === g ? c + " (otros)" : c)}</option>`).join("")}</optgroup>` : "";
+  }).join("");
+}
 // categoría efectiva de un producto detallado
 const finItemCat = (it, base) => { const c = it.cat || base || "Sin categoría"; return it.foodId && !["Comida", "Casa"].includes(FIN_GROUP_OF[c]) ? "Supermercado" : c; };
 const finGroupOf = cat => FIN_GROUP_OF[cat || "Sin categoría"] || "Otros";
@@ -4658,7 +4801,7 @@ function finTreeOf(buys){
       const p = it.of != null && items[it.of] ? items[it.of] : it;   // un descuento suma a su producto
       add(finItemCat(p, base), (foodOf(p.foodId) || {}).name || p.name, it.amt);
     });
-    if (rest > 0 || m.monto < 0) add(base, m.treeLabel || m.comercio, rest);
+    if (rest > 0 || m.monto < 0) add(base, finSub(m) || m.treeLabel || m.comercio, rest);
   }
   return t;
 }
@@ -4730,15 +4873,15 @@ function renderFinList(){
   $("#finListSum").textContent = `${all.length} ${all.length === 1 ? "movimiento" : "movimientos"} en el mes`;
   setHTML($("#finList"), list.length ? `${q || cf || gf || kf ? `<p class="small muted" style="margin:0 0 8px">${list.length} de ${all.length} movimientos; ${gf ? `${gf.toLowerCase()} por` : "compras por"} ${fmtClp(shown)}</p>` : ""}<div class="scroll"><table><thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="n">Monto</th></tr></thead><tbody>${list.map(m => `<tr>
       <td>${fmtShort(m.fecha)}${m.hora ? ` <span class="muted">${esc(m.hora)}</span>` : ""}</td>
-      <td>${esc(m.comercio)}${m.ciudad || multi ? `<div class="small muted">${[m.ciudad, multi && finCardLabel(m)].filter(Boolean).map(esc).join(" · ")}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button></div></td>
-      <td>${isIncoming(m) ? finRefundSelect(m) : finCatSelect(m)}</td>
+      <td>${esc(m.comercio)}${m.ciudad || multi ? `<div class="small muted">${[m.ciudad, multi && finCardLabel(m)].filter(Boolean).map(esc).join(" · ")}</div>` : ""}${finDetSummary(m)}${finStatusHtml(m)}<div><button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">${((S.movDet[m.id] || {}).items || []).length ? "Editar detalle" : "Detallar"}</button>${planAddBtn(m, false)}</div></td>
+      <td>${isIncoming(m) ? finRefundSelect(m) : finCatSelect(m) + finSubSelect(m, false)}</td>
       <td class="n">${isIncoming(m) ? `−${fmtClp(-m.monto)}` : gf && part(m) !== m.monto ? `${fmtClp(part(m))}<div class="small muted">de ${fmtClp(m.monto)}</div>` : m.moneda === "CLP" ? fmtClp(m.monto) : `${fmt(m.monto, 2)} ${esc(m.moneda)}`}${finAmountNote(m)}</td>
     </tr>`).join("")}</tbody></table></div>`
     : `<p class="empty">${all.length ? "Ningún movimiento coincide con la búsqueda." : "Sin movimientos en este mes."}</p>`);
 }
 function finCatSelect(m){
   const info = finCatInfo(m);
-  return `<select data-fin-cat="${esc(finKey(m.comercio))}" data-mov="${esc(m.id)}" aria-label="Categoría de ${esc(m.comercio)}"><option value="">Sin categoría</option>${FIN_CATS.map(x => `<option${x === info.cat ? " selected" : ""}>${esc(x)}</option>`).join("")}<option value="__new">+ nueva categoría…</option></select>${FIN_SRC[info.src] && info.src !== "movimiento" ? `<div class="small muted">${FIN_SRC[info.src]}${info.src === "agente" && m.cat_sug_why ? `: ${esc(m.cat_sug_why)}` : ""}</div>` : ""}<label class="small muted fin-only"><input type="checkbox" data-mov-only="${esc(m.id)}"${info.src === "movimiento" ? " checked" : ""}> solo esta compra</label>`;
+  return `<select data-fin-cat="${esc(finKey(m.comercio))}" data-mov="${esc(m.id)}" aria-label="Categoría de ${esc(m.comercio)}"><option value="">Sin categoría</option>${finCatOptions(info.cat)}<option value="__new">+ nueva categoría o subcategoría…</option></select>${FIN_SRC[info.src] && info.src !== "movimiento" ? `<div class="small muted">${FIN_SRC[info.src]}${info.src === "agente" && m.cat_sug_why ? `: ${esc(m.cat_sug_why)}` : ""}</div>` : ""}<label class="small muted fin-only"><input type="checkbox" data-mov-only="${esc(m.id)}"${info.src === "movimiento" ? " checked" : ""}> solo esta compra</label>`;
 }
 function finAmountNote(m){
   const back = finRefundedOf()[m.id];
@@ -4763,6 +4906,12 @@ function renderFinBadge(){
   const n = SHARE ? 0 : S.movs.filter(m => !m.revisado).length;
   for (const b of [$("#finBadge"), $("#finViewBadge")]){ b.hidden = !n; b.textContent = n; }
 }
+// Gasto que ninguna línea fija o variable del plan reconoce por su comercio (se ofrece agregarlo como fijo)
+function planMissing(m){
+  if (isIncoming(m) || !(m.monto > 0) || !isPurchase(m)) return false;
+  return !finPlan().rows.some(r => r.kind === "fijo" && planMatch(r, m));
+}
+const planAddBtn = (m, ok) => planMissing(m) ? `<button class="btn ghost small" data-action="plan-add-mov" data-id="${esc(m.id)}"${ok ? ` data-ok="1"` : ""} title="Agrega ${esc(m.comercio)} como gasto fijo de tu plan del mes, con este monto y este día${ok ? ", y lo marca como revisado" : ""}">${ok ? "Listo y fijo en el plan" : "Fijo en el plan"}</button>` : "";
 function renderFinInbox(){
   const list = S.movs.filter(m => !m.revisado).sort((a, b) => (a.fecha + (a.hora || "")).localeCompare(b.fecha + (b.hora || "")));
   renderFinBadge();
@@ -4771,9 +4920,9 @@ function renderFinInbox(){
   const fresh = finMultiCard() ? [...new Set(list.filter(m => m.tarjeta && !(finCards()[m.tarjeta] || {}).kind).map(m => m.tarjeta))] : [];
   setHTML($("#finInbox"), (fresh.length ? `<p class="small" style="margin:0 0 8px">Llegaron compras con ${fresh.length === 1 ? "una tarjeta sin tipo" : "tarjetas sin tipo"} (${fresh.map(t => "··" + esc(t)).join(", ")}). Elige si es de crédito o débito en <button class="btn ghost small" data-action="view" data-tab="finanzas" data-v="movs" data-to="finCardSec">Movimientos → Tarjetas y cartolas</button>.</p>` : "") + list.map(m => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:10px 0">
       <div><strong>${esc(m.comercio)}</strong> <span class="muted">${fmtShort(m.fecha)}${m.hora ? " " + esc(m.hora) : ""}</span>${finDetSummary(m)}</div>
-      <div class="row"><strong>${m.monto < 0 ? `te transfirió ${fmtClp(-m.monto)}` : fmtClp(m.monto)}</strong>${isIncoming(m) ? finRefundSelect(m) : finCatSelect(m)}
+      <div class="row"><strong>${m.monto < 0 ? `te transfirió ${fmtClp(-m.monto)}` : fmtClp(m.monto)}</strong>${isIncoming(m) ? finRefundSelect(m) : `<span class="fin-catsub">${finCatSelect(m)}${finSubSelect(m, true)}</span>`}
         <button class="btn ghost small" data-action="fin-det" data-id="${esc(m.id)}">Detallar</button>
-        <button class="btn small primary" data-action="fin-inbox-ok" data-id="${esc(m.id)}">Listo</button></div>
+        ${planAddBtn(m, true)}<button class="btn small primary" data-action="fin-inbox-ok" data-id="${esc(m.id)}">Listo</button></div>
     </div>`).join(""));
 }
 async function finMarkReviewed(ids){
@@ -4835,12 +4984,7 @@ async function importCartola(file){
     const buf = await file.arrayBuffer();
     let text; try { text = new TextDecoder("utf-8", {fatal: true}).decode(buf); } catch { text = new TextDecoder("windows-1252").decode(buf); }
     const r = await finApi("POST", "cartola", text), cuenta = r.tipo === "cuenta";
-    saveLib("fin", () => {
-      const c = finCfg();
-      if (!cuenta) return {...c, cicloInicio: r.inicio || c.cicloInicio, cartolaAl: today()};
-      // periodo cubierto por las cartolas de la cuenta importadas
-      return {...c, cuentaDesde: [c.cuentaDesde, r.desde].filter(Boolean).sort()[0] || null, cuentaHasta: [c.cuentaHasta, r.hasta].filter(Boolean).sort().pop() || null};
-    });
+    // el Worker guarda en lib.fin el periodo de la cartola (cicloInicio, cartolaAl, cuentaDesde, cuentaHasta)
     await loadState(); renderAll();
     toast(cuenta ? `Cartola de la cuenta: ${r.compras} ${r.compras === 1 ? "compra" : "compras"} con débito y ${r.filas - r.compras} transferencias y pagos; ${r.nuevos} nuevos, ${r.conciliados} unidos a alertas, ${r.actualizados} ya estaban. Quedaron fuera ${r.omitidos} abonos, pagos de la tarjeta y transferencias entre tus cuentas.`
       : `Cartola de crédito: ${r.filas} filas; ${r.nuevos} nuevas, ${r.conciliados} unidas a alertas, ${r.actualizados} ya estaban.`);
@@ -5051,7 +5195,8 @@ function renderFinCards(){
 /* Categorías propias (lib.fin.myCats): grupo, si cuenta como gasto y quitar */
 // Una categoría nueva desde el selector: nombre limpio; las de inversión o ahorro no cuentan como gasto
 const finNewCat = name => { const n = String(name || "").trim().replace(/\s+/g, " ").slice(0, 40); return n ? n[0].toUpperCase() + n.slice(1) : ""; };
-const finCatGuess = name => { const inv = /invers|ahorro|apv|fondo|deposito|acciones|cripto/.test(norm(name)); return {name, group: inv ? "Ahorro e inversión" : "Otros", spend: !inv}; };
+// Grupo de una categoría nueva: Ahorro e inversión si el nombre lo dice; si no, el de la categoría que tenía la compra (Comida de Cliff desde Mascotas queda en Mascotas)
+const finCatGuess = (name, from) => { const inv = /invers|ahorro|apv|fondo|deposito|acciones|cripto/.test(norm(name)); const g = from && finGroupOf(from); return {name, group: inv ? "Ahorro e inversión" : g && g !== "Ahorro e inversión" ? g : "Otros", spend: !inv}; };
 function renderFinMyCats(){
   const mine = finMyCats();
   setHTML($("#finMyCats"), `<p class="small muted" style="margin:0 0 6px">"Inversiones y ahorro" ya viene incluida y no cuenta como gasto (Fintual, Racional, depósitos a plazo, APV).</p>` + (mine.length ? mine.map(c => `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:6px 0">
@@ -5062,6 +5207,12 @@ function renderFinMyCats(){
 }
 
 /* Reglas de categoría: lib.fin.rules = [{pat, cat}] */
+function renderFinSubs(){
+  const extra = finCfg().subs || {};
+  setHTML($("#finSubs"), FIN_CATS.filter(c => !["Luz", "Agua", "Gas", "Otros"].includes(c) || (extra[c] || []).length).map(c => `<details class="manual sub-cat"><summary><strong>${esc(c)}</strong> <span class="small muted">${finSubs(c).length || "sin"} ${finSubs(c).length === 1 ? "subcategoría" : "subcategorías"}</span></summary>
+    <div class="chips mt">${(SUB_BASE[c] || []).map(s => `<span class="chip">${esc(s)}</span>`).join("")}${(extra[c] || []).map(s => `<span class="chip sel">${esc(s)} <button class="btn ghost small danger" data-action="sub-del" data-cat="${esc(c)}" data-v="${esc(s)}" aria-label="Quitar ${esc(s)}">×</button></span>`).join("")}</div>
+    <div class="row mt"><input class="mini-in sub-in" data-sub-cat="${esc(c)}" placeholder="nueva subcategoría y Enter" aria-label="Nueva subcategoría de ${esc(c)}" style="width:14rem"></div></details>`).join(""));
+}
 function renderFinRules(){
   const rules = finCfg().rules || [];
   setHTML($("#finRules"), rules.length ? rules.map((r, i) => `<div class="row" style="justify-content:space-between"><span>contiene <strong>${esc(r.pat)}</strong> → ${esc(r.cat)}</span><button class="btn ghost small danger" data-action="fin-rule-del" data-i="${i}">Quitar</button></div>`).join("")
@@ -7115,6 +7266,7 @@ const actions = {
     S.fqEdit = m.id;
     $("#fqText").value = `${m.fecha.slice(8)}/${m.fecha.slice(5, 7)}/${m.fecha.slice(0, 4)} ${m.comercio} ${fmt(Math.abs(m.monto))}`;
     ts.value = m.tipo; ts.dataset.touched = 1; cs.value = finCat(m) || ""; cs.dataset.touched = 1;
+    fqUpdate(); $("#fqSub").value = finSub(m); $("#fqSub").dataset.touched = 1;
     $("#fqBtn").textContent = "Guardar cambios"; $("#fqCancel").hidden = false; fqUpdate();
     $("#finQuick").scrollIntoView({block: "center", behavior: "smooth"}); $("#fqText").focus();
   },
@@ -7145,6 +7297,21 @@ const actions = {
     renderFinPlan(true);
   },
   "plan-match": el => { const id = el.dataset.id, v = el.dataset.v; planSave(p => { const r = p.rows.find(x => x.id === id); if (r) r.match = v; return p; }); renderFinPlan(true); },
+  "plan-add-mov": el => {
+    const m = S.movs.find(x => x.id === el.dataset.id); if (!m) return;
+    const r = planNewRow("fijo", m.comercio, {match: m.comercio, amount: Math.round(m.monto), day: +m.fecha.slice(8)});
+    planSave(p => { p.rows.push(r); return p; });
+    if (el.dataset.ok) finMarkReviewed([m.id]);
+    toast(`${m.comercio} quedó en tu plan como fijo de ${fmtClp(r.amount)} el ${r.day} de cada mes${el.dataset.ok ? " y marcado como revisado" : ""}. Si el monto varía, ajústalo en Plan.`);
+  },
+  "sub-del": el => {
+    const cat = el.dataset.cat, v = el.dataset.v;
+    if (!confirm(`¿Quitar la subcategoría "${v}" de ${cat}? Las compras que la tenían quedan sin subcategoría.`)) return;
+    saveLib("fin", () => {
+      const c = finCfg(), so = Object.fromEntries(Object.entries(c.subOf || {}).filter(([k, s]) => !(k.startsWith(cat + "|") && s === v)));
+      return {...c, subOf: so, subs: {...c.subs, [cat]: ((c.subs || {})[cat] || []).filter(s => s !== v)}};
+    });
+  },
   "plan-paste": () => { if (planAddText($("#planPaste").value, null)) $("#planPaste").value = ""; },
   "plan-add-cat": el => {
     const cat = el.dataset.cat, c = finMonthCtx(), avg = planCatAvg(cat, c.ym), r = planNewRow("variable", cat, {match: cat});
@@ -7982,19 +8149,40 @@ function wireUI(){
     const mv = S.movs.find(x => x.id === id); if (!mv) return;
     movCatSet(id, t.checked ? (finCat({...mv, cat: null}) || null) : null);
   }));
+  // Subcategoría: con "solo esta compra", queda en el movimiento; si no, se recuerda para el comercio en esa categoría
+  ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => {
+    const t = e.target, id = t.dataset.finSub; if (id === undefined) return; t.blur();
+    const mv = S.movs.find(x => x.id === id); if (!mv) return;
+    const cat = finCat(mv); let sub = t.value, add = null;
+    if (sub === "__new"){ sub = finNewCat(prompt(`Nueva subcategoría de ${cat} (por ejemplo, ${(SUB_BASE[cat] || ["Otros"])[0]})`)); if (!sub){ renderFin(); return; } add = finSubs(cat).find(s => norm(s) === norm(sub)) ? null : sub; sub = finSubs(cat).find(s => norm(s) === norm(sub)) || sub; }
+    const only = t.parentElement.querySelector("[data-mov-only]");
+    if (only && only.checked){
+      if (add) saveLib("fin", () => { const c = finCfg(); return {...c, subs: {...c.subs, [cat]: [...((c.subs || {})[cat] || []), add]}}; });
+      movSubSet(id, sub || null);
+    } else {
+      if (mv.sub) movSubSet(id, null);
+      saveLib("fin", () => {
+        const c = finCfg(), so = {...(c.subOf || {})}, key = cat + "|" + finKey(mv.comercio);
+        if (sub) so[key] = sub; else delete so[key];
+        return {...c, subOf: so, subs: add ? {...c.subs, [cat]: [...((c.subs || {})[cat] || []), add]} : c.subs};
+      });
+    }
+    if (add) toast(`Subcategoría "${add}" agregada a ${cat}.`);
+  }));
   ["#finList", "#finInbox"].forEach(q => $(q).addEventListener("change", e => {
     const t = e.target, k = t.dataset.finCat; if (k === undefined) return; t.blur();
     let cat = t.value, add = null;
-    if (cat === "__new"){ cat = finNewCat(prompt("Nombre de la nueva categoría (por ejemplo, Inversiones en Fintual)")); if (!cat){ renderFin(); return; } add = cat; }
+    const mv0 = S.movs.find(x => x.id === t.dataset.mov), from = mv0 ? finCat(mv0) : "";
+    if (cat === "__new"){ cat = finNewCat(prompt(from && finGroupOf(from) !== "Otros" ? `Nombre de la nueva categoría; queda dentro de ${finGroupOf(from)} (por ejemplo, Comida de Cliff)` : "Nombre de la nueva categoría (por ejemplo, Inversiones en Fintual)")); if (!cat){ renderFin(); return; } add = cat; }
     const only = t.parentElement.querySelector("[data-mov-only]");
     if (only && only.checked){
       movCatSet(t.dataset.mov, cat || null);
-      if (add) saveLib("fin", () => { const c = finCfg(); return {...c, myCats: FIN_CATS.includes(add) ? c.myCats : [...(c.myCats || []), finCatGuess(add)]}; });
+      if (add) saveLib("fin", () => { const c = finCfg(); return {...c, myCats: FIN_CATS.includes(add) ? c.myCats : [...(c.myCats || []), finCatGuess(add, from)]}; });
     } else {
       const mv = S.movs.find(x => x.id === t.dataset.mov); if (mv && mv.cat) movCatSet(mv.id, null);
-      saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: cat}, myCats: add && !FIN_CATS.includes(add) ? [...(c.myCats || []), finCatGuess(add)] : c.myCats}; });
+      saveLib("fin", () => { const c = finCfg(); return {...c, cats: {...c.cats, [k]: cat}, myCats: add && !FIN_CATS.includes(add) ? [...(c.myCats || []), finCatGuess(add, from)] : c.myCats}; });
     }
-    if (add) toast(`Categoría "${add}" creada. Su grupo y si cuenta como gasto se cambian en Ajustes.`);
+    if (add) toast(`Categoría "${add}" creada en el grupo ${finCatGuess(add, from).group}. Su grupo, si es fija y si cuenta como gasto se cambian en Ajustes.`);
   }));
   $("#finCatBudgets").addEventListener("change", e => { const c = e.target.dataset.catbud; if (!c) return; const v = clp(e.target.value); saveLib("fin", () => { const f = finCfg(), b = {...f.catBudgets}; if (v > 0) b[c] = Math.round(v); else delete b[c]; return {...f, catBudgets: b}; }); });
   $("#cartolaFile").addEventListener("change", e => importCartola(e.target.files[0]));
@@ -8003,15 +8191,27 @@ function wireUI(){
   // Anotar rápido: vista previa al escribir, Enter agrega, Escape cancela la edición
   $("#fqText").addEventListener("input", fqUpdate);
   $("#fqText").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); fqAdd(); } else if (e.key === "Escape" && S.fqEdit) fqReset(); });
-  ["#fqCat", "#fqTipo"].forEach(q => $(q).addEventListener("change", e => { e.target.dataset.touched = 1; fqUpdate(); }));
+  ["#fqCat", "#fqTipo", "#fqSub"].forEach(q => $(q).addEventListener("change", e => { e.target.dataset.touched = 1; if (e.target.id === "fqCat") delete $("#fqSub").dataset.touched; fqUpdate(); }));
   $("#fqPaste").addEventListener("input", () => { S.fqRows = fqParseRows($("#fqPaste").value); fqPasteRender(); });
   $("#fqPasteOut").addEventListener("change", e => {
     const t = e.target, r = (S.fqRows || [])[+t.dataset.fqi]; if (!r) return;
     if (t.dataset.f === "on") r.on = t.checked; else r[t.dataset.f] = t.value;
-    if (t.dataset.f === "tipo" && t.value === "Transferencia recibida") r.cat = "";
+    if (t.dataset.f === "tipo" && t.value === "Transferencia recibida"){ r.cat = ""; r.sub = ""; }
+    if (t.dataset.f === "cat" && !finSubs(r.cat).includes(r.sub)) r.sub = "";
     t.blur(); fqPasteRender();
   });
   fqUpdate();
+  // Subcategoría nueva desde Ajustes (Enter)
+  $("#finSubs").addEventListener("keydown", e => {
+    const t = e.target; if (e.key !== "Enter" || !t.dataset.subCat) return;
+    e.preventDefault();
+    const cat = t.dataset.subCat, v = finNewCat(t.value);
+    if (!v) return;
+    if (finSubs(cat).some(s => norm(s) === norm(v))){ toast(`${cat} ya tiene "${v}".`); return; }
+    t.value = ""; t.blur();
+    saveLib("fin", () => { const c = finCfg(); return {...c, subs: {...c.subs, [cat]: [...((c.subs || {})[cat] || []), v]}}; });
+    toast(`Subcategoría "${v}" agregada a ${cat}.`);
+  });
   // Plan del mes: celdas editables como planilla
   const pg = $("#finPlanGrid");
   pg.addEventListener("change", e => planCellChange(e.target));
