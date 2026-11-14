@@ -15,8 +15,7 @@ La interfaz está en español de Chile.
 | **Estudio** | Libros y cursos con plan por temario, ritmo, proyección y temporizador. |
 | **Finanzas** | Compras con tarjeta de crédito y débito que llegan solas desde las alertas de Visa, transferencias y pagos de cuentas desde la cartola de la cuenta, conciliación con la cartola del banco, detalle de productos por compra, categorías con reglas, presupuesto y topes, recurrentes, cuotas, evolución mensual, lo que pide atención en el mes, lo que cuesta comer (precio de cada alimento desde tus compras o, si no, desde Unimarc, con su fuente) y resumen del mes con IA. |
 | **Coach** | Revisión semanal y chat con el contexto de tu perfil y tus registros. |
-| **Perfil y metas** | Perfil, metas, importación y exportación, y un link de solo lectura para compartir algunas áreas con amigos. |
-| **Métricas** | Uso frente a los límites gratis de Cloudflare, uso del modelo y vencimiento del dominio. |
+| **Perfil** | Perfil, importación y exportación, un link de solo lectura para compartir algunas áreas con amigos y, en "Uso de la app", el uso frente a los límites gratis de Cloudflare, el costo del modelo y el vencimiento del dominio. Las metas de cada área se editan en su pestaña. |
 
 ## Principios
 
@@ -90,7 +89,7 @@ Las migraciones no se aplican con el push. Cuando agregues una en `migrations/`,
 
 ### 4. Tus datos
 
-Abre la app, entra con el código que llega a tu correo y ve a **Perfil y metas → Importar JSON** si tienes una exportación previa. Completa el perfil: el coach lo usa como contexto.
+Abre la app, entra con el código que llega a tu correo y ve a **Perfil → Importar JSON** si tienes una exportación previa. Completa el perfil: el coach lo usa como contexto.
 
 ### 5. Finanzas (opcional)
 
@@ -147,7 +146,7 @@ Si `deploy` o `db:migrate` fallan con "No access to the specified resource", hay
 
 ## Respaldos
 
-- **Desde la app:** **Perfil y metas → Exportar JSON**, o el CSV por alimento.
+- **Desde la app:** **Perfil → Exportar JSON**, o el CSV por alimento.
 - **Base completa:**
 
   ```bash

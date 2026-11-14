@@ -1,11 +1,18 @@
 # Changelog
 
 ## 2026-11-13
+- Toda la app se reorganiza para que lo relacionado esté junto. Nutrición y Entreno tienen vistas como Finanzas: Nutrición → Hoy, Planificar, Cuerpo y metas, Mi base; Entreno → Hoy, Progreso, Ejercicios.
+- El peso, la fase y las metas de nutrición y de peso quedan juntos en Nutrición → Cuerpo y metas. Las metas de entreno, bajo y estudio se editan en su pestaña; Perfil queda para tus datos, exportar y compartir.
+- Los precios de tus alimentos pasan de Finanzas a Nutrición → Planificar, junto a la lista de compras.
+- El Coach deja de ser una pestaña: se abre como panel lateral sobre cualquier pestaña, desde la navegación o un botón flotante.
+- Métricas pasa a Perfil → Uso de la app.
+- Finanzas se reorganiza en 5 vistas, cada una con una pregunta: Resumen (cómo voy), Plan (qué decidí), Análisis (en qué se va), Movimientos (los datos) y Ajustes. El mes se elige una vez, arriba, para todas. Antes eran 20 bloques en una sola página.
 - Finanzas: "Tu plan del mes", una planilla con lo que entra, tus fijos, cuánto quieres gastar en cada categoría variable y cuánto ahorrar, con plan frente a real en cada línea, lo que queda sin asignar y lo que gastaste fuera del plan (con botón para sumarlo). Se escribe como en Excel: Enter baja de fila, la última fila de cada grupo agrega una línea y se pueden pegar filas desde Excel. Se puede armar solo con tus movimientos o partir con una plantilla. Con plan, el presupuesto y los topes salen de él.
 - Finanzas: "Tu sueldo", el ciclo de pago a pago: cuánto te queda por día hasta el próximo sueldo, hasta qué día te alcanza a tu ritmo y, en los ciclos anteriores, cuánto sobró o qué día se acabó la plata.
 - Finanzas: anotar rápido en una línea ("almuerzo 8.500", "uber 4.500 ayer", "sueldo 1.850.000") con categoría y tipo deducidos, y pegar varias filas desde Excel o tus notas con vista previa y aviso de duplicados. Los movimientos a mano ahora se editan, y la lista se descarga en CSV para Excel.
 - Los montos aceptan "450 mil", "15 lucas", "8,5k" y "1,2M" en toda la app.
 - El agente ve lo que entró en el rango y tu plan del mes.
+- La cartola de la cuenta ahora importa el sueldo y los demás abonos (antes solo las transferencias de personas e instituciones, para las devoluciones). Las líneas de ingreso del plan sugieren el remitente que calza con su monto, y la fila de agregar entiende "Sueldo 2.200.000 el 25".
 
 ## 2026-11-09
 - Nutrición: fases definición, recomposición, mantención, pausa de dieta y volumen limpio, en Perfil y metas → "Fase y metas de nutrición". Cada fase tiene un ritmo en % del peso por semana, ajustable dentro de un rango, y sus propias reglas de proteína y grasa. La recomposición pasa de −400 kcal a −0,1 % del peso por semana.
