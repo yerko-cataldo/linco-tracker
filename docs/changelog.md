@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-14
+- Finanzas: los comprobantes de pago de cuentas de BICE (Enel, Entel…) reenviados por correo entran solos como pago de cuenta, con el nombre de la empresa y en Servicios. Si la cartola ya trajo el pago, solo le pone el nombre de la empresa; al importar la cartola después, se une al comprobante sin duplicarse.
+- "Leer de nuevo los correos del banco" (Movimientos → Tarjetas y cartolas) relee los correos reenviados de los últimos 60 días con el lector actual.
+
 ## 2026-11-13
 - Toda la app se reorganiza para que lo relacionado esté junto. Nutrición y Entreno tienen vistas como Finanzas: Nutrición → Hoy, Planificar, Cuerpo y metas, Mi base; Entreno → Hoy, Progreso, Ejercicios.
 - El peso, la fase y las metas de nutrición y de peso quedan juntos en Nutrición → Cuerpo y metas. Las metas de entreno, bajo y estudio se editan en su pestaña; Perfil queda para tus datos, exportar y compartir.

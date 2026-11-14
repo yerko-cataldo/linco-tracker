@@ -87,16 +87,18 @@ async function processEmail(message, env) {
   if (ins.meta.changes) await classify(env, mv.id).catch((err) => console.error("clasificador", err));
 }
 
-/* Comprobante de transferencia de BICE reenviado por el titular (FORWARD_FROM): crea el movimiento sin tarjeta, por revisar. */
-async function processBankMail(raw, message, env, inboxId) {
+/* Comprobante de BICE reenviado por el titular (FORWARD_FROM): transferencia o pago de cuentas, sin tarjeta y por revisar.
+   Devuelve "nuevo", "existe" o "descartado:<motivo>". notify = false no manda el aviso push (al releer correos guardados). */
+async function processBankMail(raw, message, env, inboxId, notify = true) {
   const row = await env.DB.prepare(
     "SELECT detalle_banco FROM movimientos WHERE banco_id LIKE 'bicecta:Transferencia de%' AND detalle_banco IS NOT NULL LIMIT 1"
   ).first();
   const res = parseBankMail(raw, message.from, env.FORWARD_FROM, row ? rutOrigen(row.detalle_banco) : null);
   if (!res.ok) {
     console.log(`correo descartado: ${res.reason}`);
-    return;
+    return `descartado:${res.reason}`;
   }
+  if (res.movs) return savePagos(res.movs, env, inboxId);
   const mv = res.mov;
   // Una transferencia que la cartola de la cuenta ya trajo no se duplica; el destinatario se compara con nameKey()
   const same = await env.DB.prepare(
@@ -106,14 +108,55 @@ async function processBankMail(raw, message, env, inboxId) {
   const key = nameKey(mv.comercio), match = same.results.filter((r) => nameKey(r.comercio) === key);
   if (match.filter((r) => r.fuente === "cartola").length > match.filter((r) => r.fuente === "correo").length) {
     console.log("correo descartado: ya está en la cartola");
-    return;
+    return "existe";
   }
   const ins = await env.DB.prepare(
     "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id, revisado, rut_destino, banco_destino) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'correo', ?, 0, ?, ?)"
   )
     .bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.tipo, mv.monto, inboxId, mv.rut_destino, mv.banco_destino)
     .run();
-  if (ins.meta.changes) await notifyTransfer(env, mv);
+  if (ins.meta.changes && notify) await notifyTransfer(env, mv);
+  return ins.meta.changes ? "nuevo" : "existe";
+}
+
+/* Pagos de cuentas del comprobante. Si la cartola de la cuenta ya trajo el pago (mismo monto a 3 días o menos), solo le pone el nombre
+   de la empresa; si no, entra como movimiento nuevo por revisar. */
+async function savePagos(movs, env, inboxId) {
+  let nuevos = 0, existen = 0;
+  for (const mv of movs) {
+    const prev = await env.DB.prepare("SELECT 1 FROM movimientos WHERE id = ?").bind(mv.id).first();
+    if (prev) { existen++; continue; }
+    const cta = await env.DB.prepare(
+      "SELECT id FROM movimientos WHERE tipo = 'Pago de cuenta' AND fuente = 'cartola' AND banco_id LIKE 'bicecta:%' AND monto = ?1 " +
+      "AND fecha BETWEEN date(?2, '-3 days') AND date(?2, '+3 days') ORDER BY abs(julianday(fecha) - julianday(?2)) LIMIT 1"
+    ).bind(mv.monto, mv.fecha).first();
+    if (cta) {
+      await env.DB.prepare("UPDATE movimientos SET comercio = ? WHERE id = ?").bind(mv.comercio, cta.id).run();
+      existen++;
+      continue;
+    }
+    const ins = await env.DB.prepare(
+      "INSERT OR IGNORE INTO movimientos (id, fecha, hora, comercio, pais, tarjeta, tipo, moneda, monto, fuente, inbox_id, revisado) VALUES (?, ?, ?, ?, 'CHL', '', ?, 'CLP', ?, 'correo', ?, 0)"
+    ).bind(mv.id, mv.fecha, mv.hora, mv.comercio, mv.tipo, mv.monto, inboxId).run();
+    if (ins.meta.changes) nuevos++; else existen++;
+  }
+  return nuevos ? "nuevo" : "existe";
+}
+
+/* Relee los correos del banco guardados en inbox_raw (60 días) con el lector actual; no repite movimientos ni avisos. */
+async function rereadBankMail(env) {
+  const allowed = String(env.FORWARD_FROM || "").toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
+  const rows = await env.DB.prepare(
+    "SELECT id, envelope_from, raw FROM inbox_raw WHERE raw IS NOT NULL AND received_at >= datetime('now', '-60 days') ORDER BY id"
+  ).all();
+  const out = { leidos: 0, nuevos: 0, existentes: 0, descartados: 0 };
+  for (const r of rows.results) {
+    if (!allowed.includes(String(r.envelope_from).trim().toLowerCase())) continue;
+    out.leidos++;
+    const st = await processBankMail(r.raw, { from: r.envelope_from }, env, r.id, false);
+    if (st === "nuevo") out.nuevos++; else if (st === "existe") out.existentes++; else out.descartados++;
+  }
+  return out;
 }
 
 async function storeRawEmail(message, env) {
@@ -326,6 +369,7 @@ async function api(request, env, url) {
   }
 
   if (p === "/api/cartola" && m === "POST") return importCartola(request, env);
+  if (p === "/api/correos/releer" && m === "POST") return json({ ok: true, ...(await rereadBankMail(env)) });
 
   if (p === "/api/movs" && m === "POST") return addMov(request, env);
 

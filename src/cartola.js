@@ -198,7 +198,8 @@ export const nameKey = (s) => String(s || "").toLowerCase().normalize("NFD").rep
    2. Compra con alerta del mismo monto a 3 días o menos: se une a la alerta más cercana.
    3. Compra con una sola alerta a 2 días o menos y monto a ±5%: se une a esa alerta.
    4. Transferencia con correo del banco del mismo monto a 3 días o menos: se une al correo del mismo destinatario o, si no hay, al más cercano.
-   5. Resto: movimiento nuevo de fuente cartola. */
+   5. Pago de cuenta con comprobante del banco del mismo monto a 3 días o menos: se une al más cercano (queda el nombre de la empresa del correo).
+   6. Resto: movimiento nuevo de fuente cartola. */
 export function planConciliation(rows, existing) {
   const byBanco = new Map(existing.filter((e) => e.banco_id).map((e) => [e.banco_id, e]));
   const free = existing.filter((e) => !e.banco_id && (e.fuente === "alerta" || e.fuente === "correo") && e.moneda === "CLP");
@@ -213,6 +214,9 @@ export function planConciliation(rows, existing) {
         .map((e) => ({ e, d: dayDiff(e.fecha, r.fecha), n: nameKey(e.comercio) === nameKey(r.comercio) ? 0 : 1 }))
         .filter((x) => x.d <= 3);
       hit = near.sort((a, b) => a.n - b.n || a.d - b.d)[0] || null;
+    } else if (r.tipo === "Pago de cuenta") {
+      hit = pick(free.filter((e) => e.fuente === "correo" && e.tipo === "Pago de cuenta" && !used.has(e.id) && e.monto === r.monto)
+        .map((e) => ({ e, d: dayDiff(e.fecha, r.fecha) })).filter((x) => x.d <= 3)) || null;
     } else if (r.tipo === "Compra") {
       const near = free.filter((e) => e.fuente === "alerta" && !used.has(e.id)).map((e) => ({ e, d: dayDiff(e.fecha, r.fecha) }));
       hit = pick(near.filter((x) => x.d <= 3 && x.e.monto === r.monto));

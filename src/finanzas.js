@@ -12,7 +12,7 @@ const FIN_BASE_RULES = [
   ["Mascotas", ["veterinaria", "veterinario", "petshop", "pet", "mascota", "superzoo", "jardin zoo"]],
   ["Arriendo y gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes", "arriendo"]],
   ["Comisiones e intereses", ["sobregiro", "intereses", "comision", "mantencion"]],
-  ["Servicios", ["cuentas de servicio"]],
+  ["Servicios", ["cuentas de servicio", "enel", "cge", "chilquinta", "aguas andinas", "esval", "essbio", "nuevosur", "metrogas", "lipigas", "abastible", "gasco", "entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo pacifico"]],
   ["Comida y delivery", ["uber eats", "rappi", "pedidosya", "justo", "didi food", "cornershop"]],
   ["Supermercado", ["unimarc", "lider", "lidercl", "jumbo", "tottus", "santa isabel", "acuenta", "alvi", "minimarket", "market", "carniceria", "panaderia", "pasteleria", "emporio", "verduleria", "almacen", "tostaduria", "feria", "fruteria"]],
   ["Restaurantes y bares", ["bar", "restaurant", "restobar", "cafe", "cafeteria", "sushi", "pizza", "pizzeria", "cerveceria", "birras", "sangucheria", "fuente de soda", "starbucks", "juan maestro", "dominos", "mcdonalds", "burger"]],

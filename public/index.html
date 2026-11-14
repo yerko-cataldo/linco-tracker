@@ -1582,7 +1582,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     <details class="panel sec mt" data-fv="movs" id="finCardSec">
       <summary><h3>Tarjetas y cartolas</h3><span class="hint" id="finCardSum"></span></summary>
       <div class="sec-body">
-        <div class="row"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label><span class="small muted" id="cartolaStatus"></span></div>
+        <div class="row"><label class="btn small">Importar cartola<input type="file" id="cartolaFile" accept=".csv,text/csv" class="sr"></label><button class="btn small" data-action="mail-reread">Leer de nuevo los correos del banco</button><span class="small muted" id="cartolaStatus"></span></div>
         <div id="finCards" class="mt"></div>
         <p class="small muted" style="margin:10px 0 0">Cada tarjeta se reconoce por los últimos 4 dígitos de su alerta de Visa. Una tarjeta sin tipo cuenta como de crédito. "Importar cartola" acepta el CSV de BICE de la tarjeta de crédito o el de la cuenta: la de crédito se concilia con las alertas de crédito y la de la cuenta con las de débito.</p>
       </div>
@@ -3487,7 +3487,7 @@ const FIN_BASE_RULES = [
   ["Mascotas", ["veterinaria", "veterinario", "petshop", "pet", "mascota", "superzoo", "jardin zoo"]],
   ["Arriendo y gastos comunes", ["edificio", "condominio", "comunidad", "administracion", "gastos comunes", "arriendo"]],
   ["Comisiones e intereses", ["sobregiro", "intereses", "comision", "mantencion"]],
-  ["Servicios", ["cuentas de servicio"]],
+  ["Servicios", ["cuentas de servicio", "enel", "cge", "chilquinta", "aguas andinas", "esval", "essbio", "nuevosur", "metrogas", "lipigas", "abastible", "gasco", "entel", "movistar", "wom", "claro", "vtr", "gtd", "mundo pacifico"]],
   ["Comida y delivery", ["uber eats", "rappi", "pedidosya", "justo", "didi food", "cornershop"]],
   ["Supermercado", ["unimarc", "lider", "lidercl", "jumbo", "tottus", "santa isabel", "acuenta", "alvi", "minimarket", "market", "carniceria", "panaderia", "pasteleria", "emporio", "verduleria", "almacen", "tostaduria", "feria", "fruteria"]],
   ["Restaurantes y bares", ["bar", "restaurant", "restobar", "cafe", "cafeteria", "sushi", "pizza", "pizzeria", "cerveceria", "birras", "sangucheria", "fuente de soda", "starbucks", "juan maestro", "dominos", "mcdonalds", "burger"]],
@@ -7099,6 +7099,15 @@ const actions = {
     });
   },
   "fq-add": () => fqAdd(),
+  "mail-reread": async el => {
+    el.disabled = true;
+    try {
+      const r = await finApi("POST", "correos/releer");
+      if (r.nuevos) { await loadState(); renderAll(); }
+      toast(r.leidos ? `Revisé ${r.leidos} ${r.leidos === 1 ? "correo" : "correos"} del banco: ${r.nuevos} ${r.nuevos === 1 ? "movimiento nuevo" : "movimientos nuevos"}, ${r.existentes} que ya estaban${r.descartados ? ` y ${r.descartados} que no son comprobantes` : ""}.` : "No hay correos del banco guardados de los últimos 60 días.");
+    } catch (e){ toast("No se pudieron leer los correos: " + e.message); }
+    finally { el.disabled = false; }
+  },
   "fq-cancel": () => fqReset(),
   "fq-edit": el => {
     const m = S.movs.find(x => x.id === el.dataset.id); if (!m) return;

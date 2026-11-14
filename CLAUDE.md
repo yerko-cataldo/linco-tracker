@@ -76,6 +76,7 @@ Campos opcionales: `meals[].slot` (la comida a la que corresponde, con el nombre
 | `PUT /api/movs/cat` | Categoría de una sola compra (`movimientos.cat`); `null` vuelve a la del comercio |
 | `GET`, `POST /api/reloj` | App del reloj (`src/reloj.js`; el proyecto Android está fuera del repo, en `AndroidStudioProjects/lincoyan/wear`). GET: resumen del día (agua, creatina, peso, kcal y proteína frente a la meta) y plan de series, que replica simplificado `habitual()`/`nextStep()` de la web. POST `{date, op, ...}`: `water`, `creatine`, `weight`, `gym`, `set`, `undo`, `end`, `resume`; lee y escribe el día en el servidor y devuelve el resumen. El service token del reloj solo entra a esta ruta y a las del agente (`WATCH_PATHS`) |
 | `GET /api/push` | Clave pública VAPID y número de dispositivos suscritos |
+| `POST /api/correos/releer` | Relee los correos del banco guardados en `inbox_raw` (60 días) con el lector de `src/correos.js` (transferencias y pagos de cuentas), sin repetir movimientos ni avisos |
 | `POST /api/movs` | Agrega un movimiento a mano (`fuente = 'manual'`, con `cat` opcional en `movimientos.cat`) o, con `{movs: [...]}`, hasta 300 de una vez |
 | `PUT /api/movs/manual:<id>` | Edita un movimiento a mano (fecha, comercio, monto, tipo, categoría) |
 | `PUT`, `DELETE /api/push/sub` | Guarda o borra la suscripción push de un dispositivo (`push_subs`) |
