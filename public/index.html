@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
 <!-- Instalable en el celular (las notificaciones push en iPhone requieren la app instalada). crossorigin: Access exige la cookie. -->
 <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
-<link rel="apple-touch-icon" href="/img/icono-180.png">
+<link rel="apple-touch-icon" href="/img/galgo-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lincoyán">
 <script>try { const t = localStorage.getItem("lincoyan-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}</script>
@@ -1268,7 +1268,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <summary><h3>Actividad del día</h3><span class="hint">gimnasio, tenis y bici</span></summary>
       <div class="sec-body stack">
         <div class="row">
-          <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option><option value="core">Core</option><option value="torsoA">Torso A</option><option value="piernaA">Pierna A</option><option value="torsoB">Torso B</option><option value="piernaB">Pierna B</option></select></div>
+          <div class="field w10">Gimnasio<select id="aGym"><option value="">Sin gimnasio</option><option value="push">Push</option><option value="pull">Pull</option><option value="legs">Legs</option><option value="full">Full body</option><option value="core">Core</option><option value="torsoA">Torso A</option><option value="piernaA">Pierna A</option><option value="torsoB">Torso B</option><option value="piernaB">Pierna B</option><option value="movil">Movilidad</option></select></div>
           <div class="field w5">Minutos<input id="aGymMin" inputmode="numeric" placeholder="40"></div>
         </div>
         <p class="small muted" id="aGymNote" style="margin:0" hidden>Con series registradas, los minutos de gimnasio se estiman: 15 s de preparación más 3 s por repetición en cada serie (en las planchas, 1 s por repetición), y entre series el descanso medido acotado a 2–3 min, o 2 min 30 s si no se midió (en los ejercicios de core, 60–90 s, o 75 s). Si escribes otro número, ese reemplaza al estimado; bórralo para volver al estimado.</p>
@@ -1735,6 +1735,9 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="panel"><h3>Claude (API de Anthropic)</h3><div id="metAnthropic"></div></div>
       <div class="panel"><h3>Dominio</h3><div id="metDomain"></div></div>
     </div>
+    <div class="grid g2 mt no-share" data-fv="uso">
+      <div class="panel"><h3>App en este dispositivo</h3><div id="installBox"></div></div>
+    </div>
   </section>
 </main>
 
@@ -1790,7 +1793,7 @@ const DATA_START = "2026-09-28", WALK_DAILY_MIN = 60;
 const walkMin = () => profile().walkMin ?? WALK_DAILY_MIN; // profile.walkMin: caminata diaria fija; 0 en instancias sin paseo
 const walkOf = date => date >= DATA_START && date <= today() ? walkMin() : 0;
 const fmtDur = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`; };
-const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body", core:"Core", torsoA:"Torso A", piernaA:"Pierna A", torsoB:"Torso B", piernaB:"Pierna B"};
+const GYM_LABEL = {push:"Push", pull:"Pull", legs:"Legs", full:"Full body", core:"Core", torsoA:"Torso A", piernaA:"Pierna A", torsoB:"Torso B", piernaB:"Pierna B", movil:"Movilidad"};
 /* Rotación de Torso/Pierna ×2: cada sesión le pasa el turno a la siguiente */
 const TL_CYCLE = ["torsoA", "piernaA", "torsoB", "piernaB"];
 // Base inicial de alimentos: valores por 100 g (o 100 ml) tal como se comen. Aproximaciones tipo USDA FoodData Central;
@@ -2107,6 +2110,7 @@ const EX_CAT = [
   ["Curl femoral", "isquio", "gemelo", "legs", "leg curl, lying leg curl, curl femoral acostado, curl femoral tumbado", "Isquiotibiales acostado."],
   ["Curl femoral sentado", "isquio", "", "legs", "seated leg curl, curl femoral en maquina sentado", "Isquiotibiales estirados desde la cadera: muy buen estímulo."],
   ["Curl nórdico", "isquio", "", "legs", "nordic curl, nordic hamstring curl, curl nordico", "Isquios en excéntrica; previene lesiones."],
+  ["Salto al cajón", "cuadriceps gluteo", "gemelo isquio", "legs", "box jump, box jumps, salto a cajon, saltos al cajon, saltos", "Potencia: salta al cajón con los brazos y baja con un paso, sin saltar hacia atrás."],
   ["Elevación de talones", "gemelo", "", "legs", "calf raise, calf raises, pantorrillas, gemelos, elevacion de talones de pie, standing calf raise", "Gemelos con la rodilla estirada."],
   ["Elevación de talones sentado", "gemelo", "", "legs", "seated calf raise, gemelo sentado, soleo", "Sóleo: la rodilla doblada saca de juego al gemelo."],
   ["Gemelos en prensa", "gemelo", "", "legs", "calf press, leg press calf raise, pantorrillas en prensa", "Gemelos con las piernas estiradas en la prensa."],
@@ -2122,11 +2126,19 @@ const EX_CAT = [
   ["Giros rusos", "oblicuos", "abdomen", "core", "russian twist, russian twists", "Oblicuos en rotación."],
   ["Pallof press", "oblicuos abdomen", "", "core", "pallof, press pallof", "Core en anti-rotación con polea."],
   ["Bicho muerto", "abdomen", "oblicuos", "core", "dead bug, dead bugs", "Control del core con la lumbar pegada al suelo."],
+  // Movilidad y equilibrio (no suman series efectivas por músculo)
+  ["Estiramiento de flexor de cadera", "cuadriceps", "abdomen", "movil", "couch stretch, estiramiento del sofa, hip flexor stretch, flexor de cadera, psoas", "Rodilla atrás contra la pared y glúteo apretado; la duración va en reps como segundos, por lado."],
+  ["Rotación torácica", "espalda", "oblicuos hombro", "movil", "open book, libro abierto, thoracic rotation, rotacion toracica, movilidad toracica", "De lado o en cuatro apoyos; gira desde la espalda alta, no desde la lumbar."],
+  ["90/90 de cadera", "gluteo", "aductor abductor", "movil", "90 90, 90-90, hip 90 90, movilidad de cadera", "Sentado en el suelo, rota las dos caderas hacia un lado y al otro."],
+  ["Movilidad de tobillo", "gemelo", "", "movil", "ankle mobility, rodilla a la pared, knee to wall, dorsiflexion, tobillo", "Lleva la rodilla hacia la pared sin despegar el talón."],
+  ["Equilibrio en una pierna", "abductor", "gluteo gemelo abdomen", "movil", "single leg balance, balance, pararse en una pierna, equilibrio unipodal", "Glúteo medio y pie; cierra los ojos cuando sea fácil. La duración va en reps como segundos, por lado."],
+  ["Peso muerto a una pierna", "isquio gluteo", "abductor lumbar", "movil", "single leg rdl, rdl a una pierna, peso muerto rumano a una pierna, peso muerto unilateral", "Equilibrio y cadena posterior, con la cadera cuadrada al suelo; sin peso o con una mancuerna liviana."],
   ["Leñador en polea", "oblicuos", "abdomen hombro", "core", "woodchopper, cable woodchop, lenador", "Oblicuos en rotación con polea."],
   // Cuerpo completo y cardio
   ["Kettlebell swing", "gluteo isquio", "lumbar hombro antebrazo", "full", "kb swing, swing con pesa rusa, swings", "Cadena posterior explosiva; la cadera hace el trabajo."],
   ["Thruster", "cuadriceps hombro", "gluteo triceps", "full", "thrusters", "Sentadilla frontal más press: piernas y hombros."],
-  ["Paseo del granjero", "antebrazo trapecio", "abdomen gluteo", "full", "farmer walk, farmers walk, farmer carry", "Agarre, trapecio y core caminando con peso."],
+  ["Paseo del granjero", "antebrazo trapecio", "abdomen gluteo", "full", "farmer walk, farmers walk, farmer carry", "Agarre, trapecio y core caminando con peso; la duración va en reps como segundos."],
+  ["Paseo con una mano", "oblicuos", "antebrazo trapecio abductor", "full", "suitcase carry, paseo de maleta, paseo con maleta, farmer a una mano, carga unilateral", "Peso en una mano sin ladearte: oblicuos y glúteo medio, como cargar el bajo en un hombro. La duración va en reps como segundos, por lado."],
   ["Burpees", "cuadriceps pecho", "hombro abdomen", "full", "burpee", "Cuerpo completo y cardio."],
   ["Remo ergómetro", "dorsal cuadriceps", "espalda isquio biceps", "full", "rowing machine, remoergometro, maquina de remo, ergometro", "Cardio de cuerpo completo; cuenta las reps como minutos."]
 ].map(([name, m, m2, t, al, tip]) => ({name, m: m.split(" "), m2: m2 ? m2.split(" ") : [], t, al: al.split(",").map(x => x.trim()).filter(Boolean), tip: tip || ""}));
@@ -2207,7 +2219,7 @@ const MUSCLE_RANGE = [10, 20];
 function muscleSets(dates){
   const out = {};
   for (const dt of dates) for (const g of groupSets(day(dt).act.sets)){
-    if (!g.info) continue;
+    if (!g.info || g.info.t === "movil") continue;
     const n = g.work.length + DROP_EFF * g.drop.length;
     g.info.m.forEach(k => out[k] = (out[k] || 0) + n);
     g.info.m2.forEach(k => out[k] = (out[k] || 0) + n / 2);
@@ -2299,8 +2311,8 @@ function exFig(info){
 const muNames = info => info ? info.m.map(k => MUSCLES[k]).join(", ") : "sin músculos asignados";
 const muDetail = info => !info ? "sin músculos asignados" : muNames(info) + (info.m2.length ? ` · también ${info.m2.map(k => MUSCLES[k].toLowerCase()).join(", ")}` : "");
 /* Grupo del catálogo según el primer músculo principal */
-const EX_GROUPS = [["pecho", "Pecho", ["pecho"]], ["hombros", "Hombros", ["hombro", "hombroPost", "trapecio"]], ["espalda", "Espalda", ["dorsal", "espalda", "lumbar"]], ["brazos", "Brazos", ["biceps", "triceps", "antebrazo"]], ["piernas", "Piernas", ["cuadriceps", "gluteo", "isquio", "gemelo", "aductor", "abductor"]], ["core", "Core", ["abdomen", "oblicuos"]], ["full", "Cuerpo completo", []]];
-const exGroup = e => e.t === "full" ? "full" : (EX_GROUPS.find(([, , ks]) => ks.includes(e.m[0])) || ["core"])[0];
+const EX_GROUPS = [["pecho", "Pecho", ["pecho"]], ["hombros", "Hombros", ["hombro", "hombroPost", "trapecio"]], ["espalda", "Espalda", ["dorsal", "espalda", "lumbar"]], ["brazos", "Brazos", ["biceps", "triceps", "antebrazo"]], ["piernas", "Piernas", ["cuadriceps", "gluteo", "isquio", "gemelo", "aductor", "abductor"]], ["core", "Core", ["abdomen", "oblicuos"]], ["full", "Cuerpo completo", []], ["movil", "Movilidad y equilibrio", []]];
+const exGroup = e => e.t === "full" || e.t === "movil" ? e.t : (EX_GROUPS.find(([, , ks]) => ks.includes(e.m[0])) || ["core"])[0];
 /* Ilustraciones de ejercicios en silueta (generadas con un script de Python, ver docs/technical.md) */
 /* ILLU:inicio */
 const ILLU = {
@@ -3003,7 +3015,8 @@ const WARMUP = {
   legs: {min: 4, bike: true, steps: ["Sentadilla con peso corporal: 10 reps lentas", "Puente de glúteos: 12 reps", "Balanceo de piernas adelante-atrás y de lado: 10 por pierna", APPROACH]},
   full: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Sentadilla con peso corporal: 10 reps", "Flexiones apoyando las rodillas: 8 reps", APPROACH]},
   core: {min: 4, steps: ["Gato-camello en cuatro apoyos: 8 reps lentas", "Bicho muerto lento: 5 por lado", "Puente de glúteos: 10 reps", "Plancha suave: 20 s"]},
-  torsoA: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Face pull o rotación externa en polea liviana: 15 reps", "Flexiones apoyando las rodillas: 8 reps", APPROACH]}
+  torsoA: {min: 4, bike: true, steps: ["Círculos de brazos: 10 hacia adelante y 10 hacia atrás", "Face pull o rotación externa en polea liviana: 15 reps", "Flexiones apoyando las rodillas: 8 reps", APPROACH]},
+  movil: {min: 3, steps: ["Marcha en el lugar subiendo las rodillas: 1 min", "Gato-camello en cuatro apoyos: 8 reps lentas", "Círculos de cadera de pie: 8 por lado"]}
 };
 WARMUP.torsoB = WARMUP.torsoA; WARMUP.piernaA = WARMUP.piernaB = WARMUP.legs;
 const wKey = (date, k, i) => i === undefined ? `${date}|${k}` : `${date}|${k}|${i}`;
@@ -3011,25 +3024,36 @@ const HABIT_SESSIONS = 3, DEFAULT_SETS = 3;
 /* Entreno cerrado: con series y marcado como terminado, o de un día anterior; "Retomar entreno" lo reabre */
 const wEnded = date => { const a = day(date).act; return a.sets.length > 0 && !W.resume[date] && (!!a.end || date < today()); };
 const DEFAULT_ROUTINE = {
-  push: ["Press banca", "Press inclinado con mancuernas", "Press militar", "Elevaciones laterales", "Extensión de tríceps"],
-  pull: ["Jalón al pecho con polea", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo"],
-  legs: ["Sentadilla hack", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones", "Aductores en máquina", "Abductores en máquina"],
+  push: ["Press banca", "Press inclinado con mancuernas", "Press militar", "Elevaciones laterales", "Extensión de tríceps", "Paseo con una mano"],
+  pull: ["Jalón al pecho con polea", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo", "Paseo del granjero"],
+  legs: ["Kettlebell swing", "Sentadilla hack", "Sentadilla búlgara", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones"],
   full: ["Sentadilla", "Press banca", "Remo en polea", "Press militar", "Curl femoral"],
   core: ["Elevación de piernas", "Crunch inverso", "Plancha", "Plancha lateral", "Bicho muerto"],
-  torsoA: ["Press banca", "Jalón al pecho con polea", "Press inclinado con barra", "Remo en máquina", "Elevaciones laterales", "Curl con barra Z", "Extensión de tríceps"],
-  piernaA: ["Sentadilla hack", "Peso muerto rumano", "Curl femoral sentado", "Extensión de cuádriceps", "Elevación de talones", "Crunch en polea", "Pallof press"],
-  torsoB: ["Press militar", "Remo en polea", "Press de pecho en máquina", "Jalón con agarre estrecho", "Face pull", "Elevaciones laterales", "Curl martillo", "Extensión de tríceps sobre la cabeza"],
-  piernaB: ["Hip thrust", "Prensa", "Curl femoral", "Aductores en máquina", "Abductores en máquina", "Elevación de talones sentado", "Elevación de piernas", "Plancha lateral"]
+  torsoA: ["Press banca", "Jalón al pecho con polea", "Press inclinado con barra", "Remo en máquina", "Elevaciones laterales", "Curl con barra Z", "Extensión de tríceps", "Paseo del granjero"],
+  piernaA: ["Kettlebell swing", "Sentadilla hack", "Peso muerto rumano", "Sentadilla búlgara", "Curl femoral sentado", "Elevación de talones", "Crunch en polea", "Pallof press"],
+  torsoB: ["Press militar", "Remo en polea", "Press de pecho en máquina", "Jalón con agarre estrecho", "Face pull", "Elevaciones laterales", "Curl martillo", "Extensión de tríceps sobre la cabeza", "Paseo con una mano"],
+  piernaB: ["Salto al cajón", "Hip thrust", "Prensa", "Step up", "Curl femoral", "Elevación de talones sentado", "Elevación de piernas", "Plancha lateral"],
+  movil: ["Estiramiento de flexor de cadera", "Rotación torácica", "90/90 de cadera", "Movilidad de tobillo", "Equilibrio en una pierna", "Peso muerto a una pierna", "Plancha", "Bicho muerto"]
 };
+/* Cambios a la rutina con fecha (pilares además de la hipertrofia: potencia, trabajo a una pierna, cargas caminando).
+   Se aplican a tus ejercicios habituales mientras tu última sesión del tipo sea anterior al cambio; después manda lo que hiciste:
+   si haces el ejercicio nuevo queda en tu rutina, y si lo quitas no vuelve. `at` es la posición (sin ella, al final). */
+const ROUTINE_CHANGES = [
+  {date: "2026-11-14", type: "legs", add: [["Kettlebell swing", 0], ["Sentadilla búlgara", 2]], drop: ["Aductores en máquina", "Abductores en máquina"]},
+  {date: "2026-11-14", type: "push", add: [["Paseo con una mano"]]},
+  {date: "2026-11-14", type: "pull", add: [["Paseo del granjero"]]}
+];
 /* Orden ideal de los pendientes: 0 multiarticulares, 1 aislamiento de músculos grandes, 2 de músculos chicos, 3 core.
    Multiarticular: involucra al menos dos de cuádriceps, glúteo e isquios, o un músculo del tronco junto con bíceps o tríceps. */
 const EX_LEGS = ["cuadriceps", "gluteo", "isquio"], EX_TRUNK = ["pecho", "hombro", "dorsal", "espalda"], EX_ARM = ["biceps", "triceps"];
 const EX_BIG = [...EX_LEGS, ...EX_TRUNK, "lumbar"];
 /* Mueven una sola articulación aunque sus músculos sugieran otra cosa */
 const EX_ISO = ["Pullover en polea", "Patada de glúteo", "Hiperextensiones"];
+/* Cargas caminando: al final, con el core, porque cansan el agarre */
+const EX_LAST = ["Paseo del granjero", "Paseo con una mano"];
 function exTier(name){
   const e = exInfo(name); if (!e) return 1;
-  if (e.t === "core") return 3;
+  if (e.t === "core" || e.t === "movil" || EX_LAST.includes(e.name)) return 3;
   if (EX_ISO.includes(e.name)) return 1;
   const all = [...e.m, ...e.m2];
   const multi = (all.filter(x => EX_LEGS.includes(x)).length >= 2 && e.m.some(x => EX_LEGS.includes(x))) || (all.some(x => EX_TRUNK.includes(x)) && all.some(x => EX_ARM.includes(x)));
@@ -3038,10 +3062,21 @@ function exTier(name){
 /* Ejercicios habituales: los de las últimas 3 sesiones del tipo, ordenados por su posición promedio; sin historial, la rutina base del tipo */
 function habitual(type, date){
   const dts = allDatesAsc().filter(dt => dt < date && day(dt).act.gym === type && day(dt).act.sets.length).slice(-HABIT_SESSIONS);
-  if (!dts.length) return {names: DEFAULT_ROUTINE[type] || [], from: null};
+  if (!dts.length) return {names: [...(DEFAULT_ROUTINE[type] || [])], from: null, changed: null};
   const pos = {};
   dts.forEach(dt => { const gs = groupSets(day(dt).act.sets); gs.forEach((g, i) => { (pos[g.k] = pos[g.k] || {ex: g.ex, p: []}).p.push(i / Math.max(1, gs.length - 1)); }); });
-  return {names: Object.values(pos).sort((a, b) => sum(a.p, x => x) / a.p.length - sum(b.p, x => x) / b.p.length).map(x => x.ex), from: dts};
+  const names = Object.values(pos).sort((a, b) => sum(a.p, x => x) / a.p.length - sum(b.p, x => x) / b.p.length).map(x => x.ex);
+  return {...routineChanges(type, dts[dts.length - 1], date, names), from: dts};
+}
+/* Aplica los cambios de ROUTINE_CHANGES posteriores a tu última sesión del tipo; devuelve qué sumó y qué quitó */
+function routineChanges(type, last, date, names){
+  const add = [], drop = [];
+  ROUTINE_CHANGES.filter(c => c.type === type && last < c.date && c.date <= date).forEach(c => {
+    const out = (c.drop || []).map(exKey);
+    names = names.filter(n => { const hit = out.includes(exKey(n)); if (hit) drop.push(exName(n)); return !hit; });
+    (c.add || []).forEach(([n, at]) => { if (!names.some(x => exKey(x) === exKey(n))){ names.splice(at === undefined ? names.length : Math.min(at, names.length), 0, n); add.push(n); } });
+  });
+  return {names, changed: add.length || drop.length ? {add, drop} : null};
 }
 function workoutPlan(date){
   const d = day(date), type = d.act.gym, ended = wEnded(date), hab = type && !ended ? habitual(type, date) : {names: [], from: null};
@@ -3070,7 +3105,7 @@ function workoutPlan(date){
     const gi = ss.findIndex(g => g.includes(k));
     return {k, name, info: exInfo(name), step, rows, ss: gi < 0 ? null : {g: gi, i: ss[gi].indexOf(k), n: ss[gi].length, tag: ssLetter(gi) + (ss[gi].indexOf(k) + 1)}};
   });
-  return {type, from: hab.from, exs, ended, ss};
+  return {type, from: hab.from, changed: hab.changed || null, exs, ended, ss};
 }
 /* Serie activa: la elegida; si no, el drop set pendiente de la última serie marcada; si no, el primer ejercicio con series pendientes.
    En una superserie va al ejercicio del grupo con menos series hechas, así se alternan. */
@@ -3126,7 +3161,7 @@ function renderWorkout(){
   };
   const a = day(date).act, gs = groupSets(a.sets), nPr = a.sets.filter(s => prIds.has(s.id)).length, nWork = sum(gs, g => g.work.length);
   const head = P.ended ? `<div class="wk-sum"><span class="wk-ok">${CHECK}Entreno guardado</span><span class="small muted grow">${gs.length} ${gs.length === 1 ? "ejercicio" : "ejercicios"} · ${nWork} ${nWork === 1 ? "serie" : "series"} · ${fmtDur(gymDur(a))}${nPr ? ` · ${nPr} ${nPr === 1 ? "récord" : "récords"}` : ""}</span><button class="btn small ghost" data-action="wk-resume">Retomar entreno</button></div>`
-    : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`} Van en orden ideal: primero los multiarticulares, después el aislamiento de músculos grandes, luego el de músculos chicos y el core al final; dentro de cada grupo, en tu orden habitual. Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde. "Superserie con el siguiente" junta dos ejercicios para alternarlos sin descanso entre ellos; "drop set", en la serie activa, la hace seguida de la anterior y con menos carga.</p>` : "";
+    : P.type && !a.sets.length ? `<p class="small muted wk-src">${P.from ? `Tus ejercicios habituales de ${GYM_LABEL[P.type]}, con lo que hiciste la última vez.` : `Rutina base de ${GYM_LABEL[P.type]}: ajusta las cargas la primera vez.`}${P.changed ? ` <b>Cambios a tu rutina:</b> ${[P.changed.add.length ? `suma ${listEs(P.changed.add)}` : "", P.changed.drop.length ? `quita ${listEs(P.changed.drop)}` : ""].filter(Boolean).join(" y ")}, para entrenar potencia, equilibrio y estabilidad además de la hipertrofia. Si no te sirve un ejercicio, quítalo con × y no vuelve.` : ""} Van en orden ideal: primero los multiarticulares, después el aislamiento de músculos grandes, luego el de músculos chicos y el core al final (las cargas caminando y la movilidad también); dentro de cada grupo, en tu orden habitual. Toca el círculo al terminar cada serie y se guarda al instante. Arrastra el ícono ⠿ para cambiar el orden; con × quitas lo que no corresponde. "Superserie con el siguiente" junta dos ejercicios para alternarlos sin descanso entre ellos; "drop set", en la serie activa, la hace seguida de la anterior y con menos carga.</p>` : "";
   const warm = P.type && !P.ended && !a.sets.length && WARMUP[P.type] ? `<details class="wk-warm"${W.warmOpen ? " open" : ""}><summary>Calentamiento · ~${WARMUP[P.type].min} min</summary>${WARMUP[P.type].bike ? `<p class="muted">Llegas en bici, así que ya vienes con el cuerpo caliente; esto prepara las articulaciones de la sesión. Si pasan más de 15 min antes de empezar, suma 5 min de bici o elíptica suave.</p>` : ""}<ol>${WARMUP[P.type].steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></details>` : "";
   const foot = !P.ended && a.sets.length ? `<div class="wk-end"><span class="small muted grow">Cada serie queda guardada al marcarla. Al terminar el entreno se quitan los ejercicios que no hiciste y se detiene el cronómetro.</span><button class="btn primary" data-action="wk-end">Terminar entreno</button></div>` : "";
   $("#workout .wk-add").hidden = P.ended;
@@ -3178,18 +3213,18 @@ function wGripKey(e){
 }
 /* Descanso medido: intervalo entre dos series marcadas menos la duración estimada de una serie */
 const SET_SEC = 30, REST_MAX = 600, REST_RESUME = 30 * 60000;
-/* Duración estimada de la sesión: ejecución de cada serie más el descanso entre series, acotado a 2–3 min (60–90 s en core) */
-const REP_SEC = 3, SET_PREP_SEC = 15, REST_LO = 120, REST_HI = 180, ISO_EX = ["Plancha", "Plancha lateral"], ISO_START_SEC = 30;
-/* Los ejercicios de core usan descansos más cortos: 60–90 s */
-const CORE_REST_LO = 60, CORE_REST_HI = 90;
+/* Duración estimada de la sesión: ejecución de cada serie más el descanso entre series, acotado a 2–3 min (60–90 s en core, 15–30 s en movilidad) */
+const REP_SEC = 3, SET_PREP_SEC = 15, REST_LO = 120, REST_HI = 180, ISO_EX = ["Plancha", "Plancha lateral", "Paseo del granjero", "Paseo con una mano", "Estiramiento de flexor de cadera", "Equilibrio en una pierna"], ISO_START_SEC = 30;
+/* Los ejercicios de core usan descansos más cortos: 60–90 s; los de movilidad y equilibrio, 15–30 s */
+const CORE_REST_LO = 60, CORE_REST_HI = 90, MOB_REST_LO = 15, MOB_REST_HI = 30;
 /* Antes de un drop set van DROP_SEC; después de un ejercicio de superserie que no cierra la vuelta, SS_SEC */
 function sessionMin(sets, ss = []){
-  const iso = ISO_EX.map(exKey), isCore = x => (exInfo(x.ex) || {}).t === "core";
+  const iso = ISO_EX.map(exKey), kind = x => (exInfo(x.ex) || {}).t;
   const chained = x => { const k = exKey(x.ex), g = ss.find(y => y.includes(k)); return !!g && g[g.length - 1] !== k; };
   const exec = sum(sets, x => SET_PREP_SEC + (Number(x.reps) || 0) * (iso.includes(exKey(x.ex)) ? 1 : REP_SEC));
   let rest = 0;
   for (let i = 1; i < sets.length; i++){
-    const x = sets[i - 1], [lo, hi] = isCore(x) ? [CORE_REST_LO, CORE_REST_HI] : [REST_LO, REST_HI];
+    const x = sets[i - 1], t = kind(x), [lo, hi] = t === "core" ? [CORE_REST_LO, CORE_REST_HI] : t === "movil" ? [MOB_REST_LO, MOB_REST_HI] : [REST_LO, REST_HI];
     rest += sets[i].drop ? DROP_SEC : chained(x) ? SS_SEC : clamp(x.rest || (lo + hi) / 2, lo, hi);
   }
   return Math.max(1, Math.round((exec + rest) / 60));
@@ -3736,7 +3771,7 @@ function viewDraw(tab){
   if (tab === "finanzas") renderFin();
   else if (tab === "nutricion"){ renderPlan(); if (v === "cuerpo") renderWeight(); if (v === "planificar" && !SHARE) renderFinPrices(); }
   else if (tab === "entreno"){ renderAct(); renderProgress(); }
-  else if (tab === "perfil" && v === "uso") loadMetrics();
+  else if (tab === "perfil" && v === "uso"){ loadMetrics(); renderInstall(); }
 }
 // Cambia de pestaña y de vista y, con un id, baja a esa sección (abierta si es plegable)
 function goView(tab, v, to){
@@ -5173,6 +5208,20 @@ async function renderPush(){
   const sub = await pushSub().catch(() => null);
   if (sub) say("Este dispositivo recibe los avisos de tus transferencias.", `<button class="btn small" data-action="push-test">Enviar un aviso de prueba</button><button class="btn ghost small" data-action="push-off">Dejar de recibir avisos aquí</button>`);
   else say("Este dispositivo no recibe avisos.", `<button class="btn small primary" data-action="push-on">Activar notificaciones</button>`);
+}
+
+/* Instalar la app (manifest.webmanifest): Chrome y Edge avisan con beforeinstallprompt y el botón abre su diálogo; en iPhone se instala desde Safari.
+   No se llama a preventDefault(), así que el aviso propio del navegador sigue apareciendo. */
+let installEvt = null;
+addEventListener("beforeinstallprompt", e => { installEvt = e; renderInstall(); });
+addEventListener("appinstalled", () => { installEvt = null; renderInstall(); });
+function renderInstall(){
+  const box = $("#installBox"); if (!box) return;
+  const say = (t, btns = "") => setHTML(box, `<p class="small" style="margin:0 0 8px">${t}</p>${btns ? `<div class="row">${btns}</div>` : ""}`);
+  if (isStandalone()) return say("Estás usando la app instalada.");
+  if (installEvt) return say("Instálala para abrirla desde su ícono, en pantalla completa y sin la barra del navegador.", `<button class="btn small primary" data-action="app-install">Instalar app</button>`);
+  if (isIOS()) return say("En iPhone: en Safari toca Compartir → Agregar a inicio, y abre la app desde ese ícono.");
+  say("Si ya la instalaste, ábrela desde su ícono. Si no, en el menú del navegador (⋮) elige \"Instalar app\" o \"Agregar a la pantalla principal\".");
 }
 
 /* Tarjetas: nombre y tipo por últimos 4 dígitos (lib.fin.cards) */
@@ -6850,7 +6899,7 @@ function slotFromForm(v){
    3. Serie "kg x reps", "N7x12" o "nivel 7x12" (máquina por nivel), "50 lb x 8" o "12 reps" sin carga; "a/b" reparte entre los ejercicios en paralelo.
    4. Descanso después de la serie: "2min", "2min30s", "90s" o "1:30".
    Sin fecha, las series van al día seleccionado. */
-const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full", core: "core", abs: "core", "torso a": "torsoA", "torso b": "torsoB", "pierna a": "piernaA", "pierna b": "piernaB", "upper a": "torsoA", "upper b": "torsoB", "lower a": "piernaA", "lower b": "piernaB"};
+const GYM_WORDS = {legs: "legs", leg: "legs", pierna: "legs", piernas: "legs", push: "push", empuje: "push", pull: "pull", tiron: "pull", full: "full", "full body": "full", "cuerpo completo": "full", core: "core", abs: "core", "torso a": "torsoA", "torso b": "torsoB", "pierna a": "piernaA", "pierna b": "piernaB", "upper a": "torsoA", "upper b": "torsoB", "lower a": "piernaA", "lower b": "piernaB", movilidad: "movil", mobility: "movil", equilibrio: "movil", estiramiento: "movil", elongacion: "movil"};
 const RT_DATE = /^(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?(?:\s+(.+))?$/;
 const RT_REST = /^(?:descanso\s*)?(?:(\d+)\s*(?:min|mins|minutos?|m|')\s*(?:(\d+)\s*(?:s|seg|segundos?|")?)?|(\d+)\s*(?:s|seg|segundos?)|(\d+):(\d{2}))$/;
 function rtSet(part){
@@ -6872,10 +6921,10 @@ function rtDate(d, m, y){
   if (!y && s > t) s = `${yy - 1}-${pad(m)}-${pad(d)}`;
   return s;
 }
-/* Los abdominales al final de otra sesión no cambian su tipo: solo es Core si no hay otra cosa */
+/* Los abdominales o la movilidad al final de otra sesión no cambian su tipo: solo es Core o Movilidad si no hay otra cosa */
 function inferGym(exs){
   const c = {}; exs.forEach(e => { const t = e.info && e.info.t; if (t) c[t] = (c[t] || 0) + e.sets.length; });
-  if (c.core && Object.keys(c).length > 1) delete c.core;
+  ["core", "movil"].forEach(k => { if (c[k] && Object.keys(c).length > 1) delete c[k]; });
   const tot = sum(Object.values(c), x => x), top = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
   return !top ? "" : top[1] >= .7 * tot ? top[0] : "full";
 }
@@ -7350,6 +7399,12 @@ const actions = {
     const c = finCfg(), due = el.dataset.due;
     return {...c, transfers: (c.transfers || []).map(x => { if (x.id !== el.dataset.id) return x; const sk = new Set(x.skip || []); sk.has(due) ? sk.delete(due) : sk.add(due); return {...x, skip: [...sk].filter(d => d >= addDays(today(), -60)).sort()}; })};
   }),
+  "app-install": async () => {
+    if (!installEvt) return renderInstall();
+    const e = installEvt; installEvt = null;
+    await e.prompt(); await e.userChoice.catch(() => null);
+    renderInstall();
+  },
   "push-on": async () => {
     try {
       const {key} = await finApi("GET", "push");
@@ -7756,7 +7811,7 @@ Otras reglas: El paseo diario con el galgo no se registra. Si una técnica no ex
 Texto: """${text}"""
 Responde solo con este JSON:
 {"meals":[{"time":"HH:MM" o null,"desc":string,"items":${ITEMS_SCHEMA}}],
- "act":{"gym":"push"|"pull"|"legs"|"full"|"core"|"torsoA"|"piernaA"|"torsoB"|"piernaB"|null,"gymMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
+ "act":{"gym":"push"|"pull"|"legs"|"full"|"core"|"torsoA"|"piernaA"|"torsoB"|"piernaB"|"movil"|null,"gymMin":number o null,"tennisMin":number o null,"bikeMin":number o null,"bikeKm":number o null},
  "bassMinutes": number o null,
  "bassLogs":[{"techId":string o null,"techName":string o null,"bpm":number,"clean":boolean}],
  "songsPracticed":[songId],

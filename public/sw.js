@@ -9,7 +9,7 @@ self.addEventListener("push", (e) => {
     body: d.body || "",
     tag: d.tag,
     renotify: !!d.tag,
-    icon: "/img/icono-192.png",
+    icon: "/img/galgo-192.png",
     data: { url: d.url || "/" },
   }));
 });

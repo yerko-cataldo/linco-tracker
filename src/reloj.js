@@ -6,20 +6,27 @@ import { applyProposal } from "./agente.js";
 // warmIds(), "wk-done"): sin el catálogo EX_CAT, los ejercicios se agrupan por nombre normalizado y no se reordenan
 // por tipo. Si cambias esa lógica en la web, revisa también esta.
 
-const GYM_LABEL = { push: "Push", pull: "Pull", legs: "Legs", full: "Full body", core: "Core", torsoA: "Torso A", piernaA: "Pierna A", torsoB: "Torso B", piernaB: "Pierna B" };
+const GYM_LABEL = { push: "Push", pull: "Pull", legs: "Legs", full: "Full body", core: "Core", torsoA: "Torso A", piernaA: "Pierna A", torsoB: "Torso B", piernaB: "Pierna B", movil: "Movilidad" };
 const TL_CYCLE = ["torsoA", "piernaA", "torsoB", "piernaB"];
 // Copia de DEFAULT_ROUTINE de la web: la rutina base mientras no haya sesiones anteriores del tipo
 const DEFAULT_ROUTINE = {
-  push: ["Press banca", "Press inclinado con mancuernas", "Press militar", "Elevaciones laterales", "Extensión de tríceps"],
-  pull: ["Jalón al pecho con polea", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo"],
-  legs: ["Sentadilla hack", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones", "Aductores en máquina", "Abductores en máquina"],
+  push: ["Press banca", "Press inclinado con mancuernas", "Press militar", "Elevaciones laterales", "Extensión de tríceps", "Paseo con una mano"],
+  pull: ["Jalón al pecho con polea", "Remo en máquina", "Face pull", "Curl con barra Z", "Curl martillo", "Paseo del granjero"],
+  legs: ["Kettlebell swing", "Sentadilla hack", "Sentadilla búlgara", "Extensión de cuádriceps", "Curl femoral sentado", "Elevación de talones"],
   full: ["Sentadilla", "Press banca", "Remo en polea", "Press militar", "Curl femoral"],
   core: ["Elevación de piernas", "Crunch inverso", "Plancha", "Plancha lateral", "Bicho muerto"],
-  torsoA: ["Press banca", "Jalón al pecho con polea", "Press inclinado con barra", "Remo en máquina", "Elevaciones laterales", "Curl con barra Z", "Extensión de tríceps"],
-  piernaA: ["Sentadilla hack", "Peso muerto rumano", "Curl femoral sentado", "Extensión de cuádriceps", "Elevación de talones", "Crunch en polea", "Pallof press"],
-  torsoB: ["Press militar", "Remo en polea", "Press de pecho en máquina", "Jalón con agarre estrecho", "Face pull", "Elevaciones laterales", "Curl martillo", "Extensión de tríceps sobre la cabeza"],
-  piernaB: ["Hip thrust", "Prensa", "Curl femoral", "Aductores en máquina", "Abductores en máquina", "Elevación de talones sentado", "Elevación de piernas", "Plancha lateral"],
+  torsoA: ["Press banca", "Jalón al pecho con polea", "Press inclinado con barra", "Remo en máquina", "Elevaciones laterales", "Curl con barra Z", "Extensión de tríceps", "Paseo del granjero"],
+  piernaA: ["Kettlebell swing", "Sentadilla hack", "Peso muerto rumano", "Sentadilla búlgara", "Curl femoral sentado", "Elevación de talones", "Crunch en polea", "Pallof press"],
+  torsoB: ["Press militar", "Remo en polea", "Press de pecho en máquina", "Jalón con agarre estrecho", "Face pull", "Elevaciones laterales", "Curl martillo", "Extensión de tríceps sobre la cabeza", "Paseo con una mano"],
+  piernaB: ["Salto al cajón", "Hip thrust", "Prensa", "Step up", "Curl femoral", "Elevación de talones sentado", "Elevación de piernas", "Plancha lateral"],
+  movil: ["Estiramiento de flexor de cadera", "Rotación torácica", "90/90 de cadera", "Movilidad de tobillo", "Equilibrio en una pierna", "Peso muerto a una pierna", "Plancha", "Bicho muerto"],
 };
+// Copia de ROUTINE_CHANGES de la web: cambios con fecha que se aplican a los ejercicios habituales mientras la última sesión del tipo sea anterior
+const ROUTINE_CHANGES = [
+  { date: "2026-11-14", type: "legs", add: [["Kettlebell swing", 0], ["Sentadilla búlgara", 2]], drop: ["Aductores en máquina", "Abductores en máquina"] },
+  { date: "2026-11-14", type: "push", add: [["Paseo con una mano"]] },
+  { date: "2026-11-14", type: "pull", add: [["Paseo del granjero"]] },
+];
 const DEFAULT_GOALS = { kcal: 2550, protein: 190, water: 10, gymWeek: 3 };
 const HABIT_SESSIONS = 3, DEFAULT_SETS = 3, DEFAULT_REPS = 10;
 const REP_RANGE = [8, 12], REP_FLOOR = 6, WARM_RATIO = 0.75, LB_KG = 0.4536;
@@ -103,6 +110,12 @@ function workoutPlan(hist, d, date, today) {
     sessions.forEach((h) => { const gs = groupSets(h.act.sets); gs.forEach((g, i) => (pos[g.k] = pos[g.k] || { ex: g.ex, p: [] }).p.push(i / Math.max(1, gs.length - 1))); });
     const avg = (x) => x.p.reduce((s, v) => s + v, 0) / x.p.length;
     habit = Object.values(pos).sort((x, y) => avg(x) - avg(y)).map((x) => x.ex);
+    const last = sessions[sessions.length - 1].date;
+    ROUTINE_CHANGES.filter((c) => c.type === type && last < c.date && c.date <= date).forEach((c) => {
+      const out = (c.drop || []).map(norm);
+      habit = habit.filter((n) => !out.includes(norm(n)));
+      (c.add || []).forEach(([n, at]) => { if (!habit.some((x) => norm(x) === norm(n))) habit.splice(at === undefined ? habit.length : Math.min(at, habit.length), 0, n); });
+    });
   }
   const done = groupSets(a.sets), names = [];
   [...done.map((g) => g.ex), ...(ended ? [] : habit)].forEach((n) => { if (!names.some((x) => norm(x) === norm(n))) names.push(n); });
