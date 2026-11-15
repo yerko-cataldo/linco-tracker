@@ -140,4 +140,4 @@ El body de `/api/ai` es `{messages, images, tier, json, stream}`.
 - Adaptar el benchmark para evaluar el desglose en ingredientes con la base, en vez de totales.
 - Completar la fibra de la hallulla; verificar leche sin lactosa, palta y queso rallado contra sus etiquetas.
 - Probar la estimación por foto con Llama 4 Scout usando fotos reales.
-- Ilustraciones en silueta para el resto del catálogo: hoy hay 28 (los ejercicios de las rutinas base de Push, Pull, Legs, Full body y Core, más algunos habituales); faltan los demás.
+- Ilustraciones en silueta para el resto del catálogo: hoy hay 49 (todos los ejercicios de las rutinas base, incluidas Torso/Pierna y Movilidad, más algunos habituales; las de los planes nuevos están en `tools/ilustraciones/pose_planes.py`); faltan los demás.

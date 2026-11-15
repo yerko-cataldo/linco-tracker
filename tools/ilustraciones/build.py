@@ -19,6 +19,7 @@ import pose_pressinc, pose_militar, pose_laterales, pose_triceps  # noqa: E402,E
 import pose_femsentado, pose_femoral, pose_talones, pose_aductores, pose_abductores  # noqa: E402,E401
 import pose_sentadilla, pose_remopolea, pose_rumano, pose_jalonmaq  # noqa: E402,E401
 import pose_elevpiernas, pose_rueda, pose_plancha, pose_planchalat, pose_bicho  # noqa: E402,E401
+import pose_planes  # noqa: E402
 
 INDEX = HERE.parent.parent / "public" / "index.html"
 EXERCISES = {
@@ -54,6 +55,8 @@ EXERCISES = {
     "Plancha": pose_plancha.draw,
     "Plancha lateral": pose_planchalat.draw,
     "Bicho muerto": pose_bicho.draw,
+    # Rutinas base: potencia, una pierna, cargas, máquinas y movilidad (pose_planes.py)
+    **pose_planes.POSES,
 }
 
 
