@@ -906,6 +906,10 @@ details.sec>.sec-body{padding:0 24px 22px}
 @media (max-width:560px){details.sec>summary{padding:16px}details.sec>.sec-body{padding:0 16px 18px}}
 details.manual{border-top:1px solid var(--line);padding-top:12px}
 details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-weight:550}
+details.manual.book-more{margin-top:8px;padding-top:8px}
+#studyPlans{container-type:inline-size}
+.plan-tbl .only-narrow{display:none}
+@container (max-width:560px){.plan-tbl .hide-narrow{display:none}.plan-tbl .only-narrow{display:block;margin-top:3px}}
 .build td,.build th{padding:6px}
 .chips .chip.sel{border-color:var(--ink);background:var(--ink);color:var(--bg)}
 .calc{font-size:.9rem;background:color-mix(in srgb,var(--sunken) 60%,var(--surface));border:1px solid var(--line);padding:14px 16px;line-height:1.65;border-radius:var(--r-sm)}
@@ -1356,9 +1360,10 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   </section>
 
   <!-- BAJO -->
-  <section class="tab" id="tab-bajo">
+  <section class="tab" id="tab-bajo" data-view="practicar">
     <div class="page-head c-bass"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-bass"/></svg></span><div><h2>Bajo</h2><p class="lede" id="bassLede"></p></div></div>
-    <div class="panel metro no-share">
+    <div class="view-bar"><div class="view-nav" role="tablist" aria-label="Vistas"><button role="tab" data-action="view" data-tab="bajo" data-v="practicar" aria-selected="true" title="metrónomo y registro de práctica" class="no-share">Practicar</button><button role="tab" data-action="view" data-tab="bajo" data-v="progreso" aria-selected="false" title="tu semana, racha y metas">Progreso</button><button role="tab" data-action="view" data-tab="bajo" data-v="repertorio" aria-selected="false" title="técnicas y canciones">Repertorio</button></div></div>
+    <div class="panel metro no-share" data-fv="practicar">
       <div class="metro-main">
         <div class="dial">
           <div class="pulse" id="dialPulse"></div>
@@ -1415,12 +1420,13 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         </div>
       </div>
     </div>
-    <div class="grid g2 mt">
-      <div class="panel stack no-share">
+    <div class="panel stack no-share mt" data-fv="practicar" id="bassLogPanel">
         <h3>Registrar práctica</h3>
+        <div id="bassMeter"></div>
+        <div id="bassSong"></div>
         <div class="row">
           <div class="field grow">Técnica<select id="bTech"></select></div>
-          <div class="field w5">BPM<input id="bBpm" inputmode="numeric"></div>
+          <div class="field w7">BPM (o el del metrónomo)<input id="bBpm" inputmode="numeric"></div>
           <label class="small" style="padding-bottom:8px"><input type="checkbox" id="bClean" checked> Limpio</label>
           <button class="btn primary" data-action="bass-log">Registrar</button>
         </div>
@@ -1429,17 +1435,17 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <button class="btn" data-action="bass-min">Sumar minutos</button>
         </div>
         <div id="bassToday"></div>
-      </div>
-      <details class="panel sec" id="techSec" open>
-        <summary><h3>Técnicas</h3><span class="hint">bpm por técnica</span></summary>
-        <div class="sec-body"><div class="row" style="margin-bottom:6px"><button class="btn small" data-action="tech-new">Nueva técnica</button></div><ul class="list" id="techList"></ul></div>
-      </details>
     </div>
-    <details class="panel sec mt" id="songSec">
-      <summary><h3>Repertorio</h3><span class="hint">canciones y su tempo</span></summary>
-      <div class="sec-body"><div class="row" style="margin-bottom:6px"><button class="btn small" data-action="song-new">Nueva canción</button></div><ul class="list" id="songList"></ul></div>
+    <div class="panel" data-fv="progreso" id="bassProg"></div>
+    <details class="panel sec" data-fv="repertorio" id="techSec" open>
+      <summary><h3>Técnicas</h3><span class="hint" id="techSum">bpm por técnica</span></summary>
+      <div class="sec-body"><div class="row" style="margin-bottom:6px"><button class="btn small" data-action="tech-new">Nueva técnica</button></div><ul class="list" id="techList"></ul></div>
     </details>
-    <details class="panel sec mt no-share" id="goalBassSec">
+    <details class="panel sec mt" data-fv="repertorio" id="songSec" open>
+      <summary><h3>Repertorio</h3><span class="hint" id="songSum">canciones y su tempo</span></summary>
+      <div class="sec-body"><div class="row" style="margin-bottom:6px"><button class="btn small" data-action="song-new">Nueva canción</button></div><div class="chips" id="songFilter" style="margin-bottom:10px"></div><ul class="list" id="songList"></ul></div>
+    </details>
+    <details class="panel sec mt no-share" data-fv="progreso" id="goalBassSec">
       <summary><h3>Metas de bajo</h3><span class="hint">minutos y días por semana</span></summary>
       <div class="sec-body stack">
       <div class="row">
@@ -1452,27 +1458,33 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   </section>
 
   <!-- ESTUDIO -->
-  <section class="tab" id="tab-estudio">
+  <section class="tab" id="tab-estudio" data-view="hoy">
     <div class="page-head c-study"><span class="tile"><svg class="ico" aria-hidden="true"><use href="#i-study"/></svg></span><div><h2>Lectura y estudio</h2><p class="lede" id="studyLede"></p></div></div>
-    <div class="panel">
+    <div class="view-bar"><div class="view-nav" role="tablist" aria-label="Vistas"><button role="tab" data-action="view" data-tab="estudio" data-v="hoy" aria-selected="true" title="registrar avance, foco y la semana">Hoy</button><button role="tab" data-action="view" data-tab="estudio" data-v="plan" aria-selected="false" title="la ruta de cada curso">Plan</button><button role="tab" data-action="view" data-tab="estudio" data-v="biblioteca" aria-selected="false" title="libros, cursos y metas">Biblioteca</button></div></div>
+    <div class="panel" data-fv="biblioteca">
       <div class="item-head"><h3>Libros y cursos</h3><span class="act"><button class="btn small" data-action="book-new">Agregar libro o curso</button></span></div>
       <ul class="list" id="bookList"></ul>
     </div>
-    <div class="grid g2 mt">
-      <div class="panel stack no-share">
+    <details class="panel sec mt" data-fv="biblioteca" id="bookArchSec" hidden>
+      <summary><h3>Archivados</h3><span class="hint" id="bookArchSum"></span></summary>
+      <div class="sec-body"><ul class="list" id="bookArchList"></ul></div>
+    </details>
+    <div class="panel stack no-share" data-fv="hoy" id="studyLogPanel">
         <h3>Registrar avance</h3>
+        <div id="studyMeter"></div>
         <div class="row"><div class="field grow">Libro o curso<select id="sItem"></select></div></div>
+        <div class="small muted" id="sInfo"></div>
         <div class="row">
           <div class="field w7"><span id="sUnitLbl">Avance</span><input id="sAmt" inputmode="decimal" placeholder="+"></div>
+          <div class="field w7"><span id="sAtLbl">O voy en</span><input id="sAt" inputmode="decimal"></div>
           <div class="field w7">Minutos<input id="sMin" inputmode="numeric"></div>
           <button class="btn primary" data-action="study-log">Registrar</button>
         </div>
         <div id="studyToday"></div>
-      </div>
-      <details class="panel sec" id="studyWeekSec" open><summary><h3>Minutos de estudio en la semana</h3><span class="hint">frente a tu meta</span></summary><div class="sec-body" id="studyChart"></div></details>
     </div>
-    <div id="studyPlans"></div>
-    <div class="panel mt focus no-share">
+    <details class="panel sec mt" data-fv="hoy" id="studyWeekSec" open><summary><h3>Minutos de estudio en la semana</h3><span class="hint">frente a tu meta</span></summary><div class="sec-body" id="studyChart"></div></details>
+    <div id="studyPlans" data-fv="plan"></div>
+    <div class="panel mt focus no-share" data-fv="hoy">
       <div>
         <h3>Sesión de foco</h3>
         <p class="small muted" style="margin:0 0 12px">Bloques de concentración con descanso entre medio, como la técnica Pomodoro. Al terminar un bloque, sus minutos quedan listos en "Registrar avance".</p>
@@ -1491,7 +1503,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
         <div class="small muted" id="pomoDone"></div>
       </div>
     </div>
-    <details class="panel sec mt no-share" id="goalStudySec">
+    <details class="panel sec mt no-share" data-fv="biblioteca" id="goalStudySec">
       <summary><h3>Metas de estudio</h3><span class="hint">minutos por día de la semana</span></summary>
       <div class="sec-body stack">
       <div class="small muted">Minutos por día (0 = día libre)</div>
@@ -1874,7 +1886,7 @@ const LIBKEYS = {goals:"values", profile:"values", techniques:"list", songs:"lis
 const SHARE = (location.pathname.match(/^\/s\/([A-Za-z0-9_-]{20,64})\/?$/) || [])[1] || null;
 const SHARE_AREAS = [["act", "Entreno", "entreno"], ["bass", "Bajo", "bajo"], ["study", "Estudio", "estudio"], ["food", "Nutrición", "nutricion"]];
 const SHARE_DEFAULT = ["act", "bass", "study"];
-const SHARE_ACTIONS = new Set(["day-prev", "day-next", "day-today", "day-open", "pick-date", "theme-toggle", "cat-g", "ex-sel", "week-shift", "wk-open", "hm-shift", "view"]);
+const SHARE_ACTIONS = new Set(["day-prev", "day-next", "day-today", "day-open", "pick-date", "theme-toggle", "cat-g", "ex-sel", "week-shift", "wk-open", "hm-shift", "view", "song-filter", "plan-weeks"]);
 /* Áreas que cuentan en la constancia y el rango: las cuatro, o solo las compartidas en la vista compartida */
 let AREAS = ["food", "act", "bass", "study"];
 
@@ -2651,9 +2663,9 @@ function weightChart(ser, width, plan){
 }
 
 // goal puede ser un número (línea de meta) o un arreglo con la meta de cada barra
-function barChart(values, labels, goal, color, unit, hi = (parseYmd(S.date).getDay() + 6) % 7){
+function barChart(values, labels, goal, color, unit, hi = (parseYmd(S.date).getDay() + 6) % 7, W = 460){
   const per = Array.isArray(goal) ? goal : null;
-  const W = 460, H = 180, L = 36, B = 26, T = 10, max = Math.max(...(per || [goal || 0]), ...values.map(v => v || 0)) * 1.12 || 1;
+  const H = 180, L = 36, B = 26, T = 10, max = Math.max(...(per || [goal || 0]), ...values.map(v => v || 0)) * 1.12 || 1;
   const bw = (W - L - 10) / values.length, y = v => T + (H - T - B) * (1 - v / max);
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico semanal en ${unit}" style="width:100%;height:auto;font-family:'Hanken Grotesk',system-ui,sans-serif">`;
   [0, .5, 1].forEach(f => { const v = max * f / 1.12; s += `<line x1="${L}" x2="${W-6}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)">${fmt(v)}</text>`; });
@@ -3525,12 +3537,37 @@ function renderSessions(){
     </button></li>`; }).join("")}</ul>` : `<p class="empty">Todavía no hay sesiones con series registradas.</p>`);
 }
 
+// El BPM del metrónomo es la referencia de "Registrar práctica" y de "Guardar en la canción"
+function syncBassBpm(){
+  const b = $("#bBpm"); if (b) b.placeholder = `${Metro.bpm}`;
+  const sv = $("#songSaveBtn"); if (sv) sv.textContent = `Guardar ${Metro.bpm} bpm en la canción`;
+}
+function renderBassProg(){
+  const box = $("#bassProg"); if (!box) return;
+  const g = goals(S.date), wk = weekDates(S.date), mins = wk.map(x => day(x).bass.minutes || 0);
+  const used = wk.filter(x => { const b = day(x).bass; return b.minutes > 0 || b.logs.length > 0; }).length;
+  const tot = sum(mins, v => v), goalWk = g.bassMin * g.bassDays, st = bassStreak();
+  const cw = box.clientWidth ? box.clientWidth - (innerWidth <= 560 ? 32 : 48) : Math.min(innerWidth, 700) - 80;
+  setHTML(box, `<div class="item-head"><h3>Tu semana</h3><span class="small muted">${esc(fmtShort(wk[0]))} al ${esc(fmtShort(wk[6]))}</span></div>
+    <div class="wstats mt">
+      <div><span>Minutos</span><strong>${fmt(tot)}</strong><small>meta ${fmt(goalWk)} min</small></div>
+      <div><span>Días practicados</span><strong>${used} / ${g.bassDays}</strong><small>${used >= g.bassDays ? "meta cumplida" : `faltan ${g.bassDays - used}`}</small></div>
+      <div><span>Racha</span><strong>${days_(st)}</strong><small>seguidos con práctica</small></div>
+    </div>
+    <div class="wchart">${barChart(mins, DOW, g.bassMin, "var(--bass)", "min", undefined, Math.max(280, Math.round(cw)))}</div>
+    ${meter("Semana", tot, goalWk, "min", "var(--bass)")}
+    <p class="small muted" style="margin:10px 0 0">Cada barra son los minutos de bajo de ese día y la línea punteada es tu meta diaria (${fmt(g.bassMin)} min). Un día cuenta como practicado si sumaste minutos o registraste una técnica. La racha son los días seguidos hasta hoy con práctica.</p>`);
+}
 function renderBass(){
-  const g = goals(S.date), d = day(S.date), techs = S.lib.techniques, songs = S.lib.songs;
+  const g = goals(S.date), d = day(S.date), techs = S.lib.techniques, songs = S.lib.songs, isToday = S.date === today();
   $("#bassLede").textContent = `${fmtLong(S.date)}. Meta: ${g.bassMin} min al día, ${g.bassDays} días por semana.`;
   fillSelect($("#bTech"), techs.map(t => ({v: t.id, t: t.name})), techs.length ? null : "Crea una técnica primero");
   const tName = id => (techs.find(t => t.id === id) || {}).name || "Técnica borrada";
-  setHTML($("#bassToday"), `<p class="small" style="margin:6px 0"><strong>${fmt(d.bass.minutes)} min</strong> registrados ${S.date === today() ? "hoy" : "este día"}${d.bass.minutes ? ` <button class="btn small ghost" data-action="bass-min-reset">Poner en 0</button>` : ""}</p>` +
+  setHTML($("#bassMeter"), meter(isToday ? "Hoy" : "Ese día", d.bass.minutes || 0, g.bassMin, "min", "var(--bass)"));
+  const sg = S.songLoaded && songs.find(s => s.id === S.songLoaded);
+  setHTML($("#bassSong"), sg ? `<div class="row" style="margin-bottom:8px"><span class="small">Practicando <strong>${esc(sg.title)}</strong>${sg.bpmCur ? `: ${sg.bpmCur}` : ""}${sg.bpmTarget ? ` de ${sg.bpmTarget} bpm` : ""}.</span><button class="btn small" id="songSaveBtn" data-action="song-bpm-save"></button><button class="btn small ghost" data-action="song-unload">Quitar</button></div>` : "");
+  syncBassBpm();
+  setHTML($("#bassToday"), `<p class="small" style="margin:6px 0"><strong>${fmt(d.bass.minutes)} min</strong> registrados ${isToday ? "hoy" : "este día"}${d.bass.minutes ? ` <button class="btn small ghost" data-action="bass-min-reset">Poner en 0</button>` : ""}</p>` +
     (d.bass.logs.length ? `<ul class="list">${d.bass.logs.map(l => `<li class="item-head"><span>${esc(tName(l.techId))}</span><strong class="hud">${l.bpm} bpm</strong><span class="tag">${l.clean ? "limpio" : "con errores"}</span><span class="act"><button class="btn small ghost danger" data-action="bass-log-del" data-id="${l.id}">Borrar</button></span></li>`).join("")}</ul>` : `<p class="empty">Sin ejercicios registrados este día.</p>`));
   setHTML($("#techList"), techs.length ? techs.map(t => {
     const h = techHistory(t.id), best = techBest(t.id), pct = best && t.target ? best / t.target * 100 : 0;
@@ -3541,8 +3578,14 @@ function renderBass(){
       <div class="small muted">Mejor limpio ${best ?? "—"} bpm, objetivo ${t.target ?? "—"} bpm, ${h.length} registros</div>
       <div class="bar" style="margin-top:6px"><i style="width:${clamp(pct,0,100)}%;background:var(--bass)"></i></div></li>`;
   }).join("") : `<li class="empty">Agrega técnicas como slap, octavas, galope, palm mute o arpegios para seguir su BPM.</li>`);
-  const order = s => SONG_STATES.indexOf(s.status);
-  setHTML($("#songList"), songs.length ? [...songs].sort((a,b) => order(a) - order(b)).map(s => {
+  const atTarget = techs.filter(t => t.target && (techBest(t.id) || 0) >= t.target).length;
+  $("#techSum").textContent = techs.length ? `${techs.length} técnica${techs.length > 1 ? "s" : ""}${atTarget ? `, ${atTarget} en su objetivo` : ""}` : "bpm por técnica";
+  const order = s => SONG_STATES.indexOf(s.status), sf = S.songF || "", cnt = st => songs.filter(s => s.status === st).length;
+  setHTML($("#songFilter"), songs.length ? `<button class="chip${sf ? "" : " sel"}" data-action="song-filter" data-v="" aria-pressed="${!sf}">Todas (${songs.length})</button>` + SONG_STATES.filter(st => cnt(st) || st === sf).map(st => `<button class="chip${sf === st ? " sel" : ""}" data-action="song-filter" data-v="${esc(st)}" aria-pressed="${sf === st}">${esc(st)} (${cnt(st)})</button>`).join("") : "");
+  const practicedN = songs.filter(s => d.bass.songs.includes(s.id)).length;
+  $("#songSum").textContent = songs.length ? `${songs.length} ${songs.length === 1 ? "canción" : "canciones"}${practicedN ? `, ${practicedN} practicada${practicedN > 1 ? "s" : ""} ${isToday ? "hoy" : "ese día"}` : ""}` : "canciones y su tempo";
+  const shown = songs.filter(s => !sf || s.status === sf);
+  setHTML($("#songList"), shown.length ? [...shown].sort((a,b) => order(a) - order(b)).map(s => {
     const practiced = d.bass.songs.includes(s.id), pct = s.bpmCur && s.bpmTarget ? s.bpmCur / s.bpmTarget * 100 : null;
     return `<li><div class="item-head"><strong>${esc(s.title)}</strong><span class="muted">${esc(s.artist||"")}</span>${s.genre ? `<span class="tag">${esc(s.genre)}</span>` : ""}<span class="tag st-${(s.status||"").replace(/\s/g,"")}">${esc(s.status)}</span>
       <span class="act"><button class="btn small ${practiced ? "primary" : ""}" data-action="song-practiced" data-id="${s.id}" aria-pressed="${practiced}">${practiced ? "Practicada" : "Marcar practicada"}</button>
@@ -3551,36 +3594,58 @@ function renderBass(){
       <button class="btn small ghost danger" data-action="song-del" data-id="${s.id}">Borrar</button></span></div>
       <div class="small muted">${s.bpmCur ? `Tocándola a ${s.bpmCur} de ${s.bpmTarget || "?"} bpm` : "Sin BPM registrado"}${s.tuning ? `, afinación ${esc(s.tuning)}` : ""}${s.notes ? `. ${esc(s.notes)}` : ""}</div>
       ${pct !== null ? `<div class="bar" style="margin-top:6px"><i style="width:${clamp(pct,0,100)}%;background:var(--bass)"></i></div>` : ""}</li>`;
-  }).join("") : `<li class="empty">Agrega las canciones que estás sacando, con género, afinación, BPM original y el que ya logras.</li>`);
+  }).join("") : `<li class="empty">${songs.length ? "Ninguna canción en ese estado." : "Agrega las canciones que estás sacando, con género, afinación, BPM original y el que ya logras."}</li>`);
+  renderBassProg();
 }
 
+// Dónde vas en un libro y qué pide hoy su plan
+function studyInfo(b){
+  const cur = b.current || 0, u = b.unit || "", t = today();
+  let txt = `Vas en ${fmt(cur, 1)} de ${fmt(b.total, 1)} ${u} (${fmt(b.total ? cur / b.total * 100 : 0)}%).`;
+  const p = bookPlan(b);
+  if (p && p.rem && t >= b.start && t <= b.end){
+    const goal = Math.ceil(p.dueToday - 1e-9), gap = goal - cur;
+    txt += gap > 0 ? ` El plan pide llegar a ${fmt(goal)} hoy: te faltan ${fmt(gap, 1)}.` : ` Vas al día con el plan de hoy (${fmt(goal)}).`;
+  }
+  return txt;
+}
+function bookLiHTML(b){
+  const pct = b.total ? (b.current || 0) / b.total * 100 : 0, rate = bookRate(b.id), rem = Math.max(0, (b.total||0) - (b.current||0));
+  const eta = rem === 0 ? "terminado" : rate > 0 ? `termina aprox. el ${fmtShort(addDays(today(), Math.ceil(rem / rate)))}` : "sin ritmo reciente para proyectar";
+  const hue = [...String(b.title)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7);
+  const ini = String(b.title).split(/\s+/).filter(w => w.length > 2).slice(0, 2).map(w => w[0].toUpperCase()).join("") || String(b.title).slice(0, 1).toUpperCase();
+  return `<li class="book" style="${b.archived ? "opacity:.6" : ""}"><span class="cover" style="--h:${hue}" aria-hidden="true">${esc(ini)}</span><div><div class="item-head"><strong>${esc(b.title)}</strong><span class="tag">${esc(b.kind)}</span>
+    <span class="act">${b.archived ? "" : `<button class="btn small" data-action="book-log" data-id="${b.id}">Registrar avance</button>`}<button class="btn small ghost" data-action="book-edit" data-id="${b.id}">Editar</button></span></div>
+    <div class="small muted">${fmt(b.current||0,1)} de ${fmt(b.total,1)} ${esc(b.unit)} (${fmt(pct)}%). Ritmo 14 días: ${fmt(rate,1)} ${esc(b.unit)}/día, ${eta}.</div>
+    <div class="bar" style="margin-top:6px"><i style="width:${clamp(pct,0,100)}%;background:var(--study)"></i></div>
+    <details class="manual book-more no-share"><summary>Más</summary><div class="row" style="margin-top:8px"><button class="btn small ghost" data-action="book-arch" data-id="${b.id}">${b.archived ? "Reactivar" : "Archivar"}</button><button class="btn small ghost danger" data-action="book-del" data-id="${b.id}">Borrar</button></div></details></div></li>`;
+}
 function renderStudy(){
-  const g = goals(S.date), d = day(S.date), books = S.lib.books.filter(b => !b.archived);
-  const wp = studyWeekPlan(g), wk = weekDates(S.date);
+  const g = goals(S.date), d = day(S.date), books = S.lib.books.filter(b => !b.archived), arch = S.lib.books.filter(b => b.archived);
+  const wp = studyWeekPlan(g), wk = weekDates(S.date), isToday = S.date === today();
   $("#studyLede").textContent = `${fmtLong(S.date)}. Meta: ${fmt(sum(wp, v => v))} min a la semana (${studyPlanTxt(wp)}).`;
   fillSelect($("#sItem"), books.map(b => ({v: b.id, t: b.title})), books.length ? null : "Agrega un libro o curso primero");
   const sel = S.lib.books.find(b => b.id === $("#sItem").value);
   $("#sUnitLbl").textContent = sel ? `Avance (+${sel.unit})` : "Avance";
+  $("#sAtLbl").textContent = sel ? `O voy en (${sel.unit})` : "O voy en";
+  $("#sAt").placeholder = sel ? fmt(sel.current || 0, 1) : "";
+  $("#sInfo").textContent = sel ? studyInfo(sel) : "";
+  const sm = dayStats(S.date).studyMin, goalDay = wp[parseYmd(S.date).getDay()];
+  setHTML($("#studyMeter"), goalDay ? meter(isToday ? "Hoy" : "Ese día", sm, goalDay, "min", "var(--study)") : `<p class="small muted" style="margin:0 0 8px">Día libre de estudio${sm ? `: llevas ${fmt(sm)} min.` : "."}</p>`);
   const bName = id => (S.lib.books.find(b => b.id === id) || {}).title || "Ítem borrado";
   const bUnit = id => (S.lib.books.find(b => b.id === id) || {}).unit || "";
   setHTML($("#studyToday"), d.study.length ? `<ul class="list">${d.study.map(s => `<li class="item-head"><span>${esc(bName(s.itemId))}</span><strong class="hud">+${fmt(s.amount,1)} ${esc(bUnit(s.itemId))}</strong><span class="muted">${fmt(s.minutes)} min</span><span class="act"><button class="btn small ghost danger" data-action="study-del" data-id="${s.id}">Borrar</button></span></li>`).join("")}</ul>` : `<p class="empty">Sin avance registrado este día.</p>`);
-  const wMin = sum(wk, x => dayStats(x).studyMin), wGoal = sum(wp, v => v);
-  setHTML($("#studyChart"), barChart(wk.map(x => dayStats(x).studyMin), DOW, wk.map(x => wp[parseYmd(x).getDay()]), "var(--study)", "min") + meter("Semana", wMin, wGoal, "min", "var(--study)"));
-  const pBox = $("#studyPlans");
+  const wMin = sum(wk, x => dayStats(x).studyMin), wGoal = sum(wp, v => v), cBox = $("#studyChart");
+  const cw = cBox.clientWidth ? cBox.clientWidth : Math.min(innerWidth, 700) - 80;
+  setHTML(cBox, barChart(wk.map(x => dayStats(x).studyMin), DOW, wk.map(x => wp[parseYmd(x).getDay()]), "var(--study)", "min", undefined, Math.max(280, Math.round(cw))) + meter("Semana", wMin, wGoal, "min", "var(--study)"));
+  const pBox = $("#studyPlans"), plans = books.map(bookPlan).filter(Boolean);
   // Con la pestaña oculta el contenedor mide 0: se usa el ancho de la ventana como aproximación
-  setHTML(pBox, books.map(bookPlan).filter(Boolean).map(p => bookPlanHTML(p, (pBox.clientWidth || Math.min(window.innerWidth, 1100)) - 40)).join(""));
-  setHTML($("#bookList"), S.lib.books.length ? [...S.lib.books].sort((a,b) => (a.archived?1:0)-(b.archived?1:0)).map(b => {
-    const pct = b.total ? (b.current || 0) / b.total * 100 : 0, rate = bookRate(b.id), rem = Math.max(0, (b.total||0) - (b.current||0));
-    const eta = rem === 0 ? "terminado" : rate > 0 ? `termina aprox. el ${fmtShort(addDays(today(), Math.ceil(rem / rate)))}` : "sin ritmo reciente para proyectar";
-    const hue = [...String(b.title)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7);
-    const ini = String(b.title).split(/\s+/).filter(w => w.length > 2).slice(0, 2).map(w => w[0].toUpperCase()).join("") || String(b.title).slice(0, 1).toUpperCase();
-    return `<li class="book" style="${b.archived ? "opacity:.6" : ""}"><span class="cover" style="--h:${hue}" aria-hidden="true">${esc(ini)}</span><div><div class="item-head"><strong>${esc(b.title)}</strong><span class="tag">${esc(b.kind)}</span>
-      <span class="act"><button class="btn small ghost" data-action="book-edit" data-id="${b.id}">Editar</button>
-      <button class="btn small ghost" data-action="book-arch" data-id="${b.id}">${b.archived ? "Reactivar" : "Archivar"}</button>
-      <button class="btn small ghost danger" data-action="book-del" data-id="${b.id}">Borrar</button></span></div>
-      <div class="small muted">${fmt(b.current||0,1)} de ${fmt(b.total,1)} ${esc(b.unit)} (${fmt(pct)}%). Ritmo 14 días: ${fmt(rate,1)} ${esc(b.unit)}/día, ${eta}.</div>
-      <div class="bar" style="margin-top:6px"><i style="width:${clamp(pct,0,100)}%;background:var(--study)"></i></div></div></li>`;
-  }).join("") : `<li class="empty">Agrega un libro, curso o paper con su total de páginas, capítulos o lecciones.</li>`);
+  const pw = (pBox.clientWidth || Math.min(window.innerWidth, 1100)) - (window.innerWidth <= 560 ? 32 : 48);
+  setHTML(pBox, plans.length ? plans.map((p, i) => bookPlanHTML(p, pw, i)).join("") : `<div class="panel"><p class="empty" style="margin:0">Aún no hay un plan. Un libro o curso con fecha de inicio y de término tiene aquí su ruta, su avance frente al plan y la fecha en que terminarías. Agrégalas al editarlo, en Biblioteca.</p></div>`);
+  setHTML($("#bookList"), books.length ? books.map(bookLiHTML).join("") : `<li class="empty">${S.lib.books.length ? "Todo está archivado: reactiva un libro desde Archivados." : "Agrega un libro, curso o paper con su total de páginas, capítulos o lecciones."}</li>`);
+  $("#bookArchSec").hidden = !arch.length;
+  $("#bookArchSum").textContent = arch.length ? `${arch.length} ${arch.length > 1 ? "ítems" : "ítem"}` : "";
+  setHTML($("#bookArchList"), arch.map(bookLiHTML).join(""));
 }
 
 const WD_SHORT = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
@@ -3589,12 +3654,14 @@ function studyPlanTxt(wp){
   const ord = [1, 2, 3, 4, 5, 6, 0], free = ord.filter(i => !wp[i]).map(i => WD_SHORT[i]);
   return ord.filter(i => wp[i]).map(i => `${WD_SHORT[i]} ${fmt(wp[i])}`).join(", ") + (free.length ? `; libres: ${free.join(", ")}` : "");
 }
-function bookPlanHTML(p, width){
+function bookPlanHTML(p, width, idx = 0){
   const b = p.b, t = today(), u = esc(b.unit || ""), pct = p.cur / b.total * 100;
   const now = p.secAt(Math.min(b.total, Math.floor(p.cur) + 1)), goalSec = p.secAt(Math.max(1, Math.ceil(p.dueToday - 1e-9)));
   const before = t < b.start, afterEnd = t > b.end, d = Math.round(p.diff);
   const vsTxt = before ? "—" : d > 0 ? `+${fmt(d)}` : d < 0 ? `−${fmt(-d)}` : "al día";
   const vsSub = before ? `parte el ${esc(fmtShort(b.start))}` : d > 0 ? `${u} adelantado` : d < 0 ? `${u} atrasado` : `con la ruta`;
+  // resumen del encabezado: lo esencial aunque el plan esté cerrado
+  const hint = p.rem === 0 ? "terminado" : before ? `parte el ${fmtShort(b.start)}` : d > 0 ? `${fmt(d)} ${b.unit || ""} adelantado` : d < 0 ? `${fmt(-d)} ${b.unit || ""} atrasado` : "al día";
   let verdict;
   if (p.rem === 0) verdict = `Terminaste ${esc(b.title)}.${b.exam && b.exam >= t ? ` Quedan ${days_(dayGap(t, b.exam))} para el examen: dedícalos a exámenes de práctica y a repasar lo débil.` : ""}`;
   else if (before) verdict = `El plan parte el ${esc(fmtLong(b.start))}.`;
@@ -3602,15 +3669,22 @@ function bookPlanHTML(p, width){
     const late = dayGap(b.end, p.eta);
     verdict = `<span class="dot" style="display:inline-block;background:${late <= 0 ? "var(--ok)" : "var(--danger)"};margin-right:8px"></span>A tu ritmo terminarías el <strong>${esc(fmtLong(p.eta))}</strong>, ${late === 0 ? "justo en la fecha del plan" : `${days_(Math.abs(late))} ${late < 0 ? "antes" : "después"} de la meta del ${esc(fmtShort(b.end))}`}.${late > 0 ? ` Para llegar a tiempo necesitas ${fmt(p.need, 1)} ${u} por semana.` : ""}`;
   } else verdict = `<span class="muted">Para proyectar la fecha de término necesito ${PLAN_PROJ_MIN} días de plan con avance registrado.</span>`;
-  const rows = p.weeks.map(w => {
-    const cur = w.ws <= t && t <= w.we, past = w.we < t, sec = p.secAt(Math.max(1, Math.ceil(w.to - 1e-9)));
+  // Con más de 5 semanas se muestran la actual y sus vecinas; el resto, a pedido
+  const ci = (k => k >= 0 ? k : before ? 0 : p.weeks.length - 1)(p.weeks.findIndex(w => w.ws <= t && t <= w.we));
+  const many = p.weeks.length > 5, all = !!(S.planAll || {})[b.id];
+  const vis = p.weeks.map((w, i) => i).filter(i => !many || all || (i >= ci - 1 && i <= ci + 1));
+  const rows = vis.map(i => {
+    const w = p.weeks[i], cur = w.ws <= t && t <= w.we, past = w.we < t, sec = p.secAt(Math.max(1, Math.ceil(w.to - 1e-9)));
     const goal = w.review ? (w.exam ? `examen el ${esc(fmtShort(w.exam))}` : "repaso y exámenes de práctica")
       : `hasta ${unitTxt(Math.ceil(w.to - 1e-9), b)}${sec ? `<div class="small muted">${sec.i}. ${esc(sec.t)}</div>` : ""}`;
     const ok = w.done !== null && w.done >= Math.ceil(w.to - 1e-9);
     const st = w.done === null ? "" : w.review ? fmt(w.done) : `${fmt(w.done, w.done % 1 ? 1 : 0)} <span style="color:${ok ? "var(--ok)" : past ? "var(--danger)" : "var(--muted)"}">${ok ? "✓" : past ? `faltaron ${fmt(Math.ceil(w.to - 1e-9) - w.done)}` : "en curso"}</span>`;
-    return `<tr${cur ? ' style="background:var(--hl)"' : ""}><td>${w.k}<div class="small muted" style="white-space:nowrap">${esc(fmtShort(w.ws))}</div></td><td>${goal}</td><td>${st}</td><td class="n" style="white-space:nowrap">${w.done === null && !w.min ? "—" : fmt(w.min)} / ${fmt(w.plan)}</td></tr>`;
+    return `<tr${cur ? ' style="background:var(--hl)"' : ""}><td>${w.k}<div class="small muted" style="white-space:nowrap">${esc(fmtShort(w.ws))}</div></td><td>${goal}${st ? `<div class="only-narrow small">Logrado: ${st}</div>` : ""}</td><td class="hide-narrow">${st}</td><td class="n" style="white-space:nowrap">${w.done === null && !w.min ? "—" : fmt(w.min)} / ${fmt(w.plan)}</td></tr>`;
   }).join("");
-  return `<div class="panel mt c-study"><div class="item-head"><h3>Plan: ${esc(b.title)}</h3><span class="small muted">${esc(fmtShort(b.start))} al ${esc(fmtShort(b.end))}${b.exam ? `, examen el ${esc(fmtShort(b.exam))}` : ""}</span></div>
+  const more = many ? `<div class="row mt"><button class="btn small ghost" data-action="plan-weeks" data-id="${esc(b.id)}">${all ? "Ver solo las semanas cercanas" : `Ver las ${p.weeks.length} semanas`}</button>${all ? "" : `<span class="small muted">Semanas ${p.weeks[vis[0]].k} a ${p.weeks[vis[vis.length - 1]].k} de ${p.weeks.length}</span>`}</div>` : "";
+  const saved = secRead()[`plan-${b.id}`], isOpen = saved === undefined ? idx === 0 : saved;
+  return `<details class="panel sec c-study${idx ? " mt" : ""}" id="plan-${esc(b.id)}" data-plan data-def="${idx === 0 ? 1 : 0}"${isOpen ? " open" : ""}><summary><h3>Plan: ${esc(b.title)}</h3><span class="hint">${esc(hint)}</span></summary><div class="sec-body">
+    <p class="small muted" style="margin:0 0 12px">${esc(fmtShort(b.start))} al ${esc(fmtShort(b.end))}${b.exam ? `, examen el ${esc(fmtShort(b.exam))}` : ""}</p>
     <div class="wstats w4">
       <div><span>Avance</span><strong>${fmt(p.cur, p.cur % 1 ? 1 : 0)} / ${fmt(b.total)}</strong><small>${fmt(pct)}%${now && p.rem ? `, sección ${now.i}: ${esc(now.t)}` : ""}</small></div>
       <div><span>Meta de hoy</span><strong>${afterEnd ? "repaso" : before ? "—" : fmt(Math.ceil(p.dueToday - 1e-9))}</strong><small>${afterEnd ? "temario completo según el plan" : before ? "&nbsp;" : `${u}${goalSec ? `, sección ${goalSec.i}` : ""}`}</small></div>
@@ -3620,9 +3694,10 @@ function bookPlanHTML(p, width){
     <div class="wchart">${bookPlanChart(p, width)}</div>
     <div class="gw-legend" style="margin:8px 0 0"><span><i style="background:var(--study)"></i>Tu avance y proyección</span><span><i style="background:var(--ok)"></i>Ruta del plan</span></div>
     <p style="margin:12px 0 0">${verdict}</p>
-    <div class="scroll mt"><table><thead><tr><th>Semana</th><th>Meta al domingo</th><th>Logrado</th><th class="n">Min</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="scroll mt"><table class="plan-tbl"><thead><tr><th>Semana</th><th>Meta al domingo</th><th class="hide-narrow">Logrado</th><th class="n">Min</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${more}
     <p class="small muted" style="margin:10px 0 0">La ruta reparte ${p.secs.length ? "los minutos de video del temario" : `las ${u}`} en proporción a tus minutos de estudio planificados (${studyPlanTxt(studyWeekPlan())}): las secciones largas ocupan más días y los días libres quedan planos. "Frente al plan" compara tu avance con la meta de hoy si ya la pasaste, o con la de ayer si no. El ritmo es tu avance de los últimos 14 días (o desde que partió el plan) y la proyección lo extiende a esa velocidad. Las líneas punteadas horizontales marcan el fin de cada sección.</p>
-  </div>`;
+  </div></details>`;
 }
 
 const fmtBytes = b => b >= 1024 ** 3 ? `${fmt(b / 1024 ** 3, 2)} GB` : b >= 1024 ** 2 ? `${fmt(b / 1024 ** 2, 1)} MB` : `${fmt(b / 1024, 0)} KB`;
@@ -3928,7 +4003,7 @@ const finMonth = () => S.finMonth || today().slice(0, 7);
 /* Vistas: una pestaña con VIEWS reparte sus bloques de primer nivel en vistas. Cada bloque lleva data-fv con sus vistas (sin él, se ve
    en todas) y setView() oculta los demás con .fv-off. La vista elegida se recuerda por dispositivo junto a las secciones plegables.
    En la vista compartida, una vista cuyo botón es .no-share no se puede elegir. */
-const VIEWS = {nutricion: ["hoy", "planificar", "cuerpo", "base"], entreno: ["hoy", "progreso", "ejercicios"], finanzas: ["resumen", "plan", "analisis", "movs", "ajustes"], perfil: ["yo", "uso"]};
+const VIEWS = {nutricion: ["hoy", "planificar", "cuerpo", "base"], entreno: ["hoy", "progreso", "ejercicios"], finanzas: ["resumen", "plan", "analisis", "movs", "ajustes"], perfil: ["yo", "uso"], bajo: ["practicar", "progreso", "repertorio"], estudio: ["hoy", "plan", "biblioteca"]};
 S.views = {};
 function setView(tab, v, draw = true){
   const sec = $("#tab-" + tab), list = VIEWS[tab]; if (!sec || !list) return;
@@ -3945,6 +4020,8 @@ function viewDraw(tab){
   if (tab === "finanzas") renderFin();
   else if (tab === "nutricion"){ renderPlan(); if (v === "cuerpo"){ renderWeight(); renderMeas(); } if (v === "base") renderCmp(); if (v === "planificar" && !SHARE) renderFinPrices(); }
   else if (tab === "entreno"){ renderAct(); renderProgress(); }
+  else if (tab === "bajo") renderBass();
+  else if (tab === "estudio") renderStudy();
   else if (tab === "perfil" && v === "uso"){ loadMetrics(); renderInstall(); }
 }
 // Cambia de pestaña y de vista y, con un id, baja a esa sección (abierta si es plegable)
@@ -7767,13 +7844,16 @@ const actions = {
     Metro.elapsed = 0; Metro.drawTime(); toast(`Sumaste ${m} min de bajo.`);
   },
   "bass-log": () => {
-    const techId = $("#bTech").value, bpm = num($("#bBpm").value);
+    // Sin BPM escrito se usa el del metrónomo (se ve como referencia en el campo)
+    const techId = $("#bTech").value, bpm = num($("#bBpm").value) || Metro.bpm, clean = $("#bClean").checked;
     if (!techId){ toast("Crea una técnica primero."); return; }
-    if (!bpm){ toast("Indica el BPM alcanzado."); return; }
-    saveDay(S.date, d => d.bass.logs.push({id: uid(), techId, bpm, clean: $("#bClean").checked}));
-    toast("Práctica registrada.");
+    if (!(bpm > 0)){ toast("Indica el BPM alcanzado."); return; }
+    const prev = techBest(techId);
+    saveDay(S.date, d => d.bass.logs.push({id: uid(), techId, bpm, clean}));
+    $("#bBpm").value = "";
+    toast(clean && !prev ? `Primera marca limpia: ${bpm} bpm.` : clean && bpm > prev ? `¡Mejor marca! ${bpm} bpm limpio, antes ${prev}.` : `Práctica registrada a ${bpm} bpm.`);
   },
-  "bass-min": () => { const m = num($("#bMin").value); if (!m){ toast("Indica los minutos."); return; } saveDay(S.date, d => { d.bass.minutes = (d.bass.minutes || 0) + m; }); $("#bMin").value = ""; },
+  "bass-min": () => { const m = num($("#bMin").value); if (!m){ toast("Indica los minutos."); return; } saveDay(S.date, d => { d.bass.minutes = (d.bass.minutes || 0) + m; }); $("#bMin").value = ""; toast(`Sumaste ${fmt(m)} min de bajo.`); },
   "bass-min-reset": el => confirmClick(el, () => saveDay(S.date, d => { d.bass.minutes = 0; })),
   "bass-log-del": el => confirmClick(el, () => saveDay(S.date, d => { d.bass.logs = d.bass.logs.filter(l => l.id !== el.dataset.id); })),
   "tech-new": () => openDialog("Nueva técnica", TECH_FIELDS({}), v => v.name && saveLib("techniques", l => { l.push({id: uid(), ...v}); })),
@@ -7782,24 +7862,50 @@ const actions = {
   "tech-use": el => {
     const t = S.lib.techniques.find(x => x.id === el.dataset.id); $("#bTech").value = t.id;
     const best = techBest(t.id); Metro.setBpm(best ? best + 2 : (t.target ? Math.round(t.target * .7) : Metro.bpm));
-    $("#bBpm").value = Metro.bpm; window.scrollTo({top: 0, behavior: "smooth"}); toast(`Metrónomo a ${Metro.bpm} bpm para ${t.name}.`);
+    goView("bajo", "practicar"); $("#bBpm").value = Metro.bpm; window.scrollTo({top: 0, behavior: "smooth"}); toast(`Metrónomo a ${Metro.bpm} bpm para ${t.name}.`);
   },
   "song-new": () => openDialog("Nueva canción", SONG_FIELDS({}), v => v.title && saveLib("songs", l => { l.push({id: uid(), ...v}); })),
   "song-edit": el => { const s = S.lib.songs.find(x => x.id === el.dataset.id); openDialog("Editar canción", SONG_FIELDS(s), v => saveLib("songs", l => { Object.assign(l.find(x => x.id === s.id), v); })); },
   "song-del": el => confirmClick(el, () => saveLib("songs", l => l.filter(x => x.id !== el.dataset.id))),
   "song-practiced": el => saveDay(S.date, d => { const id = el.dataset.id; d.bass.songs = d.bass.songs.includes(id) ? d.bass.songs.filter(x => x !== id) : [...d.bass.songs, id]; }),
-  "song-metro": el => { const s = S.lib.songs.find(x => x.id === el.dataset.id); Metro.setBpm(s.bpmCur || Math.round(s.bpmTarget * .75)); $("#trMax").value = s.bpmTarget; window.scrollTo({top: 0, behavior: "smooth"}); toast(`Metrónomo a ${Metro.bpm} bpm, tope ${s.bpmTarget} para ${s.title}.`); },
+  "song-metro": el => {
+    const s = S.lib.songs.find(x => x.id === el.dataset.id); Metro.setBpm(s.bpmCur || Math.round(s.bpmTarget * .75)); $("#trMax").value = s.bpmTarget;
+    S.songLoaded = s.id; goView("bajo", "practicar"); renderBass(); window.scrollTo({top: 0, behavior: "smooth"}); toast(`Metrónomo a ${Metro.bpm} bpm, tope ${s.bpmTarget} para ${s.title}.`);
+  },
+  "song-bpm-save": () => {
+    const s = S.lib.songs.find(x => x.id === S.songLoaded); if (!s){ toast("Carga una canción con su botón Metrónomo."); return; }
+    const bpm = Metro.bpm; saveLib("songs", l => { const x = l.find(y => y.id === s.id); if (x) x.bpmCur = bpm; });
+    toast(`${s.title}: ${bpm} bpm guardado${s.bpmTarget ? `, ${fmt(bpm / s.bpmTarget * 100)}% del objetivo` : ""}.`);
+  },
+  "song-unload": () => { S.songLoaded = null; renderBass(); },
+  "song-filter": el => { S.songF = el.dataset.v || ""; renderBass(); },
 
   "book-new": () => openDialog("Agregar libro o curso", BOOK_FIELDS({}), v => { v = bookFromDialog(v); if (!v.title || !v.total){ toast("Falta el título o el total."); return; } saveLib("books", l => { l.push({id: uid(), ...v, current: v.current || 0}); }); }),
   "book-edit": el => { const b = S.lib.books.find(x => x.id === el.dataset.id); openDialog("Editar", BOOK_FIELDS(b), v => { v = bookFromDialog(v); if (!v.total) v.total = b.total; saveLib("books", l => { Object.assign(l.find(x => x.id === b.id), v); }); }); },
   "book-arch": el => saveLib("books", l => { const b = l.find(x => x.id === el.dataset.id); b.archived = !b.archived; }),
   "book-del": el => confirmClick(el, () => saveLib("books", l => l.filter(x => x.id !== el.dataset.id))),
   "study-log": () => {
-    const itemId = $("#sItem").value, amount = num($("#sAmt").value) || 0, minutes = num($("#sMin").value) || 0;
-    if (!itemId){ toast("Agrega un libro o curso primero."); return; }
+    const itemId = $("#sItem").value, b = S.lib.books.find(x => x.id === itemId), minutes = num($("#sMin").value) || 0;
+    let amount = num($("#sAmt").value) || 0; const at = num($("#sAt").value);
+    if (!itemId || !b){ toast("Agrega un libro o curso primero."); return; }
+    if (at !== null){
+      // "O voy en": el avance es la diferencia con lo que ya llevas
+      const cur = b.current || 0;
+      if (amount){ toast("Usa un solo campo: el avance (+) o dónde vas."); return; }
+      if (at < cur){ toast(`Ya llevas ${fmt(cur, 1)} ${b.unit}: ese número es menor. Si te equivocaste, corrígelo con Editar.`); return; }
+      if (b.total && at > b.total){ toast(`El total es ${fmt(b.total, 1)} ${b.unit}.`); return; }
+      amount = Math.round((at - cur) * 100) / 100;
+    }
     if (!amount && !minutes){ toast("Indica avance o minutos."); return; }
-    logStudy(itemId, amount, minutes); $("#sAmt").value = ""; $("#sMin").value = ""; toast("Avance registrado.");
+    const now = Math.min(b.total || Infinity, (b.current || 0) + amount);
+    logStudy(itemId, amount, minutes); $("#sAmt").value = ""; $("#sAt").value = ""; $("#sMin").value = "";
+    toast(amount ? `Registrado: +${fmt(amount, 1)} ${b.unit}${minutes ? `, ${fmt(minutes)} min` : ""}. Vas en ${fmt(now, 1)} de ${fmt(b.total, 1)}.` : `Registrados ${fmt(minutes)} min de estudio.`);
   },
+  "book-log": el => {
+    goView("estudio", "hoy"); $("#sItem").value = el.dataset.id; renderStudy();
+    $("#sAmt").focus(); $("#sAmt").scrollIntoView({block: "center", behavior: "smooth"});
+  },
+  "plan-weeks": el => { S.planAll = {...(S.planAll || {}), [el.dataset.id]: !(S.planAll || {})[el.dataset.id]}; renderStudy(); },
   "pomo-len": el => { Pomo.setLen(Number(el.dataset.v)); document.querySelectorAll("#pomoChips .chip").forEach(c => c.classList.toggle("sel", c === el)); },
   "pomo-toggle": () => Pomo.running ? Pomo.pause() : Pomo.start(),
   "pomo-reset": () => Pomo.reset(),
@@ -8179,7 +8285,7 @@ const VEL = {X: 1, x: .75, g: .22};
 const Metro = {
   ctx: null, gain: null, bus: null, noiseBuf: null, playing: false, bpm: 80, beats: 4, sub: 1, acc: [0, 1, 1, 1],
   next: 0, beat: 0, subIdx: 0, bar: 0, timer: null, queue: [], raf: 0, elapsed: 0, lastTick: 0, taps: [],
-  setBpm(v){ this.bpm = clamp(Math.round(v), 30, 280); $("#bpmNum").textContent = this.bpm; $("#bpmRange").value = this.bpm; },
+  setBpm(v){ this.bpm = clamp(Math.round(v), 30, 280); $("#bpmNum").textContent = this.bpm; $("#bpmRange").value = this.bpm; syncBassBpm(); },
   setBeats(n){ this.beats = n; this.acc = Array.from({length: n}, (_, i) => i === 0 ? 0 : 1); this.beat = 0; this.drawBeats(); },
   drawBeats(){
     const lbl = ["fuerte", "normal", "en silencio"];
@@ -8187,7 +8293,12 @@ const Metro = {
       return `<button class="beat a${a}" style="--a:${(360 * i / this.beats).toFixed(2)}deg" data-action="beat-acc" data-i="${i}" aria-label="Pulso ${i + 1}: ${lbl[a]}" title="Pulso ${i + 1}: ${lbl[a]}"></button>`; }).join("");
   },
   drawTime(){ const s = Math.floor(this.elapsed); $("#metroTime").textContent = `${Math.floor(s/60)}:${pad(s%60)}`; },
-  toggle(){ this.playing ? this.stop() : this.start(); },
+  toggle(){
+    if (!this.playing){ this.start(); return; }
+    this.stop();
+    const m = Math.round(this.elapsed / 60);
+    if (m >= 1) toast(`Llevas ${m} min con metrónomo sin sumar: "Sumar al día" los registra.`);
+  },
   ensure(){
     if (this.ctx){ this.ctx.resume(); return true; }
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC){ toast("Este navegador no soporta audio."); return false; }
@@ -8529,7 +8640,7 @@ function wireUI(){
   $("#mealPhoto").addEventListener("change", e => { $("#mealPhotoName").textContent = e.target.files[0] ? e.target.files[0].name : ""; });
   $("#chatIn").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); chatSend(); } });
   document.addEventListener("keydown", e => {
-    if (e.code !== "Space" || S.tab !== "bajo") return;
+    if (e.code !== "Space" || S.tab !== "bajo" || S.views.bajo !== "practicar") return;
     const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT|BUTTON/.test(a.tagName)) return;
     e.preventDefault(); Metro.toggle();
   });
@@ -8544,7 +8655,7 @@ function wireUI(){
     const btn = enterButton(t);
     if (btn) btn.click(); else t.blur();
   });
-  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFin(); }, 150); });
+  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFin(); if (S.tab === "bajo") renderBass(); if (S.tab === "estudio") renderStudy(); }, 150); });
   $("#finDetDlg").addEventListener("close", () => { if (S.finDraft){ S.finDraft = null; finDetClearPhoto(); } });
   $("#finPrices").addEventListener("change", e => {
     const id = e.target.dataset.refPick; if (!id) return;
@@ -8558,7 +8669,9 @@ function wireUI(){
   document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("coach-open") && !document.querySelector("dialog[open]")) coachToggle(false); });
   document.querySelectorAll("details.sec[id]").forEach(el => { if (el.id in secOpen) el.open = secOpen[el.id]; });
   document.addEventListener("toggle", e => {
-    const el = e.target; if (!(el instanceof HTMLDetailsElement) || !el.matches("details.sec[id]")) return;
+    const el = e.target;
+    if (el instanceof HTMLDetailsElement && el.dataset.plan !== undefined){ const st = secRead()[el.id]; if (el.open !== (st === undefined ? el.dataset.def === "1" : st)) secWrite(el.id, el.open); return; }
+    if (!(el instanceof HTMLDetailsElement) || !el.matches("details.sec[id]")) return;
     secWrite(el.id, el.open); if (!el.open) return;
     if (el.id === "finPriceSec"){
       renderFinPrices();
