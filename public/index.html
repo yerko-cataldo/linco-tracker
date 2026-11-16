@@ -308,6 +308,7 @@ tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--line-strong)
 .meter .lab span:last-child{color:var(--muted);text-align:right}
 /* Registro rápido */
 .quick h3{font-size:1.15rem}
+@media (max-width:720px){#tab-hoy.on{display:flex;flex-direction:column}#tab-hoy .page-head{order:-2}#tab-hoy #quickPanel{order:-1;margin-bottom:16px}}
 .quick textarea{width:100%;min-height:76px;padding:12px 14px;font-size:.98rem;line-height:1.5;border-radius:12px}
 .preview{margin-top:14px;border-top:1px dashed var(--line-strong);padding-top:14px}
 .preview ul{margin:6px 0 12px;padding-left:20px}
@@ -766,6 +767,9 @@ dialog .fields{display:grid;gap:12px;margin:16px 0 20px}
 .wchart g.pt{cursor:pointer}
 .wchart g.pt:hover circle.dot{fill:var(--food)}
 .wstats.w4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.wstats.w6{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+#scanVideo{display:block;width:100%;max-height:50vh;border-radius:var(--r-sm);background:var(--sunken);margin:12px 0 0}
+.cmp-best{font-weight:700;color:var(--ok)}
 @media (max-width:560px){.wstats strong{font-size:1.2rem}.wstats.w4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Secciones desplegables */
 .grid>details.sec{align-self:start}
@@ -1063,6 +1067,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="field w5">Cantidad<input id="fdQty" inputmode="decimal"></div>
           <div class="field w7">Unidad<select id="fdUnit"><option value="g">gramos</option></select></div>
           <button class="btn" data-action="build-add">Añadir</button>
+          <button class="btn ghost" data-action="food-scan" data-to="meal">Escanear código de barras</button>
         </div>
         <datalist id="foodList"></datalist>
         <div id="fdMiss"></div>
@@ -1178,6 +1183,10 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <summary><h3>Peso</h3><span class="hint" id="weightSum"></span></summary>
       <div class="sec-body" id="weightBox"></div>
     </details>
+    <details class="panel sec mt no-share" data-fv="cuerpo" id="measSec">
+      <summary><h3>Medidas corporales</h3><span class="hint" id="measSum"></span></summary>
+      <div class="sec-body" id="measBox"></div>
+    </details>
     <details class="panel sec mt no-share" data-fv="cuerpo" id="calcSec" open>
       <summary><h3>Fase y metas de nutrición</h3><span class="hint" id="phaseSum">definición, mantención o volumen</span></summary>
       <div class="sec-body stack">
@@ -1225,15 +1234,26 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <div class="field grow">Agregar un alimento: escribe qué es y busco sus valores<input id="foodAsk" placeholder="Ej: carne molida, pechuga de pollo cruda, quinoa cocida" autocomplete="off"></div>
           <button class="btn primary" data-action="food-ask">Agregar</button>
           <label class="btn ai-only" hidden>Leer etiqueta (foto)<input type="file" id="labelPhoto" accept="image/*" class="sr"></label>
+          <button class="btn" data-action="food-scan">Escanear código de barras</button>
           <button class="btn ghost small" data-action="food-new">Formulario vacío</button>
         </div>
         <p class="small muted" id="foodAskStatus" style="margin:-4px 0 10px"></p>
         <p class="small muted" style="margin:0 0 10px">Valores por 100 g (o 100 ml) del alimento tal como lo comes: cocido si lo comes cocido. Los que dicen "revisar" dependen de la marca o la receta: corrígelos con la etiqueta. <span id="labelStatus"></span></p>
-        <div class="row" style="margin-bottom:8px"><div class="field grow"><span class="sr">Filtrar alimentos</span><input id="foodFilter" placeholder="Filtrar alimentos"></div></div>
+        <div class="row" style="margin-bottom:8px"><div class="field grow"><span class="sr">Filtrar alimentos</span><input id="foodFilter" data-enter="none" placeholder="Filtrar alimentos"></div></div>
         <div class="scroll" id="foodTable"></div>
         <h3 class="mt">Comidas frecuentes</h3>
         <p class="small muted" id="comboHint" style="margin:0 0 6px" hidden>Marca cada comida como de teletrabajo u oficina: así arman el plan de cada tipo de día, la lista de compras y lo que hay que cocinar.</p>
         <div id="comboList"></div>
+      </div>
+    </details>
+    <details class="panel sec mt no-share" data-fv="base" id="cmpSec">
+      <summary><h3>Comparar alimentos</h3><span class="hint" id="cmpSum">lado a lado, por 100 g</span></summary>
+      <div class="sec-body">
+        <div class="row" style="margin-bottom:12px">
+          <div class="field grow">Alimento<input id="cmpFood" list="foodList" placeholder="Busca en tus alimentos" autocomplete="off"></div>
+          <button class="btn" data-action="cmp-add">Agregar a la comparación</button>
+        </div>
+        <div id="cmpBox"></div>
       </div>
     </details>
   </section>
@@ -1328,7 +1348,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
     <details class="panel sec" data-fv="ejercicios" id="catBox" open>
       <summary><h3>Ejercicios</h3><span class="hint">qué trabaja cada uno</span></summary>
       <div class="sec-body">
-        <div class="row" style="margin-bottom:12px"><div class="field grow"><span class="sr">Buscar</span><input id="catQ" autocomplete="off" placeholder="Buscar ejercicio o músculo"></div></div>
+        <div class="row" style="margin-bottom:12px"><div class="field grow"><span class="sr">Buscar</span><input id="catQ" data-enter="none" autocomplete="off" placeholder="Buscar ejercicio o músculo"></div></div>
         <div class="chips" id="catChips"></div>
         <ul class="cat-list" id="catList"></ul>
       </div>
@@ -1377,16 +1397,16 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
           <label class="small"><input type="checkbox" id="countIn"> Cuenta de entrada de un compás</label>
           <label class="small"><input type="checkbox" id="gapOn"> Pulso interno: silencia compases para ver si mantienes el tempo</label>
           <div class="row">
-            <div class="field w7">Compases con sonido<input id="gapPlay" inputmode="numeric" value="3"></div>
-            <div class="field w7">Compases en silencio<input id="gapMute" inputmode="numeric" value="1"></div>
+            <div class="field w7">Compases con sonido<input id="gapPlay" data-enter="none" inputmode="numeric" value="3"></div>
+            <div class="field w7">Compases en silencio<input id="gapMute" data-enter="none" inputmode="numeric" value="1"></div>
           </div>
         </div>
         <div>
           <label class="small"><input type="checkbox" id="trOn"> Entrenador de velocidad: sube el tempo solo</label>
           <div class="row" style="margin-top:6px">
-            <div class="field w5">Paso bpm<input id="trStep" inputmode="numeric" value="2"></div>
-            <div class="field w5">Cada (compases)<input id="trEvery" inputmode="numeric" value="8"></div>
-            <div class="field w5">Tope bpm<input id="trMax" inputmode="numeric" value="160"></div>
+            <div class="field w5">Paso bpm<input id="trStep" data-enter="none" inputmode="numeric" value="2"></div>
+            <div class="field w5">Cada (compases)<input id="trEvery" data-enter="none" inputmode="numeric" value="8"></div>
+            <div class="field w5">Tope bpm<input id="trMax" data-enter="none" inputmode="numeric" value="160"></div>
           </div>
         </div>
         <div class="row">
@@ -1580,7 +1600,7 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
       <div class="item-head"><h3>Movimientos</h3><span class="small muted" id="finListSum"></span></div>
       <div class="sec-body">
         <div class="row" style="margin-bottom:10px">
-          <div class="field grow"><span class="sr">Buscar</span><input id="finQ" type="search" placeholder="Buscar comercio o producto"></div>
+          <div class="field grow"><span class="sr">Buscar</span><input id="finQ" data-enter="none" type="search" placeholder="Buscar comercio o producto"></div>
           <div class="field w10"><span class="sr">Filtrar por destino</span><select id="finGroupF"></select></div>
           <div class="field w10"><span class="sr">Filtrar por categoría</span><select id="finCatF"></select></div>
           <button class="btn small" data-action="fin-csv" title="Descarga los movimientos que se ven, para abrirlos en Excel">Descargar CSV</button>
@@ -1750,6 +1770,16 @@ details.manual summary{cursor:pointer;color:var(--muted);font-size:.9rem;font-we
   <div id="finDetItems" class="mt"></div>
   <div class="row sheet-foot"><button class="btn primary" data-action="fin-det-save">Guardar detalle</button><span class="small" id="finDetSum"></span></div>
   <details class="manual mt"><summary>Cómo lee la compra</summary><p class="small muted" style="margin:10px 0 0">Con texto, la IA separa los productos y copia los números que escribiste. Con foto (hasta 3, para una boleta larga), la IA solo transcribe las líneas tal cual y el código las lee: el código de barras abre un producto, una línea sin monto continúa su nombre, "2 x 1 UN $1250 c/u" o "0,845 KG X $1.990" es su cantidad, "2 KG" o "250G" en el nombre es el contenido del envase y un monto negativo es un descuento del producto anterior, con su misma categoría. Después la IA solo escribe nombres legibles y elige el alimento de tu base y la categoría. Lo que compras sin cocinar (carne, pollo, pescado) se asocia a su versión cruda; si no la tienes, se agrega a tu base con valores de referencia (USDA aprox.) junto con su versión cocida. Si las líneas no suman el TOTAL impreso, la boleta se lee una segunda vez y queda la lectura que cuadra; si ninguna cuadra, o el TOTAL no coincide con la compra, te avisa. El código calcula el resto: el total de un producto sale de su precio por la cantidad; si queda un solo producto sin total, se le asigna lo que falta para cuadrar con el monto de la compra, y su cantidad sale de ese total dividido por el precio. El precio por kg o litro es el total dividido por el peso o volumen, y pasa a ser el precio de ese alimento.</p></details>
+</dialog>
+<dialog id="scanDlg" aria-labelledby="scanHead">
+  <h3 id="scanHead">Escanear código de barras</h3>
+  <video id="scanVideo" playsinline muted hidden></video>
+  <p class="small muted" id="scanStatus" style="margin:12px 0"></p>
+  <div class="row">
+    <div class="field grow">Código (los números bajo las barras)<input id="scanCode" inputmode="numeric" autocomplete="off"></div>
+    <button class="btn primary" data-action="scan-lookup">Buscar</button>
+    <button class="btn" data-action="scan-close">Cerrar</button>
+  </div>
 </dialog>
 <dialog id="dlg"><form method="dialog"><h3 id="dlgTitle"></h3><div class="fields" id="dlgFields"></div><div class="row"><button class="btn primary" value="ok" id="dlgOk">Guardar</button><button class="btn" value="cancel" formnovalidate>Cancelar</button></div></form></dialog>
 <button class="fab ai-only no-share" data-action="coach-toggle" aria-label="Abrir el coach" title="Coach" hidden><svg class="ico" aria-hidden="true"><use href="#i-coach"/></svg></button>
@@ -2890,10 +2920,7 @@ function renderNutrition(){
       <td class="n"><button class="btn small ghost" data-action="meal-edit" data-id="${m.id}">Editar</button><button class="btn small ghost danger" data-action="meal-del" data-id="${m.id}">Borrar</button></td></tr>`).join("")}
     </tbody><tfoot><tr><td></td><td>Total</td><td class="n">${fmt(st.kcal)}</td><td class="n">${fmt(st.p)}</td><td class="n">${fmt(st.c)}</td><td class="n">${fmt(st.f)}</td><td class="n">${fmt(st.fib)}</td><td class="n">${costHtml(meals.flatMap(m => m.items || []))}</td><td></td></tr></tfoot></table>`
     : `<p class="empty">Sin comidas registradas este día. Agrega la primera arriba o usa el registro rápido del resumen.</p>`);
-  setHTML($("#bodyBox"), `<div class="row">
-      <div class="field w7">Peso kg<input id="wInput" inputmode="decimal" value="${d.weight ?? ""}"></div>
-      <button class="btn small" data-action="weight-save">Guardar peso</button>
-    </div>`);
+  setHTML($("#bodyBox"), weightForm(d));
   setHTML($("#days7"), weekDates(S.date).map(dt => {
     const s = dayStats(dt), gd = goals(dt), lo = gd.kcal * (1 - gd.tol / 100), hi = gd.kcal * (1 + gd.tol / 100);
     const col = !s.meals ? "var(--muted)" : s.kcal > hi ? "var(--danger)" : s.kcal >= lo ? "var(--ok)" : "var(--food)";
@@ -2920,7 +2947,14 @@ function renderNutrition(){
     ${SHARE ? "" : `<dt>Ajuste sugerido</dt><dd>${adjTxt}</dd>`}
   </dl></div><p class="small muted" style="margin:10px 0 0">La tendencia es la pendiente de una regresión lineal sobre tus pesajes de 4 semanas. El ajuste compara la pendiente desde que empezó tu fase (hasta 4 semanas) con el ritmo de la fase (% de tu peso por semana; 7.700 kcal ≈ 1 kg); si se desvía más de ${fmt(ADJ_TOL, 1)} kg/sem, propone un cambio con tope de ±${ADJ_CAP} kcal, que se aplica a los carbohidratos. Plantas distintas es una heurística de diversidad para la microbiota.</p>`);
   $("#nutWeekSum").textContent = `${ws.foodOk} de ${ws.n} días en meta · ${wt ? `peso ${wt.perWeek > 0 ? "+" : ""}${fmt(wt.perWeek, 2)} kg/sem` : "tendencia de peso sin datos"}`;
-  renderPlan(); renderOpt(); renderWeight(); renderNutDash(); renderBuild(); renderFoods(); renderWeek();
+  renderPlan(); renderOpt(); renderWeight(); renderMeas(); renderNutDash(); renderBuild(); renderFoods(); renderCmp(); renderWeek();
+}
+// Campo de peso del día abierto: el último pesaje va de referencia en el campo vacío
+function weightForm(d){
+  const lw = lastWeight();
+  return `<div class="row"><div class="field w7">Peso kg<input class="w-in" inputmode="decimal" value="${d.weight ?? ""}" placeholder="${lw ? fmt(lw.w, 1) : ""}" aria-label="Peso del ${esc(fmtShort(d.date))} en kg"></div>
+      <button class="btn small" data-action="weight-save">Guardar peso${d.date === today() ? "" : ` del ${esc(fmtShort(d.date))}`}</button>
+      ${lw && lw.dt !== d.date ? `<span class="small muted">último: ${kg1(lw.w)} kg, ${esc(fmtShort(lw.dt))}</span>` : ""}</div>`;
 }
 function renderWeight(){
   const ser = weightSeries(), lw = lastWeight(), wt = weightTrend(), box = $("#weightBox");
@@ -2929,7 +2963,8 @@ function renderWeight(){
   const goal = weightGoal();
   $("#weightSum").textContent = lw ? `${kg1(lw.w)} kg · ${rate}${goal ? ` · meta ${kg1(goal.kg)} kg` : ""}` : "sin pesajes";
   if (!$("#weightPanel").open) return;
-  if (!ser || !ser.some(p => p.w !== null)){ setHTML(box, `<p class="empty">Sin pesajes en las últimas ${WEIGHT_DAYS / 7} semanas. Registra tu peso en el panel del día.</p>`); return; }
+  const wf = SHARE ? "" : weightForm(day(S.date));
+  if (!ser || !ser.some(p => p.w !== null)){ setHTML(box, `${wf}<p class="empty">Sin pesajes en las últimas ${WEIGHT_DAYS / 7} semanas. Anota el primero aquí arriba.</p>`); return; }
   const plan = weightPlan(ser), tr = ser[ser.length - 1].trend, tr7 = ser.length > 7 ? ser[ser.length - 8].trend : null;
   const gd = plan ? fmtShort(plan.goal.date) : "";
   let verdict = "";
@@ -2941,7 +2976,7 @@ function renderWeight(){
   } else if (!goal){
     verdict = `<p class="small muted" style="margin:12px 0 0">Define tu meta de peso en Metas de nutrición y peso, más abajo, para ver la proyección.</p>`;
   }
-  setHTML(box, `<div class="wstats${plan ? " w4" : ""}">
+  setHTML(box, `${wf}<div class="wstats mt${plan ? " w4" : ""}">
       <div><span>Último pesaje</span><strong>${kg1(lw.w)} kg</strong><small>${esc(fmtShort(lw.dt))}</small></div>
       <div><span>Peso de tendencia</span><strong>${kg1(tr)} kg</strong><small>${tr7 !== null ? `${sg(tr - tr7)} kg en 7 días` : "&nbsp;"}</small></div>
       <div><span>Ritmo (28 días)</span><strong>${wt ? sg(wt.perWeek) : "—"}</strong><small>${wt ? `kg/sem, ${wt.n} pesajes` : "faltan pesajes"}</small></div>
@@ -2952,6 +2987,123 @@ function renderWeight(){
     ${verdict}
     <p class="small muted" style="margin:10px 0 0">Cada punto es un pesaje; tócalo para abrir ese día. La línea es tu peso de tendencia: un promedio móvil exponencial en que cada día mueve la tendencia un 10% hacia el pesaje; los días sin pesaje se rellenan con una recta entre los pesajes vecinos. El trazo vertical es la distancia entre el pesaje y la tendencia, que suele ser agua, sal o digestión. El ritmo es la pendiente de una regresión lineal sobre los pesajes de 28 días, la misma que usa el ajuste sugerido de calorías.${plan ? ` El peso meta es tu masa libre de grasa dividida por (1 − % de grasa meta): ${kg1(plan.goal.lean)} ÷ (1 − ${fmt(plan.goal.fat, 1)}%) = ${kg1(plan.goal.kg)} kg, suponiendo que mantienes la masa libre de grasa. La proyección y la ruta parten del valor de la regresión para hoy (${kg1(plan.now)} kg), que no tiene el retraso del promedio móvil; la proyección sigue tu ritmo actual y la ruta es la recta hasta la meta.` : ""}</p>`);
 }
+/* ---------- medidas corporales ----------
+   day.meas = {waist, neck, hip, chest, arm, thigh} en cm. Privadas: la vista compartida no las entrega.
+   % de grasa estimado con la fórmula de la Marina de EE. UU. (Hodgdon y Beckett, 1984), con las medidas y la estatura en cm:
+   hombre 495 / (1,0324 − 0,19077·log10(cintura − cuello) + 0,15456·log10(estatura)) − 450
+   mujer  495 / (1,29579 − 0,35004·log10(cintura + cadera − cuello) + 0,22100·log10(estatura)) − 450 */
+const MEAS = [["waist", "Cintura"], ["neck", "Cuello"], ["hip", "Cadera"], ["chest", "Pecho"], ["arm", "Brazo"], ["thigh", "Muslo"]];
+function measHist(){ return allDatesAsc().map(dt => ({dt, m: (S.days[dt] || {}).meas})).filter(x => x.m && MEAS.some(([k]) => x.m[k])); }
+function navyFat(m, p){
+  const h = p.height; if (!h || !m.waist || !m.neck) return null;
+  const girth = p.sex === "mujer" ? (m.hip ? m.waist + m.hip - m.neck : 0) : m.waist - m.neck; if (girth <= 0) return null;
+  const v = p.sex === "mujer" ? 495 / (1.29579 - 0.35004 * Math.log10(girth) + 0.22100 * Math.log10(h)) - 450 : 495 / (1.0324 - 0.19077 * Math.log10(girth) + 0.15456 * Math.log10(h)) - 450;
+  return isFinite(v) && v > 2 && v < 60 ? v : null;
+}
+function renderMeas(){
+  const box = $("#measBox"); if (!box || SHARE) return;
+  const hist = measHist(), p = profile(), cur = day(S.date).meas || {};
+  const last = k => { for (let i = hist.length - 1; i >= 0; i--) if (hist[i].m[k]) return {v: hist[i].m[k], dt: hist[i].dt, first: hist.find(x => x.m[k])}; return null; };
+  const lw = last("waist");
+  $("#measSum").textContent = lw ? `cintura ${fmt(lw.v, 1)} cm · ${fmtShort(lw.dt)}` : "cintura, cuello, cadera, pecho, brazo y muslo";
+  if (!$("#measSec").open) return;
+  const sg = v => `${v > 0 ? "+" : ""}${fmt(v, 1)}`;
+  const form = `<div class="row">${MEAS.map(([k, l]) => `<div class="field w5">${l} cm<input id="ms-${k}" inputmode="decimal" value="${cur[k] ?? ""}"></div>`).join("")}
+      <button class="btn small" data-action="meas-save">Guardar medidas del ${esc(fmtShort(S.date))}</button></div>`;
+  if (!hist.length){ setHTML(box, form + `<p class="empty">Sin medidas todavía. Mídete con una huincha, en ayunas y siempre en el mismo punto; con cintura y cuello${p.sex === "mujer" ? ", más cadera," : ""} se estima tu % de grasa.</p>`); return; }
+  const stats = MEAS.map(([k, l]) => { const x = last(k); if (!x) return ""; const d0 = x.first.dt !== x.dt ? x.v - x.first.m[k] : null;
+    return `<div><span>${l}</span><strong>${fmt(x.v, 1)} cm</strong><small>${d0 !== null ? `${sg(d0)} cm desde el ${esc(fmtShort(x.first.dt))}` : esc(fmtShort(x.dt))}</small></div>`; }).join("");
+  const rows = hist.slice(-12).reverse().map(x => { const bf = navyFat(x.m, p);
+    return `<tr><td><button class="btn small ghost" data-action="day-open" data-d="${x.dt}">${esc(fmtShort(x.dt))}</button></td>${MEAS.map(([k]) => `<td class="n">${x.m[k] ? fmt(x.m[k], 1) : "—"}</td>`).join("")}<td class="n">${bf !== null ? fmt(bf, 1) + "%" : "—"}</td><td class="n">${x.m.waist && p.height ? fmt(x.m.waist / p.height, 2) : "—"}</td></tr>`; }).join("");
+  const waists = hist.filter(x => x.m.waist).map(x => x.m.waist);
+  setHTML(box, `${form}
+    <div class="wstats w6 mt">${stats}</div>
+    ${waists.length > 1 ? `<p class="small muted" style="margin:0 0 10px">Cintura: ${sparkline(waists, "var(--food)")}</p>` : ""}
+    <div class="scroll"><table><thead><tr><th>Fecha</th>${MEAS.map(([, l]) => `<th class="n">${l}</th>`).join("")}<th class="n">% grasa estimado</th><th class="n">Cintura ÷ estatura</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="small muted" style="margin:10px 0 0">Medidas en cm. El % de grasa estimado usa la fórmula de la Marina de EE. UU. con ${p.sex === "mujer" ? "cintura, cadera, cuello" : "cintura, cuello"} y tu estatura${p.height ? ` (${fmt(p.height)} cm)` : " (falta en tu perfil)"}: ${p.sex === "mujer" ? "495 ÷ (1,29579 − 0,35004·log(cintura + cadera − cuello) + 0,221·log(estatura)) − 450" : "495 ÷ (1,0324 − 0,19077·log(cintura − cuello) + 0,15456·log(estatura)) − 450"}. Tiene un error de unos ±3 a 4 puntos: sirve para ver la tendencia entre un InBody y otro, no para reemplazarlo. Cintura ÷ estatura bajo 0,5 es la referencia habitual de salud.</p>`);
+}
+
+/* ---------- comparador de alimentos ---------- */
+function renderCmp(){
+  const box = $("#cmpBox"); if (!box || SHARE) return;
+  S.cmp = (S.cmp || []).filter(id => foodOf(id));
+  const list = S.cmp.map(foodOf);
+  $("#cmpSum").textContent = list.length ? list.map(f => f.name).join(" · ") : "lado a lado, por 100 g";
+  if (!$("#cmpSec").open) return;
+  if (list.length < 2){ setHTML(box, `<p class="empty">${list.length ? `Agrega al menos otro alimento para comparar con ${esc(list[0].name)}.` : "Elige de 2 a 4 alimentos de tu base para verlos lado a lado."}</p>`); return; }
+  const price = list.map(foodPrice);
+  // fila: etiqueta, valor de cada alimento, formato y cuál es mejor (1 = el mayor, −1 = el menor, 0 = no se marca)
+  const R = [
+    ["kcal", f => f.kcal, v => fmt(v), 0], ["Proteína g", f => f.p, v => fmt(v, 1), 1], ["Carbohidratos g", f => f.c, v => fmt(v, 1), 0],
+    ["Grasa g", f => f.f, v => fmt(v, 1), 0], ["Fibra g", f => f.fib, v => fmt(v, 1), 1],
+    ["Proteína por 100 kcal", f => f.kcal ? f.p / f.kcal * 100 : null, v => fmt(v, 1) + " g", 1],
+    ["Precio", (f, i) => price[i] ? price[i].perKg : null, (v, i) => `${fmtClp(v)}/${price[i].u}`, -1],
+    ["Costo de 100 g de proteína", (f, i) => price[i] && f.p ? price[i].perKg * 10 / f.p : null, v => fmtClp(Math.round(v)), -1]];
+  const body = R.map(([label, get, show, dir]) => {
+    const vals = list.map((f, i) => { const v = get(f, i); return v === null || v === undefined || !isFinite(v) ? null : v; }), ok = vals.filter(v => v !== null);
+    const best = dir && ok.length > 1 && Math.min(...ok) !== Math.max(...ok) ? (dir > 0 ? Math.max(...ok) : Math.min(...ok)) : null;
+    return `<tr><td>${label}</td>${vals.map((v, i) => `<td class="n${v !== null && v === best ? " cmp-best" : ""}">${v === null ? "—" : show(v, i)}</td>`).join("")}</tr>`; }).join("");
+  setHTML(box, `<div class="scroll"><table><thead><tr><th>Por 100 g</th>${list.map(f => `<th class="n">${esc(f.name)} <button class="btn small ghost" data-action="cmp-del" data-id="${f.id}" aria-label="Quitar ${esc(f.name)} de la comparación">Quitar</button></th>`).join("")}</tr></thead><tbody>${body}
+      <tr><td>Porción</td>${list.map(f => `<td class="n small">${f.unit ? `1 ${esc(f.unit)} = ${fmt(f.unitG)} g` : "—"}</td>`).join("")}</tr></tbody></table></div>
+    <p class="small muted" style="margin:10px 0 0">Valores por 100 g tal como se comen. En verde, el mejor de cada fila: más proteína, más fibra, más proteína por caloría y menor precio. El costo de 100 g de proteína es el precio por kg × 10 ÷ los gramos de proteína por 100 g.</p>`);
+}
+
+/* ---------- escáner de código de barras ----------
+   Lee el código con la cámara (BarcodeDetector, en Chrome de Android) o escrito a mano y busca el producto en Open Food Facts.
+   Solo sale el número del código; la imagen de la cámara no se envía. Los valores quedan con fuente "revisar" hasta cotejarlos con la etiqueta. */
+function offFood(pr){
+  const n = pr.nutriments || {}, v = k => num(n[k]);
+  const kcal = v("energy-kcal_100g") ?? (v("energy_100g") !== null ? v("energy_100g") / 4.184 : null); if (kcal === null) return null;
+  const brand = String(pr.brands || "").split(",")[0].trim(), sq = num(pr.serving_quantity);
+  return {name: [pr.product_name_es || pr.product_name || "Producto", brand].filter(Boolean).join(" ").trim(), kcal: Math.round(kcal), p: r1(v("proteins_100g")), c: r1(v("carbohydrates_100g")), f: r1(v("fat_100g")), fib: r1(v("fiber_100g")),
+    unit: sq ? "porción" : null, unitG: sq || null, plant: false, source: "Open Food Facts, revisar"};
+}
+const Scan = {
+  stream: null, timer: null, to: null, busy: false,
+  status(t, spin){ $("#scanStatus").innerHTML = (spin ? `<span class="spin"></span> ` : "") + esc(t); },
+  async open(to){
+    this.to = to; this.busy = false; $("#scanCode").value = ""; $("#scanDlg").showModal();
+    if (!("BarcodeDetector" in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ this.status("Este navegador no lee códigos con la cámara: escribe los números que están bajo las barras."); return; }
+    this.status("Abriendo la cámara…", true);
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}});
+      if (!$("#scanDlg").open){ this.stop(); return; }
+      const vid = $("#scanVideo"); vid.srcObject = this.stream; vid.hidden = false; await vid.play();
+      const det = new BarcodeDetector({formats: ["ean_13", "ean_8", "upc_a", "upc_e"]});
+      this.status("Apunta al código de barras del envase.");
+      this.timer = setInterval(async () => { try { const r = await det.detect(vid); if (r[0] && r[0].rawValue) this.lookup(r[0].rawValue); } catch {} }, 350);
+    } catch { this.stop(); this.status("No pude abrir la cámara. Dale permiso al sitio o escribe los números que están bajo las barras."); }
+  },
+  stop(){
+    clearInterval(this.timer); this.timer = null;
+    if (this.stream){ this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+    const vid = $("#scanVideo"); vid.srcObject = null; vid.hidden = true;
+  },
+  done(fd){
+    if (!fd) return;
+    if (this.to === "meal"){ $("#fdFood").value = fd.name; updateUnits(); $("#fdQty").focus(); }
+    else { $("#foodFilter").value = fd.name; renderFoods(); }
+  },
+  async lookup(raw){
+    const code = String(raw || "").replace(/\D/g, "");
+    if (code.length < 8 || code.length > 14){ this.status("Un código de barras tiene entre 8 y 13 números."); return; }
+    if (this.busy) return; this.busy = true; this.stop();
+    try {
+      const have = foods().find(f => f.barcode === code);
+      if (have){ $("#scanDlg").close(); this.done(have); toast(`${have.name} ya está en tu base.`); return; }
+      this.status(`Buscando ${code} en Open Food Facts…`, true);
+      const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_es,brands,nutriments,serving_quantity`);
+      const j = await r.json();
+      if (j.status !== 1 || !j.product){ this.status(`El código ${code} no está en Open Food Facts. Agrégalo con "Leer etiqueta (foto)" o con el formulario vacío, en Mi base.`); return; }
+      const f = offFood(j.product);
+      if (!f){ this.status(`Open Food Facts conoce el producto, pero no tiene su tabla nutricional. Agrégalo con "Leer etiqueta (foto)", en Mi base.`); return; }
+      $("#scanDlg").close();
+      openDialog("Nuevo alimento desde código de barras (revisa los valores con la etiqueta)", FOOD_FIELDS(f), v => { const id = "f-" + uid(); saveLib("foods", l => { l.push({id, ...foodFromForm(v), barcode: code}); }); this.done(foodOf(id)); });
+    } catch { this.status("No pude consultar Open Food Facts. Revisa tu conexión e intenta de nuevo."); }
+    finally { this.busy = false; }
+  }
+};
+
 function renderNutDash(){
   const box = $("#nutDash"), r = S.nutDash;
   if (!r){ box.hidden = true; return; }
@@ -3791,7 +3943,7 @@ function setView(tab, v, draw = true){
 function viewDraw(tab){
   const v = S.views[tab];
   if (tab === "finanzas") renderFin();
-  else if (tab === "nutricion"){ renderPlan(); if (v === "cuerpo") renderWeight(); if (v === "planificar" && !SHARE) renderFinPrices(); }
+  else if (tab === "nutricion"){ renderPlan(); if (v === "cuerpo"){ renderWeight(); renderMeas(); } if (v === "base") renderCmp(); if (v === "planificar" && !SHARE) renderFinPrices(); }
   else if (tab === "entreno"){ renderAct(); renderProgress(); }
   else if (tab === "perfil" && v === "uso"){ loadMetrics(); renderInstall(); }
 }
@@ -7047,6 +7199,21 @@ function openDialog(title, fields, onOk){
   };
   dlg.returnValue = ""; dlg.showModal();
 }
+/* Botón que corresponde a un campo al apretar Enter: el de su fila (el siguiente al campo o, si no, el primero); si la fila no tiene,
+   sube por los contenedores hasta el panel y toma el único botón, o el único principal. Nunca uno de borrar ni uno secundario (.ghost).
+   Sin botón, el campo solo se confirma (blur), que es lo que guarda los que se guardan al cambiar. */
+function enterButton(input){
+  const ok = b => !b.disabled && b.offsetParent !== null && !b.classList.contains("danger") && !b.classList.contains("ghost") && !b.classList.contains("chip");
+  for (let el = input.parentElement; el && el !== document.body; el = el.parentElement){
+    const bs = [...el.querySelectorAll("button[data-action]")].filter(ok);
+    if (el.classList.contains("row")){
+      if (bs.length) return bs.find(b => input.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) || bs[0];
+    } else if (bs.length === 1) return bs[0];
+    else { const pr = bs.filter(b => b.classList.contains("primary")); if (pr.length === 1) return pr[0]; }
+    if (el.matches(".panel, dialog, section, header, aside")) break;
+  }
+  return null;
+}
 const armed = new WeakMap();
 function confirmClick(btn, fn){
   if (armed.get(btn)){ armed.delete(btn); fn(); return; }
@@ -7184,6 +7351,21 @@ const actions = {
     navigator.clipboard.writeText(txt).then(() => toast("Lista de compras copiada."), () => toast("No se pudo copiar."));
   },
   "combo-del": el => confirmClick(el, () => saveLib("combos", l => l.filter(c => c.id !== el.dataset.id))),
+  "food-scan": el => Scan.open(el.dataset.to || "base"),
+  "scan-lookup": () => Scan.lookup($("#scanCode").value),
+  "scan-close": () => $("#scanDlg").close(),
+  "meas-save": () => {
+    const m = {}; MEAS.forEach(([k]) => { const v = num($("#ms-" + k).value); if (v > 0) m[k] = v; });
+    const any = Object.keys(m).length > 0; if (document.activeElement) document.activeElement.blur();
+    saveDay(S.date, d => { if (any) d.meas = m; else delete d.meas; }); toast(any ? "Medidas guardadas." : "Medidas borradas.");
+  },
+  "cmp-add": () => {
+    const fd = findFood($("#cmpFood").value); if (!fd){ toast("Elige un alimento de tu base."); return; }
+    S.cmp = S.cmp || []; if (S.cmp.includes(fd.id)){ toast(`${fd.name} ya está en la comparación.`); return; }
+    if (S.cmp.length >= 4){ toast("Compara hasta 4 alimentos: quita uno primero."); return; }
+    S.cmp.push(fd.id); $("#cmpFood").value = ""; $("#cmpFood").blur(); $("#cmpSec").open = true; renderCmp();
+  },
+  "cmp-del": el => { S.cmp = (S.cmp || []).filter(id => id !== el.dataset.id); renderCmp(); },
   "food-new": () => openDialog("Agregar alimento", FOOD_FIELDS({}), v => saveLib("foods", l => { l.push({id: "f-" + uid(), ...foodFromForm(v)}); })),
   "food-edit": el => { const f = foods().find(x => x.id === el.dataset.id); if (!f) return; openDialog("Editar alimento", FOOD_FIELDS(f), v => saveLib("foods", l => { Object.assign(l.find(x => x.id === f.id), foodFromForm(v)); })); },
   "food-del": el => confirmClick(el, () => saveLib("foods", l => l.filter(x => x.id !== el.dataset.id))),
@@ -7256,7 +7438,14 @@ const actions = {
     saveDay(S.date, d => d.meals.push(...src.map(m => ({...clone(m), id: uid()}))));
     toast(`Copié ${src.length} ${src.length === 1 ? "comida" : "comidas"} del ${fmtShort(prev)}. Borra las que no repetiste.`);
   },
-  "weight-save": () => { const w = num($("#wInput").value); $("#wInput").blur(); saveDay(S.date, d => { d.weight = w; }); toast(w ? "Peso guardado." : "Peso borrado."); },
+  "weight-save": el => {
+    const inp = el.closest(".row").querySelector("input"), w = num(inp.value), had = day(S.date).weight;
+    if (w === null && !had){ toast("Escribe tu peso en kg."); inp.focus(); return; }
+    if (w !== null && (w < 25 || w > 300)){ toast("Ese peso no parece estar en kg: revisa el número."); inp.focus(); return; }
+    inp.blur(); saveDay(S.date, d => { d.weight = w; });
+    const lw = w && allDatesAsc().filter(dt => dt < S.date && day(dt).weight).pop(), df = lw ? w - day(lw).weight : null;
+    toast(!w ? "Peso borrado." : df !== null ? `Peso guardado: ${df > 0 ? "+" : ""}${fmt(df, 1)} kg desde el ${fmtShort(lw)}.` : "Peso guardado.");
+  },
   "creatine": () => saveDay(S.date, d => { d.creatine = !d.creatine; }),
   "day-open": el => setDate(el.dataset.d),
   "metrics-load": () => loadMetrics(),
@@ -8335,12 +8524,25 @@ function wireUI(){
   $("#fdQty").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); actions["build-add"](); } });
   $("#foodFilter").addEventListener("input", renderFoods);
   $("#labelPhoto").addEventListener("change", e => readLabel(e.target.files[0]));
+  $("#scanDlg").addEventListener("close", () => Scan.stop());
+  $("#scanCode").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); Scan.lookup(e.target.value); } });
   $("#mealPhoto").addEventListener("change", e => { $("#mealPhotoName").textContent = e.target.files[0] ? e.target.files[0].name : ""; });
   $("#chatIn").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); chatSend(); } });
   document.addEventListener("keydown", e => {
     if (e.code !== "Space" || S.tab !== "bajo") return;
     const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT|BUTTON/.test(a.tagName)) return;
     e.preventDefault(); Metro.toggle();
+  });
+  // Enter en un campo hace lo que haría su botón. Los campos con manejo propio ya llamaron a preventDefault() y no llegan aquí.
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Enter" || e.defaultPrevented || e.isComposing || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    if (!t.matches || !t.matches("input") || /^(checkbox|radio|file|range|button|submit)$/.test(t.type) || t.closest("form")) return;
+    e.preventDefault();
+    if (t.id === "fdFood"){ $("#fdQty").focus(); return; }
+    if (t.dataset.enter === "none"){ t.blur(); return; }
+    const btn = enterButton(t);
+    if (btn) btn.click(); else t.blur();
   });
   let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderWeight(); renderProgress(); if (S.tab === "finanzas") renderFin(); }, 150); });
   $("#finDetDlg").addEventListener("close", () => { if (S.finDraft){ S.finDraft = null; finDetClearPhoto(); } });
