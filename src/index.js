@@ -11,7 +11,7 @@ import { agente, confirmar } from "./agente.js";
 import { classify, classifyPending } from "./clasificador.js";
 import { remindTransfers, notifyTransfer } from "./transferencias.js";
 
-const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin", "prices"]);
+const LIB_KEYS = new Set(["goals", "profile", "techniques", "songs", "books", "coach", "foods", "combos", "share", "optim", "fin", "prices", "tabs"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DOC_BYTES = 256 * 1024;
 const MAX_IMAGES = 3;
@@ -294,7 +294,7 @@ const SHARE_GOALS = {
   study: ["studyMin", "studyPlan"],
   food: ["kcal", "protein", "carbs", "fat", "fiber", "tol", "plantsWeek", "water"],
 };
-const SHARE_LIBS = { bass: ["techniques", "songs"], study: ["books"], food: ["foods"] };
+const SHARE_LIBS = { bass: ["techniques", "songs", "tabs"], study: ["books"], food: ["foods"] };
 
 function sameToken(a, b) {
   if (a.length !== b.length) return false;
