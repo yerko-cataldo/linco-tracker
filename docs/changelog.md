@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-21
+- Precios con tienda: al anotar un precio (uno o varios pegados) puedes decir dónde lo compras. La fuente dice "Ariztía, 20 nov" en vez de "tu precio" (los platos eCook dicen "eCook") y la lista de compras agrupa esos alimentos en su tienda, como la sección eCook.
+- La tabla de precios muestra siempre el precio de referencia de Unimarc al lado, con la diferencia en % frente al precio que se usa, y se puede cambiar el producto de referencia aunque el alimento tenga compra o precio tuyo. Unimarc se busca para todos los alimentos salvo eCook.
+
 ## 2026-11-20
 - Nutrición → Planificar: "Cuánto cuesta tu dieta". Para tu meta actual, otra meta de kcal que escribas y cada fase (definición, recomposición, mantención y volumen), el optimizador arma un día completo de teletrabajo y uno de oficina y lo valoriza con los precios de tus alimentos: costo al día y al mes según tu semana típica, la parte de las kcal que tiene precio, los alimentos sin precio (con un botón para anotarlo) y el menú de cada objetivo con el costo de cada comida y alimento.
 - Precio tuyo por alimento: en "Precios de tus alimentos", "Anotar precio" guarda lo que pagaste por un envase y su contenido (acepta 5 lb, 2,268 kg, 400 g o 1 L). Compite con tus compras por fecha y va antes que Unimarc. Sirve para la proteína en polvo y los platos de eCook.

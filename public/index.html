@@ -1402,6 +1402,7 @@ details.manual.book-more{margin-top:8px;padding-top:8px}
         <details class="manual" style="margin-bottom:10px"><summary>Pegar varios precios de una vez</summary>
           <div class="mt"><p class="small muted" style="margin:0 0 6px">Una línea por producto: nombre, contenido del envase y precio (ej. "Strogonoff de pollo 210 2.750" o "Manzana 1 kg 2100"). Sin unidad, el contenido son gramos. Las columnas pueden ir separadas por tabulador o espacios, como al copiar desde Excel.</p>
           <textarea id="priceBulk" rows="6" data-enter="none" aria-label="Precios pegados" style="width:100%"></textarea>
+          <div class="field w7 mt">Tienda de estos precios (opcional)<input id="priceBulkStore" data-enter="none" list="dl-priceBulkStore" placeholder="Ariztía, eCook…"><datalist id="dl-priceBulkStore"><option value="Ariztía"><option value="eCook"><option value="Unimarc"><option value="Lider"><option value="Jumbo"><option value="Feria"><option value="Mayorista"></datalist></div>
           <div class="row mt"><button class="btn small primary" data-action="price-bulk">Cargar precios</button><span class="small muted" id="priceBulkSt"></span></div></div>
         </details>
         <div id="finPrices"></div>
@@ -6011,14 +6012,22 @@ function finPriceRows(){
 }
 function renderFinPrices(){
   const rows = foods().map(fd => ({fd, p: foodPrice(fd)})).sort((a, b) => a.fd.name.localeCompare(b.fd.name, "es")), refs = priceRefs();
-  const nK = kind => rows.filter(r => r.p && r.p.kind === kind).length, nC = nK("compra"), nU = nK("unimarc"), nO = nK("tuyo");
-  $("#finPriceSum").textContent = `${nC + nU + nO} de ${rows.length} alimentos con precio · ${nC} de tus compras, ${nO} anotados por ti, ${nU} de Unimarc`;
+  const nK = kind => rows.filter(r => r.p && r.p.kind === kind).length, nC = nK("compra"), nU = nK("unimarc");
+  const byStore = {}; rows.forEach(r => { if (r.p && r.p.kind === "tuyo"){ const s = r.p.store || "anotados por ti"; byStore[s] = (byStore[s] || 0) + 1; } });
+  const nO = Object.values(byStore).reduce((a, n) => a + n, 0);
+  $("#finPriceSum").textContent = `${nC + nU + nO} de ${rows.length} alimentos con precio · ${[nC ? `${nC} de tus compras` : "", ...Object.entries(byStore).map(([s, n]) => `${n} ${s === "anotados por ti" ? s : `de ${s}`}`), nU ? `${nU} de Unimarc` : ""].filter(Boolean).join(", ")}`;
   const own = ownPrices();
-  setHTML($("#finPrices"), `<div class="scroll"><table><thead><tr><th>Alimento</th><th class="n">Precio</th><th>Fuente</th><th class="n">10 g de proteína</th><th></th></tr></thead><tbody>${rows.map(({fd, p}) => {
-    const r = refs[fd.id], alts = p && p.kind === "unimarc" && r.items.length > 1
-      ? `<select data-ref-pick="${esc(fd.id)}" aria-label="Producto de referencia de ${esc(fd.name)}">${r.items.map((it, i) => `<option value="${i}"${i === (r.pick || 0) ? " selected" : ""}>${esc(it.name)}: ${fmtClp(refPerKg(fd, it, r.k))}/${p.u}</option>`).join("")}</select>` : "";
+  setHTML($("#finPrices"), `<div class="scroll"><table><thead><tr><th>Alimento</th><th class="n">Precio</th><th>Fuente</th><th class="n">Unimarc</th><th class="n">10 g de proteína</th><th></th></tr></thead><tbody>${rows.map(({fd, p}) => {
+    const r = refs[fd.id], it = r && (r.items || [])[r.pick || 0], ref = it && refPerKg(fd, it, r.k), u = p ? p.u : isLiquidFood(fd) ? "L" : "kg";
+    const alts = r && r.items.length > 1
+      ? `<select data-ref-pick="${esc(fd.id)}" aria-label="Producto de referencia de ${esc(fd.name)}">${r.items.map((x, i) => `<option value="${i}"${i === (r.pick || 0) ? " selected" : ""}>${esc(x.name)}: ${fmtClp(refPerKg(fd, x, r.k))}/${u}</option>`).join("")}</select>` : "";
+    // Unimarc siempre a la vista para comparar; si el precio usado es otro, la diferencia en %
+    const diff = ref && p && p.kind !== "unimarc" ? Math.round((p.perKg / ref - 1) * 100) : null;
+    const uni = ref ? `${fmtClp(ref)}/${u}${diff !== null ? `<div class="small" style="color:${diff <= 0 ? "var(--ok)" : "var(--danger)"}">${diff <= 0 ? `tu precio ${-diff}% menos` : `tu precio ${diff}% más`}</div>` : ""}<div class="small muted"><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.name)}</a></div>${alts}`
+      : r && !r.items.length ? `<span class="small muted">sin producto parecido (busqué "${esc(r.q)}")</span>` : `<span class="muted">—</span>`;
     return `<tr><td>${esc(fd.name)}</td><td class="n">${p ? `${fmtClp(p.perKg)}/${p.u}` : `<span class="muted">sin precio</span>`}</td>
-      <td class="small">${p ? `${priceSrc(p)}<div class="muted">${esc(p.detail)}</div>${alts}` : r && !r.items.length ? `<span class="muted">Unimarc no tiene un producto parecido (busqué "${esc(r.q)}")</span>` : ""}</td>
+      <td class="small">${p ? `${priceSrc(p)}<div class="muted">${esc(p.detail)}</div>` : ""}</td>
+      <td class="n small">${uni}</td>
       <td class="n">${p && fd.p >= 5 ? fmtClp(p.perKg / fd.p) : "—"}</td>
       <td><span class="row" style="flex-wrap:nowrap;gap:4px"><button class="btn small" data-action="price-own" data-id="${esc(fd.id)}">${own[fd.id] ? "Cambiar mi precio" : "Anotar precio"}</button>${own[fd.id] ? `<button class="btn small ghost danger" data-action="price-own-del" data-id="${esc(fd.id)}">Quitar</button>` : ""}</span></td></tr>`; }).join("")}</tbody></table></div>`);
   const hist = finPriceRows();
@@ -6456,6 +6465,14 @@ const fmtQty = (g, u) => u === "L" ? (g >= 1000 ? `${fmt(g / 1000, 2)} L` : `${f
 const isLiquidFood = fd => /^(leche|jugo|bebida|kefir|agua)/.test(norm(fd.name));
 // Precio por kg o litro de un producto de Unimarc para este alimento; por unidad, con los gramos de su porción
 const refPerKg = (fd, it, k) => { const v = it.per === "un" ? (fd.unitG ? it.unitPrice / fd.unitG * 1000 : null) : it.unitPrice; return v ? v * (k || 1) : null; };
+// Precio anotado del alimento o de su versión cruda (ambos sin cocinar: × k); el más reciente. Devuelve [alimento, {price, g, date, store?}].
+function ownOf(fd){
+  const rw = prepK(fd) !== 1 ? rawOf(fd) : null;
+  return [[fd, ownPrices()[fd.id]], [rw, rw && ownPrices()[rw.id]]].filter(([, o]) => o && o.price > 0 && o.g > 0).sort((x, y) => y[1].date.localeCompare(x[1].date))[0] || [];
+}
+// Tienda de un precio anotado: la que escribiste o, en los platos eCook, eCook
+const storeOf = (fd, o) => (o.store || "").trim() || (/ecook/.test(norm(fd.name)) ? "eCook" : "");
+const STORE_LIST = ["Ariztía", "eCook", "Unimarc", "Lider", "Jumbo", "Santa Isabel", "Tottus", "Feria", "Mayorista"];
 function foodPrice(fd){
   if (!fd) return null;
   const idx = priceIdx(), k = prepK(fd), u = isLiquidFood(fd) ? "L" : "kg", opts = [], own = idx[fd.id];
@@ -6463,9 +6480,8 @@ function foodPrice(fd){
   const rw = k !== 1 ? rawOf(fd) : null, rb = rw && idx[rw.id];
   if (rb) opts.push({...rb, k, raw: rw.name});
   const b = opts.sort((x, y) => y.fecha.localeCompare(x.fecha))[0];
-  // precio tuyo del alimento o de su versión cruda (ambos sin cocinar: × k); el más reciente
-  const [ownFd, mine] = [[fd, ownPrices()[fd.id]], [rw, rw && ownPrices()[rw.id]]].filter(([, o]) => o && o.price > 0 && o.g > 0).sort((x, y) => y[1].date.localeCompare(x[1].date))[0] || [];
-  if (mine && (!b || mine.date >= b.fecha)) return {perKg: mine.price / mine.g * 1000 * k, u, kind: "tuyo", fecha: mine.date, label: `tu precio, ${fmtShort(mine.date)}`,
+  const [ownFd, mine] = ownOf(fd), store = mine && storeOf(fd, mine);
+  if (mine && (!b || mine.date >= b.fecha)) return {perKg: mine.price / mine.g * 1000 * k, u, kind: "tuyo", store, fecha: mine.date, label: `${store || "tu precio"}, ${fmtShort(mine.date)}`,
     detail: `${ownFd !== fd ? `${ownFd.name}: ` : ""}${fmtClp(mine.price)} por ${fmtQty(mine.g, u)}${k !== 1 ? ` sin cocinar, × ${fmt(k, 2)} por la cocción` : ""}`};
   if (b) return {perKg: b.perKg * b.k, u, kind: "compra", fecha: b.fecha, label: `tu compra en ${b.comercio}, ${fmtShort(b.fecha)}`,
     detail: `${b.raw ? b.raw : b.name}: ${fmtClp(b.perKg)}/${u}${b.k !== 1 ? ` sin cocinar, × ${fmt(b.k, 2)} por la cocción` : ""}`};
@@ -6537,12 +6553,13 @@ async function refFetch(fd){
   }
   return {q: pick ? pick.q : refQuery(fd), date: today(), k: prepK(fd), items: pick ? pick.rk.items : [], pick: pick ? pick.rk.pick : 0, v: REF_VER};
 }
-// Busca en Unimarc los alimentos sin compra ni precio tuyo cuya referencia falta, no encontró producto, es de otra versión
-// de las reglas o tiene más de 14 días (o todos, con force)
+// Busca en Unimarc los alimentos (salvo eCook) cuya referencia falta, no encontró producto, es de otra versión de las reglas
+// o tiene más de 14 días (o todos, con force). También los que tienen compra o precio tuyo, para comparar.
+const refWanted = fd => fd.kcal > 0 && shopOf(fd) !== "ecook";
 async function refFetchAll(force){
   if (S.refBusy) return; S.refBusy = true;
   const st = $("#priceStatus"), refs = priceRefs();
-  const list = foods().filter(fd => fd.kcal > 0 && shopOf(fd) !== "ecook" && !["compra", "tuyo"].includes((foodPrice(fd) || {}).kind) && (force || refStale(refs[fd.id])));
+  const list = foods().filter(fd => refWanted(fd) && (force || refStale(refs[fd.id])));
   const out = {}; let done = 0, fail = 0;
   const work = async () => { while (list.length){ const fd = list.shift(); try { const r = await refFetch(fd); if (r) out[fd.id] = r; } catch { fail++; } done++; st.innerHTML = `<span class="spin"></span> Buscando en Unimarc: ${done} de ${done + list.length}…`; } };
   try {
@@ -6555,7 +6572,7 @@ async function refFetchAll(force){
 }
 // Precios pegados ("nombre  contenido  precio" por línea): se asocian al alimento por nombre sin paréntesis y se guardan como precio tuyo
 const bulkKey = s => norm(String(s).replace(/\(.*?\)/g, " ")).replace(/\s+/g, " ").trim();
-function priceBulk(text){
+function priceBulk(text, store){
   const own = {...ownPrices()}, ok = [], bad = [];
   for (const raw of String(text || "").split(/\r?\n/)){
     const line = raw.trim(); if (!line) continue;
@@ -6563,7 +6580,7 @@ function priceBulk(text){
     const g = m && parseQty(m[2] + " " + (m[3] || "g")), price = m && Number(m[4].replace(/\./g, ""));
     const key = m && bulkKey(m[1]), fd = key && (foods().find(f => !isRawFood(f) && bulkKey(f.name) === key) || foods().find(f => !isRawFood(f) && bulkKey(f.name).startsWith(key + " ")));
     if (!fd || !g || !(price > 0)){ bad.push(line); continue; }
-    own[fd.id] = {price, g, date: today()}; ok.push(fd.name);
+    own[fd.id] = {price, g, date: today(), ...(store ? {store} : {})}; ok.push(fd.name);
   }
   if (ok.length) saveLib("prices", p => ({...(p || {}), own}));
   return {ok, bad};
@@ -6574,11 +6591,12 @@ function priceOwnDialog(id){
   const cur = ownPrices()[id] || {}, liq = isLiquidFood(fd), k = prepK(fd);
   openDialog(`Tu precio: ${fd.name}`, [
     {name: "price", label: "Lo que pagaste ($)", value: cur.price, num: true, required: true},
-    {name: "qty", label: `Contenido del envase${k !== 1 ? ` (${prepOf(fd).word}, sin cocinar)` : ""}: ej. ${liq ? "1 L o 900 ml" : "5 lb, 2,268 kg o 400 g"}`, value: cur.g ? fmtQty(cur.g, liq ? "L" : "kg").replace(/\./g, "") : "", required: true}
+    {name: "qty", label: `Contenido del envase${k !== 1 ? ` (${prepOf(fd).word}, sin cocinar)` : ""}: ej. ${liq ? "1 L o 900 ml" : "5 lb, 2,268 kg o 400 g"}`, value: cur.g ? fmtQty(cur.g, liq ? "L" : "kg").replace(/\./g, "") : "", required: true},
+    {name: "store", label: "Dónde lo compras (opcional: aparece como fuente y como sección en la lista de compras)", value: cur.store || "", list: STORE_LIST}
   ], v => {
     const g = parseQty(v.qty);
     if (!(v.price > 0) || !g){ toast("Escribe el precio y el contenido, por ejemplo 44990 y 5 lb."); return; }
-    saveLib("prices", p => ({...(p || {}), own: {...((p || {}).own || {}), [id]: {price: v.price, g, date: today()}}}));
+    saveLib("prices", p => ({...(p || {}), own: {...((p || {}).own || {}), [id]: {price: v.price, g, date: today(), ...(v.store ? {store: v.store} : {})}}}));
     const per = fd.unit && fd.unitG ? ` · ${fmtClp(v.price / g * fd.unitG * k)} por ${fd.unit.toLowerCase()} de ${fmt(fd.unitG)} g` : "";
     toast(`${fd.name}: ${fmtClp(v.price / g * 1000 * k)}/${liq ? "L" : "kg"}${per}`);
   });
@@ -6617,8 +6635,11 @@ function prepOf(fd){
   const n = norm(fd.name), m = PREP.find(([rx]) => rx.test(n)); if (!m) return null;
   return {k: m[1], batch: m[2], word: m[3], base: m[1] === 1 ? "Huevos" : fd.name.replace(/\s+(cocid[oa]s?|al vapor)\b/i, "")};
 }
-// Dónde se compra: campo shop del alimento si existe; si no, por el nombre. Frutas y verduras en la feria.
+// Dónde se compra: la tienda de tu precio anotado (Ariztía, eCook…), el campo shop del alimento o, si no, por el nombre. Frutas y verduras en la feria.
+const shopKey = store => { const n = norm(store).replace(/[^a-z0-9]/g, ""); return n === "supermercado" ? "super" : n; };
 function shopOf(fd){
+  const o = ownOf(fd)[1], st = o && (o.store || "").trim();
+  if (st) return shopKey(st);
   if (fd.shop) return fd.shop;
   const n = norm(fd.name);
   if (/ecook/.test(n)) return "ecook";
@@ -6627,7 +6648,9 @@ function shopOf(fd){
   if (/tomate|palta|brocoli|platano|manzana|^papa|lechuga|arandano|frutilla|zanahoria|cebolla|pepino|naranja|limon|zapallo|espinaca|pimenton|choclo|uva|pera|kiwi/.test(n)) return "feria";
   return "super";
 }
-const SHOP_LABEL = {feria: "Feria", super: "Supermercado", ecook: "eCook", despensa: "Despensa (revisa si queda)"};
+const SHOP_LABEL = {feria: "Feria", super: "Supermercado", ariztia: "Ariztía", ecook: "eCook", despensa: "Despensa (revisa si queda)"};
+// Nombre de una sección de compras: la conocida o la tienda tal como la escribiste
+const shopLabel = k => SHOP_LABEL[k] || (STORE_LIST.find(s => shopKey(s) === k) || Object.values(ownPrices()).map(o => (o.store || "").trim()).find(s => s && shopKey(s) === k) || k);
 const plural = (n, w) => n === 1 ? w : /ón$/.test(w) ? w.replace(/ón$/, "ones") : /[aeiouáéíóú]$/i.test(w) ? w + "s" : w + "es";
 const fmtW = g => { const r = Math.ceil(g / 50) * 50; return r >= 1000 ? `${fmt(Math.ceil(g / 100) / 10, 1)} kg` : `${fmt(r)} g`; };
 const BUY_UNIT = [[/^palta/, "palta", 140], [/^leche/, "L", 1000]];
@@ -6656,8 +6679,8 @@ function weekPlan(){
   };
   const days = dates.map(date => { const kind = dayKind(date), tpl = templateOf(kind); tpl.forEach(c => comboItems(c).forEach(it => add(it, date))); return {date, kind, n: tpl.length}; });
   const items = [...need.values()].filter(e => e.g > 0);
-  const shop = {feria: [], super: [], ecook: [], despensa: []};
-  items.forEach(e => { const pr = e.fd.id ? foodPrice(e.fd) : null; shop[shopOf(e.fd)].push({name: prepOf(e.fd) ? prepOf(e.fd).base : e.fd.name, qty: buyQty(e.fd, e.g), cost: pr ? e.g / 1000 * pr.perKg : null}); });
+  const shop = {feria: [], super: [], ariztia: [], ecook: [], despensa: []};
+  items.forEach(e => { const pr = e.fd.id ? foodPrice(e.fd) : null; (shop[shopOf(e.fd)] ||= []).push({name: prepOf(e.fd) ? prepOf(e.fd).base : e.fd.name, qty: buyQty(e.fd, e.g), cost: pr ? e.g / 1000 * pr.perKg : null}); });
   const listed = Object.values(shop).flat(), cost = sum(listed, x => x.cost), noPrice = listed.filter(x => x.cost === null).length;
   Object.values(shop).forEach(l => l.sort((a, b) => a.name.localeCompare(b.name, "es")));
   // Sesiones de cocina: cada día de la semana queda a cargo de la última sesión anterior o igual a él.
@@ -6674,7 +6697,7 @@ function weekPlan(){
   items.forEach(e => { const pr = prepOf(e.fd); if (pr && !pr.batch) daily.push(`cocer ${pr.base.toLowerCase()} al momento`); });
   if (items.some(e => shopOf(e.fd) === "ecook")) daily.push("calentar el eCook");
   daily.push("armar batidos, ensaladas y colaciones");
-  const shopText = items.length ? `Compras ${fmtShort(from)} a ${fmtShort(dates[6])}\n` + Object.entries(shop).filter(([, l]) => l.length).map(([k, l]) => `\n${SHOP_LABEL[k]}\n` + l.map(x => `- ${x.name}: ${x.qty}`).join("\n")).join("\n") : "";
+  const shopText = items.length ? `Compras ${fmtShort(from)} a ${fmtShort(dates[6])}\n` + Object.entries(shop).filter(([, l]) => l.length).map(([k, l]) => `\n${shopLabel(k)}\n` + l.map(x => `- ${x.name}: ${x.qty}`).join("\n")).join("\n") : "";
   return {from, dates, days, shop, sess, daily, shopText, cost, noPrice, empty: !items.length, before: dates.filter(d => !sess.some(s => s.dates.includes(d)))};
 }
 function renderWeek(){
@@ -6696,7 +6719,7 @@ function renderWeek(){
     ${w.empty ? `<p class="empty">Marca tus comidas frecuentes como de teletrabajo u oficina (más abajo, en Mis alimentos) para armar la lista de compras y lo que hay que cocinar.</p>` : `
     <div class="dash">
       <div><strong class="hud">Lista de compras</strong>
-        ${Object.entries(w.shop).filter(([, l]) => l.length).map(([k, l]) => `<div class="small" style="margin:12px 0 0;font-weight:600">${SHOP_LABEL[k]}</div><ul class="shop">${l.map(x => `<li><span>${esc(x.name)}</span><span>${esc(x.qty)}${x.cost ? ` <span class="muted">· ${fmtClp(Math.round(x.cost / 10) * 10)}</span>` : ""}</span></li>`).join("")}</ul>`).join("")}
+        ${Object.entries(w.shop).filter(([, l]) => l.length).map(([k, l]) => `<div class="small" style="margin:12px 0 0;font-weight:600">${shopLabel(k)}</div><ul class="shop">${l.map(x => `<li><span>${esc(x.name)}</span><span>${esc(x.qty)}${x.cost ? ` <span class="muted">· ${fmtClp(Math.round(x.cost / 10) * 10)}</span>` : ""}</span></li>`).join("")}</ul>`).join("")}
         ${w.cost ? `<p class="small" style="margin:10px 0 0">Costo estimado: <strong>${fmtClp(Math.round(w.cost / 100) * 100)}</strong>${w.noPrice ? ` <span class="muted">(${w.noPrice} ${w.noPrice === 1 ? "alimento sin precio no suma" : "alimentos sin precio no suman"})</span>` : ""}.</p>` : ""}
         <p class="small muted" style="margin:10px 0 0">Las cantidades salen de los gramos de cada plan: lo que se cocina va en crudo o seco (arroz ×0,4, fideos ×0,43, pollo ×1,33, carne ×1,4, carne molida ×1,35, legumbres ×0,4). El costo sale de los precios de tus alimentos; los que no tienen precio no suman.</p></div>
       <div><strong class="hud">Qué cocinar</strong>
@@ -8103,7 +8126,7 @@ const actions = {
   "price-refs": () => refFetchAll(false),
   "price-own": el => priceOwnDialog(el.dataset.id),
   "price-bulk": () => {
-    const {ok, bad} = priceBulk($("#priceBulk").value);
+    const {ok, bad} = priceBulk($("#priceBulk").value, $("#priceBulkStore").value.trim());
     $("#priceBulk").value = bad.join("\n");
     $("#priceBulkSt").textContent = `${ok.length} guardados${bad.length ? `; ${bad.length} no los reconocí (quedaron en el cuadro): no están en tu base o les falta contenido o precio` : ""}.`;
   },
@@ -10730,7 +10753,7 @@ function wireUI(){
     secWrite(el.id, el.open); if (!el.open) return;
     if (el.id === "finPriceSec" || el.id === "dietCostSec"){
       if (el.id === "finPriceSec") renderFinPrices(); else renderDietCost();
-      if (S.mode === "api" && !S.refAuto && foods().some(fd => fd.kcal > 0 && shopOf(fd) !== "ecook" && (!foodPrice(fd) || foodPrice(fd).kind === "unimarc") && refStale(priceRefs()[fd.id]))){ S.refAuto = true; refFetchAll(false); }
+      if (S.mode === "api" && !S.refAuto && foods().some(fd => refWanted(fd) && refStale(priceRefs()[fd.id]))){ S.refAuto = true; refFetchAll(false); }
     }
     else if (el.closest("#tab-finanzas")) renderFin();
     else if (el.closest("#tab-entreno")){ renderAct(); renderProgress(); }
