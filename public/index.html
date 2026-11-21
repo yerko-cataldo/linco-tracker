@@ -8529,6 +8529,25 @@ const actions = {
   "agent-ok": el => agentConfirm(+el.dataset.i, +el.dataset.j, true),
   "agent-no": el => agentConfirm(+el.dataset.i, +el.dataset.j, false)
 };
+/* Importación con "merge": true: en las colecciones de lista, cada elemento se agrega o actualiza por id (un campo null se borra)
+   y lo que no viene en el archivo se mantiene; en las de valores, los campos del archivo se suman a los actuales (un objeto se fusiona
+   un nivel: prices.own o optim.repl suman claves sin borrar las tuyas). */
+const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+function importMerge(k, incoming){
+  if (LIBKEYS[k] !== "list"){
+    const out = clone(S.lib[k] || {});
+    for (const [f, val] of Object.entries(incoming || {})) out[f] = isObj(val) && isObj(out[f]) ? {...out[f], ...val} : val;
+    return out;
+  }
+  const out = clone(S.lib[k] || []);
+  for (const it of Array.isArray(incoming) ? incoming : []){
+    if (!it || !it.id) continue;
+    const cur = out.find(x => x.id === it.id);
+    if (!cur){ if (it.name || it.title) out.push(it); continue; }
+    for (const [f, val] of Object.entries(it)) if (val === null) delete cur[f]; else cur[f] = val;
+  }
+  return out;
+}
 async function importJson(file){
   if (!file) return;
   const st = $("#importStatus"); st.textContent = "Importando…";
@@ -8536,6 +8555,7 @@ async function importJson(file){
     const data = JSON.parse(await file.text());
     const lib = {};
     for (const [k, v] of Object.entries(data.lib || {})) if (k in LIBKEYS) lib[k] = (v && typeof v === "object" && LIBKEYS[k] in v && !Array.isArray(v)) ? v : {[LIBKEYS[k]]: v};
+    if (data.merge) for (const [k, v] of Object.entries(lib)) lib[k] = {[LIBKEYS[k]]: importMerge(k, v[LIBKEYS[k]])};
     const r = await fetch("/api/import", {method: "POST", headers: {"content-type": "application/json"}, credentials: "same-origin", body: JSON.stringify({days: data.days || {}, lib})});
     if (!r.ok) throw new Error(String(r.status));
     const out = await r.json();

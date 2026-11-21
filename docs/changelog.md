@@ -6,6 +6,7 @@
 - El optimizador muestra el costo de cada opción, de cada comida y de lo que falta comer, con el detalle de cada precio.
 - Precios de Unimarc más certeros: sinónimos (yogurt → yoghurt, jamón de pavo → pechuga de pavo, papa → papas), búsqueda más corta cuando la frase no trae nada parecido ("arroz blanco" → "arroz", "huevo duro" → "huevo"), preferencia por productos a granel o en malla y descuento a prefritas, harina, puré, sin gluten, deshidratados y con semillas. Las referencias anteriores se vuelven a buscar solas.
 - Alimentos que prefieres (optimizador → "Alimentos que prefieres y los que no"): "usa B en vez de A" de forma permanente, por ejemplo posta rosada en vez de asiento o lomo, o yogur Loncoleche en vez de Soprole. Lo usan el optimizador, el costo de la dieta, la propuesta del día y la lista de compras, con las mismas porciones.
+- Importar un JSON con `"merge": true` agrega o actualiza alimentos, comidas frecuentes, precios y preferencias sin borrar lo que ya tienes. Sirve para cargar un plan semanal armado fuera de la app.
 - Nunca me recomiendes (en la misma sección): alimentos que no te gustan. No salen en el optimizador, el costo de la dieta ni la propuesta del día, y tus platos que los llevan no se proponen.
 - El precio que anotas en la versión cruda de un alimento (posta rosada cruda) vale también para la cocida.
 - Lista de compras: un alimento cuya porción se llama con un número ("1") se cuenta en unidades.

@@ -67,7 +67,7 @@ Campos opcionales: `meas` en un día (medidas corporales en cm: `{waist, neck, h
 | `GET /api/state` | Últimos 400 días y todo `lib` |
 | `PUT /api/days/:date` | Upsert del documento de un día |
 | `PUT /api/lib/:key` | Upsert de una colección |
-| `POST /api/import` | Importa `{days, lib}` (reemplaza las claves que trae) |
+| `POST /api/import` | Importa `{days, lib}` (reemplaza las claves que trae). Un archivo con `"merge": true` se fusiona en la web antes de enviarlo (`importMerge()`): en las listas agrega o actualiza por id (un campo `null` se borra) y en las de valores suma campos, fusionando un nivel los objetos (`prices.own`, `optim.repl`) |
 | `GET /api/usage` | Uso diario del modelo |
 | `GET /api/precio?q=` | Precios de referencia de Unimarc (`src/precios.js`): productos con precio por kg, litro o unidad y link a unimarc.cl; caché de 1 día por búsqueda |
 | `GET /api/metrics` | Uso frente a los límites gratis de Cloudflare (GraphQL Analytics), uso del modelo y vencimiento del dominio |
